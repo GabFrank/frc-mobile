@@ -1,0 +1,24 @@
+<ion-grid fixed>
+  <ion-row>
+    <ion-col size>ID: {{ inventarioService?.selectedInventario?.id }}</ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size>Usuario: {{ inventarioService?.selectedInventario?.usuario?.persona?.nombre | uppercase }}</ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col
+      >Fecha inicio:
+      {{
+        inventarioService?.selectedInventario?.fechaInicio | date: 'short'
+      }}</ion-col
+    >
+  </ion-row>
+  <ion-row>
+    <ion-col
+      >Fecha inicio:
+      {{
+        inventarioService?.selectedInventario?.fechaFin | date: 'short'
+      }}</ion-col
+    >
+  </ion-row>
+</ion-grid>

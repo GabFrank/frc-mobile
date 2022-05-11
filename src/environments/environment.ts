@@ -1,16 +1,26 @@
-// This file can be replaced during build by using the `fileReplacements` array.
-// `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
-// The list of file replacements can be found in `angular.json`.
+import { ipAddress, port } from "./conectionConfig";
 
-export const environment = {
-  production: false
+export const APP_CONFIG = {
+  production: false,
+  environment: 'LOCAL'
 };
 
-/*
- * For easier debugging in development mode, you can import the following file
- * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
- *
- * This import should be commented out in production mode because it will have a negative impact
- * on performance if an error is thrown.
- */
-// import 'zone.js/dist/zone-error';  // Included with Angular CLI.
+export const environment = {
+  production: false,
+  usuario : 1,
+  sucursalId: 1,
+  firebaseConfig : {
+    apiKey: "AIzaSyDAPq38fcPq-8qtSbQ_YyTc0Vc0pqlqWV4",
+    authDomain: "franco-system.firebaseapp.com",
+    projectId: "franco-system",
+    storageBucket: "franco-system.appspot.com",
+    messagingSenderId: "389460380308",
+    appId: "1:389460380308:web:53701896405855d9f64281"
+  },
+  
+};
+
+export const serverAdress = {
+  serverIp: localStorage.getItem('serverIpAddress') != null ? localStorage.getItem('serverIpAddress') : ipAddress,
+  serverPort: port
+}

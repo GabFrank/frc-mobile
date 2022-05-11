@@ -12,12 +12,17 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "es2020",
-    "lib": ["es2018", "dom"]
+    "lib": ["es2018", "dom", "esnext"],
+    "strict": false
   },
   "angularCompilerOptions": {
-    "enableI18nLegacyMessageIdFormat": false,
-    "strictInjectionParameters": true,
-    "strictInputAccessModifiers": true,
-    "strictTemplates": true
-  }
+    "enableI18nLegacyMessageIdFormat": true,
+    "strictInjectionParameters": false,
+    "strictInputAccessModifiers": false,
+    "strictTemplates": false
+  },
+  "forceConsistentCasingInFileNames": false,
+  "strict": false,
+  "noImplicitReturns": false,
+  "noFallthroughCasesInSwitch": false
 }

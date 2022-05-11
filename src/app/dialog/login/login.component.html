@@ -1,0 +1,34 @@
+<ion-list slot="start" [hidden]="selectedUsuario !== null">
+  <ion-item>
+    <ion-label position="floating">Usuario</ion-label>
+    <ion-input [formControl]="usuarioControl"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="floating">Contraseña</ion-label>
+    <ion-input [formControl]="passwordControl" type="password"></ion-input>
+  </ion-item>
+
+  <ion-button
+    color="primary"
+    expand="block"
+    [disabled]="formGroup.invalid"
+    (click)="onLogin()"
+    >Entrar</ion-button
+  >
+
+  <ion-item [hidden]="error===null">
+    <div style="color: red; font-size: 0.8em; width: 100%; text-align: center;">{{ error }}</div>
+  </ion-item>
+</ion-list>
+<ion-grid [hidden]="selectedUsuario === null">
+  <ion-row>
+    <div class="ion-text-center" style="width: 100%">
+      {{ msg | uppercase }}
+    </div>
+  </ion-row>
+  <br />
+  <ion-row class="ion-text-center">
+    {{ selectedUsuario?.persona?.nombre | uppercase }}
+  </ion-row>
+</ion-grid>

@@ -1,0 +1,62 @@
+<ion-grid fixed>
+  <ion-row>
+    <ion-col size>
+      <ion-button
+        [routerLink]="['/inventario/producto-info']"
+        routerLinkActive="router-link-active"
+        expand="block"
+        fill="clear"
+        shape="round"
+      >
+        Volver
+      </ion-button>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      {{ selectedItem?.producto?.descripcion | uppercase }}
+    </ion-col>
+    <ion-col>
+      <ion-row>
+        <ion-card
+          *ngFor="
+            let item of selectedItem?.inventarioProductoItemList;
+            let i = index
+          "
+          style="width: 100%;"
+        >
+        <ion-grid fixed>
+          <ion-row>
+            <ion-col size="3"> Cant:</ion-col>
+            <ion-col size="4">
+              Sector:
+            </ion-col>
+            <ion-col size="5">Vencim.</ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="3">{{ item?.cantidad }} </ion-col>
+            <ion-col size="4">
+              {{ item?.sector?.descripcion | uppercase }}
+            </ion-col>
+            <ion-col size="5">
+              {{ item?.vencimiento | date: 'short' }}
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="6">
+              <ion-button color="danger" (click)="onDelete(item)" expand="block" fill="clear" shape="round">
+                Eliminar
+              </ion-button>
+            </ion-col>
+            <ion-col size="6">
+              <ion-button color="success" (click)="onEdit(item)" expand="block" fill="clear" shape="round">
+                Editar
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+        </ion-card>
+      </ion-row>
+    </ion-col>
+  </ion-row>
+</ion-grid>
