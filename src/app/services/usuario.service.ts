@@ -21,7 +21,6 @@ export class UsuarioService {
   { }
 
   onGetUsuario(id: number): Observable<any> {
-    console.log('usuario.service.ts onGetUsuario');
     return new Observable((obs) => {
       this.getUsuario
         .fetch(
@@ -34,7 +33,6 @@ export class UsuarioService {
           }
         ).pipe(untilDestroyed(this))
         .subscribe((res) => {
-          console.log(res);
           if (res?.errors == null) {
             obs.next(res?.data.data);
           } else {
@@ -45,7 +43,6 @@ export class UsuarioService {
   }
 
   onGetUsuarioPorPersonaId(id: number): Observable<any> {
-    console.log(id + ' buscando usu');
     return new Observable((obs) => {
       this.getUsuarioPorPersonaId
         .fetch(

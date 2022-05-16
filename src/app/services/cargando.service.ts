@@ -25,6 +25,7 @@ export class CargandoService {
 
   async close() {
     setTimeout(async () => {
+      if(this.loading!=undefined)
       await this.loading.dismiss();
     }, 500);
   }

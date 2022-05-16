@@ -7,7 +7,6 @@ import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
 import { Apollo, Mutation, Query } from "apollo-angular";
 import { Observable } from "rxjs";
 import { MainService } from "../services/main.service";
-import ApolloClient from 'apollo-client';
 
 @UntilDestroy({ checkProperties: true })
 @Injectable({

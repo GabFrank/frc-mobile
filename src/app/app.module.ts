@@ -1,8 +1,8 @@
+import { ComponentsModule } from './components/components.module';
 import { TransferenciasModule } from './pages/transferencias/transferencias.module';
-import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
 import { InventarioModule } from './pages/inventario/inventario.module';
-import { APP_INITIALIZER, NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
+import { APP_INITIALIZER, Injectable, NgModule } from '@angular/core';
+import { BrowserModule, HammerGestureConfig, HammerModule, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { onError } from '@apollo/client/link/error';
@@ -23,9 +23,14 @@ import { HttpClientModule } from '@angular/common/http';
 import { MainService } from './services/main.service';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { LoginComponent } from './dialog/login/login.component';
-import { BarcodeQrScannerComponent } from './components/barcode-qr-scanner/barcode-qr-scanner.component';
+import { NgxCurrencyModule } from 'ngx-currency';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
+import { BehaviorSubject } from 'rxjs';
+import { WebSocketLink } from "@apollo/client/link/ws";
+import { NgxScannerQrcodeModule } from 'ngx-scanner-qrcode';
 
 const uri = `http://${serverAdress.serverIp}:${serverAdress.serverPort}`;
+const wUri = `ws://${serverAdress.serverIp}:${serverAdress.serverPort}/subscriptions`;
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   console.log(graphQLErrors, networkError);
@@ -40,8 +45,39 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
   // if (networkError) console.log(`[Network error]: ${networkError}`);
 });
 
+const wsClient = new SubscriptionClient(wUri, {
+  reconnect: true,
+});
+
+export const connectionStatusSub = new BehaviorSubject<any>(null);
+
+wsClient.onConnected(() => {
+  connectionStatusSub.next(true);
+  console.log("websocket connected!!");
+});
+wsClient.onDisconnected(() => {
+  if (connectionStatusSub.value != false) {
+    connectionStatusSub.next(false);
+  }
+  console.log("websocket disconnected!!");
+});
+wsClient.onReconnected(() => {
+  connectionStatusSub.next(true);
+  console.log("websocket reconnected!!");
+});
+
+@Injectable()
+export class HammerConfig extends HammerGestureConfig {
+  overrides = <any> {
+      // I will only use the swap gesture so
+      // I will deactivate the others to avoid overlaps
+      'pinch': { enable: false },
+      'rotate': { enable: false }
+  }
+}
+
 @NgModule({
-  declarations: [AppComponent, LoginComponent, BarcodeQrScannerComponent],
+  declarations: [AppComponent, LoginComponent],
   entryComponents: [],
   imports: [
     BrowserModule,
@@ -52,10 +88,16 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
     ReactiveFormsModule,
     FormsModule,
     InventarioModule,
-    TransferenciasModule
-  ],
+    TransferenciasModule,
+    HammerModule,
+    NgxCurrencyModule,
+    NgxScannerQrcodeModule
+    ],
   providers: [
-    BarcodeScanner,
+    {
+      provide: HAMMER_GESTURE_CONFIG,
+      useClass: HammerConfig
+    },
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     {
       provide: APOLLO_OPTIONS,
@@ -89,7 +131,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
         ]);
 
         // Create a WebSocket link:
-        // const ws = new WebSocketLink(wsClient);
+        const ws = new WebSocketLink(wsClient);
 
         // using the ability to split links, you can send data to each link
         // depending on what kind of operation is being sent
@@ -104,7 +146,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
                 definition.operation === 'subscription'
               );
             },
-            http,
+            ws,
             http
           )
         );

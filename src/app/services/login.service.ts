@@ -36,19 +36,15 @@ export class LoginService {
   ) {}
 
   isAuthenticated(): Observable<Usuario> {
-    console.log('Verificando autenticacion...');
     return new Observable((obs) => {
       let isToken = localStorage.getItem('token');
       let id = localStorage.getItem('usuarioId');
-      console.log(isToken);
       if (isToken != null && id != null) {
         this.usuarioService
           .onGetUsuario(+id)
           .pipe(untilDestroyed(this))
           .subscribe((res) => {
-            console.log('respuesta: ', res);
             if (res) {
-              console.log('usuario encontrado: ', res);
               this.usuarioActual = res;
               this.mainService.usuarioActual = this.usuarioActual;
               obs.next(res);
@@ -86,7 +82,6 @@ export class LoginService {
                     .onGetUsuario(res['usuarioId'])
                     .subscribe((res) => {
                       if (res?.id != null) {
-                        console.log('..autenticando');
                         let response: LoginResponse = {
                           usuario: res,
                           error: null,
@@ -106,7 +101,6 @@ export class LoginService {
               usuario: null,
               error: error,
             };
-            console.log(error);
             obs.next(error);
           }
         );
@@ -117,5 +111,6 @@ export class LoginService {
     localStorage.setItem('token', null);
     localStorage.setItem('usuarioId', null);
     this.usuarioActual = null;
+    window.location.href = ''
   }
 }

@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ScannerService } from '../components/qr-scanner-dialog/scanner.service';
+import { MenuActionService } from './menu-action.service';
 
-describe('ScannerService', () => {
-  let service: ScannerService;
+describe('MenuActionService', () => {
+  let service: MenuActionService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(ScannerService);
+    service = TestBed.inject(MenuActionService);
   });
 
   it('should be created', () => {

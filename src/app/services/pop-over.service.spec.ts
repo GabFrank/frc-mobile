@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ScannerService } from '../components/qr-scanner-dialog/scanner.service';
+import { PopOverService } from './pop-over.service';
 
-describe('ScannerService', () => {
-  let service: ScannerService;
+describe('PopOverService', () => {
+  let service: PopOverService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(ScannerService);
+    service = TestBed.inject(PopOverService);
   });
 
   it('should be created', () => {

@@ -4,7 +4,7 @@ import { NotificacionService } from 'src/app/services/notificacion.service';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { GenericCrudService } from './../../generic/generic-crud.service';
 import { Injectable } from '@angular/core';
-import { untilDestroyed } from '@ngneat/until-destroy';
+import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { Observable } from 'rxjs';
 import { MainService } from 'src/app/services/main.service';
 import { DeleteTransferenciaGQL } from './graphql/deleteTransferencia';
@@ -17,6 +17,7 @@ import { SaveTransferenciaGQL } from './graphql/saveTransferencia';
 import { SaveTransferenciaItemGQL } from './graphql/saveTransferenciaItem';
 import { Transferencia, TransferenciaItem, TransferenciaEstado, EtapaTransferencia } from './transferencia.model';
 
+@UntilDestroy()
 @Injectable({
   providedIn: 'root'
 })

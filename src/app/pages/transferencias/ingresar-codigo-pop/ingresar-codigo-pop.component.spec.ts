@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { BarcodeQrScannerComponent } from './barcode-qr-scanner.component';
+import { IngresarCodigoPopComponent } from './ingresar-codigo-pop.component';
 
-describe('BarcodeQrScannerComponent', () => {
-  let component: BarcodeQrScannerComponent;
-  let fixture: ComponentFixture<BarcodeQrScannerComponent>;
+describe('IngresarCodigoPopComponent', () => {
+  let component: IngresarCodigoPopComponent;
+  let fixture: ComponentFixture<IngresarCodigoPopComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ BarcodeQrScannerComponent ],
+      declarations: [ IngresarCodigoPopComponent ],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(BarcodeQrScannerComponent);
+    fixture = TestBed.createComponent(IngresarCodigoPopComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

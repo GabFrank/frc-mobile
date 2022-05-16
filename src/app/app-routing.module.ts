@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import { BarcodeQrScannerComponent } from './components/barcode-qr-scanner/barcode-qr-scanner.component';
 import { HomeComponent } from './pages/home/home/home.component';
 import { SalirComponent } from './pages/salir/salir.component';
 
@@ -16,10 +15,6 @@ const routes: Routes = [
   {
     path: 'salir',
     component: SalirComponent
-  },
-  {
-    path: 'scanner',
-    component: BarcodeQrScannerComponent
   },
   {
     path: 'transferencias',

@@ -4,6 +4,7 @@
       <ion-icon
         name="arrow-back"
         style="font-size: 1.5em"
+        (click)="onBack()"
       ></ion-icon>
     </ion-col>
     <ion-col size="8" style="text-align: center"
@@ -34,6 +35,164 @@
           Estado: {{ selectedTransferencia?.estado }}
         </ion-col>
       </ion-row>
+      <ion-row>
+        <ion-col size="12"> Etapa: {{ selectedTransferencia?.etapa }} </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="12">
+          Responsable: {{ selectedResponsable?.persona?.nombre | titlecase }}
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <!-- <ion-col size="2"></ion-col> -->
+        <ion-col size="12" class="ion-align-items-center">
+          <ion-button
+            *ngIf="isPreTransferenciaOrigen && selectedTransferencia?.usuarioPreparacion === null"
+            class="btn-success"
+            (click)="onAvanzarEtapa('PREPARACION_MERCADERIA')"
+            expand="block"
+          >
+            Preparar productos
+          </ion-button>
+          <ion-button
+            *ngIf="isPreparacionMercaderia && puedeEditar"
+            class="btn-success"
+            (click)="onAvanzarEtapa('PREPARACION_MERCADERIA_CONCLUIDA')"
+            expand="block"
+            [disabled]="!isAllConfirmedPreparacion"
+          >
+            Concluir
+          </ion-button>
+          <ion-button
+            *ngIf="isRecepcionEnVerificacion && puedeEditar"
+            class="btn-success"
+            (click)="onAvanzarEtapa('RECEPCION_CONCLUIDA')"
+            expand="block"
+            [disabled]="!isAllConfirmedRecepcion"
+          >
+            Concluir
+          </ion-button>
+        </ion-col>
+      </ion-row>
     </ion-grid>
   </ion-card>
+
+  <ion-list
+  *ngIf="
+    selectedTransferencia?.etapa === 'PRE_TRANSFERENCIA_ORIGEN' ||
+    selectedTransferencia?.etapa === 'PREPARACION_MERCADERIA'
+  "
+>
+  <ion-list-header> Lista de productos </ion-list-header>
+
+  <ion-item *ngFor="let item of selectedTransferencia?.transferenciaItemList" (press)="puedeEditar ? onItemPress(item) : null">
+    <ion-avatar slot="start">
+      <img [src]="item?.presentacionPreTransferencia?.imagenPrincipal" />
+    </ion-avatar>
+    <ion-label>
+      <h2>
+        {{
+          item?.presentacionPreTransferencia?.producto?.descripcion
+            | titlecase
+        }}
+      </h2>
+      <ion-row>
+        <ion-col size="10">
+          <h3>
+            Presentacion:
+            {{
+              item?.presentacionPreTransferencia?.cantidad | number: '1.0-2'
+            }}
+          </h3>
+          <h3>Cantidad: {{ item.cantidadPreTransferencia | number: '1.0-2' }} {{
+            item?.motivoModificacionPreparacion === "CANTIDAD_INCORRECTA"
+              ? " / " + item?.cantidadPreparacion
+              : null
+          }}</h3>
+          <h3>Vencimiento: {{item.vencimientoPreTransferencia | date: 'shortDate'}} {{
+            item?.motivoModificacionPreparacion === "VENCIMIENTO_INCORRECTO"
+              ? " - " + (item?.vencimientoPreparacion | date: 'shortDate')
+              : null
+          }}</h3>
+          <h3 *ngIf="item.motivoModificacionPreparacion !== null">Motivo: {{ item.motivoModificacionPreparacion}}</h3>
+          <h3 *ngIf="item.motivoRechazoPreparacion !== null">Motivo: {{ item.motivoRechazoPreparacion}}</h3>
+        </ion-col>
+        <ion-col size="2">
+          <ion-icon
+            [name]="item.motivoRechazoPreparacion === null ? 'checkmark-circle' : 'close'"
+            style="font-size: 2em"
+            [class.sin-cambios]="
+              item.cantidadPreparacion !== null &&
+              item.motivoModificacionPreparacion === null &&
+              item.motivoRechazoPreparacion === null &&
+              !isPreparacionEnCamino
+            "
+            [class.con-cambios]="
+              item.motivoModificacionPreparacion !== null &&
+              !isPreparacionEnCamino
+            "
+            [class.rechazado]="
+              item.motivoRechazoPreparacion !== null && !isPreparacionEnCamino
+            "
+          ></ion-icon>
+        </ion-col>
+      </ion-row>
+    </ion-label>
+  </ion-item>
+</ion-list>
+
+  <ion-list
+    *ngIf="
+      selectedTransferencia?.etapa === 'RECEPCION_EN_VERIFICACION' ||
+      selectedTransferencia?.etapa === 'RECEPCION_CONCLUIDA'
+    "
+  >
+    <ion-list-header> Lista de productos </ion-list-header>
+
+    <ion-item *ngFor="let item of selectedTransferencia?.transferenciaItemList" (press)="puedeEditar ? onItemPress(item) : null">
+      <ion-avatar slot="start">
+        <img [src]="item?.presentacionPreTransferencia?.imagenPrincipal" />
+      </ion-avatar>
+      <ion-label>
+        <h2>
+          {{
+            item?.presentacionPreTransferencia?.producto?.descripcion
+              | titlecase
+          }}
+        </h2>
+        <ion-row>
+          <ion-col size="10">
+            <h3>
+              Presentacion:
+              {{
+                item?.presentacionPreTransferencia?.cantidad | number: '1.0-2'
+              }}
+            </h3>
+            <h3>Cantidad: {{ item.cantidadRecepcion | number: '1.0-2' }}</h3>
+            <h3 *ngIf="item.motivoModificacionRecepcion !== null">Motivo: {{ item.motivoModificacionRecepcion}}</h3>
+            <h3 *ngIf="item.motivoRechazoRecepcion !== null">Motivo: {{ item.motivoRechazoRecepcion}}</h3>
+          </ion-col>
+          <ion-col size="2">
+            <ion-icon
+              [name]="item.motivoRechazoRecepcion === null ? 'checkmark-circle' : 'close'"
+              style="font-size: 2em"
+              [class.sin-cambios]="
+                item.cantidadRecepcion !== null &&
+                item.motivoModificacionRecepcion === null &&
+                item.motivoRechazoRecepcion === null &&
+                !isRecepcionEnCamino
+              "
+              [class.con-cambios]="
+                item.motivoModificacionRecepcion !== null &&
+                !isRecepcionEnCamino
+              "
+              [class.rechazado]="
+                item.motivoRechazoRecepcion !== null && !isRecepcionEnCamino
+              "
+            ></ion-icon>
+          </ion-col>
+        </ion-row>
+      </ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>

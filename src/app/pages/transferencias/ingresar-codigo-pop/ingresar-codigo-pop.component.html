@@ -1,0 +1,20 @@
+<ion-content style="width: 100%;">
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12">
+        <ion-item>
+          <ion-label position="floating">Ingrese el código</ion-label>
+          <ion-input type="text" class="ion-margin-top" [formControl]="codigoControl"> </ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="6">
+        <ion-button fill="clear" class="btn-danger-flat" (click)="onCancel()">Cancelar</ion-button>
+      </ion-col>
+      <ion-col size="6">
+        <ion-button fill="clear" class="btn-success-flat" (click)="onAceptar()" [disabled]="codigoControl.invalid">Aceptar</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

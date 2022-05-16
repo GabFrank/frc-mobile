@@ -1,12 +1,14 @@
+import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { InventarioService } from './pages/inventario/inventario.service';
 import { ActivatedRoute } from '@angular/router';
 import { CargandoService } from './services/cargando.service';
 import { Component, OnInit } from '@angular/core';
 import { MenuController, PopoverController } from '@ionic/angular';
-import { UntilDestroy } from '@ngneat/until-destroy';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { LoginComponent } from './dialog/login/login.component';
 import { LoginService } from './services/login.service';
 import { MainService } from './services/main.service';
+import { connectionStatusSub } from './app.module';
 
 @UntilDestroy()
 @Component({
@@ -16,6 +18,8 @@ import { MainService } from './services/main.service';
 })
 export class AppComponent implements OnInit {
 
+  statusSub;
+
   constructor(
     private menu: MenuController,
     private mainService: MainService,
@@ -23,17 +27,30 @@ export class AppComponent implements OnInit {
     private popoverController: PopoverController,
     private cargandoService: CargandoService,
     private activatedRoute: ActivatedRoute,
-    private inventarioService: InventarioService
+    private inventarioService: InventarioService,
+    private notificacionService: NotificacionService
     // platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen
   ) {
   }
 
-  openInventario(){
+  openInventario() {
     this.inventarioService.crearInventario()
   }
 
   ngOnInit(): void {
     this.showLoginPop();
+
+    this.statusSub = connectionStatusSub
+      .pipe(untilDestroyed(this))
+      .subscribe((res) => {
+        if (res) {
+          this.cargandoService.close()
+          this.notificacionService.open('Servidor conectado', TipoNotificacion.SUCCESS, 2)
+        } else if(!res) {
+          // this.notificacionService.open('No se puede acceder al servidor', TipoNotificacion.DANGER, 2)
+          // this.cargandoService.open('Conectando al servidor...', true)
+        }
+      });
   }
 
   openMenu() {
@@ -64,7 +81,7 @@ export class AppComponent implements OnInit {
     await pop.present();
   }
 
-  openTransferencias(){
+  openTransferencias() {
 
   }
 }
