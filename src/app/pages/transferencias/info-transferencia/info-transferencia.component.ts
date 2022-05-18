@@ -1,3 +1,4 @@
+import { ImagePopoverComponent } from './../../../components/image-popover/image-popover.component';
 import { ModificarItemDialogComponent } from './../modificar-item-dialog/modificar-item-dialog.component';
 import { PopOverService, PopoverSize } from './../../../services/pop-over.service';
 import { ActionMenuData } from './../../../services/menu-action.service';
@@ -65,6 +66,13 @@ export class InfoTransferenciaComponent implements OnInit {
         .subscribe(res => {
           if (res != null) {
             this.selectedTransferencia = res;
+            this.selectedTransferencia.transferenciaItemList.sort((a,b)=>{
+              if(a.id < b.id){
+                return -1;
+              } else {
+                return 1;
+              }
+            })
             console.log(res)
             this.verificarEtapa()
           }
@@ -101,20 +109,29 @@ export class InfoTransferenciaComponent implements OnInit {
       case EtapaTransferencia.PREPARACION_MERCADERIA_CONCLUIDA:
         this.selectedResponsable = this.selectedTransferencia?.usuarioPreparacion;
         this.isPreparacionMercaderiaConcluida = true;
-
+        this.actionMenuOptionsList = []
+        this.selectedTransferencia.transferenciaItemList = this.selectedTransferencia.transferenciaItemList.filter(i => i.motivoRechazoPreparacion == null)
         break;
       case EtapaTransferencia.TRANSPORTE_VERIFICACION:
         this.isTransporteVerificacion = true;
         this.selectedResponsable = this.selectedTransferencia?.usuarioTransporte;
-
+        this.actionMenuOptionsList = [
+          { texto: 'Confirmar', role: 'confirmar' },
+          { texto: 'Desconfirmar', role: 'desconfirmar' },
+          { texto: 'Rechazar', role: 'rechazar' },
+        ]
+        this.selectedTransferencia.transferenciaItemList = this.selectedTransferencia.transferenciaItemList.filter(i => i.motivoRechazoPreparacion == null)
         break;
       case EtapaTransferencia.TRANSPORTE_EN_CAMINO:
         this.selectedResponsable = this.selectedTransferencia?.usuarioTransporte;
         this.isTransporteEnCamino = true;
+        this.actionMenuOptionsList = []
+        this.selectedTransferencia.transferenciaItemList = this.selectedTransferencia.transferenciaItemList.filter(i => i.motivoRechazoPreparacion == null && i.motivoRechazoTransporte == null)
         break;
       case EtapaTransferencia.TRANSPORTE_EN_DESTINO:
         this.isTransporteEnDestino = true;
         this.selectedResponsable = this.selectedTransferencia?.usuarioRecepcion;
+        this.actionMenuOptionsList = []
         break;
       case EtapaTransferencia.RECEPCION_EN_VERIFICACION:
         this.isRecepcionEnVerificacion = true;
@@ -124,6 +141,7 @@ export class InfoTransferenciaComponent implements OnInit {
           { texto: 'Desconfirmar', role: 'desconfirmar' },
           { texto: 'Rechazar', role: 'rechazar' },
         ]
+        this.selectedTransferencia.transferenciaItemList = this.selectedTransferencia.transferenciaItemList.filter(i => i.motivoRechazoPreparacion == null && i.motivoRechazoTransporte == null)
         break;
       case EtapaTransferencia.RECEPCION_CONCLUIDA:
         this.isRecepcionConcluida = true;
@@ -173,7 +191,7 @@ export class InfoTransferenciaComponent implements OnInit {
   }
 
   onItemPress(item) {
-    this.menuActionService.presentActionSheet(this.actionMenuOptionsList).then(res => {
+    this.actionMenuOptionsList.length > 0 ? this.menuActionService.presentActionSheet(this.actionMenuOptionsList).then(res => {
       let role = res.role;
       switch (role) {
         case 'confirmar':
@@ -195,7 +213,7 @@ export class InfoTransferenciaComponent implements OnInit {
         default:
           break;
       }
-    })
+    }) : null;
   }
 
   onAvanzarEtapa(etapa) {
@@ -205,7 +223,9 @@ export class InfoTransferenciaComponent implements OnInit {
       .subscribe(res => {
         if (res) {
           this.selectedTransferencia.etapa = etapa;
-          if (etapa == EtapaTransferencia.PREPARACION_MERCADERIA) {
+          if (etapa == EtapaTransferencia.TRANSPORTE_VERIFICACION) {
+            this.selectedTransferencia.usuarioTransporte = this.mainService.usuarioActual;
+          } else if (etapa == EtapaTransferencia.PREPARACION_MERCADERIA) {
             this.selectedTransferencia.usuarioPreparacion = this.mainService.usuarioActual;
           } else if (etapa == EtapaTransferencia.PRE_TRANSFERENCIA_ORIGEN) {
             this.selectedTransferencia.estado = TransferenciaEstado.EN_ORIGEN;
@@ -213,6 +233,7 @@ export class InfoTransferenciaComponent implements OnInit {
             this.selectedTransferencia.estado = TransferenciaEstado.EN_TRANSITO;
           } else if (etapa == EtapaTransferencia.RECEPCION_EN_VERIFICACION) {
             this.selectedTransferencia.estado = TransferenciaEstado.EN_DESTINO;
+            this.selectedTransferencia.usuarioRecepcion = this.mainService.usuarioActual;
           }
           this.verificarEtapa()
         }
@@ -343,22 +364,38 @@ export class InfoTransferenciaComponent implements OnInit {
       if (res.data != null) {
         if (isCantidad) {
           if (this.selectedTransferencia?.etapa == EtapaTransferencia.PREPARACION_MERCADERIA) {
+            item.presentacionPreparacion = item.presentacionPreTransferencia;
+            item.vencimientoPreparacion = item.vencimientoPreTransferencia;
             item.cantidadPreparacion = res.data?.cantidad;
+            item.motivoModificacionPreparacion = TransferenciaItemMotivoModificacion.CANTIDAD_INCORRECTA
           } else if (this.selectedTransferencia?.etapa == EtapaTransferencia.TRANSPORTE_VERIFICACION) {
             item.cantidadTransporte = res.data?.cantidad;
+            item.vencimientoTransporte = item.vencimientoPreparacion;
+            item.presentacionTransporte = item.presentacionPreparacion
+            item.motivoModificacionTransporte = TransferenciaItemMotivoModificacion.CANTIDAD_INCORRECTA
           } else if (this.selectedTransferencia?.etapa == EtapaTransferencia.RECEPCION_EN_VERIFICACION) {
             item.cantidadRecepcion = res.data?.cantidad;
+            item.vencimientoRecepcion = item.vencimientoTransporte;
+            item.presentacionRecepcion = item.presentacionTransporte;
+            item.motivoModificacionRecepcion = TransferenciaItemMotivoModificacion.CANTIDAD_INCORRECTA
           }
-          item.motivoModificacionPreparacion = TransferenciaItemMotivoModificacion.CANTIDAD_INCORRECTA
         } else if (isVencimiento) {
           if (this.selectedTransferencia?.etapa == EtapaTransferencia.PREPARACION_MERCADERIA) {
             item.vencimientoPreparacion = res.data?.vencimiento;
+            item.presentacionPreparacion = item.presentacionPreTransferencia;
+            item.cantidadPreparacion = item.cantidadPreTransferencia;
+            item.motivoModificacionPreparacion = TransferenciaItemMotivoModificacion.VENCIMIENTO_INCORRECTO
           } else if (this.selectedTransferencia?.etapa == EtapaTransferencia.TRANSPORTE_VERIFICACION) {
             item.vencimientoTransporte = res.data?.vencimiento;
+            item.presentacionTransporte = item.presentacionPreparacion;
+            item.cantidadTransporte = item.cantidadPreparacion;
+            item.motivoModificacionTransporte = TransferenciaItemMotivoModificacion.VENCIMIENTO_INCORRECTO
           } else if (this.selectedTransferencia?.etapa == EtapaTransferencia.RECEPCION_EN_VERIFICACION) {
             item.vencimientoRecepcion = res.data?.vencimiento;
+            item.presentacionRecepcion = item.presentacionTransporte;
+            item.cantidadRecepcion = item.cantidadTransporte;
+            item.motivoModificacionRecepcion = TransferenciaItemMotivoModificacion.VENCIMIENTO_INCORRECTO
           }
-          item.motivoModificacionPreparacion = TransferenciaItemMotivoModificacion.VENCIMIENTO_INCORRECTO
         }
         this.transferenciaService.onSaveTransferenciaItem(item.toInput())
           .pipe(untilDestroyed(this))
@@ -371,6 +408,12 @@ export class InfoTransferenciaComponent implements OnInit {
       }
 
     })
+  }
+
+  onAvatarClick(image){
+    this.popoverService.open(ImagePopoverComponent, {
+      image
+    }, PopoverSize.MD)
   }
 
 }

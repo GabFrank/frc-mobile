@@ -1,3 +1,4 @@
+import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import {
   HttpClient,
   HttpErrorResponse,
@@ -32,7 +33,8 @@ export class LoginService {
   constructor(
     private http: HttpClient,
     private usuarioService: UsuarioService,
-    private mainService: MainService
+    private mainService: MainService,
+    private notificacionService: NotificacionService
   ) {}
 
   isAuthenticated(): Observable<Usuario> {
@@ -102,6 +104,7 @@ export class LoginService {
               error: error,
             };
             obs.next(error);
+            this.notificacionService.open(error['message'], TipoNotificacion.DANGER, 10)
           }
         );
     });

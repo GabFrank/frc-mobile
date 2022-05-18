@@ -25,15 +25,23 @@ export class NotificacionService {
   }
 
   openGuardadoConExito(){
-    this.open('Guardado con éxito', TipoNotificacion.SUCCESS, 2)
+    this.open('Guardado con éxito', TipoNotificacion.SUCCESS, 1)
   }
 
-  openAlgoSalioMal(){
-    this.open('Ups!! Algo salió mal', TipoNotificacion.DANGER, 2)
+  openAlgoSalioMal(err?){
+    this.open('Ups!! Algo salió mal: '+err, TipoNotificacion.DANGER, 2)
+  }
+
+  openItemNoEncontrado(){
+    this.open('Item no encontrado', TipoNotificacion.WARN, 2)
   }
 
   openEliminadoConExito(){
     this.open('Eliminado con éxito', TipoNotificacion.SUCCESS, 2)
+  }
+
+  toast(text){
+    this.open(text, TipoNotificacion.NEUTRAL, 2)
   }
 
 

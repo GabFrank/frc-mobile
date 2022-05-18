@@ -1,3 +1,4 @@
+import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { CargandoService } from './../../services/cargando.service';
 import { Usuario } from './../../domains/personas/usuario.model';
 import { PopoverController } from '@ionic/angular';
@@ -21,10 +22,12 @@ export class LoginComponent implements OnInit {
   error = null;
   constructor(private loginService: LoginService,
     private popoverController: PopoverController,
-    private cargandoService: CargandoService) { }
+    private cargandoService: CargandoService,
+    private notificacionService: NotificacionService
+    ) { }
 
   async ngOnInit() {
-    this.cargandoService.open("Inicializando...")
+    this.cargandoService.open("Inicializando...", true)
     this.formGroup = new FormGroup({
       'usuario': this.usuarioControl,
       'password': this.passwordControl
@@ -53,6 +56,7 @@ export class LoginComponent implements OnInit {
           this.onSelectUsuarioAndDismiss(res.usuario)
         } else {
           this.error = res.error['message'];
+          this.notificacionService.open(this.error, TipoNotificacion.DANGER, 10)
         }
       })
   }

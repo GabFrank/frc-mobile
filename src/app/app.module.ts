@@ -27,7 +27,6 @@ import { NgxCurrencyModule } from 'ngx-currency';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { BehaviorSubject } from 'rxjs';
 import { WebSocketLink } from "@apollo/client/link/ws";
-import { NgxScannerQrcodeModule } from 'ngx-scanner-qrcode';
 
 const uri = `http://${serverAdress.serverIp}:${serverAdress.serverPort}`;
 const wUri = `ws://${serverAdress.serverIp}:${serverAdress.serverPort}/subscriptions`;
@@ -47,6 +46,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 
 const wsClient = new SubscriptionClient(wUri, {
   reconnect: true,
+  inactivityTimeout: 5
 });
 
 export const connectionStatusSub = new BehaviorSubject<any>(null);
@@ -90,8 +90,7 @@ export class HammerConfig extends HammerGestureConfig {
     InventarioModule,
     TransferenciasModule,
     HammerModule,
-    NgxCurrencyModule,
-    NgxScannerQrcodeModule
+    NgxCurrencyModule
     ],
   providers: [
     {

@@ -19,6 +19,10 @@ const routes: Routes = [
   {
     path: 'transferencias',
     loadChildren: () => import('./pages/transferencias/transferencias.module').then(m => m.TransferenciasModule)
+  },
+  {
+    path: 'splash',
+    loadChildren: () => import('./splash/splash.module').then( m => m.SplashPageModule)
   }
 ];
 @NgModule({

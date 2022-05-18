@@ -1,6 +1,6 @@
 import { GetTransferenciasPorUsuarioGQL } from './graphql/getTransferenciasPorUsuario';
 import { transferenciasPorUsuarioQuery } from './graphql/graphql-query';
-import { NotificacionService } from 'src/app/services/notificacion.service';
+import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { GenericCrudService } from './../../generic/generic-crud.service';
 import { Injectable } from '@angular/core';
@@ -61,7 +61,7 @@ export class TransferenciaService {
   }
 
   onDeleteTransferenciaItem(id): Observable<boolean> {
-    return this.genericCrudService.onDelete(this.deleteTransferenciaItem, id, 'Realmente  desea eliminar este item')
+    return this.genericCrudService.onDelete(this.deleteTransferenciaItem, id, 'Realmente desea eliminar este item')
   }
 
   onGetTrasnferenciasPorUsuario(id): Observable<Transferencia[]> {
@@ -115,7 +115,7 @@ export class TransferenciaService {
     }
     return new Observable(obs => {
       this.dialogoService.open('Atención, revise los datos antes de proceder.', texto).then(res => {
-        if (res) {
+        if (res.role=='aceptar') {
           this.prepararTransferencia.mutate({
             id: transferencia.id,
             etapa,

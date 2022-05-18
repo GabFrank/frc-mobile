@@ -7,20 +7,30 @@ import { LoadingController } from '@ionic/angular';
 export class CargandoService {
 
   loading: HTMLIonLoadingElement;
+  counter = 0;
 
   constructor(public loadingController: LoadingController) { }
 
   async open(texto?: string, dissmis?: boolean): Promise<HTMLIonLoadingElement> {
     if (this.loading != null) {
-      this.loading.dismiss()
+      await this.loading.dismiss().then(async ()=>{
+        this.loading = await this.loadingController.create({
+          cssClass: 'my-custom-class',
+          message: texto,
+          backdropDismiss: true
+        });
+        await this.loading.present();
+      })
+    } else {
+      this.loading = await this.loadingController.create({
+        cssClass: 'my-custom-class',
+        message: texto,
+        backdropDismiss: true
+      });
+      await this.loading.present();
     }
-    this.loading = await this.loadingController.create({
-      cssClass: 'my-custom-class',
-      message: texto,
-      backdropDismiss: dissmis
-    });
-    await this.loading.present();
-    return this.loading;
+
+    return await this.loading;
   }
 
   async close() {

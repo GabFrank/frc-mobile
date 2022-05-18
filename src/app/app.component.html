@@ -1,8 +1,15 @@
 <ion-app>
   <ion-menu side="start" content-id="main-content">
     <ion-header>
-      <ion-toolbar translucent>
-        <ion-title>Menu</ion-title>
+      <ion-toolbar translucent [class.online]="online" [class.offline]="!online">
+        <ion-row class="ion-align-items-center">
+          <ion-col size="6">
+            <ion-title>Menu</ion-title>
+          </ion-col>
+          <ion-col size="6" [class.online]="online" [class.offline]="!online">
+            {{online ? 'Online': 'Offline'}}
+          </ion-col>
+        </ion-row>
       </ion-toolbar>
     </ion-header>
     <ion-content>
@@ -63,7 +70,7 @@
         </ion-buttons>
         <ion-buttons slot="primary">
           <ion-button>
-            <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical"></ion-icon>
+            <ion-icon [hidden]="true" slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical"></ion-icon>
           </ion-button>
         </ion-buttons>
 

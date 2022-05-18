@@ -23,6 +23,7 @@ import { IonicModule } from '@ionic/angular';
     ReactiveFormsModule,
     FormsModule,
   ],
-  exports: [ListTransferenciasComponent, TransferenciaComponent]
+  exports: [ListTransferenciasComponent, TransferenciaComponent],
+
 })
 export class TransferenciasModule { }
