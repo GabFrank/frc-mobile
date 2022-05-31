@@ -1,3 +1,4 @@
+import { NuevoInventarioComponent } from './nuevo-inventario/nuevo-inventario.component';
 import { FinalizarInventarioResumenComponent } from './finalizar-inventario-resumen/finalizar-inventario-resumen.component';
 import { EditInventarioItemDialogComponent } from './edit-inventario-item-dialog/edit-inventario-item-dialog.component';
 import { SelectZonaDialogComponent } from './select-zona-dialog/select-zona-dialog.component';
@@ -13,7 +14,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 
 @NgModule({
-  declarations: [InventarioComponent, EditInventarioComponent, ListInventarioComponent, SelectZonaDialogComponent, EditInventarioItemDialogComponent, FinalizarInventarioResumenComponent],
+  declarations: [InventarioComponent, EditInventarioComponent, ListInventarioComponent, SelectZonaDialogComponent, EditInventarioItemDialogComponent, FinalizarInventarioResumenComponent, NuevoInventarioComponent],
   imports: [
     CommonModule,
     InventarioRoutingModule,

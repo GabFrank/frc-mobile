@@ -1,3 +1,4 @@
+import { Router } from '@angular/router';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { CargandoService } from './../../services/cargando.service';
 import { Usuario } from './../../domains/personas/usuario.model';
@@ -24,7 +25,8 @@ export class LoginComponent implements OnInit {
   constructor(private loginService: LoginService,
     private popoverController: PopoverController,
     private cargandoService: CargandoService,
-    private notificacionService: NotificacionService
+    private notificacionService: NotificacionService,
+    private router: Router
     ) { }
 
   async ngOnInit() {
@@ -67,6 +69,11 @@ export class LoginComponent implements OnInit {
     setTimeout(() => {
       this.popoverController.dismiss()
     }, 2000);
+  }
+
+  onSolicitarNuevoUsuario(){
+    this.router.navigate(['/pre-registro/pre-registro'])
+    this.popoverController.dismiss(null)
   }
 
 }

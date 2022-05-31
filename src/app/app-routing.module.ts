@@ -17,6 +17,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/producto/producto.module').then(m => m.ProductoModule)
   },
   {
+    path: 'pre-registro',
+    loadChildren: () => import('./pages/funcionario/funcionario.module').then(m => m.FuncionarioModule)
+  },
+  {
     path: 'salir',
     component: SalirComponent
   },

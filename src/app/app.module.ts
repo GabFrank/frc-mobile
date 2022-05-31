@@ -1,3 +1,4 @@
+import { FuncionarioModule } from './pages/funcionario/funcionario.module';
 import { ProductoModule } from './pages/producto/producto.module';
 import { ComponentsModule } from './components/components.module';
 import { TransferenciasModule } from './pages/transferencias/transferencias.module';
@@ -87,6 +88,7 @@ export class HammerConfig extends HammerGestureConfig {
     ProductoModule,
     HammerModule,
     NgxCurrencyModule,
+    FuncionarioModule
     ],
   providers: [
     {

@@ -16,7 +16,7 @@
         </ion-row>
       </ion-toolbar>
     </ion-header>
-    <ion-content>
+    <ion-content *ngIf="loginService?.usuarioActual?.id !== null">
       <ion-list>
         <ion-item [hidden]="loginService.usuarioActual === null">
           <ion-label>{{
@@ -79,7 +79,7 @@
           <ion-menu-button auto-hide="false"></ion-menu-button>
         </ion-buttons>
         <ion-buttons slot="primary">
-          <ion-button>
+          <ion-button >
             <ion-icon
               [hidden]="true"
               slot="icon-only"

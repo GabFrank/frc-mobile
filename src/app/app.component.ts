@@ -31,8 +31,8 @@ export class AppComponent implements OnInit {
 
   constructor(
     private menu: MenuController,
-    private mainService: MainService,
-    private loginService: LoginService,
+    public mainService: MainService,
+    public loginService: LoginService,
     private popoverController: PopoverController,
     private cargandoService: CargandoService,
     private activatedRoute: ActivatedRoute,
@@ -70,7 +70,7 @@ export class AppComponent implements OnInit {
   }
 
   openMenu() {
-    this.menu.open();
+    // this.menu.open();
   }
 
   closeMenu() {

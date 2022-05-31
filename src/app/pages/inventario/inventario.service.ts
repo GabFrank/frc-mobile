@@ -18,6 +18,7 @@ import { SaveInventarioProductoGQL } from './graphql/saveInventarioProducto';
 import { SaveInventarioProductoItemGQL } from './graphql/saveInventarioProductoItem';
 import { untilDestroyed } from '@ngneat/until-destroy';
 import { GetInventarioPorUsuarioGQL } from './graphql/getInventarioPorUsuario';
+import { GetInventarioAbiertoPorSucursalGQL } from './graphql/getInventarioAbiertoPorSucursal';
 
 @UntilDestroy()
 @Injectable({
@@ -40,7 +41,8 @@ export class InventarioService {
     private inventarioPorUsuario: GetInventarioPorUsuarioGQL,
     private mainService: MainService,
     private finalizarInventario: FinalizarInventarioGQL,
-    private cancelarInventrio: CancelarInventarioGQL
+    private cancelarInventrio: CancelarInventarioGQL,
+    private inventarioAbiertoPorSucursal: GetInventarioAbiertoPorSucursalGQL
 
   ) { }
 
@@ -50,6 +52,10 @@ export class InventarioService {
 
   onGetTrasferenciasPorFecha(inicio, fin) {
     return this.genericCrudService.onGetByFecha(this.getInventariosPorFecha, inicio, fin);
+  }
+
+  onGetInventarioAbiertoPorSucursal(id): Observable<Inventario[]> {
+    return this.genericCrudService.onGetById(this.inventarioAbiertoPorSucursal, id);
   }
 
   onGetInventario(id): Observable<Inventario> {

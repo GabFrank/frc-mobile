@@ -1,3 +1,5 @@
+import { NuevoInventarioComponent } from './nuevo-inventario/nuevo-inventario.component';
+import { ModalService } from './../../services/modal.service';
 import { descodificarQr, QrData } from './../../generic/utils/qrUtils';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
@@ -29,7 +31,8 @@ export class InventarioComponent implements OnInit {
     private route: ActivatedRoute,
     private activatedRoute: ActivatedRoute,
     private barcodeScanner: BarcodeScanner,
-    private notificacionService: NotificacionService
+    private notificacionService: NotificacionService,
+    private modalService: ModalService
   ) { }
 
   async ngOnInit() {
@@ -65,6 +68,15 @@ export class InventarioComponent implements OnInit {
     }).catch(err => {
       this.notificacionService.openAlgoSalioMal()
     });
+  }
+
+  onNuevoInventario(){
+    this.modalService.openModal(NuevoInventarioComponent).then(res => {
+      if(res.data!=null){
+        alert(res.data)
+        // this.router.navigate(['list/info', res.data.id], { relativeTo: this.route });
+      }
+    })
   }
 
 }

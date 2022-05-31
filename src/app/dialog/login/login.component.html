@@ -32,6 +32,16 @@
       {{ error }}
     </div>
   </ion-item>
+
+  <ion-item>
+    <ion-row style="width: 100%;">
+      <ion-col size="12">
+        <ion-button class="btn-success-flat" (click)="onSolicitarNuevoUsuario()" expand="block" fill="clear">
+          Solicitar usuario
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-item>
 </ion-list>
 <ion-grid [hidden]="selectedUsuario === null">
   <ion-row>
@@ -44,3 +54,4 @@
     {{ selectedUsuario?.persona?.nombre | uppercase }}
   </ion-row>
 </ion-grid>
+

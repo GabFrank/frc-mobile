@@ -444,3 +444,55 @@ export const cancelarInventarioQuery = gql`
     cancelarInventario(id: $id)
   }
 `;
+
+export const inverntarioAbiertoPorSucursalQuery = gql`
+  query ($id: ID!) {
+    data: inventarioAbiertoPorSucursal(sucId: $id) {
+      id
+      idOrigen
+      idCentral
+      sucursal {
+        id
+        nombre
+      }
+      fechaInicio
+      fechaFin
+      abierto
+      tipo
+      estado
+      usuario {
+        persona {
+          nombre
+        }
+      }
+      observacion
+      inventarioProductoList {
+        id
+        concluido
+        producto {
+          id
+          descripcion
+        }
+        zona {
+          id
+          sector {
+            id
+            descripcion
+          }
+          descripcion
+        }
+        inventarioProductoItemList {
+          id
+          presentacion {
+            id
+            cantidad
+            imagenPrincipal
+          }
+          cantidad
+          vencimiento
+          creadoEn
+        }
+      }
+    }
+  }
+`;

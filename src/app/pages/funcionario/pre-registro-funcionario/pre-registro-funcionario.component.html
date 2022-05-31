@@ -1,0 +1,153 @@
+<ion-content>
+  <ion-row>
+    <ion-col size="12" class="center">
+      Formulario de pre registro
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Nombre completo</ion-label>
+        <ion-input type="text" [formControl]="nombreControl"> </ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Apodo</ion-label>
+        <ion-input type="text" [formControl]="apodo"> </ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Documento (C.I.)</ion-label>
+        <ion-input type="text" [formControl]="documento"> </ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Teléfono personal</ion-label>
+        <ion-input type="text" [formControl]="telefonoPersonal"> </ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Teléfono de emergencia</ion-label>
+        <ion-input type="text" [formControl]="telefonoEmergencia"> </ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Nombre de contacto de emergencia</ion-label>
+        <ion-input type="text" [formControl]="nombreContactoEmergencia"> </ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Email</ion-label>
+        <ion-input class="email" type="email" [formControl]="email"> </ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Ciudad</ion-label>
+        <ion-input type="text" [formControl]="ciudad"> </ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Dirección</ion-label>
+        <ion-input type="text" [formControl]="direccion"> </ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Sucursal</ion-label>
+        <ion-input type="text" [formControl]="sucursal"> </ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label>Fecha de nacimiento</ion-label>
+        <ion-input type="date" [formControl]="fechaNacimiento"> </ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label>Fecha de ingreso</ion-label>
+        <ion-input type="date" [formControl]="fechaIngreso"> </ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Habilidades</ion-label>
+        <!-- <ion-input type="text" [formControl]="nombreControl"> </ion-input> -->
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label >Posee registro de conducir?</ion-label>
+        <ion-toggle class="button" [formControl]="registroConducir"></ion-toggle>
+    </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Estudios cursados</ion-label>
+        <!-- <ion-input type="text" [formControl]="nombreControl"> </ion-input> -->
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Observación</ion-label>
+        <ion-textarea [formControl]="observacion"></ion-textarea>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="6" class="center">
+      <ion-button fill="clear" class="btn-danger-flat" (click)="onCancel()"
+        >Cancelar</ion-button
+      >
+    </ion-col>
+    <ion-col size="6" class="center">
+      <ion-button
+        fill="clear"
+        class="btn-success-flat"
+        (click)="onAceptar()"
+        [disabled]="formGroup.invalid"
+        >Aceptar</ion-button
+      >
+    </ion-col>
+  </ion-row>
+  <br>
+  <br>
+</ion-content>
