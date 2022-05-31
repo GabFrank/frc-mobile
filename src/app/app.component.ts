@@ -47,22 +47,7 @@ export class AppComponent implements OnInit {
     }
   }
 
-  barcodeScanner(){
-  //   this.zbarPlugin.scan(this.optionZbar)
-  //  .then(respone => {
-  //     console.log(respone);
-  //     this.scannedOutput = respone;
-  //  })
-  //  .catch(error => {
-  //     alert(error);
-  //  });
-
-  }
-
   openInventario() {
-    this.inventarioService.crearInventario()
-
-
   }
 
   ngOnInit(): void {
@@ -81,8 +66,6 @@ export class AppComponent implements OnInit {
           this.cargandoService.open('Conectando al servidor..', true)
         }
       });
-
-      this.barcodeScanner()
 
   }
 

@@ -1,3 +1,6 @@
+import { descodificarQr, QrData } from './../../generic/utils/qrUtils';
+import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { DialogoService } from './../../services/dialogo.service';
 import { InventarioService } from './inventario.service';
@@ -5,38 +8,63 @@ import { CargandoService } from './../../services/cargando.service';
 import { ScannerService } from '../../components/qr-scanner-dialog/scanner.service';
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { until } from 'protractor';
+import { Location } from '@angular/common';
+import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
 
 @UntilDestroy()
 @Component({
   selector: 'app-inventario',
   templateUrl: './inventario.component.html',
   styleUrls: ['./inventario.component.scss'],
+  providers: [BarcodeScanner]
 })
 export class InventarioComponent implements OnInit {
 
-  codigo = '858354309'
-  key; //un numero random utilizado para iniciar el inventario, si el inventario no es iniciado el router va a devolver ese numero y se cambiara para que proximamente al iniciar inventario este vuelva a llamar on init
-  constructor(private scannerService: ScannerService,
+
+ constructor(private scannerService: ScannerService,
     private cargandoService: CargandoService,
     private inventarioService: InventarioService,
     private dialog: DialogoService,
     private router: Router,
-    private activatedRoute: ActivatedRoute
+    private route: ActivatedRoute,
+    private activatedRoute: ActivatedRoute,
+    private barcodeScanner: BarcodeScanner,
+    private notificacionService: NotificacionService
   ) { }
 
   async ngOnInit() {
-    // this.scannerService.scanBarcode(BarcodeFormat.QR_CODE)
-    //   .pipe(untilDestroyed(this))
-    //   .subscribe(res => {
-    //     if (res.text != null) {
-    //       this.cargandoService.open('Creando sesion de inventario con código ' + res.text)
-    //     }
-    //   })
 
+  }
 
-
-
+  async onScanQr() {
+    this.cargandoService.open('Abriendo camara...')
+    setTimeout(() => {
+      this.cargandoService.close()
+    }, 1000);
+    this.barcodeScanner.scan().then(barcodeData => {
+      this.notificacionService.open('Escaneado con éxito!', TipoNotificacion.SUCCESS, 1)
+      let codigo: string = barcodeData.text;
+      let qrData: QrData = descodificarQr(codigo);
+      if (qrData.tipoEntidad == TipoEntidad.INVENTARIO && qrData.sucursalId != null && qrData.idCentral != null) {
+        this.inventarioService.onGetInventario(qrData.idCentral)
+          .pipe(untilDestroyed(this))
+          .subscribe(res => {
+            if (res != null && res.sucursal.id == qrData.sucursalId) {
+              this.dialog.open('Atención!!', `Desea abrir el inventario de la sucursal ${res.sucursal.nombre}`, true).then(res2 => {
+                if(res2.role=='aceptar'){
+                  this.router.navigate(['list/info', res.id], { relativeTo: this.route });
+                }
+              })
+            } else {
+              this.notificacionService.openItemNoEncontrado()
+            }
+          })
+      } else {
+        this.notificacionService.openItemNoEncontrado()
+      }
+    }).catch(err => {
+      this.notificacionService.openAlgoSalioMal()
+    });
   }
 
 }

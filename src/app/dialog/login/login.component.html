@@ -6,7 +6,17 @@
 
   <ion-item>
     <ion-label position="floating">Contraseña</ion-label>
-    <ion-input [formControl]="passwordControl" type="password"></ion-input>
+    <ion-input
+      [formControl]="passwordControl"
+      [type]="showPassword ? 'text' : 'password'"
+      (keyup.enter)="onLogin()"
+    ></ion-input>
+    <ion-icon
+      style="padding-top: 5px"
+      (click)="showPassword = !showPassword"
+      [name]="showPassword ? 'eye-off' : 'eye'"
+      slot="end"
+    ></ion-icon>
   </ion-item>
 
   <ion-button
@@ -17,8 +27,10 @@
     >Entrar</ion-button
   >
 
-  <ion-item [hidden]="error===null">
-    <div style="color: red; font-size: 0.8em; width: 100%; text-align: center;">{{ error }}</div>
+  <ion-item [hidden]="error === null">
+    <div style="color: red; font-size: 0.8em; width: 100%; text-align: center">
+      {{ error }}
+    </div>
   </ion-item>
 </ion-list>
 <ion-grid [hidden]="selectedUsuario === null">

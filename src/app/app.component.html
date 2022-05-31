@@ -1,33 +1,43 @@
 <ion-app>
   <ion-menu side="start" content-id="main-content">
     <ion-header>
-      <ion-toolbar translucent [class.online]="online" [class.offline]="!online">
+      <ion-toolbar
+        translucent
+        [class.online]="online"
+        [class.offline]="!online"
+      >
         <ion-row class="ion-align-items-center">
           <ion-col size="6">
             <ion-title>Menu</ion-title>
           </ion-col>
           <ion-col size="6" [class.online]="online" [class.offline]="!online">
-            {{online ? 'Online': 'Offline'}}
+            {{ online ? 'Online' : 'Offline' }}
           </ion-col>
         </ion-row>
       </ion-toolbar>
     </ion-header>
     <ion-content>
       <ion-list>
-        <ion-item [hidden]="loginService.usuarioActual===null">
-          <ion-label>{{loginService.usuarioActual?.persona?.nombre | uppercase}}</ion-label>
+        <ion-item [hidden]="loginService.usuarioActual === null">
+          <ion-label>{{
+            loginService.usuarioActual?.persona?.nombre | uppercase
+          }}</ion-label>
         </ion-item>
-        <!-- <ion-item (click)="openInventario(); closeMenu()">
+        <ion-item [routerLink]="['/producto']" (click)="closeMenu()">
+          <ion-icon name="clipboard" slot="start"></ion-icon>
+          <ion-label>Producto</ion-label>
+        </ion-item>
+        <ion-item [routerLink]="['/inventario']" (click)="closeMenu()">
           <ion-icon name="clipboard" slot="start"></ion-icon>
           <ion-label>Inventario</ion-label>
         </ion-item>
-        <ion-item [routerLink]="['/scanner']" (click)="closeMenu()">
+        <!--<ion-item [routerLink]="['/scanner']" (click)="closeMenu()">
           <ion-icon name="clipboard" slot="start"></ion-icon>
           <ion-label>Scanner</ion-label>
         </ion-item> -->
         <ion-item [routerLink]="['/transferencias']" (click)="closeMenu()">
           <ion-icon name="clipboard" slot="start"></ion-icon>
-          <ion-label>Transferencias</ion-label>
+          <ion-label>Transferencia</ion-label>
         </ion-item>
         <ion-item (click)="onSalir()">
           <ion-icon name="exit" slot="start"></ion-icon>
@@ -70,11 +80,16 @@
         </ion-buttons>
         <ion-buttons slot="primary">
           <ion-button>
-            <ion-icon [hidden]="true" slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical"></ion-icon>
+            <ion-icon
+              [hidden]="true"
+              slot="icon-only"
+              ios="ellipsis-horizontal"
+              md="ellipsis-vertical"
+            ></ion-icon>
           </ion-button>
         </ion-buttons>
 
-        <ion-title style="text-align: center;">BODEGA FRANCO</ion-title>
+        <ion-title style="text-align: center">BODEGA FRANCO</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">
@@ -82,4 +97,3 @@
     </ion-content>
   </div>
 </ion-app>
-

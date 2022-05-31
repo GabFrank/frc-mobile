@@ -1,19 +1,25 @@
-import { InventarioProductoItemComponent } from './producto-info/inventario-producto-item/inventario-producto-item.component';
-import { ProductoInfoComponent } from './producto-info/producto-info.component';
-import { SessionInfoComponent } from './session-info/session-info.component';
+import { FinalizarInventarioResumenComponent } from './finalizar-inventario-resumen/finalizar-inventario-resumen.component';
+import { EditInventarioItemDialogComponent } from './edit-inventario-item-dialog/edit-inventario-item-dialog.component';
+import { SelectZonaDialogComponent } from './select-zona-dialog/select-zona-dialog.component';
+import { ListInventarioComponent } from './list-inventario/list-inventario.component';
+import { EditInventarioComponent } from './edit-inventario/edit-inventario.component';
 import { InventarioComponent } from './inventario.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { InventarioRoutingModule } from './inventario-routing.module';
 import { IonicModule } from '@ionic/angular';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 
 @NgModule({
-  declarations: [InventarioComponent, SessionInfoComponent, ProductoInfoComponent, InventarioProductoItemComponent],
+  declarations: [InventarioComponent, EditInventarioComponent, ListInventarioComponent, SelectZonaDialogComponent, EditInventarioItemDialogComponent, FinalizarInventarioResumenComponent],
   imports: [
     CommonModule,
     InventarioRoutingModule,
-    IonicModule  ]
+    IonicModule,
+    ReactiveFormsModule,
+    FormsModule,
+  ]
 })
 export class InventarioModule { }

@@ -1,4 +1,6 @@
 import { Usuario } from "../personas/usuario.model";
+import { Codigo } from "./codigo.model";
+import { Presentacion } from "./presentacion.model";
 
 export class Producto {
   id: number;
@@ -22,13 +24,38 @@ export class Producto {
   imagenPrincipal?: string;
   tipoConservacion?: string;
   // subfamilia?: Subfamilia;
-  // codigos?: [Codigo]
+  codigos?: [Codigo]
   // sucursales?: [ExistenciaCostoPorSucursal]
   // productoUltimasCompras?: [ExistenciaCostoPorSucursal]
-  // presentaciones: Presentacion[]
-  // stockPorProducto?: number;
-  // codigoPrincipal?: string
+  presentaciones: Presentacion[]
+  stockPorProducto?: number;
+  codigoPrincipal?: string
   // costo: CostoPorProducto
   isEnvase: boolean;
   envase: Producto
+}
+
+export class ProductoInput {
+  id?: number;
+  descripcion: string;
+  descripcionFactura: string;
+  iva: number;
+  unidadPorCaja: number;
+  unidadPorCajaSecundaria: number;
+  balanza: boolean;
+  stock: boolean;
+  garantia: boolean;
+  tiempoGarantia: boolean;
+  cambiable: boolean;
+  ingredientes: boolean;
+  combo: boolean;
+  promocion: boolean;
+  vencimiento: boolean;
+  diasVencimiento: number;
+  usuarioId?: number;
+  imagenes?: string;
+  tipoConservacion: string;
+  subfamiliaId: number;
+  isEnvase: boolean;
+  envaseId: number;
 }

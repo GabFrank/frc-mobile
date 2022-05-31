@@ -2,11 +2,6 @@
   --background: #f44336 !important;
 }
 
-:root {
-  --ion-safe-area-top: 20px;
-  --ion-safe-area-bottom: 22px;
-}
-
 .contact-popover .popover-content{ width: 320px; }
 
 .online {
@@ -15,4 +10,13 @@
 
 .offline {
   --background: #f44336;
+}
+
+.title {
+  text-align: start;
+  color: #f57c00;
+}
+
+.item {
+  text-align: start;
 }

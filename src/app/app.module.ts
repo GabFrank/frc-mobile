@@ -1,7 +1,8 @@
+import { ProductoModule } from './pages/producto/producto.module';
 import { ComponentsModule } from './components/components.module';
 import { TransferenciasModule } from './pages/transferencias/transferencias.module';
 import { InventarioModule } from './pages/inventario/inventario.module';
-import { APP_INITIALIZER, Injectable, NgModule } from '@angular/core';
+import { APP_INITIALIZER, Injectable, LOCALE_ID, NgModule } from '@angular/core';
 import { BrowserModule, HammerGestureConfig, HammerModule, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
@@ -27,21 +28,18 @@ import { NgxCurrencyModule } from 'ngx-currency';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { BehaviorSubject } from 'rxjs';
 import { WebSocketLink } from "@apollo/client/link/ws";
+import localePY from "@angular/common/locales/es-PY";
+import {
+  registerLocaleData,
+} from "@angular/common";
+registerLocaleData(localePY);
+
+
 
 const uri = `http://${serverAdress.serverIp}:${serverAdress.serverPort}`;
 const wUri = `ws://${serverAdress.serverIp}:${serverAdress.serverPort}/subscriptions`;
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
-  console.log(graphQLErrors, networkError);
-  // if (graphQLErrors)
-  //   graphQLErrors.map(({ message, locations, path }) =>
-  //     errorObs.next({message, locations, path})
-  //     console.log(
-  //       `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
-  //     ),
-  //   );
-
-  // if (networkError) console.log(`[Network error]: ${networkError}`);
 });
 
 const wsClient = new SubscriptionClient(wUri, {
@@ -53,17 +51,14 @@ export const connectionStatusSub = new BehaviorSubject<any>(null);
 
 wsClient.onConnected(() => {
   connectionStatusSub.next(true);
-  console.log("websocket connected!!");
 });
 wsClient.onDisconnected(() => {
   if (connectionStatusSub.value != false) {
     connectionStatusSub.next(false);
   }
-  console.log("websocket disconnected!!");
 });
 wsClient.onReconnected(() => {
   connectionStatusSub.next(true);
-  console.log("websocket reconnected!!");
 });
 
 @Injectable()
@@ -89,14 +84,16 @@ export class HammerConfig extends HammerGestureConfig {
     FormsModule,
     InventarioModule,
     TransferenciasModule,
+    ProductoModule,
     HammerModule,
-    NgxCurrencyModule
+    NgxCurrencyModule,
     ],
   providers: [
     {
       provide: HAMMER_GESTURE_CONFIG,
       useClass: HammerConfig
     },
+    { provide: LOCALE_ID, useValue: "es-PY" },
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     {
       provide: APOLLO_OPTIONS,

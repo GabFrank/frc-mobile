@@ -1,0 +1,57 @@
+<ion-content>
+  <ion-row>
+    <ion-col size="12" class="center">
+      <h3>{{ data?.producto?.descripcion | titlecase }}</h3>
+      <p>Presentación: {{ data?.presentacion?.cantidad | number: '1.0-2' }}</p>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item class="ion-text-right">
+        <ion-label>Cantidad</ion-label>
+        <!-- <ion-input [type]="producto?.isPesable ? 'decimal' : 'numeric'" [formControl]="cantidadControl"> </ion-input> -->
+        <ion-input type="number" [formControl]="cantidadControl"> </ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label>Vencimiento</ion-label>
+        <ion-input
+          type="date"
+          [formControl]="vencimientoControl"
+          value="{{ vencimientoControl.value | date: 'yyyy-MM-dd' }}"
+        ></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label>Estado</ion-label>
+        <ion-select interface="popover" [formControl]="estadoControl">
+          <ion-select-option *ngFor="let estado of estadosList" [value]="estado"
+            >{{ estado }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="6" class="center">
+      <ion-button fill="clear" class="btn-danger-flat" (click)="onCancel()"
+        >Cancelar</ion-button
+      >
+    </ion-col>
+    <ion-col size="6" class="center">
+      <ion-button
+        fill="clear"
+        class="btn-success-flat"
+        (click)="onAceptar()"
+        [disabled]="formGroup.invalid"
+        >Aceptar</ion-button
+      >
+    </ion-col>
+  </ion-row>
+</ion-content>

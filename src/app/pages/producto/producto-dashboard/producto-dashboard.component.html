@@ -1,0 +1,41 @@
+<ion-content>
+  <ion-card class="card" (click)="onBuscarProducto()">
+    <ion-card-header style="color: white">
+      <ion-card-title>Buscar producto</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content style="color: white">
+      Buscar producto por nombre e código de barra
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="card" [routerLink]="['new']">
+    <ion-card-header style="color: white">
+      <ion-card-title>Nuevo producto</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content style="color: white">
+      Comenzar un nuevo Inventario
+    </ion-card-content>
+  </ion-card>
+
+  <!-- <ion-card class="card" (click)="onScanQr()">
+    <ion-card-header style="color: white">
+      <ion-card-title>Escanear QR</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content style="color: white">
+      Solicite al encargado el código QR del inventario para unirte
+    </ion-card-content>
+  </ion-card> -->
+
+  <!-- <ion-card class="card" (click)="ingresarCodigo()">
+    <ion-card-header style="color: white">
+      <ion-card-title>Ingresar código</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content style="color: white">
+      Solicite al encargado el código del inventario
+    </ion-card-content>
+  </ion-card> -->
+</ion-content>

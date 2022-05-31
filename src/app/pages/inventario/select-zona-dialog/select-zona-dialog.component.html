@@ -1,0 +1,38 @@
+<ion-content>
+  <ion-row>
+    <ion-col size="2">
+      <ion-icon
+        name="arrow-back"
+        style="font-size: 1.5em"
+        (click)="onBack()"
+      ></ion-icon>
+    </ion-col>
+    <ion-col size="8" style="text-align: center"
+      >Detalles de inventario</ion-col
+    >
+  </ion-row>
+  <ion-row>
+    <ion-col size="12" class="center"> Lista de sectores </ion-col>
+  </ion-row>
+  <ion-accordion-group [multiple]="true">
+    <ion-accordion *ngFor="let sector of sectorList" [value]="sector.id">
+      <ion-item slot="header">
+        <ion-label>
+          <p>{{ sector.descripcion | titlecase }} ({{ sector?.zonaList.length }})</p>
+        </ion-label>
+      </ion-item>
+
+      <ion-list slot="content">
+        <ng-container *ngFor="let zona of sector?.zonaList">
+          <ion-item class="dark2" (click)="onZonaClick(zona)">
+            <ion-label>
+              <h2>
+                {{ zona.descripcion | titlecase }}
+              </h2>
+            </ion-label>
+          </ion-item>
+        </ng-container>
+      </ion-list>
+    </ion-accordion>
+  </ion-accordion-group>
+</ion-content>

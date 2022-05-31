@@ -18,6 +18,7 @@ export class LoginComponent implements OnInit {
   usuarioControl = new FormControl(null, Validators.required)
   passwordControl = new FormControl(null, Validators.required)
   formGroup: FormGroup;
+  showPassword = false;
   msg = "Bienvenido/a"
   error = null;
   constructor(private loginService: LoginService,

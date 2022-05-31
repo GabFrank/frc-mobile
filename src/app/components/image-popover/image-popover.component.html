@@ -1,7 +1,7 @@
 <ion-content>
   <ion-row class="ion-align-items-center">
     <ion-col size="12" class="ion-align-items-center">
-      <img [src]="data?.image" alt="img">
+      <img [src]="data?.image!==null ? data?.image : '/assets/no-image.png'" alt="img">
     </ion-col>
   </ion-row>
   <ion-row>

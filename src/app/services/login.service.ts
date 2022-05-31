@@ -1,3 +1,4 @@
+import { Router } from '@angular/router';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import {
   HttpClient,
@@ -34,7 +35,8 @@ export class LoginService {
     private http: HttpClient,
     private usuarioService: UsuarioService,
     private mainService: MainService,
-    private notificacionService: NotificacionService
+    private notificacionService: NotificacionService,
+    private router: Router
   ) {}
 
   isAuthenticated(): Observable<Usuario> {
@@ -114,6 +116,6 @@ export class LoginService {
     localStorage.setItem('token', null);
     localStorage.setItem('usuarioId', null);
     this.usuarioActual = null;
-    window.location.href = ''
+    this.router.navigate([''])
   }
 }

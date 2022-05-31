@@ -26,12 +26,12 @@ export class MenuActionService {
         actionButtons.push(btn)
       }
     })
-    actionButtons.push({ text: 'Cancelar', role: 'cancel' })
+    actionButtons.push({ text: 'Cancelar', role: null })
     const actionSheet = await this.actionControler.create({
       header: 'Opciones',
       cssClass: 'action-menu',
       buttons: actionButtons,
-      backdropDismiss: true,
+      backdropDismiss: false,
       mode: "ios"
     });
     await actionSheet.present();

@@ -1,0 +1,235 @@
+<ion-content>
+  <ion-card>
+    <ion-row>
+      <ion-col size="2">
+        <ion-icon
+          name="arrow-back"
+          style="font-size: 1.5em"
+          (click)="onBack()"
+        ></ion-icon>
+      </ion-col>
+      <ion-col size="8" style="text-align: center"
+        >Detalles de inventario</ion-col
+      >
+    </ion-row>
+    <!-- primera linea -->
+    <ion-row>
+      <ion-col size="3">
+        <div class="title" fxFlex="50">Id</div>
+        <div class="item" fxFlex="50">
+          {{ selectedInventario?.idOrigen }}
+        </div>
+      </ion-col>
+      <ion-col size="5">
+        <div class="title" fxFlex="50">Sucursal</div>
+        <div class="item" fxFlex="50">
+          {{ selectedInventario?.sucursal?.nombre | titlecase }}
+        </div>
+      </ion-col>
+      <ion-col size="4">
+        <div class="title" fxFlex="50">Estado</div>
+        <div class="item" fxFlex="50">
+          {{ selectedInventario?.estado }}
+        </div>
+      </ion-col>
+    </ion-row>
+    <!-- segunda linea -->
+    <ion-row>
+      <ion-col size="3">
+        <div class="title" fxFlex="50">Tipo</div>
+        <div class="item" fxFlex="50">
+          {{ selectedInventario?.tipo }}
+        </div>
+      </ion-col>
+      <ion-col size="5">
+        <div class="title" fxFlex="50">Inicio</div>
+        <div class="item" fxFlex="50">
+          {{ selectedInventario?.fechaInicio | date: 'short' }}
+        </div>
+      </ion-col>
+      <ion-col size="4">
+        <div class="title" fxFlex="50">Fin</div>
+        <div class="item" fxFlex="50">
+          {{ selectedInventario?.fechaFin | date: 'short' }}
+        </div>
+      </ion-col>
+    </ion-row>
+    <!-- tercera linea -->
+    <ion-row>
+      <ion-col size="8">
+        <div class="title" fxFlex="50">Responsable</div>
+        <div class="item" fxFlex="50">
+          {{ selectedInventario?.usuario?.persona?.nombre | titlecase }}
+        </div>
+      </ion-col>
+      <ion-col size="4" style="text-align: center">
+        <ion-button
+          class="btn-success-flat"
+          fill="clear"
+          (click)="onMenuClick()"
+          >MENU</ion-button
+        >
+      </ion-col>
+    </ion-row>
+    <!-- <ion-row>
+      <ion-col size="12" style="text-align: center">
+        <ion-button class="btn-success-flat" fill="clear" (click)="onRefresh()"
+          >Actualizar</ion-button
+        >
+      </ion-col>
+    </ion-row> -->
+  </ion-card>
+
+  <ion-row>
+    <ion-col size="2"> </ion-col>
+    <ion-col size="8" style="text-align: center">Zonas</ion-col>
+    <ion-col size="2" style="text-align: center">
+      <ion-icon
+        name="funnel"
+        style="font-size: 1.5em"
+        (click)="openFilterMenu()"
+      ></ion-icon>
+    </ion-col>
+  </ion-row>
+
+  <ion-accordion-group>
+    <ion-accordion
+      *ngFor="
+        let invPro of selectedInventario?.inventarioProductoList;
+        let i = index
+      "
+      [value]="invPro.id"
+    >
+      <ion-item
+        slot="header"
+        [class.estado-abierto]="invPro?.concluido === false"
+        [hidden]="
+          !((mostrarControl.value === 'MIOS' &&
+            invPro?.usuario?.id === mainService?.usuarioActual?.id) ||
+          mostrarControl.value === 'TODOS')
+        "
+      >
+        <ion-label>
+          {{ invPro?.zona?.descripcion }}
+          <p class="white">{{ invPro?.zona?.sector.descripcion }}</p>
+          <p class="white">
+            {{ invPro?.usuario?.persona?.nombre | titlecase }}
+          </p>
+          <p class="white">
+            {{
+              invPro?.concluido === true
+                ? 'Concluido'
+                : invPro?.concluido === false
+                ? 'En proceso'
+                : null
+            }}
+          </p>
+        </ion-label>
+      </ion-item>
+
+      <ion-list slot="content">
+        <ion-row class="dark2">
+          <ion-col size="12" class="center">
+            <ion-button
+              class="btn-success-flat"
+              fill="clear"
+              (click)="
+                invPro?.concluido === true
+                  ? onReabrirZona(invPro, i)
+                  : onFinalizarZona(invPro, i)
+              "
+              expand="block"
+              [disabled]="
+                mainService?.usuarioActual?.id !== invPro?.usuario?.id
+              "
+              *ngIf="selectedInventario?.estado === 'ABIERTO'"
+            >
+              {{
+                invPro?.concluido === true ? 'Reabrir Zona' : 'Finalizar Zona'
+              }}
+            </ion-button>
+          </ion-col>
+        </ion-row>
+
+        <ng-container
+          *ngFor="
+            let invProItem of invPro?.inventarioProductoItemList;
+            let i2 = index
+          "
+        >
+          <ion-item class="dark2">
+            <ion-label>
+              <ion-row>
+                <ion-col size="10">
+                  <h3>
+                    {{
+                      invProItem?.presentacion?.producto?.descripcion
+                        | titlecase
+                    }}
+                  </h3>
+                </ion-col>
+                <ion-col size="2" class="ion-text-end">
+                  {{ invProItem.cantidad | number: '1.0-2' }}</ion-col
+                >
+              </ion-row>
+              <ion-row>
+                <ion-col size="4">
+                  <p class="title">Vencimiento:</p>
+                  <p>
+                    {{ invProItem.vencimiento | date: 'shortDate' }}
+                  </p>
+                </ion-col>
+                <ion-col size="4">
+                  <p class="title">Estado:</p>
+                  <p>{{ invProItem.estado }}</p>
+                </ion-col>
+                <ion-col size="4">
+                  <ion-button
+                    class="btn-success-flat"
+                    (click)="onEditProducto(invProItem, i2)"
+                    expand="block"
+                    fill="clear"
+                    *ngIf="invPro?.concluido !== true"
+                    [disabled]="
+                      mainService?.usuarioActual?.id !== invPro?.usuario?.id
+                    "
+                  >
+                    Editar
+                  </ion-button>
+                </ion-col>
+              </ion-row>
+            </ion-label>
+          </ion-item>
+        </ng-container>
+        <ion-row class="dark2">
+          <ion-col size="12" class="center">
+            <ion-button
+              class="btn-success-flat"
+              fill="clear"
+              (click)="onAddProducto(invPro, i2)"
+              expand="block"
+              *ngIf="
+                invPro?.concluido !== true &&
+                mainService?.usuarioActual?.id === invPro?.usuario?.id
+              "
+            >
+              + Producto
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-list>
+    </ion-accordion>
+    <ion-row>
+      <ion-col size="12" style="text-align: center">
+        <ion-button class="btn-success-flat" fill="clear" (click)="onAddZona()"
+          >+ Zona</ion-button
+        >
+      </ion-col>
+    </ion-row>
+  </ion-accordion-group>
+  <!-- <ion-fab vertical="bottom" horizontal="center" slot="fixed">
+    <ion-fab-button class="btn-success">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab> -->
+</ion-content>

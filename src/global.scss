@@ -32,6 +32,12 @@
   }
 }
 
+:root {
+  // --ion-safe-area-top: 20px;
+  --ion-safe-area-bottom: 22px;
+}
+
+
 .btn-success {
   --background: #43a047;
 }
@@ -41,6 +47,18 @@
 }
 .btn-danger {
   --background: #f44336;
+}
+
+.dark1 {
+  --background: #252525;
+}
+
+.dark2 {
+  --background: #333333;
+}
+
+.dark3 {
+  --background: #424242;
 }
 
 .btn-success-flat {
@@ -68,4 +86,34 @@
 
 .popover-xs {
 	--width: 95vw;
+}
+
+.title {
+  text-align: start;
+  color: #f57c00;
+}
+
+.item {
+  text-align: start;
+}
+
+.center {
+  text-align: center;
+}
+
+.estado-abierto {
+  --background: #43a047;
+  color: white !important;
+}
+
+.estado-concluido {
+  --background: none !important;
+}
+.estado-cancelado {
+  --background: #f44336;
+  color: white;
+}
+
+.white {
+  color: white !important;
 }
