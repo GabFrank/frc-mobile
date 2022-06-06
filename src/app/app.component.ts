@@ -1,3 +1,4 @@
+import { ModalService } from './services/modal.service';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { InventarioService } from './pages/inventario/inventario.service';
 import { ActivatedRoute } from '@angular/router';
@@ -35,9 +36,8 @@ export class AppComponent implements OnInit {
     public loginService: LoginService,
     private popoverController: PopoverController,
     private cargandoService: CargandoService,
-    private activatedRoute: ActivatedRoute,
-    private inventarioService: InventarioService,
-    private notificacionService: NotificacionService
+    private notificacionService: NotificacionService,
+    private modalService: ModalService
 
     // platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen
   ) {
@@ -88,13 +88,14 @@ export class AppComponent implements OnInit {
   }
 
   async showLoginPop() {
-    const pop = await this.popoverController.create({
-      component: LoginComponent,
-      cssClass: 'my-custom-class',
-      translucent: true,
-      backdropDismiss: false
-    });
-    await pop.present();
+    // const pop = await this.popoverController.create({
+    //   component: LoginComponent,
+    //   cssClass: 'my-custom-class',
+    //   translucent: true,
+    //   backdropDismiss: false
+    // });
+    // await pop.present();
+    this.modalService.openModal(LoginComponent)
   }
 
   openTransferencias() {

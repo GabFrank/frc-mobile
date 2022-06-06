@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">frc-app</string>
-    <string name="title_activity_main">frc-app</string>
+    <string name="app_name">Bodega Franco</string>
+    <string name="title_activity_main">Bodega Franco</string>
     <string name="package_name">com.system.frc</string>
     <string name="custom_url_scheme">com.system.frc</string>
 </resources>

@@ -114,6 +114,7 @@ export class HammerConfig extends HammerGestureConfig {
             return {
               headers: {
                 Authorization: `Token ${token}`,
+                "Access-Control-Allow-Origin": "*"
               },
             };
           }
