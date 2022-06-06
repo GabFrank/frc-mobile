@@ -1,57 +1,90 @@
-<ion-list slot="start" [hidden]="selectedUsuario !== null">
-  <ion-item>
-    <ion-label position="floating">Usuario</ion-label>
-    <ion-input [formControl]="usuarioControl"></ion-input>
-  </ion-item>
+<ion-content style="top: 20%">
+  <ion-row *ngIf="selectedUsuario === null">
+    <ion-col size="12" class="center">
+      <img src="/assets/logo.png" alt="" style="width: 200px" />
+      <p style="margin-top: 2px">POWERED BY FRC</p>
+    </ion-col>
+  </ion-row>
 
-  <ion-item>
-    <ion-label position="floating">Contraseña</ion-label>
-    <ion-input
-      [formControl]="passwordControl"
-      [type]="showPassword ? 'text' : 'password'"
-      (keyup.enter)="onLogin()"
-    ></ion-input>
-    <ion-icon
-      style="padding-top: 5px"
-      (click)="showPassword = !showPassword"
-      [name]="showPassword ? 'eye-off' : 'eye'"
-      slot="end"
-    ></ion-icon>
-  </ion-item>
+  <ion-row *ngIf="selectedUsuario === null">
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Usuario</ion-label>
+        <ion-input [formControl]="usuarioControl"></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="selectedUsuario === null">
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Contraseña</ion-label>
+        <ion-input
+          [formControl]="passwordControl"
+          [type]="showPassword ? 'text' : 'password'"
+          (keyup.enter)="onLogin()"
+        ></ion-input>
+        <ion-icon
+          style="padding-top: 5px"
+          (click)="showPassword = !showPassword"
+          [name]="showPassword ? 'eye-off' : 'eye'"
+          slot="end"
+        ></ion-icon>
+      </ion-item>
+    </ion-col>
+  </ion-row>
 
-  <ion-button
-    color="primary"
-    expand="block"
-    [disabled]="formGroup.invalid"
-    (click)="onLogin()"
-    >Entrar</ion-button
-  >
-
-  <ion-item [hidden]="error === null">
-    <div style="color: red; font-size: 0.8em; width: 100%; text-align: center">
-      {{ error }}
-    </div>
-  </ion-item>
-
-  <ion-item>
-    <ion-row style="width: 100%;">
-      <ion-col size="12">
-        <ion-button class="btn-success-flat" (click)="onSolicitarNuevoUsuario()" expand="block" fill="clear">
-          Solicitar usuario
-        </ion-button>
-      </ion-col>
-    </ion-row>
-  </ion-item>
-</ion-list>
-<ion-grid [hidden]="selectedUsuario === null">
+  <ion-row *ngIf="selectedUsuario === null">
+    <ion-col size="12">
+      <ion-button
+        type="submit"
+        color="primary"
+        expand="block"
+        [disabled]="formGroup.invalid"
+        (click)="onLogin()"
+        >Entrar</ion-button
+      >
+    </ion-col>
+  </ion-row>
   <ion-row>
-    <div class="ion-text-center" style="width: 100%">
-      {{ msg | uppercase }}
-    </div>
+    <ion-col size="12">
+      <ion-item [hidden]="error === null">
+        <div
+          style="color: red; font-size: 0.8em; width: 100%; text-align: center"
+        >
+          {{ error }}
+        </div>
+      </ion-item>
+    </ion-col>
   </ion-row>
-  <br />
-  <ion-row class="ion-text-center">
-    {{ selectedUsuario?.persona?.nombre | uppercase }}
-  </ion-row>
-</ion-grid>
 
+  <ion-row [hidden]="selectedUsuario === null" style="text-align: center">
+    <ion-col size="12">
+      {{ msg | uppercase }}
+      <p>
+        {{ selectedUsuario?.persona?.nombre | uppercase }}
+      </p>
+    </ion-col>
+  </ion-row>
+
+  <ion-row>
+    <ion-col size="12" style="height: 30px"></ion-col>
+  </ion-row>
+
+  <ion-row
+    *ngIf="selectedUsuario === null"
+    style="width: 100%"
+    style="bottom: 10px"
+  >
+    <ion-col size="12">
+      <ion-button
+        type="button"
+        class="btn-success-flat"
+        (click)="onSolicitarNuevoUsuario()"
+        expand="block"
+        fill="clear"
+      >
+        Solicitar usuario
+      </ion-button>
+    </ion-col>
+  </ion-row>
+</ion-content>

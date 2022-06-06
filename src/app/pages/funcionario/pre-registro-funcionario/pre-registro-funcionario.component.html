@@ -1,14 +1,29 @@
 <ion-content>
   <ion-row>
     <ion-col size="12" class="center">
-      Formulario de pre registro
+      <img
+        src="/assets/logo.png"
+        alt=""
+        style="width: auto; max-height: 50px; object-fit: contain"
+      />
     </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12" class="center">
+      <p>
+        Complete este formulario y en breve recibirá las credenciales para
+        acceso al sistema
+      </p>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12" class="center"> Formulario de pre registro </ion-col>
   </ion-row>
   <ion-row>
     <ion-col size="12">
       <ion-item>
         <ion-label position="floating">Nombre completo</ion-label>
-        <ion-input type="text" [formControl]="nombreControl"> </ion-input>
+        <ion-input type="text" [formControl]="nombreCompleto"> </ion-input>
       </ion-item>
     </ion-col>
   </ion-row>
@@ -47,8 +62,11 @@
   <ion-row>
     <ion-col size="12">
       <ion-item>
-        <ion-label position="floating">Nombre de contacto de emergencia</ion-label>
-        <ion-input type="text" [formControl]="nombreContactoEmergencia"> </ion-input>
+        <ion-label position="floating"
+          >Nombre de contacto de emergencia</ion-label
+        >
+        <ion-input type="text" [formControl]="nombreContactoEmergencia">
+        </ion-input>
       </ion-item>
     </ion-col>
   </ion-row>
@@ -56,7 +74,8 @@
     <ion-col size="12">
       <ion-item>
         <ion-label position="floating">Email</ion-label>
-        <ion-input class="email" type="email" [formControl]="email"> </ion-input>
+        <ion-input class="email" type="email" [formControl]="email">
+        </ion-input>
       </ion-item>
     </ion-col>
   </ion-row>
@@ -79,8 +98,25 @@
   <ion-row>
     <ion-col size="12">
       <ion-item>
-        <ion-label position="floating">Sucursal</ion-label>
-        <ion-input type="text" [formControl]="sucursal"> </ion-input>
+        <ion-label>Sucursal en donde trabajas</ion-label>
+        <ion-select
+          cancelText="Cancelar"
+          okText="Aceptar"
+          [formControl]="sucursal"
+        >
+          <ion-select-option value="Depósito">Depósito</ion-select-option>
+          <ion-select-option value="Centro">Centro</ion-select-option>
+          <ion-select-option value="Calle 10">Calle 10</ion-select-option>
+          <ion-select-option value="Km5">Km5</ion-select-option>
+          <ion-select-option value="Industrial">Industrial</ion-select-option>
+          <ion-select-option value="Rotonda">Rotonda</ion-select-option>
+          <ion-select-option value="Puente Kyjha">Puente Kyjha</ion-select-option>
+          <ion-select-option value="Paloma">Paloma</ion-select-option>
+          <ion-select-option value="Katuete 1">Katuete 1</ion-select-option>
+          <ion-select-option value="Katuete 1">Katuete 2</ion-select-option>
+          <ion-select-option value="Troncal San Antonio">Troncal San Antonio</ion-select-option>
+          <ion-select-option value="Troncal Plaza">Troncal Plaza</ion-select-option>
+        </ion-select>
       </ion-item>
     </ion-col>
   </ion-row>
@@ -103,35 +139,128 @@
   <ion-row>
     <ion-col size="12">
       <ion-item>
-        <ion-label position="floating">Habilidades</ion-label>
-        <!-- <ion-input type="text" [formControl]="nombreControl"> </ion-input> -->
+        <ion-label>Posee registro de conducir?</ion-label>
+        <ion-toggle
+          class="button"
+          [formControl]="registroConducir"
+        ></ion-toggle>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-item-divider></ion-item-divider>
+  <ion-row>
+    <ion-col size="12">
+      <ion-label>Que sabes hacer?</ion-label>
+      <p>
+        A continuación, puedes seleccionar las aptitudes que consideras tener ya
+        sea en nivel básico, intermedio o avanzado.
+      </p>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label>Informática</ion-label>
+        <ion-select
+          multiple="true"
+          cancelText="Cancelar"
+          okText="Aceptar"
+          [formControl]="habilidadesInformaticas"
+        >
+          <ion-select-option value="Excel">Excel</ion-select-option>
+          <ion-select-option value="Word">Word</ion-select-option>
+          <ion-select-option value="Power Point">Power Point</ion-select-option>
+          <ion-select-option value="Photoshop">Photoshop</ion-select-option>
+          <ion-select-option value="Social network"
+            >Social network</ion-select-option
+          >
+          <ion-select-option value="Programación"
+            >Programación</ion-select-option
+          >
+          <ion-select-option value="Redes">Redes</ion-select-option>
+        </ion-select>
       </ion-item>
     </ion-col>
   </ion-row>
   <ion-row>
     <ion-col size="12">
       <ion-item>
-        <ion-label >Posee registro de conducir?</ion-label>
-        <ion-toggle class="button" [formControl]="registroConducir"></ion-toggle>
-    </ion-item>
-    </ion-col>
-  </ion-row>
-  <ion-row>
-    <ion-col size="12">
-      <ion-item>
-        <ion-label position="floating">Estudios cursados</ion-label>
-        <!-- <ion-input type="text" [formControl]="nombreControl"> </ion-input> -->
+        <ion-label>Generales</ion-label>
+        <ion-select
+          multiple="true"
+          cancelText="Cancelar"
+          okText="Aceptar"
+          [formControl]="habilidadesGenerales"
+        >
+          <ion-select-option value="Albañileria">Albañileria</ion-select-option>
+          <ion-select-option value="Plomería">Plomería</ion-select-option>
+          <ion-select-option value="Carpintería">Carpintería</ion-select-option>
+          <ion-select-option value="Carpintería">Panadería</ion-select-option>
+          <ion-select-option value="Carpintería">Carnicería</ion-select-option>
+          <ion-select-option value="Mecánica automotiva"
+            >Mecánica automotiva</ion-select-option
+          >
+          <ion-select-option value="Instalación de cámaras"
+            >Instalación de cámaras</ion-select-option
+          >
+          <ion-select-option value="Eléctrica">Eléctrica</ion-select-option>
+          <ion-select-option value="Electrónica">Electrónica</ion-select-option>
+        </ion-select>
       </ion-item>
     </ion-col>
   </ion-row>
+  <ion-item-divider></ion-item-divider>
   <ion-row>
     <ion-col size="12">
       <ion-item>
-        <ion-label position="floating">Observación</ion-label>
+        <ion-label>Nivel académico</ion-label>
+        <ion-select
+          cancelText="Cancelar"
+          okText="Aceptar"
+          [formControl]="nivelEducacion"
+        >
+          <ion-select-option value="Primaria">Primaria</ion-select-option>
+          <ion-select-option value="Secundaria">Secundaria</ion-select-option>
+          <ion-select-option value="Bachillerato"
+            >Bachillerato</ion-select-option
+          >
+          <ion-select-option value="Educ. Superior"
+            >Educ. Superior</ion-select-option
+          >
+        </ion-select>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-item-divider></ion-item-divider>
+  <!-- <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label>Orientación sexual</ion-label>
+        <ion-select cancelText="Cancelar" okText="Aceptar">
+          <ion-select-option value="Hétero">Hétero</ion-select-option>
+          <ion-select-option value="Semi hétero">Semi hétero</ion-select-option>
+          <ion-select-option value="Casi casi hétero"
+            >Casi casi hétero</ion-select-option
+          >
+          <ion-select-option value="Homosexual">Homosexual</ion-select-option>
+          <ion-select-option value="Ambo lo dó">Ambo lo dó</ion-select-option>
+          <ion-select-option value="Ninguno">Nambopúi</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-col>
+  </ion-row> -->
+  <ion-item-divider></ion-item-divider>
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating"
+          >Algún mensaje para la empresa? =)</ion-label
+        >
         <ion-textarea [formControl]="observacion"></ion-textarea>
       </ion-item>
     </ion-col>
   </ion-row>
+  <ion-item-divider></ion-item-divider>
   <ion-row>
     <ion-col size="6" class="center">
       <ion-button fill="clear" class="btn-danger-flat" (click)="onCancel()"
@@ -139,11 +268,7 @@
       >
     </ion-col>
     <ion-col size="6" class="center">
-      <ion-button
-        fill="clear"
-        class="btn-success-flat"
-        (click)="onAceptar()"
-        [disabled]="formGroup.invalid"
+      <ion-button fill="clear" class="btn-success-flat" (click)="onAceptar()" [disabled]="formGroup.invalid && false"
         >Aceptar</ion-button
       >
     </ion-col>

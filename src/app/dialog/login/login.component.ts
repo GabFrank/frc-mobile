@@ -1,9 +1,12 @@
+import { PreRegistroFuncionarioComponent } from './../../pages/funcionario/pre-registro-funcionario/pre-registro-funcionario.component';
+import { PreRegistroFuncionario } from './../../pages/funcionario/funcionario.model';
+import { ModalService } from './../../services/modal.service';
 import { Router } from '@angular/router';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { CargandoService } from './../../services/cargando.service';
 import { Usuario } from './../../domains/personas/usuario.model';
 import { PopoverController } from '@ionic/angular';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { LoginService } from 'src/app/services/login.service';
@@ -15,6 +18,9 @@ import { LoginService } from 'src/app/services/login.service';
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit {
+  @ViewChild('nickname', {static: false}) nicknameInput: ElementRef;
+  @ViewChild('password', {static: false}) passwordInput: ElementRef;
+
   selectedUsuario: Usuario = null;
   usuarioControl = new FormControl(null, Validators.required)
   passwordControl = new FormControl(null, Validators.required)
@@ -26,7 +32,8 @@ export class LoginComponent implements OnInit {
     private popoverController: PopoverController,
     private cargandoService: CargandoService,
     private notificacionService: NotificacionService,
-    private router: Router
+    private router: Router,
+    private modalService: ModalService
     ) { }
 
   async ngOnInit() {
@@ -49,6 +56,7 @@ export class LoginComponent implements OnInit {
   }
 
   onLogin() {
+    console.log('entrando en on login')
     this.error = null;
     this.cargandoService.open("Entrando al sistema....")
     this.loginService.login(this.usuarioControl.value, this.passwordControl.value)
@@ -67,13 +75,15 @@ export class LoginComponent implements OnInit {
   onSelectUsuarioAndDismiss(usuario: Usuario) {
     this.selectedUsuario = usuario;
     setTimeout(() => {
-      this.popoverController.dismiss()
+      this.modalService.closeModal(null)
     }, 2000);
   }
 
   onSolicitarNuevoUsuario(){
-    this.router.navigate(['/pre-registro/pre-registro'])
-    this.popoverController.dismiss(null)
+    this.modalService.closeModal(null)
+    setTimeout(() => {
+      this.modalService.openModal(PreRegistroFuncionarioComponent)
+    }, 1000);
   }
 
 }

@@ -2,9 +2,12 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.system.frc',
-  appName: 'frc-app',
+  appName: 'Bodega Franco',
   webDir: 'www',
-  bundledWebRuntime: false
+  bundledWebRuntime: false,
+  server: {
+    'cleartext': true
+  }
 };
 
 export default config;

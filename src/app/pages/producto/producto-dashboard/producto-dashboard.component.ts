@@ -1,3 +1,4 @@
+import { LoginService } from './../../../services/login.service';
 import { Producto } from 'src/app/domains/productos/producto.model';
 import { SearchProductoDialogComponent } from './../search-producto-dialog/search-producto-dialog.component';
 import { ModalService } from './../../../services/modal.service';
@@ -15,7 +16,8 @@ export class ProductoDashboardComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private modalService: ModalService
+    private modalService: ModalService,
+    public loginService: LoginService
   ) { }
 
   ngOnInit() {}
@@ -28,8 +30,8 @@ export class ProductoDashboardComponent implements OnInit {
     }).then(res => {
       if(res!=null){
         console.log(res)
-        let presentacion: Presentacion = res.data['presentacion'];
-        let producto: Producto = res.data['producto'];
+        let presentacion: Presentacion = res?.data?.presentacion;
+        let producto: Producto = res?.data?.producto;
       }
     })
   }
