@@ -59,9 +59,9 @@ export class InfoTransferenciaComponent implements OnInit {
 
   }
 
-  buscarTransferencia(id) {
+  async buscarTransferencia(id) {
     if (id != null) {
-      this.transferenciaService.onGetTransferencia(id)
+      (await this.transferenciaService.onGetTransferencia(id))
         .pipe(untilDestroyed(this))
         .subscribe(res => {
           if (res != null) {
@@ -240,7 +240,7 @@ export class InfoTransferenciaComponent implements OnInit {
       })
   }
 
-  onConfirm(item: TransferenciaItem) {
+  async onConfirm(item: TransferenciaItem) {
     let newItem = new TransferenciaItem;
     item = Object.assign(newItem, item)
     if (this.selectedTransferencia?.etapa == EtapaTransferencia.PREPARACION_MERCADERIA) {
@@ -262,7 +262,7 @@ export class InfoTransferenciaComponent implements OnInit {
       item.motivoModificacionRecepcion = null;
       item.motivoRechazoRecepcion = null;
     }
-    this.transferenciaService.onSaveTransferenciaItem(item.toInput())
+    (await this.transferenciaService.onSaveTransferenciaItem(item.toInput()))
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         if (res != null) {
@@ -273,7 +273,7 @@ export class InfoTransferenciaComponent implements OnInit {
   }
 
 
-  onDesconfirm(item: TransferenciaItem) {
+  async onDesconfirm(item: TransferenciaItem) {
     let newItem = new TransferenciaItem;
     item = Object.assign(newItem, item)
     if (this.selectedTransferencia?.etapa == EtapaTransferencia.PREPARACION_MERCADERIA) {
@@ -295,7 +295,7 @@ export class InfoTransferenciaComponent implements OnInit {
       item.motivoModificacionRecepcion = null;
       item.motivoRechazoRecepcion = null;
     }
-    this.transferenciaService.onSaveTransferenciaItem(item.toInput())
+    (await this.transferenciaService.onSaveTransferenciaItem(item.toInput()))
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         if (res != null) {
@@ -313,7 +313,7 @@ export class InfoTransferenciaComponent implements OnInit {
       { texto: 'Producto averiado', role: TransferenciaItemMotivoRechazo.PRODUCTO_AVERIADO },
       { texto: 'Producto equivocado', role: TransferenciaItemMotivoRechazo.PRODUCTO_EQUIVOCADO },
       { texto: 'Producto vencido', role: TransferenciaItemMotivoRechazo.PRODUCTO_VENCIDO },
-    ]).then(res => {
+    ]).then(async res => {
       switch (this.selectedTransferencia.etapa) {
         case EtapaTransferencia.PREPARACION_MERCADERIA:
           item.cantidadPreparacion = null;
@@ -336,7 +336,7 @@ export class InfoTransferenciaComponent implements OnInit {
         default:
           break;
       }
-      this.transferenciaService.onSaveTransferenciaItem(item.toInput())
+      (await this.transferenciaService.onSaveTransferenciaItem(item.toInput()))
         .pipe(untilDestroyed(this))
         .subscribe(res => {
           if (res != null) {
@@ -360,7 +360,7 @@ export class InfoTransferenciaComponent implements OnInit {
     this.popoverService.open(ModificarItemDialogComponent, {
       isCantidad,
       isVencimiento,
-    }, PopoverSize.XS).then(res => {
+    }, PopoverSize.XS).then(async res => {
       if (res.data != null) {
         if (isCantidad) {
           if (this.selectedTransferencia?.etapa == EtapaTransferencia.PREPARACION_MERCADERIA) {
@@ -397,7 +397,7 @@ export class InfoTransferenciaComponent implements OnInit {
             item.motivoModificacionRecepcion = TransferenciaItemMotivoModificacion.VENCIMIENTO_INCORRECTO
           }
         }
-        this.transferenciaService.onSaveTransferenciaItem(item.toInput())
+        (await this.transferenciaService.onSaveTransferenciaItem(item.toInput()))
           .pipe(untilDestroyed(this))
           .subscribe(res => {
             if (res != null) {

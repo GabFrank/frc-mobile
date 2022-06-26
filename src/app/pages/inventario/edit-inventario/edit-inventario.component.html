@@ -17,7 +17,7 @@
       <ion-col size="3">
         <div class="title" fxFlex="50">Id</div>
         <div class="item" fxFlex="50">
-          {{ selectedInventario?.idOrigen }}
+          {{ selectedInventario?.id }}
         </div>
       </ion-col>
       <ion-col size="5">
@@ -104,9 +104,11 @@
         slot="header"
         [class.estado-abierto]="invPro?.concluido === false"
         [hidden]="
-          !((mostrarControl.value === 'MIOS' &&
-            invPro?.usuario?.id === mainService?.usuarioActual?.id) ||
-          mostrarControl.value === 'TODOS')
+          !(
+            (mostrarControl.value === 'MIOS' &&
+              invPro?.usuario?.id === mainService?.usuarioActual?.id) ||
+            mostrarControl.value === 'TODOS'
+          )
         "
       >
         <ion-label>
@@ -189,7 +191,8 @@
                     (click)="onEditProducto(invProItem, i2)"
                     expand="block"
                     fill="clear"
-                    *ngIf="invPro?.concluido !== true"
+                    *ngIf="invPro?.concluido !== true && selectedInventario?.estado === 'ABIERTO'
+                    "
                     [disabled]="
                       mainService?.usuarioActual?.id !== invPro?.usuario?.id
                     "
@@ -210,7 +213,8 @@
               expand="block"
               *ngIf="
                 invPro?.concluido !== true &&
-                mainService?.usuarioActual?.id === invPro?.usuario?.id
+                mainService?.usuarioActual?.id === invPro?.usuario?.id &&
+                selectedInventario?.estado === 'ABIERTO'
               "
             >
               + Producto
@@ -221,7 +225,11 @@
     </ion-accordion>
     <ion-row>
       <ion-col size="12" style="text-align: center">
-        <ion-button class="btn-success-flat" fill="clear" (click)="onAddZona()"
+        <ion-button
+          *ngIf="selectedInventario?.estado === 'ABIERTO'"
+          class="btn-success-flat"
+          fill="clear"
+          (click)="onAddZona()"
           >+ Zona</ion-button
         >
       </ion-col>

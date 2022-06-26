@@ -1,4 +1,4 @@
-import { Sucursal } from '../empresarial/sucursal.model';
+import { Sucursal } from '../empresarial/sucursal/sucursal.model';
 import { Usuario } from '../personas/usuario.model';
 import { Zona } from './../zona/zona.model';
 

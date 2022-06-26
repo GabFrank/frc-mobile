@@ -1,17 +1,16 @@
+import { Router } from '@angular/router';
 import { ModalService } from './services/modal.service';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
-import { InventarioService } from './pages/inventario/inventario.service';
-import { ActivatedRoute } from '@angular/router';
 import { CargandoService } from './services/cargando.service';
-import { Component, OnInit } from '@angular/core';
-import { MenuController, Platform, PopoverController } from '@ionic/angular';
+import { Component, NgZone, OnInit } from '@angular/core';
+import { MenuController, PopoverController } from '@ionic/angular';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { LoginComponent } from './dialog/login/login.component';
 import { LoginService } from './services/login.service';
 import { MainService } from './services/main.service';
 import { connectionStatusSub } from './app.module';
-import { BarcodeFormat } from './components/qr-scanner-dialog/scanner.service';
-import { platform } from 'os';
+// import { App, URLOpenListenerEvent } from '@capacitor/app';
+
 
 declare let window: any; // Don't forget this part!
 
@@ -26,9 +25,10 @@ export class AppComponent implements OnInit {
 
   statusSub;
   online = false;
+  puedeVerInventario = false;
 
-  optionZbar:any;
-  scannedOutput:any;
+  optionZbar: any;
+  scannedOutput: any;
 
   constructor(
     private menu: MenuController,
@@ -37,7 +37,9 @@ export class AppComponent implements OnInit {
     private popoverController: PopoverController,
     private cargandoService: CargandoService,
     private notificacionService: NotificacionService,
-    private modalService: ModalService
+    private modalService: ModalService,
+    // private zone: NgZone,
+    // private router: Router
 
     // platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen
   ) {
@@ -45,25 +47,46 @@ export class AppComponent implements OnInit {
       flash: 'off',
       drawSight: false
     }
+    // this.initializeApp();
   }
+
+  // initializeApp() {
+  //   App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
+  //     this.zone.run(() => {
+  //       // Example url: https://beerswift.app/tabs/tab2
+  //       // slug = /tabs/tab2
+  //       console.log(event)
+  //       const slug = event.url.split(".app").pop();
+  //       if (slug) {
+  //         this.router.navigateByUrl(slug);
+  //       }
+  //       // If no match, do nothing - let regular routing
+  //       // logic take over
+  //     });
+  //   });
+  // }
 
   openInventario() {
+
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.showLoginPop();
 
     this.statusSub = connectionStatusSub
       .pipe(untilDestroyed(this))
-      .subscribe((res) => {
-        if (res==true) {
-          this.cargandoService.close()
+      .subscribe(async (res) => {
+        let loading = await this.cargandoService.open('Conectando al servidor..')
+        if (res == true) {
+          console.log(loading)
+          this.cargandoService.close(loading)
           this.notificacionService.open('Servidor conectado', TipoNotificacion.SUCCESS, 2)
           this.online = true;
-        } else if(res==false) {
+        } else if (res == false) {
           this.online = false;
           this.notificacionService.open('No se puede acceder al servidor', TipoNotificacion.DANGER, 2)
-          this.cargandoService.open('Conectando al servidor..', true)
+        } else {
+          this.cargandoService.close(loading)
         }
       });
 
@@ -77,10 +100,10 @@ export class AppComponent implements OnInit {
     this.menu.close();
   }
 
-  onSalir() {
-    this.cargandoService.open("Saliendo...")
+  async onSalir() {
+    let loading = await this.cargandoService.open("Saliendo...")
     setTimeout(() => {
-      this.cargandoService.close()
+      this.cargandoService.close(loading)
       this.loginService.logOut();
       this.showLoginPop()
       this.menu.close();

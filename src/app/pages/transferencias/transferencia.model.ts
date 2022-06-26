@@ -1,4 +1,4 @@
-import { Sucursal } from "src/app/domains/empresarial/sucursal.model";
+import { Sucursal } from "src/app/domains/empresarial/sucursal/sucursal.model";
 import { Usuario } from "src/app/domains/personas/usuario.model";
 import { Presentacion } from "src/app/domains/productos/presentacion.model";
 import { dateToString } from "src/app/generic/utils/dateUtils";

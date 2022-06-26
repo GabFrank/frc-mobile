@@ -25,14 +25,14 @@ export class GenericCrudService {
   ) {
   }
 
-  onGetAll(gql: Query): Observable<any> {
-    this.cargandoService.open(null, false)
+  async onGetAll(gql: Query): Promise<Observable<any>> {
+    let loading = await this.cargandoService.open(null, false)
     return new Observable((obs) => {
       gql
         .fetch({}, { fetchPolicy: "no-cache", errorPolicy: "all" }).pipe(untilDestroyed(this))
         .subscribe((res) => {
           this.isLoading = false
-          this.cargandoService.close()
+          this.cargandoService.close(loading)
           if (res.errors == null) {
             obs.next(res.data["data"]);
           } else {
@@ -42,15 +42,15 @@ export class GenericCrudService {
     });
   }
 
-  onGetById<T>(gql: any, id: number): Observable<T> {
+  async onGetById<T>(gql: any, id: number): Promise<Observable<T>> {
     this.isLoading = true;
-    this.cargandoService.open(null, false)
+    let loading = await this.cargandoService.open('Buscando...', false)
     return new Observable((obs) => {
       gql
         .fetch({ id }, { fetchPolicy: "no-cache", errorPolicy: "all" }).pipe(untilDestroyed(this))
         .subscribe((res) => {
           this.isLoading = false;
-          this.cargandoService.close()
+          this.cargandoService.close(loading)
           if (res.errors == null) {
             obs.next(res.data["data"]);
             if (res.data["data"] == null) {
@@ -64,15 +64,15 @@ export class GenericCrudService {
     });
   }
 
-  onGetByTexto(gql: Query, texto: string): Observable<any> {
+  async onGetByTexto(gql: Query, texto: string): Promise<Observable<any>> {
     this.isLoading = true;
-    this.cargandoService.open(null, false)
+    let loading = await this.cargandoService.open(null, false)
     return new Observable((obs) => {
       gql
         .fetch({ texto }, { fetchPolicy: "no-cache", errorPolicy: "all" }).pipe(untilDestroyed(this))
         .subscribe((res) => {
           console.log(res)
-          this.cargandoService.close()
+          this.cargandoService.close(loading)
           this.isLoading = false;
           if (res.errors == null) {
             obs.next(res.data["data"]);
@@ -84,9 +84,9 @@ export class GenericCrudService {
     });
   }
 
-  onSave<T>(gql: Mutation, input): Observable<T> {
+  async onSave<T>(gql: Mutation, input): Promise<Observable<T>> {
     this.isLoading = true;
-    this.cargandoService.open(null, false)
+    let loading = await this.cargandoService.open(null, false)
     if (input.usuarioId == null) {
       input.usuarioId = +localStorage.getItem("usuarioId");
     }
@@ -98,7 +98,7 @@ export class GenericCrudService {
         ).pipe(untilDestroyed(this))
         .subscribe((res) => {
           this.isLoading = false;
-          this.cargandoService.close()
+          this.cargandoService.close(loading)
           if (res.errors == null) {
             obs.next(res.data["data"]);
             this.notificacionService.open('Guardado con éxito', TipoNotificacion.SUCCESS, 2)
@@ -111,14 +111,14 @@ export class GenericCrudService {
     });
   }
 
-  onDelete(
+  async onDelete(
     gql: Mutation,
     id,
     titulo?,
     data?: any,
     showDialog?: boolean
-  ): Observable<any> {
-    this.cargandoService.open(null, false)
+  ): Promise<Observable<any>> {
+    let loading = await this.cargandoService.open(null, false)
     return new Observable((obs) => {
       if (showDialog == false) {
         gql
@@ -129,7 +129,7 @@ export class GenericCrudService {
             { errorPolicy: "all" }
           ).pipe(untilDestroyed(this))
           .subscribe((res) => {
-            this.cargandoService.close()
+            this.cargandoService.close(loading)
             if (res.errors == null) {
               this.notificacionService.open('Eliminado con éxito', TipoNotificacion.SUCCESS, 2)
               obs.next(true);
@@ -157,7 +157,7 @@ export class GenericCrudService {
                   { errorPolicy: "all" }
                 )
                 .subscribe((res) => {
-                  this.cargandoService.close()
+                  this.cargandoService.close(loading)
                   if (res.errors == null) {
                     this.notificacionService.open('Eliminado con éxito', TipoNotificacion.SUCCESS, 2)
                     obs.next(true);
@@ -175,13 +175,13 @@ export class GenericCrudService {
     });
   }
 
-  onGetByFecha(gql: any, inicio: Date, fin: Date): Observable<any> {
+  async onGetByFecha(gql: any, inicio: Date, fin: Date): Promise<Observable<any>> {
     let hoy = new Date();
     let ayer = new Date(hoy.getDay() - 1);
     ayer.setHours(0);
     ayer.setMinutes(0);
     ayer.setSeconds(0);
-    this.cargandoService.open(null, false)
+    let loading = await this.cargandoService.open(null, false)
     if (inicio == null) {
       if (fin == null) {
         inicio = ayer;
@@ -202,7 +202,7 @@ export class GenericCrudService {
       gql
         .fetch({ inicio, fin }, { fetchPolicy: "no-cache", errorPolicy: "all" }).pipe(untilDestroyed(this))
         .subscribe((res) => {
-          this.cargandoService.close()
+          this.cargandoService.close(loading)
           if (res.errors == null) {
             obs.next(res.data["data"]);
           } else {
@@ -213,9 +213,9 @@ export class GenericCrudService {
   }
 
 
-  onSaveConDetalle(gql: Mutation, entity: any, detalleList: any[], info?: string) {
+  async onSaveConDetalle(gql: Mutation, entity: any, detalleList: any[], info?: string) {
     entity.usuarioId = this.mainService?.usuarioActual?.id;
-    this.cargandoService.open(null, false)
+    let loading = await this.cargandoService.open(null, false)
     return new Observable((obs) => {
       gql
         .mutate(
@@ -229,7 +229,7 @@ export class GenericCrudService {
           }
         ).pipe(untilDestroyed(this))
         .subscribe((res) => {
-          this.cargandoService.close()
+          this.cargandoService.close(loading)
           if (res.errors == null) {
             this.notificacionService.open('Guardado con éxito', TipoNotificacion.SUCCESS, 2)
             obs.next(res.data['data']);

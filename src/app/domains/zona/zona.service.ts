@@ -20,19 +20,19 @@ export class ZonaService {
     private deleteZona: DeleteZonaGQL
     ) { }
 
-  onGetZona(id): Observable<Zona>{
-    return this.genericCrud.onGetById(this.getZona, id);
+  async onGetZona(id): Promise<Observable<Zona>>{
+    return await this.genericCrud.onGetById(this.getZona, id);
   }
 
-  onGetZonas(): Observable<Zona[]>{
-    return this.genericCrud.onGetAll(this.getZonas);
+  async onGetZonas(): Promise<Observable<Zona[]>>{
+    return await this.genericCrud.onGetAll(this.getZonas);
   }
 
-  onSaveZona(input): Observable<Zona>{
-    return this.genericCrud.onSave(this.saveZona, input);
+  async onSaveZona(input): Promise<Observable<Zona>>{
+    return await this.genericCrud.onSave(this.saveZona, input);
   }
 
-  onDeleteZona(id): Observable<boolean>{
-    return this.genericCrud.onDelete(this.deleteZona, id)
+  async onDeleteZona(id): Promise<Observable<boolean>>{
+    return await this.genericCrud.onDelete(this.deleteZona, id)
   }
 }

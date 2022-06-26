@@ -1,4 +1,4 @@
-import { Sucursal } from "src/app/domains/empresarial/sucursal.model";
+import { Sucursal } from "src/app/domains/empresarial/sucursal/sucursal.model";
 import { Ciudad } from "src/app/domains/general/ciudad.model";
 
 export class PreRegistroFuncionario {

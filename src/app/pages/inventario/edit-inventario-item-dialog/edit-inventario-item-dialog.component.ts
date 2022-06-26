@@ -48,11 +48,11 @@ export class EditInventarioItemDialogComponent implements OnInit {
     }
   }
 
-  cargarDatos(invProItem: InventarioProductoItem) {
+  async cargarDatos(invProItem: InventarioProductoItem) {
     console.log(invProItem)
-    this.cargandoService.open()
+    let loading = await this.cargandoService.open()
     setTimeout(() => {
-      this.cargandoService.close()
+      this.cargandoService.close(loading)
       this.selectedInventarioProductoItem = invProItem;
       this.cantidadControl.setValue(invProItem?.cantidad)
       this.vencimientoControl.setValue(invProItem?.vencimiento)

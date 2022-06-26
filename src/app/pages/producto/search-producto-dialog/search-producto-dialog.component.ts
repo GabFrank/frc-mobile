@@ -67,8 +67,8 @@ export class SearchProductoDialogComponent implements OnInit {
       console.log("text is ", text);
       this.isSearching = false;
     } else {
-      this.onSearchTimer = setTimeout(() => {
-        this.productoService.onSearch(text, offset).pipe(untilDestroyed(this)).subscribe((res) => {
+      this.onSearchTimer = setTimeout(async () => {
+        (await this.productoService.onSearch(text, offset)).pipe(untilDestroyed(this)).subscribe((res) => {
             if (offset == null) {
               this.productosList = res;
               this.showCargarMas = true
@@ -94,9 +94,9 @@ export class SearchProductoDialogComponent implements OnInit {
     this.onSearchProducto(this.buscarControl.value, this.productosList?.length)
   }
 
-  onProductoClick(producto: Producto, index) {
+  async onProductoClick(producto: Producto, index) {
     if (producto?.presentaciones == null) {
-      this.productoService.getProducto(producto.id).pipe(untilDestroyed(this)).subscribe((res) => {
+      (await this.productoService.getProducto(producto.id)).pipe(untilDestroyed(this)).subscribe((res) => {
         console.log(res);
         this.productosList[index].presentaciones = res.presentaciones;
       });

@@ -1,5 +1,5 @@
 import { dateToString } from 'src/app/generic/utils/dateUtils';
-import { Sucursal } from "src/app/domains/empresarial/sucursal.model";
+import { Sucursal } from "src/app/domains/empresarial/sucursal/sucursal.model";
 import { Usuario } from "src/app/domains/personas/usuario.model";
 import { Presentacion } from "src/app/domains/productos/presentacion.model";
 import { Producto } from "src/app/domains/productos/producto.model";

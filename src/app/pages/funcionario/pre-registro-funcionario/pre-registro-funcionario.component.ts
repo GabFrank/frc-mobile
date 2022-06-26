@@ -6,6 +6,9 @@ import { LoginComponent } from './../../../dialog/login/login.component';
 import { ModalService } from './../../../services/modal.service';
 import { FormControl, Validators, FormGroup } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
+import { Platform } from '@ionic/angular';
+import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
+import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
 
 @UntilDestroy()
 @Component({
@@ -16,6 +19,8 @@ import { Component, OnInit } from '@angular/core';
 export class PreRegistroFuncionarioComponent implements OnInit {
 
   formGroup: FormGroup;
+  subscription;
+  sucursalList: Sucursal[];
 
   nombreCompleto = new FormControl(null, Validators.required)
   apodo = new FormControl()
@@ -41,9 +46,26 @@ export class PreRegistroFuncionarioComponent implements OnInit {
   constructor(
     private modalService: ModalService,
     private funcionarioService: FuncionarioService,
-    private cargandoService: CargandoService
+    private cargandoService: CargandoService,
+    private platform: Platform,
+    private sucursalService: SucursalService
   ) {
-
+    sucursalService.getSucursalesAdmin()
+      .pipe(untilDestroyed(this))
+      .subscribe(res => {
+        if (res != null) {
+          this.sucursalList = res['sucursalList'];
+          if (this.sucursalList != null) {
+            this.sucursalList = this.sucursalList.filter(s => s.id != 0).sort((a, b) => {
+              if (a.id > b.id) {
+                return 1
+              } else {
+                return -1
+              }
+            })
+          }
+        }
+      })
   }
 
   ngOnInit() {
@@ -73,7 +95,7 @@ export class PreRegistroFuncionarioComponent implements OnInit {
     this.modalService.openModal(LoginComponent)
   }
 
-  onAceptar() {
+  async onAceptar() {
     if (this.habilidadesInformaticas.value != null) {
       this.habilidades.setValue([...this.habilidadesInformaticas.value])
     }
@@ -94,21 +116,30 @@ export class PreRegistroFuncionarioComponent implements OnInit {
     entity.nombreContactoEmergencia = this.nombreContactoEmergencia.value;
     entity.observacion = this.observacion.value;
     entity.registroConducir = this.registroConducir.value;
-    entity.sucursal = this.ciudad.value;
+    entity.sucursal = this.sucursal.value;
     entity.telefonoEmergencia = this.telefonoEmergencia.value;
     entity.telefonoPersonal = this.telefonoPersonal.value;
-    this.funcionarioService.onSavePreRegistroFuncionario(entity)
+    (await this.funcionarioService.onSavePreRegistroFuncionario(entity))
       .pipe(untilDestroyed(this))
-      .subscribe(res => {
+      .subscribe(async res => {
         if (res != null) {
           this.modalService.closeModal(null)
-          this.cargandoService.open()
+          let loading = await this.cargandoService.open()
           setTimeout(() => {
-            this.cargandoService.close()
+            this.cargandoService.close(loading)
             this.modalService.openModal(LoginComponent)
           }, 1000);
         }
       })
+  }
+
+  ionViewDidEnter() {
+    this.subscription = this.platform.backButton.subscribeWithPriority(9999, () => {
+    })
+  }
+
+  ionViewWillLeave() {
+    this.subscription.unsubscribe();
   }
 
 }

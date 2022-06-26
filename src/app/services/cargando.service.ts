@@ -1,42 +1,40 @@
 import { Injectable } from '@angular/core';
-import { LoadingController } from '@ionic/angular';
+import { LoadingController, LoadingOptions } from '@ionic/angular';
+// import { NgxSpinnerService } from 'ngx-spinner';
+
+export interface CargandoData {
+  id: any,
+  loading: HTMLIonLoadingElement;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class CargandoService {
 
-  loading: HTMLIonLoadingElement;
   counter = 0;
 
-  constructor(public loadingController: LoadingController) { }
+  constructor(public loadingController: LoadingController,
+  ) { }
 
-  async open(texto?: string, dissmis?: boolean): Promise<HTMLIonLoadingElement> {
-    if (this.loading != null) {
-      await this.loading.dismiss().then(async ()=>{
-        this.loading = await this.loadingController.create({
-          cssClass: 'my-custom-class',
-          message: texto,
-          backdropDismiss: true
-        });
-        await this.loading.present();
-      })
-    } else {
-      this.loading = await this.loadingController.create({
-        cssClass: 'my-custom-class',
+  async open(texto?, disable?): Promise<HTMLIonLoadingElement> {
+    let loading = await this.loadingController.create(
+      {
+        id: new Date().getTime() + '',
         message: texto,
-        backdropDismiss: true
-      });
-      await this.loading.present();
-    }
+        backdropDismiss: true,
 
-    return await this.loading;
+      }
+    )
+    await loading.present()
+    console.log('abriendo', loading.message, loading.id)
+    return loading;
   }
 
-  async close() {
-    setTimeout(async () => {
-      if(this.loading!=undefined)
-      await this.loading.dismiss();
+  close(loading: HTMLIonLoadingElement) {
+    setTimeout(() => {
+      console.log('cerrando', loading.message, loading.id)
+      loading.dismiss()
     }, 500);
   }
 }

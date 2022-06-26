@@ -8,19 +8,88 @@
       ></ion-icon>
     </ion-col>
   </ion-row>
-  <div style="height: 100%; top: 35%">
-    <ion-row style="width: 100%">
-      <ion-col size="1"> </ion-col>
-      <ion-col size="10" class="ion-align-self-center">
-        <h3 style="text-align: center">Escanee el código QR de la sucursal</h3>
+  <div [hidden]="isNew">
+    <div style="height: 100%; top: 35%">
+      <ion-row style="width: 100%">
+        <ion-col size="1"> </ion-col>
+        <ion-col size="10" class="ion-align-self-center">
+          <h3 style="text-align: center">
+            Escanee el código QR de la sucursal
+          </h3>
+        </ion-col>
+        <ion-col size="1"> </ion-col>
+      </ion-row>
+    </div>
+    <ion-fab vertical="bottom" horizontal="center" slot="fixed">
+      <ion-fab-button class="icon-danger" (click)="onScanQr()">
+        <ion-icon name="camera-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+  </div>
+  <div *ngIf="isNew" style="padding: 5px">
+    <ion-row>
+      <ion-col size="12">
+        <h3 class="center title">Crear nuevo inventario</h3>
+        <ion-row>
+          <ion-col size="5">
+            <h5 class="title">Sucursal:</h5>
+          </ion-col>
+          <ion-col size="7">
+            <h5>{{ selectedSucursal?.nombre | titlecase }}</h5>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="5">
+            <div class="title">Responsable:</div>
+          </ion-col>
+          <ion-col size="7">
+            {{ loginService?.usuarioActual?.persona?.nombre | titlecase }}
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="5">
+            <div class="title">Tipo:</div>
+          </ion-col>
+          <ion-col size="7">
+            Zona
+          </ion-col>
+        </ion-row>
       </ion-col>
-      <ion-col size="1"> </ion-col>
     </ion-row>
+    <ion-item-divider></ion-item-divider>
+    <ion-row>
+      <ion-col size="12">
+        <ion-list>
+          <ion-list-header>
+            <ion-label>Recomendaciones:</ion-label>
+          </ion-list-header>
+          <ion-item>
+            <p>Verifique que todas los sectores y zonas esten debidamente identificados. </p>
+          </ion-item>
+        </ion-list>
+      </ion-col>
+    </ion-row>
+
+    <ion-fab vertical="bottom" horizontal="start" slot="fixed">
+      <ion-row style="width: 100%;">
+        <ion-col size="12" class="center">
+          <ion-button fill="clear" class="btn-danger-flat" (click)="onCancel()"
+            >Cancelar</ion-button
+          >
+        </ion-col>
+      </ion-row>
+    </ion-fab>
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+      <ion-row style="width: 100%;">
+        <ion-col size="12" class="center">
+          <ion-button
+            fill="clear"
+            class="btn-success-flat"
+            (click)="onAceptar()"
+            >Iniciar</ion-button
+          >
+        </ion-col>
+      </ion-row>
+    </ion-fab>
   </div>
 </ion-content>
-
-<ion-fab vertical="bottom" horizontal="center" slot="fixed">
-  <ion-fab-button class="icon-danger" (click)="onScanQr()">
-    <ion-icon name="camera-outline"></ion-icon>
-  </ion-fab-button>
-</ion-fab>
