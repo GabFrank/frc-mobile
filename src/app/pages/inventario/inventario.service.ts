@@ -46,32 +46,32 @@ export class InventarioService {
 
   ) { }
 
-  onGetInventarioUsuario(): Observable<Inventario[]> {
+  async onGetInventarioUsuario(): Promise<Observable<Inventario[]>> {
     return this.genericCrudService.onGetById(this.inventarioPorUsuario, this.mainService.usuarioActual.id);
   }
 
-  onGetTrasferenciasPorFecha(inicio, fin) {
+  async onGetTrasferenciasPorFecha(inicio, fin) {
     return this.genericCrudService.onGetByFecha(this.getInventariosPorFecha, inicio, fin);
   }
 
-  onGetInventarioAbiertoPorSucursal(id): Observable<Inventario[]> {
+  async onGetInventarioAbiertoPorSucursal(id): Promise<Observable<Inventario[]>> {
     return this.genericCrudService.onGetById(this.inventarioAbiertoPorSucursal, id);
   }
 
-  onGetInventario(id): Observable<Inventario> {
+  async onGetInventario(id): Promise<Observable<Inventario>> {
     return this.genericCrudService.onGetById(this.getInventario, id);
   }
 
-  onSaveInventario(input): Observable<Inventario> {
+  async onSaveInventario(input): Promise<Observable<Inventario>> {
     return this.genericCrudService.onSave(this.saveInventario, input);
   }
 
-  onDeleteInventario(id): Observable<boolean> {
+  async onDeleteInventario(id): Promise<Observable<boolean>> {
     return this.genericCrudService.onDelete(this.deleteInventario, id, 'Realmente  desea eliminar esta inventario?')
   }
 
-  onSaveInventarioProducto(input): Observable<InventarioProducto> {
-    this.cargandoService.open(null, false)
+  async onSaveInventarioProducto(input): Promise<Observable<InventarioProducto>> {
+    let loading = await this.cargandoService.open(null, false)
     if (input.usuarioId == null) {
       input.usuarioId = +localStorage.getItem("usuarioId");
     }
@@ -82,7 +82,7 @@ export class InventarioService {
           { fetchPolicy: "no-cache", errorPolicy: "all" }
         ).pipe(untilDestroyed(this))
         .subscribe((res) => {
-          this.cargandoService.close()
+          this.cargandoService.close(loading)
           if (res.errors == null) {
             obs.next(res.data["data"]);
             this.notificacionService.open('Guardado con éxito', TipoNotificacion.SUCCESS, 2)
@@ -100,16 +100,16 @@ export class InventarioService {
     });
   }
 
-  onDeleteInventarioProducto(id): Observable<boolean> {
-    return this.genericCrudService.onDelete(this.deleteInventarioProducto, id, 'Realmente  desea eliminar este item')
+  async onDeleteInventarioProducto(id): Promise<Observable<boolean>> {
+    return await this.genericCrudService.onDelete(this.deleteInventarioProducto, id, 'Realmente  desea eliminar este item')
   }
 
-  onSaveInventarioProductoItem(input): Observable<InventarioProductoItem> {
-    return this.genericCrudService.onSave(this.saveInventarioProductoItem, input);
+  async onSaveInventarioProductoItem(input): Promise<Observable<InventarioProductoItem>> {
+    return await this.genericCrudService.onSave(this.saveInventarioProductoItem, input);
   }
 
-  onDeleteInventarioProductoItem(id): Observable<boolean> {
-    return this.genericCrudService.onDelete(this.deleteInventarioProductoItem, id, 'Realmente  desea eliminar este item')
+  async onDeleteInventarioProductoItem(id): Promise<Observable<boolean>> {
+    return await this.genericCrudService.onDelete(this.deleteInventarioProductoItem, id, 'Realmente  desea eliminar este item')
   }
 
   onFinalizarInventario(id): Observable<Inventario>{

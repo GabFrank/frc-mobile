@@ -1,3 +1,8 @@
+import { TipoEntidad } from './../../../domains/enums/tipo-entidad.enum';
+import { codificarQr, QrData } from './../../../generic/utils/qrUtils';
+import { QrGeneratorComponent } from './../../../components/qr-generator/qr-generator.component';
+import { ImagePopoverComponent } from 'src/app/components/image-popover/image-popover.component';
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { MainService } from 'src/app/services/main.service';
 import { FormControl } from '@angular/forms';
@@ -64,7 +69,7 @@ export class EditInventarioComponent implements OnInit {
     private menuActionService: MenuActionService,
     public mainService: MainService,
     private notificacionService: NotificacionService,
-    private router: Router
+    private router: Router,
   ) { }
 
   ngOnInit() {
@@ -78,8 +83,8 @@ export class EditInventarioComponent implements OnInit {
     }
   }
 
-  buscarInventario(id) {
-    this.inventarioService.onGetInventario(id).pipe(untilDestroyed(this))
+  async buscarInventario(id) {
+    (await this.inventarioService.onGetInventario(id)).pipe(untilDestroyed(this))
       .subscribe(res => {
         if (res != null) {
           this.selectedInventario = res;
@@ -89,10 +94,11 @@ export class EditInventarioComponent implements OnInit {
       })
   }
 
-  onGetSectores(id) {
-    this.sectorSerice.onGetSectores(id)
+  async onGetSectores(id) {
+    (await this.sectorSerice.onGetSectores(id))
       .pipe(untilDestroyed(this))
       .subscribe(res => {
+        console.log(res)
         this.sectorList = res;
       })
   }
@@ -106,14 +112,14 @@ export class EditInventarioComponent implements OnInit {
     arrAux.forEach(s => {
       s.zonaList = s.zonaList.filter(z => filteredZonas.find(fz => fz.id == z.id) == null)
     })
-    this.modalService.openModal(SelectZonaDialogComponent, arrAux).then(res => {
+    this.modalService.openModal(SelectZonaDialogComponent, arrAux).then(async res => {
       if (res.data != null) {
         let selectedZona = res.data;
         let inventarioProducto = new InventarioProducto()
         inventarioProducto.concluido = false;
         inventarioProducto.inventario = this.selectedInventario
         inventarioProducto.zona = selectedZona
-        this.inventarioService.onSaveInventarioProducto(inventarioProducto.toInput())
+        ;(await this.inventarioService.onSaveInventarioProducto(inventarioProducto.toInput()))
           .pipe(untilDestroyed(this))
           .subscribe(res => {
             if (res != null) {
@@ -127,11 +133,11 @@ export class EditInventarioComponent implements OnInit {
   onFinalizarZona(invPro: InventarioProducto, i) {
     let aux = new InventarioProducto;
     invPro = Object.assign(aux, invPro);
-    this.dialogoService.open('Atención', `Usted esta finalizando la zona ${invPro?.zona?.descripcion}. Desea continuar?`).then(res => {
+    this.dialogoService.open('Atención', `Usted esta finalizando la zona ${invPro?.zona?.descripcion}. Desea continuar?`).then(async res => {
       if (res.role == 'aceptar') {
         invPro.inventario = this.selectedInventario;
         invPro.concluido = true;
-        this.inventarioService.onSaveInventarioProducto(invPro.toInput())
+        (await this.inventarioService.onSaveInventarioProducto(invPro.toInput()))
           .pipe(untilDestroyed(this))
           .subscribe(res2 => {
             this.selectedInventario.inventarioProductoList[i] = invPro;
@@ -145,11 +151,11 @@ export class EditInventarioComponent implements OnInit {
     let aux = new InventarioProducto;
     invPro = Object.assign(aux, invPro);
     if (this.verificarAbiertos()) {
-      this.dialogoService.open('Atención', `Usted esta reabriendo la zona ${invPro?.zona?.descripcion}. Desea continuar?`).then(res => {
+      this.dialogoService.open('Atención', `Usted esta reabriendo la zona ${invPro?.zona?.descripcion}. Desea continuar?`).then(async res => {
         if (res.role == 'aceptar') {
           invPro.inventario = this.selectedInventario;
           invPro.concluido = false;
-          this.inventarioService.onSaveInventarioProducto(invPro.toInput())
+          (await this.inventarioService.onSaveInventarioProducto(invPro.toInput()))
             .pipe(untilDestroyed(this))
             .subscribe(res2 => {
               this.selectedInventario.inventarioProductoList[i] = invPro;
@@ -187,9 +193,9 @@ export class EditInventarioComponent implements OnInit {
           presentacion: selectedPresentacion,
           inventarioProductoItem: null
         }
-        this.modalService.openModal(EditInventarioItemDialogComponent, data).then(res2 => {
+        this.modalService.openModal(EditInventarioItemDialogComponent, data).then(async res2 => {
           if (res2.data != null) {
-            this.inventarioService.onSaveInventarioProductoItem(res2.data)
+            (await this.inventarioService.onSaveInventarioProductoItem(res2.data))
               .pipe(untilDestroyed(this))
               .subscribe(res3 => {
                 if (res3 != null) {
@@ -214,9 +220,9 @@ export class EditInventarioComponent implements OnInit {
       presentacion: selectedPresentacion,
       inventarioProductoItem: invProItem
     }
-    this.modalService.openModal(EditInventarioItemDialogComponent, data).then(res2 => {
+    this.modalService.openModal(EditInventarioItemDialogComponent, data).then(async res2 => {
       if (res2.data != null) {
-        this.inventarioService.onSaveInventarioProductoItem(res2.data)
+        (await this.inventarioService.onSaveInventarioProductoItem(res2.data))
           .pipe(untilDestroyed(this))
           .subscribe(res3 => {
             if (res3 != null) {
@@ -251,7 +257,8 @@ export class EditInventarioComponent implements OnInit {
   onMenuClick() {
     let menu: ActionMenuData[] = [
       { texto: 'Actualizar datos', role: 'actualizar' },
-      { texto: 'Resumen', role: 'resumen' }
+      { texto: 'Resumen', role: 'resumen' },
+      { texto: 'Compartir', role: 'compartir' }
     ]
     this.menuActionService.presentActionSheet(menu).then(res => {
       let role = res.role;
@@ -259,6 +266,12 @@ export class EditInventarioComponent implements OnInit {
         this.ngOnInit()
       } else if (role == 'resumen') {
         this.router.navigate(['finalizar'], { relativeTo: this.route });
+      } else if( role == 'compartir'){
+        let codigo: QrData;
+        codigo.sucursalId = this.selectedInventario?.sucursal?.id;
+        codigo.tipoEntidad = TipoEntidad.INVENTARIO;
+        codigo.idCentral = this.selectedInventario?.id;
+        this.popoverService.open(QrGeneratorComponent, codificarQr(codigo), PopoverSize.XS)
       }
 
     })

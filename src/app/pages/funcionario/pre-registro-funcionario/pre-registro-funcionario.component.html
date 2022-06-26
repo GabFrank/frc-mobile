@@ -104,18 +104,7 @@
           okText="Aceptar"
           [formControl]="sucursal"
         >
-          <ion-select-option value="Depósito">Depósito</ion-select-option>
-          <ion-select-option value="Centro">Centro</ion-select-option>
-          <ion-select-option value="Calle 10">Calle 10</ion-select-option>
-          <ion-select-option value="Km5">Km5</ion-select-option>
-          <ion-select-option value="Industrial">Industrial</ion-select-option>
-          <ion-select-option value="Rotonda">Rotonda</ion-select-option>
-          <ion-select-option value="Puente Kyjha">Puente Kyjha</ion-select-option>
-          <ion-select-option value="Paloma">Paloma</ion-select-option>
-          <ion-select-option value="Katuete 1">Katuete 1</ion-select-option>
-          <ion-select-option value="Katuete 1">Katuete 2</ion-select-option>
-          <ion-select-option value="Troncal San Antonio">Troncal San Antonio</ion-select-option>
-          <ion-select-option value="Troncal Plaza">Troncal Plaza</ion-select-option>
+          <ion-select-option *ngFor="let sucursal of sucursalList" [value]="sucursal?.nombre">{{sucursal?.nombre | titlecase}}</ion-select-option>
         </ion-select>
       </ion-item>
     </ion-col>

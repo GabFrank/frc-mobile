@@ -46,8 +46,8 @@ export class ProductoService {
     this.productosList = [];
   }
 
-  onSearch(texto, offset?): Observable<Producto[]> {
-    this.cargandoService.open()
+  async onSearch(texto, offset?): Promise<Observable<Producto[]>> {
+    let loading = await this.cargandoService.open()
     return new Observable((obs) => {
       this.productoSearch
         .fetch(
@@ -61,7 +61,7 @@ export class ProductoService {
           }
         ).pipe(untilDestroyed(this))
         .subscribe((res) => {
-          this.cargandoService.close()
+          this.cargandoService.close(loading)
           if (res.errors == null) {
             console.log(res.data.data);
             obs.next(res.data.data);
@@ -88,8 +88,8 @@ export class ProductoService {
 
   onSearchParaPdv() {}
 
-  onGetProductoPorId(id): Observable<Producto> {
-    return this.genericService.onGetById(this.productoPorId, id);
+  async onGetProductoPorId(id): Promise<Observable<Producto>> {
+    return await this.genericService.onGetById(this.productoPorId, id);
   }
 
   onSaveProducto(input: ProductoInput): Observable<any> {
@@ -126,8 +126,8 @@ export class ProductoService {
     });
   }
 
-  getProducto(id): Observable<Producto> {
-    return this.genericService.onGetById(this.productoPorId, id);
+  async getProducto(id): Promise<Observable<Producto>> {
+    return await this.genericService.onGetById(this.productoPorId, id);
   }
 
   onImageSave(image: string, filename: string) {

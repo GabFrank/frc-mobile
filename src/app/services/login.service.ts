@@ -12,6 +12,10 @@ import { serverAdress } from 'src/environments/environment';
 import { Usuario } from '../domains/personas/usuario.model';
 import { MainService } from './main.service';
 import { UsuarioService } from './usuario.service';
+import { ModalService } from './modal.service';
+import { CambiarContrasenhaDialogComponent } from '../dialog/login/cambiar-contrasenha-dialog/cambiar-contrasenha-dialog.component';
+import { PopOverService, PopoverSize } from './pop-over.service';
+import { CargandoService } from './cargando.service';
 
 export interface LoginResponse {
   usuario?: Usuario;
@@ -36,7 +40,9 @@ export class LoginService {
     private usuarioService: UsuarioService,
     private mainService: MainService,
     private notificacionService: NotificacionService,
-    private router: Router
+    private router: Router,
+    private popverService: PopOverService,
+    private cargandoService: CargandoService
   ) {}
 
   isAuthenticated(): Observable<Usuario> {
@@ -62,7 +68,8 @@ export class LoginService {
     });
   }
 
-  login(nickname, password): Observable<LoginResponse> {
+  async login(nickname, password): Promise<Observable<LoginResponse>> {
+    let loading = await this.cargandoService.open("Entrando al sistema....")
     return new Observable((obs) => {
       let httpBody = {
         nickname: nickname,
@@ -77,6 +84,7 @@ export class LoginService {
         .pipe(untilDestroyed(this))
         .subscribe(
           (res) => {
+            this.cargandoService.close(loading)
             if (res['token'] != null) {
               localStorage.setItem('token', res['token']);
               setTimeout(() => {
@@ -92,7 +100,17 @@ export class LoginService {
                         };
                         this.usuarioActual = res;
                         this.mainService.usuarioActual = this.usuarioActual;
-                        obs.next(response);
+                        if(password=='123'){
+                          this.popverService.open(CambiarContrasenhaDialogComponent, this.usuarioActual, PopoverSize.XS).then(res2 => {
+                            if(res2!=null){
+                              response.usuario = res2;
+                              this.usuarioActual = res2;
+                              obs.next(response);
+                            }
+                          })
+                        } else {
+                          obs.next(response);
+                        }
                       } else {
                       }
                     });
@@ -101,12 +119,12 @@ export class LoginService {
             }
           },
           (error) => {
+            this.cargandoService.close(loading)
             let response: LoginResponse = {
               usuario: null,
               error: error,
             };
             obs.next(error);
-            this.notificacionService.open(error['message'], TipoNotificacion.DANGER, 10)
           }
         );
     });

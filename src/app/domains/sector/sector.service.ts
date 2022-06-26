@@ -21,19 +21,19 @@ export class SectorService {
     private deleteSector: DeleteSectorGQL
     ) { }
 
-  onGetSector(id): Observable<Sector>{
-    return this.genericCrud.onGetById(this.getSector, id);
+  async onGetSector(id): Promise<Observable<Sector>>{
+    return await this.genericCrud.onGetById(this.getSector, id);
   }
 
-  onGetSectores(sucursalId: number): Observable<Sector[]>{
-    return this.genericCrud.onGetById(this.getSectores, sucursalId);
+  async onGetSectores(sucursalId: number): Promise<Observable<Sector[]>>{
+    return await this.genericCrud.onGetById(this.getSectores, sucursalId);
   }
 
-  onSaveSector(input): Observable<Sector>{
-    return this.genericCrud.onSave(this.saveSector, input);
+  async onSaveSector(input): Promise<Observable<Sector>>{
+    return await this.genericCrud.onSave(this.saveSector, input);
   }
 
-  onDeleteSector(id): Observable<boolean>{
-    return this.genericCrud.onDelete(this.deleteSector, id)
+  async onDeleteSector(id): Promise<Observable<boolean>>{
+    return await this.genericCrud.onDelete(this.deleteSector, id)
   }
 }

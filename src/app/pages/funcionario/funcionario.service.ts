@@ -29,16 +29,16 @@ export class FuncionarioService {
     private cargandoService: CargandoService
   ) { }
 
-  onGetPreRegistroFuncionario(id): Observable<PreRegistroFuncionario> {
-    return this.genericCrud.onGetById(this.getPreRegistroFuncionario, id);
+  async onGetPreRegistroFuncionario(id): Promise<Observable<PreRegistroFuncionario>> {
+    return await this.genericCrud.onGetById(this.getPreRegistroFuncionario, id);
   }
 
-  onGetPreRegistroFuncionarioes(sucursalId: number): Observable<PreRegistroFuncionario[]> {
-    return this.genericCrud.onGetById(this.getPreRegistroFuncionarioes, sucursalId);
+  async onGetPreRegistroFuncionarioes(sucursalId: number): Promise<Observable<PreRegistroFuncionario[]>> {
+    return await this.genericCrud.onGetById(this.getPreRegistroFuncionarioes, sucursalId);
   }
 
-  onSavePreRegistroFuncionario(input): Observable<boolean> {
-    this.cargandoService.open()
+  async onSavePreRegistroFuncionario(input): Promise<Observable<boolean>> {
+    let loading = await this.cargandoService.open()
     console.log(input)
     let httpOptions = {
       headers: new HttpHeaders({
@@ -53,7 +53,7 @@ export class FuncionarioService {
         input,
         httpOptions
       ).pipe(untilDestroyed(this)).subscribe(res => {
-        this.cargandoService.close()
+        this.cargandoService.close(loading)
         if(res?.id!=null){
           obs.next(true)
           this.notificacionService.openGuardadoConExito()
@@ -64,7 +64,7 @@ export class FuncionarioService {
     })
   }
 
-  onDeletePreRegistroFuncionario(id): Observable<boolean> {
-    return this.genericCrud.onDelete(this.deletePreRegistroFuncionario, id)
+  async onDeletePreRegistroFuncionario(id): Promise<Observable<boolean>> {
+    return await this.genericCrud.onDelete(this.deletePreRegistroFuncionario, id)
   }
 }

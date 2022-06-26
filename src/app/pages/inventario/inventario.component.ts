@@ -40,16 +40,16 @@ export class InventarioComponent implements OnInit {
   }
 
   async onScanQr() {
-    this.cargandoService.open('Abriendo camara...')
+    let loading = await this.cargandoService.open('Abriendo camara...')
     setTimeout(() => {
-      this.cargandoService.close()
+      this.cargandoService.close(loading)
     }, 1000);
-    this.barcodeScanner.scan().then(barcodeData => {
+    this.barcodeScanner.scan().then(async barcodeData => {
       this.notificacionService.open('Escaneado con éxito!', TipoNotificacion.SUCCESS, 1)
       let codigo: string = barcodeData.text;
       let qrData: QrData = descodificarQr(codigo);
       if (qrData.tipoEntidad == TipoEntidad.INVENTARIO && qrData.sucursalId != null && qrData.idCentral != null) {
-        this.inventarioService.onGetInventario(qrData.idCentral)
+        (await this.inventarioService.onGetInventario(qrData.idCentral))
           .pipe(untilDestroyed(this))
           .subscribe(res => {
             if (res != null && res.sucursal.id == qrData.sucursalId) {
@@ -72,9 +72,11 @@ export class InventarioComponent implements OnInit {
 
   onNuevoInventario(){
     this.modalService.openModal(NuevoInventarioComponent).then(res => {
-      if(res.data!=null){
-        alert(res.data)
-        // this.router.navigate(['list/info', res.data.id], { relativeTo: this.route });
+      console.log(res)
+      if(res.data?.inventario!=null){
+        this.router.navigate(['list/info', res.data.inventario.id], { relativeTo: this.route });
+      } else {
+
       }
     })
   }

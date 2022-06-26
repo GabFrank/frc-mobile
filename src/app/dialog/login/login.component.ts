@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { CargandoService } from './../../services/cargando.service';
 import { Usuario } from './../../domains/personas/usuario.model';
-import { PopoverController } from '@ionic/angular';
+import { Platform, PopoverController } from '@ionic/angular';
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -26,18 +26,19 @@ export class LoginComponent implements OnInit {
   passwordControl = new FormControl(null, Validators.required)
   formGroup: FormGroup;
   showPassword = false;
-  msg = "Bienvenido/a"
+  msg = "Bienvenido/a";
+  subscription;
   error = null;
   constructor(private loginService: LoginService,
     private popoverController: PopoverController,
     private cargandoService: CargandoService,
     private notificacionService: NotificacionService,
     private router: Router,
-    private modalService: ModalService
+    private modalService: ModalService,
+    private platform: Platform
     ) { }
 
   async ngOnInit() {
-    this.cargandoService.open("Inicializando...", true)
     this.formGroup = new FormGroup({
       'usuario': this.usuarioControl,
       'password': this.passwordControl
@@ -50,19 +51,13 @@ export class LoginComponent implements OnInit {
           this.onSelectUsuarioAndDismiss(res)
         }
       })
-
-    await this.cargandoService.close()
-
   }
 
-  onLogin() {
-    console.log('entrando en on login')
+  async onLogin() {
     this.error = null;
-    this.cargandoService.open("Entrando al sistema....")
-    this.loginService.login(this.usuarioControl.value, this.passwordControl.value)
+    (await this.loginService.login(this.usuarioControl.value, this.passwordControl.value))
       .pipe(untilDestroyed(this))
       .subscribe(res => {
-        this.cargandoService.close()
         if (res.error == null) {
           this.onSelectUsuarioAndDismiss(res.usuario)
         } else {
@@ -84,6 +79,15 @@ export class LoginComponent implements OnInit {
     setTimeout(() => {
       this.modalService.openModal(PreRegistroFuncionarioComponent)
     }, 1000);
+  }
+
+  ionViewDidEnter() {
+    this.subscription = this.platform.backButton.subscribeWithPriority(9999, () => {
+    })
+  }
+
+  ionViewWillLeave() {
+    this.subscription.unsubscribe();
   }
 
 }

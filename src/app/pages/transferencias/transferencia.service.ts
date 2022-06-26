@@ -39,33 +39,33 @@ export class TransferenciaService {
     private transferenciasPorUsuario: GetTransferenciasPorUsuarioGQL
   ) { }
 
-  onGetTrasferenciasPorFecha(inicio, fin) {
-    return this.genericCrudService.onGetByFecha(this.getTransferenciasPorFecha, inicio, fin);
+  async onGetTrasferenciasPorFecha(inicio, fin) {
+    return await this.genericCrudService.onGetByFecha(this.getTransferenciasPorFecha, inicio, fin);
   }
 
-  onGetTransferencia(id): Observable<Transferencia> {
-    return this.genericCrudService.onGetById(this.getTransferencia, id);
+  async onGetTransferencia(id): Promise<Observable<Transferencia>> {
+    return await this.genericCrudService.onGetById(this.getTransferencia, id);
   }
 
-  onSaveTransferencia(input): Observable<Transferencia> {
+  async onSaveTransferencia(input): Promise<Observable<Transferencia>> {
     input.usuarioPreTransferenciaId = this.mainService.usuarioActual.id;
-    return this.genericCrudService.onSave(this.saveTransferencia, input);
+    return await this.genericCrudService.onSave(this.saveTransferencia, input);
   }
 
-  onDeleteTransferencia(id): Observable<boolean> {
-    return this.genericCrudService.onDelete(this.deleteTransfencia, id, 'Realmente  desea eliminar esta transferencia?')
+  async onDeleteTransferencia(id): Promise<Observable<boolean>> {
+    return await this.genericCrudService.onDelete(this.deleteTransfencia, id, 'Realmente  desea eliminar esta transferencia?')
   }
 
-  onSaveTransferenciaItem(input): Observable<TransferenciaItem> {
-    return this.genericCrudService.onSave(this.saveTransferenciaItem, input);
+  async onSaveTransferenciaItem(input): Promise<Observable<TransferenciaItem>> {
+    return await this.genericCrudService.onSave(this.saveTransferenciaItem, input);
   }
 
-  onDeleteTransferenciaItem(id): Observable<boolean> {
-    return this.genericCrudService.onDelete(this.deleteTransferenciaItem, id, 'Realmente desea eliminar este item')
+  async onDeleteTransferenciaItem(id): Promise<Observable<boolean>> {
+    return await this.genericCrudService.onDelete(this.deleteTransferenciaItem, id, 'Realmente desea eliminar este item')
   }
 
-  onGetTrasnferenciasPorUsuario(id): Observable<Transferencia[]> {
-    return this.genericCrudService.onGetById(this.transferenciasPorUsuario, id)
+  async onGetTrasnferenciasPorUsuario(id): Promise<Observable<Transferencia[]>> {
+    return await this.genericCrudService.onGetById(this.transferenciasPorUsuario, id)
   }
 
   onFinalizar(transferencia: Transferencia): Observable<boolean> {

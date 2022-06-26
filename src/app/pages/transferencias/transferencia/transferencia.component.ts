@@ -45,11 +45,11 @@ export class TransferenciaComponent implements OnInit {
   }
 
   async onScanQr() {
-    this.cargandoService.open('Abriendo camara...')
+    let loading = await this.cargandoService.open('Abriendo camara...')
     setTimeout(() => {
-      this.cargandoService.close()
+      this.cargandoService.close(loading)
     }, 1000);
-    this.barcodeScanner.scan().then(barcodeData => {
+    this.barcodeScanner.scan().then(async barcodeData => {
       this.notificacionService.open('Escaneado con éxito!', TipoNotificacion.SUCCESS, 1)
       let codigo: string = barcodeData.text;
       let arr = codigo.split('-')
@@ -57,7 +57,7 @@ export class TransferenciaComponent implements OnInit {
       let sucId: number = +arr[1]
       let transferenciaId = arr[3]
       if (prefix == TipoEntidad.TRANSFERENCIA && sucId != null && transferenciaId != null) {
-        this.transferenciaService.onGetTransferencia(+transferenciaId)
+        (await this.transferenciaService.onGetTransferencia(+transferenciaId))
           .pipe(untilDestroyed(this))
           .subscribe(res => {
             if (res != null && (res.sucursalOrigen.id == sucId || res.sucursalDestino.id == sucId)) {
@@ -75,7 +75,7 @@ export class TransferenciaComponent implements OnInit {
   }
 
   ingresarCodigo() {
-    this.popoverService.open(IngresarCodigoPopComponent).then(res => {
+    this.popoverService.open(IngresarCodigoPopComponent).then(async res => {
       if (res != null) {
         let codigo: string = res.data;
         let arr = codigo.split('-')
@@ -83,7 +83,7 @@ export class TransferenciaComponent implements OnInit {
         let sucId: number = +arr[1]
         let transferenciaId = arr[2]
         if (prefix == TipoEntidad.TRANSFERENCIA && sucId != null && transferenciaId != null) {
-          this.transferenciaService.onGetTransferencia(+transferenciaId)
+          (await this.transferenciaService.onGetTransferencia(+transferenciaId))
             .pipe(untilDestroyed(this))
             .subscribe(res => {
               if (res != null && (res.sucursalOrigen.id == sucId || res.sucursalDestino.id == sucId)) {

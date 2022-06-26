@@ -31,8 +31,8 @@ export class ListInventarioComponent implements OnInit {
     this.verificarUsuario()
   }
 
-  onGetInventarios() {
-    this.inventarioService.onGetInventarioUsuario()
+  async onGetInventarios() {
+    (await this.inventarioService.onGetInventarioUsuario())
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         if (res != null) {

@@ -1,5 +1,5 @@
-import { Ciudad } from "../general/ciudad.model";
-import { Usuario } from "../personas/usuario.model";
+import { Ciudad } from "../../general/ciudad.model";
+import { Usuario } from "../../personas/usuario.model";
 
 export class Sucursal {
   id: number;

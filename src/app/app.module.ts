@@ -33,7 +33,12 @@ import localePY from "@angular/common/locales/es-PY";
 import {
   registerLocaleData,
 } from "@angular/common";
+import { NgxQRCodeModule } from '@techiediaries/ngx-qrcode';
+import { CambiarContrasenhaDialogComponent } from './dialog/login/cambiar-contrasenha-dialog/cambiar-contrasenha-dialog.component';
+import { AppVersion } from '@ionic-native/app-version/ngx'
+
 registerLocaleData(localePY);
+
 
 
 
@@ -73,7 +78,7 @@ export class HammerConfig extends HammerGestureConfig {
 }
 
 @NgModule({
-  declarations: [AppComponent, LoginComponent],
+  declarations: [AppComponent, LoginComponent, CambiarContrasenhaDialogComponent],
   entryComponents: [],
   imports: [
     BrowserModule,
@@ -88,9 +93,15 @@ export class HammerConfig extends HammerGestureConfig {
     ProductoModule,
     HammerModule,
     NgxCurrencyModule,
-    FuncionarioModule
+    FuncionarioModule,
+    NgxQRCodeModule,
+    HttpClientModule,
+    AppVersion
     ],
+  exports: [
+  ],
   providers: [
+    AppVersion,
     {
       provide: HAMMER_GESTURE_CONFIG,
       useClass: HammerConfig

@@ -30,8 +30,8 @@ export class ListTransferenciasComponent implements OnInit {
     this.verificarUsuario()
   }
 
-  onGetTransferencias() {
-    this.transferenciaService.onGetTrasnferenciasPorUsuario(this.mainService?.usuarioActual?.id)
+  async onGetTransferencias() {
+    (await this.transferenciaService.onGetTrasnferenciasPorUsuario(this.mainService?.usuarioActual?.id))
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         if (res != null) {

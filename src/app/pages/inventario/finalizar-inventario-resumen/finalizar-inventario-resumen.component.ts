@@ -60,8 +60,8 @@ export class FinalizarInventarioResumenComponent implements OnInit {
     }).unsubscribe();
   }
 
-  cargarDatos(id) {
-    this.inventarioService.onGetInventario(this.inventarioId)
+  async cargarDatos(id) {
+    (await this.inventarioService.onGetInventario(this.inventarioId))
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         if (res != null) {
@@ -81,8 +81,8 @@ export class FinalizarInventarioResumenComponent implements OnInit {
       })
   }
 
-  onGetSectores(id) {
-    this.sectorService.onGetSectores(id)
+  async onGetSectores(id) {
+    (await this.sectorService.onGetSectores(id))
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         this.sectorList = res;
