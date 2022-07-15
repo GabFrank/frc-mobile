@@ -1,0 +1,20 @@
+[
+  {
+    "cantidad": "2",
+    "descripcion": "PRODUCTO DE PRUEBA 1",
+    "precioUnitario": "6.500",
+    "totalParcial": "13.000"
+  },
+  {
+    "cantidad": "1",
+    "descripcion": "PRODUCTO DE PRUEBA B",
+    "precioUnitario": "25.000",
+    "totalParcial": "25.000"
+  },
+  {
+    "cantidad": "9",
+    "descripcion": "PRODUCTO DE PRUEBA C",
+    "precioUnitario": "2.000",
+    "totalParcial": "18.000"
+  }
+]

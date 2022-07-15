@@ -25,11 +25,11 @@ export class GenericCrudService {
   ) {
   }
 
-  async onGetAll(gql: Query): Promise<Observable<any>> {
+  async onGetAll(gql: Query, page?, size?): Promise<Observable<any>> {
     let loading = await this.cargandoService.open(null, false)
     return new Observable((obs) => {
       gql
-        .fetch({}, { fetchPolicy: "no-cache", errorPolicy: "all" }).pipe(untilDestroyed(this))
+        .fetch({page, size}, { fetchPolicy: "no-cache", errorPolicy: "all" }).pipe(untilDestroyed(this))
         .subscribe((res) => {
           this.isLoading = false
           this.cargandoService.close(loading)
@@ -42,12 +42,34 @@ export class GenericCrudService {
     });
   }
 
-  async onGetById<T>(gql: any, id: number): Promise<Observable<T>> {
+  async onGetById<T>(gql: any, id: number, page?, size?): Promise<Observable<T>> {
     this.isLoading = true;
     let loading = await this.cargandoService.open('Buscando...', false)
     return new Observable((obs) => {
       gql
-        .fetch({ id }, { fetchPolicy: "no-cache", errorPolicy: "all" }).pipe(untilDestroyed(this))
+        .fetch({ id, page, size }, { fetchPolicy: "no-cache", errorPolicy: "all" }).pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          this.isLoading = false;
+          this.cargandoService.close(loading)
+          if (res.errors == null) {
+            obs.next(res.data["data"]);
+            if (res.data["data"] == null) {
+              this.notificacionService.open('Item no encontrado', TipoNotificacion.WARN, 2)
+            }
+          } else {
+            console.log(res.errors)
+            this.notificacionService.open('Ups!! Algo salió mal', TipoNotificacion.DANGER, 2)
+          }
+        });
+    });
+  }
+
+  async onGet<T>(gql: any, data: any): Promise<Observable<T>> {
+    this.isLoading = true;
+    let loading = await this.cargandoService.open('Buscando...', false)
+    return new Observable((obs) => {
+      gql
+        .fetch(data, { fetchPolicy: "no-cache", errorPolicy: "all" }).pipe(untilDestroyed(this))
         .subscribe((res) => {
           this.isLoading = false;
           this.cargandoService.close(loading)

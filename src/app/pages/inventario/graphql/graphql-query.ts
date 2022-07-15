@@ -99,25 +99,33 @@ export const inventarioQuery = gql`
           }
           descripcion
         }
-        inventarioProductoItemList {
-          id
-          presentacion {
-            id
-            cantidad
-            imagenPrincipal
-            producto {
-              id
-              descripcion
-              balanza
-              vencimiento
-            }
-          }
-          estado
-          cantidad
-          vencimiento
-          creadoEn
+      }
+    }
+  }
+`;
+
+export const inventarioProItemPorInventarioProQuery = gql`
+  query ($id: ID!, $page: Int, $size: Int) {
+    data: inventarioProductosItemPorInventarioProducto(id: $id, page: $page, size: $size) {
+      id
+      inventarioProducto {
+        id
+      }
+      zona {
+        id
+      }
+      presentacion {
+        id
+        cantidad
+        producto {
+          descripcion
+          balanza
         }
       }
+      cantidad
+      cantidadFisica
+      vencimiento
+      estado
     }
   }
 `;
@@ -365,6 +373,7 @@ export const saveInventarioProductoItem = gql`
         }
       }
       cantidad
+      cantidadFisica
       vencimiento
       usuario {
         id

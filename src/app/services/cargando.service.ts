@@ -27,13 +27,11 @@ export class CargandoService {
       }
     )
     await loading.present()
-    console.log('abriendo', loading.message, loading.id)
     return loading;
   }
 
   close(loading: HTMLIonLoadingElement) {
     setTimeout(() => {
-      console.log('cerrando', loading.message, loading.id)
       loading.dismiss()
     }, 500);
   }

@@ -4,7 +4,7 @@ org.gradle.jvmargs=-Xmx1536M --add-exports=java.base/sun.nio.ch=ALL-UNNAMED --ad
 npx cap sync
 
 -- comando para iniciar la app enn un dispositivo externo
-ionic capacitor run capacitor -l --external
+ionic capacitor run android -l --external
 
 -- comando para abrir enn android studio
 npx cap open android
@@ -14,8 +14,7 @@ adb kill-server
 adb start-server
 
 -- crear puente tcpip //con el dispositivo conectado
-adb tcpip 5555
+/Users/gabfranck/Library/Android/sdk/platform-tools/adb tcpip 5555
 -- conectar con el ceulalar
-172.25.0.199:555 //ip del dispositivo
-
+/Users/gabfranck/Library/Android/sdk/platform-tools/adb connect 172.25.0.199:5555
 

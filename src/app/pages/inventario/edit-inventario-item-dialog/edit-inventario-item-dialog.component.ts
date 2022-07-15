@@ -4,13 +4,15 @@ import { FormControl, Validators, FormGroup } from '@angular/forms';
 import { InventarioProducto, InventarioProductoEstado, InventarioProductoItem } from './../inventario.model';
 import { Producto } from 'src/app/domains/productos/producto.model';
 import { Presentacion } from 'src/app/domains/productos/presentacion.model';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { IonInput } from '@ionic/angular';
 
 export interface InventarioItemData {
   inventarioProducto?: InventarioProducto;
   inventarioProductoItem?: InventarioProductoItem;
   presentacion?: Presentacion;
   producto?: Producto;
+  peso?: number;
 }
 
 @Component({
@@ -20,12 +22,14 @@ export interface InventarioItemData {
 })
 export class EditInventarioItemDialogComponent implements OnInit {
 
+  isPesable = false;
+
   @Input()
   data: InventarioItemData;
 
   estadosList = Object.values(InventarioProductoEstado)
   selectedInventarioProductoItem: InventarioProductoItem;
-  cantidadControl = new FormControl(null, [Validators.required, Validators.min(1)])
+  cantidadControl = new FormControl(null, [Validators.required, Validators.min(0)])
   vencimientoControl = new FormControl(null, [Validators.required])
   estadoControl = new FormControl(InventarioProductoEstado.BUENO)
   formGroup;
@@ -33,30 +37,35 @@ export class EditInventarioItemDialogComponent implements OnInit {
   constructor(
     private modalService: ModalService,
     private cargandoService: CargandoService
-  ) { }
-
-  ngOnInit() {
-    console.log(this.data.producto)
+  ) {
     this.formGroup = new FormGroup({
       cantidad: this.cantidadControl,
       vencimiento: this.vencimientoControl,
       estado: this.estadoControl
     })
+  }
+
+  ngOnInit() {
 
     if (this.data?.inventarioProductoItem?.id != null) {
       this.cargarDatos(this.data?.inventarioProductoItem)
+    } else if(this.data?.peso != null){
+      this.cantidadControl.setValue(this.data.peso)
     }
+
   }
 
   async cargarDatos(invProItem: InventarioProductoItem) {
-    console.log(invProItem)
     let loading = await this.cargandoService.open()
     setTimeout(() => {
-      this.cargandoService.close(loading)
-      this.selectedInventarioProductoItem = invProItem;
+      this.selectedInventarioProductoItem = new InventarioProductoItem;
+      Object.assign(this.selectedInventarioProductoItem, invProItem)
+      this.isPesable = this.selectedInventarioProductoItem.presentacion.producto.balanza;
+      this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
       this.cantidadControl.setValue(invProItem?.cantidad)
       this.vencimientoControl.setValue(invProItem?.vencimiento)
       this.estadoControl.setValue(invProItem?.estado)
+      this.cargandoService.close(loading)
     }, 1000);
   }
 
@@ -74,6 +83,7 @@ export class EditInventarioItemDialogComponent implements OnInit {
       this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
       this.selectedInventarioProductoItem.estado = this.estadoControl.value;
     }
+    console.log(this.selectedInventarioProductoItem.toInput());
     this.modalService.closeModal(this.selectedInventarioProductoItem.toInput())
   }
 

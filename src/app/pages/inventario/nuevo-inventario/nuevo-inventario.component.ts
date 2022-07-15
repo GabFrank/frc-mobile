@@ -12,6 +12,8 @@ import { Component, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
+import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
+import { Platform } from '@ionic/angular';
 
 @UntilDestroy()
 @Component({
@@ -27,6 +29,7 @@ export class NuevoInventarioComponent implements OnInit {
   selectedSucursal: Sucursal;
   selectedInventario: Inventario;
   isNew = false;
+  isWeb = false;
 
   constructor(
     private inventarioService: InventarioService,
@@ -36,11 +39,12 @@ export class NuevoInventarioComponent implements OnInit {
     private router: Router,
     private sucursalService: SucursalService,
     public loginService: LoginService,
-    private dialogoService: DialogoService
+    private dialogoService: DialogoService,
+    private plf: Platform
   ) { }
 
   ngOnInit() {
-
+    this.isWeb = this.plf.platforms().includes('mobileweb')
   }
 
   async cargarDatos(sucId) {
@@ -53,8 +57,7 @@ export class NuevoInventarioComponent implements OnInit {
             .pipe(untilDestroyed(this))
             .subscribe(res2 => {
               if (res2.length > 0) {
-                this.selectedInventario = res2[0];
-                this.modalService.closeModal({ inventario: this.selectedInventario })
+                this.modalService.closeModal({ inventario: res2[0] })
                 this.notificacionService.open('Hay un inventario abierto en esta sucursal', TipoNotificacion.WARN, 2)
               } else {
                 this.isNew = true;
@@ -66,22 +69,18 @@ export class NuevoInventarioComponent implements OnInit {
   }
 
   onScanQr() {
-    this.barcodeScanner.scan().then(async barcodeData => {
+    !this.isWeb ? this.barcodeScanner.scan().then(async barcodeData => {
       if (barcodeData.text != null) {
         let qrData: QrData;
         qrData = descodificarQr(barcodeData.text)
-        ;(await this.inventarioService.onGetInventarioAbiertoPorSucursal(qrData.sucursalId))
-          .pipe(untilDestroyed(this))
-          .subscribe(res => {
-            if (res.length > 0) {
-              this.selectedInventario = res[0];
-              this.cargarDatos(this.selectedInventario?.id)
-            }
-          })
+        if (qrData.tipoEntidad == TipoEntidad.SUCURSAL && qrData.sucursalId != null) {
+          this.cargarDatos(qrData.sucursalId)
+        }
+
       } else {
 
       }
-    })
+    }) : this.cargarDatos(6);
   }
 
   onBack() {
