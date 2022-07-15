@@ -1,4 +1,4 @@
-export interface QrData {
+export class QrData {
   sucursalId;
   tipoEntidad;
   idOrigen;

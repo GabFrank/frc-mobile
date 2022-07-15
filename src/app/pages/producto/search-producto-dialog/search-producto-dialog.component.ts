@@ -12,6 +12,8 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ProductoService } from '../producto.service';
 import { ImagePopoverComponent } from 'src/app/components/image-popover/image-popover.component';
 import { Location } from '@angular/common';
+import { Platform } from '@ionic/angular';
+import { CodigoService } from '../../codigo/codigo.service';
 
 export interface SearchProductoDialogData {
   mostrarPrecio: boolean;
@@ -37,6 +39,8 @@ export class SearchProductoDialogComponent implements OnInit {
   showCargarMas = true;
   mostrarPrecio = false;
 
+  isWeb = false;
+
   constructor(
     private productoService: ProductoService,
     private popoverService: PopOverService,
@@ -44,21 +48,30 @@ export class SearchProductoDialogComponent implements OnInit {
     private dialogService: DialogoService,
     private barcodeScanner: BarcodeScanner,
     private route: ActivatedRoute,
-    private _location: Location
-  ) { }
+    private _location: Location,
+    private plf: Platform,
+    private codigoService: CodigoService
 
-  ngOnInit() {
-    console.log(this.data)
-    if(this.data?.data?.mostrarPrecio!=null){
-      this.mostrarPrecio = this.data.data.mostrarPrecio;
-    }
+  ) {
+    this.isWeb = plf.platforms().includes('mobileweb');
   }
 
-  onBuscarClick(){
+  ngOnInit() {
+    if (this.data?.data?.mostrarPrecio != null) {
+      this.mostrarPrecio = this.data.data.mostrarPrecio;
+    }
+
+    this.isWeb ? null : this.onCameraClick()
+  }
+
+  onBuscarClick() {
     this.onSearchProducto(this.buscarControl.value, null)
   }
 
   onSearchProducto(text: string, offset?: number) {
+    let isPesable = false;
+    let peso;
+    let codigo;
     this.isSearching = true;
     if (this.onSearchTimer != null) {
       clearTimeout(this.onSearchTimer);
@@ -67,29 +80,45 @@ export class SearchProductoDialogComponent implements OnInit {
       console.log("text is ", text);
       this.isSearching = false;
     } else {
+      if (text.length == 13 && text.substring(0, 2) == '20') {
+        isPesable = true;
+        codigo = text.substring(2, 7)
+        peso = +text.substring(7, 12) / 1000
+        text = codigo
+      }
       this.onSearchTimer = setTimeout(async () => {
-        (await this.productoService.onSearch(text, offset)).pipe(untilDestroyed(this)).subscribe((res) => {
+        if (isPesable) {
+          (await this.codigoService.onGetCodigoPorCodigo(codigo)).pipe(untilDestroyed(this)).subscribe(codigoRes => {
+            console.log(codigoRes);
+            if(codigoRes.length == 1){
+              this.onPresentacionClick(codigoRes[0]?.presentacion, codigoRes[0]?.presentacion?.producto, peso);
+            }
+          })
+        } else {
+          (await this.productoService.onSearch(text, offset)).pipe(untilDestroyed(this)).subscribe((res) => {
             if (offset == null) {
               this.productosList = res;
               this.showCargarMas = true
             } else {
-              if(res?.length > 0) this.showCargarMas = true
+              if (res?.length > 0) this.showCargarMas = true
               const arr = [...this.productosList.concat(res)];
               this.productosList = arr;
             }
             this.isSearching = false;
-        });
+          });
+        }
+
       }, 1000);
     }
   }
 
-  onAvatarClick(image){
+  onAvatarClick(image) {
     this.popoverService.open(ImagePopoverComponent, {
       image
     }, PopoverSize.MD)
   }
 
-  onMasProductos(){
+  onMasProductos() {
     this.showCargarMas = false;
     this.onSearchProducto(this.buscarControl.value, this.productosList?.length)
   }
@@ -103,25 +132,25 @@ export class SearchProductoDialogComponent implements OnInit {
     }
   }
 
-  onPresentacionClick(presentacion: Presentacion, producto: Producto){
+  onPresentacionClick(presentacion: Presentacion, producto: Producto, peso?: number) {
     this.dialogService.open('Atención', `Seleccionaste el producto ${producto.descripcion} con la presentacion de ${presentacion.cantidad} unidades.`)
       .then(res => {
-        if(res.role=='aceptar'){
-          this.modalService.closeModal({presentacion : presentacion, producto: producto})
+        if (res.role == 'aceptar') {
+          this.modalService.closeModal({ presentacion: presentacion, producto: producto, peso: peso})
 
         }
       })
   }
 
-  onBack(){
-    if(this.modalService?.currentModal!=null){
+  onBack() {
+    if (this.modalService?.currentModal != null) {
       this.modalService.closeModal(null)
     } else {
       this._location.back()
     }
   }
 
-  onCameraClick(){
+  onCameraClick() {
     this.barcodeScanner.scan().then(barcodeData => {
       this.buscarControl.setValue(barcodeData.text)
       this.onSearchProducto(this.buscarControl.value, null)

@@ -3,7 +3,7 @@ import { ModalService } from './services/modal.service';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { CargandoService } from './services/cargando.service';
 import { Component, NgZone, OnInit } from '@angular/core';
-import { MenuController, PopoverController } from '@ionic/angular';
+import { MenuController, Platform, PopoverController } from '@ionic/angular';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { LoginComponent } from './dialog/login/login.component';
 import { LoginService } from './services/login.service';
@@ -38,16 +38,11 @@ export class AppComponent implements OnInit {
     private cargandoService: CargandoService,
     private notificacionService: NotificacionService,
     private modalService: ModalService,
-    // private zone: NgZone,
-    // private router: Router
-
-    // platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen
   ) {
     this.optionZbar = {
       flash: 'off',
       drawSight: false
     }
-    // this.initializeApp();
   }
 
   // initializeApp() {
@@ -71,6 +66,8 @@ export class AppComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
+
+
     this.showLoginPop();
 
     this.statusSub = connectionStatusSub
@@ -78,7 +75,6 @@ export class AppComponent implements OnInit {
       .subscribe(async (res) => {
         let loading = await this.cargandoService.open('Conectando al servidor..')
         if (res == true) {
-          console.log(loading)
           this.cargandoService.close(loading)
           this.notificacionService.open('Servidor conectado', TipoNotificacion.SUCCESS, 2)
           this.online = true;

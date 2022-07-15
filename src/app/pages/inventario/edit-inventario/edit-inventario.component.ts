@@ -15,7 +15,7 @@ import { SelectZonaDialogComponent } from './../select-zona-dialog/select-zona-d
 import { ModalService } from './../../../services/modal.service';
 import { ActionMenuData } from './../../../services/menu-action.service';
 import { MenuActionService } from 'src/app/services/menu-action.service';
-import { InventarioProducto, InventarioProductoItem } from './../inventario.model';
+import { InventarioProducto, InventarioProductoItem, InventarioProductoItemInput } from './../inventario.model';
 import { Sector } from './../../../domains/sector/sector.model';
 import { CargandoService } from './../../../services/cargando.service';
 import { UntilDestroy } from '@ngneat/until-destroy';
@@ -27,6 +27,8 @@ import { Inventario } from '../inventario.model';
 import { SectorService } from 'src/app/domains/sector/sector.service';
 import { Location } from '@angular/common';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
+import { ProductoService } from '../../producto/producto.service';
+import { Platform } from '@ionic/angular';
 
 export class InventarioData {
   sector: Sector;
@@ -46,6 +48,7 @@ enum OpcionesMostrar {
   styleUrls: ['./edit-inventario.component.scss'],
 })
 export class EditInventarioComponent implements OnInit {
+
 
   selectedInventario: Inventario;
   sectorList: Sector[] = []
@@ -70,17 +73,22 @@ export class EditInventarioComponent implements OnInit {
     public mainService: MainService,
     private notificacionService: NotificacionService,
     private router: Router,
-  ) { }
+    private productoService: ProductoService,
+  ) {
+  }
 
   ngOnInit() {
     this.selectedResponsable = this.mainService.usuarioActual;
-    this.route.paramMap.subscribe(res => {
-      this.inventarioId = res.get('id')
-    }).unsubscribe();
+    this.route.paramMap
+      .pipe(untilDestroyed(this))
+      .subscribe(res => {
+        this.inventarioId = res.get('id')
+        if (this.inventarioId != null) {
+          this.buscarInventario(this.inventarioId)
+        }
+      })
 
-    if (this.inventarioId != null) {
-      this.buscarInventario(this.inventarioId)
-    }
+
   }
 
   async buscarInventario(id) {
@@ -103,31 +111,38 @@ export class EditInventarioComponent implements OnInit {
       })
   }
 
-  onAddZona() {
+  async onAddZona() {
     let arrAux: Sector[] = this.sectorList;
-    let filteredZonas: Zona[] = []
-    this.selectedInventario.inventarioProductoList.forEach(ip => {
-      filteredZonas.push(ip?.zona)
-    })
-    arrAux.forEach(s => {
-      s.zonaList = s.zonaList.filter(z => filteredZonas.find(fz => fz.id == z.id) == null)
-    })
-    this.modalService.openModal(SelectZonaDialogComponent, arrAux).then(async res => {
-      if (res.data != null) {
-        let selectedZona = res.data;
-        let inventarioProducto = new InventarioProducto()
-        inventarioProducto.concluido = false;
-        inventarioProducto.inventario = this.selectedInventario
-        inventarioProducto.zona = selectedZona
-        ;(await this.inventarioService.onSaveInventarioProducto(inventarioProducto.toInput()))
-          .pipe(untilDestroyed(this))
-          .subscribe(res => {
-            if (res != null) {
-              this.buscarInventario(this.inventarioId)
-            }
-          })
-      }
-    })
+    let filteredZonas: Zona[] = [];
+
+    (await this.inventarioService.onGetInventario(this.selectedInventario.id))
+      .pipe(untilDestroyed(this))
+      .subscribe(res => {
+        if (res != null) this.selectedInventario = res;
+        this.selectedInventario.inventarioProductoList.forEach(ip => {
+          filteredZonas.push(ip?.zona)
+        })
+        arrAux.forEach(s => {
+          s.zonaList = s.zonaList.filter(z => filteredZonas.find(fz => fz.id == z.id) == null)
+        })
+        this.modalService.openModal(SelectZonaDialogComponent, arrAux).then(async res => {
+          if (res.data != null) {
+            let selectedZona = res.data;
+            let inventarioProducto = new InventarioProducto()
+            inventarioProducto.concluido = false;
+            inventarioProducto.inventario = this.selectedInventario
+            inventarioProducto.zona = selectedZona
+              ; (await this.inventarioService.onSaveInventarioProducto(inventarioProducto.toInput()))
+                .pipe(untilDestroyed(this))
+                .subscribe(res => {
+                  if (res != null) {
+                    this.buscarInventario(this.inventarioId)
+                  }
+                })
+          }
+        })
+      })
+
   }
 
   onFinalizarZona(invPro: InventarioProducto, i) {
@@ -191,17 +206,29 @@ export class EditInventarioComponent implements OnInit {
           inventarioProducto: invPro,
           producto: selectedProducto,
           presentacion: selectedPresentacion,
-          inventarioProductoItem: null
+          inventarioProductoItem: null,
+          peso: res.data['peso']
         }
-        this.modalService.openModal(EditInventarioItemDialogComponent, data).then(async res2 => {
+        this.modalService.openModal(EditInventarioItemDialogComponent, data).then(async (res2: any) => {
           if (res2.data != null) {
-            (await this.inventarioService.onSaveInventarioProductoItem(res2.data))
+            let invProItemAux: InventarioProductoItemInput = res2.data;
+            (await this.productoService.onGetStockPorSucursal(data.producto?.id, this.selectedInventario.sucursal.id))
+              .pipe(untilDestroyed(this))
+              .subscribe(stockResponse => {
+                if (stockResponse != null) {
+                  invProItemAux.cantidadFisica = stockResponse;
+                  console.log(stockResponse)
+                }
+              });
+            (await this.inventarioService.onSaveInventarioProductoItem(invProItemAux))
               .pipe(untilDestroyed(this))
               .subscribe(res3 => {
                 if (res3 != null) {
+                  console.log(res3);
                   this.selectedInventario.inventarioProductoList.forEach(i => {
                     if (i.inventarioProductoItemList == null) i.inventarioProductoItemList = []
-                    i.inventarioProductoItemList.push(res3)
+                    if (i.inventarioProductoItemList.length > 4) i.inventarioProductoItemList.pop()
+                    i.inventarioProductoItemList.unshift(res3)
                   })
                 }
               })
@@ -211,11 +238,11 @@ export class EditInventarioComponent implements OnInit {
     })
   }
 
-  onEditProducto(invProItem: InventarioProductoItem, index) {
+  onEditProducto(invProItem: InventarioProductoItem, index, invPro: InventarioProducto) {
     let selectedPresentacion = invProItem?.presentacion;
     let selectedProducto = invProItem?.presentacion?.producto;
     let data: InventarioItemData = {
-      inventarioProducto: invProItem.inventarioProducto,
+      inventarioProducto: invPro,
       producto: selectedProducto,
       presentacion: selectedPresentacion,
       inventarioProductoItem: invProItem
@@ -266,8 +293,8 @@ export class EditInventarioComponent implements OnInit {
         this.ngOnInit()
       } else if (role == 'resumen') {
         this.router.navigate(['finalizar'], { relativeTo: this.route });
-      } else if( role == 'compartir'){
-        let codigo: QrData;
+      } else if (role == 'compartir') {
+        let codigo = new QrData;
         codigo.sucursalId = this.selectedInventario?.sucursal?.id;
         codigo.tipoEntidad = TipoEntidad.INVENTARIO;
         codigo.idCentral = this.selectedInventario?.id;
@@ -277,4 +304,34 @@ export class EditInventarioComponent implements OnInit {
     })
   }
 
+  async onGetProductosItemList(invPro: InventarioProducto, index) {
+    if (invPro.inventarioProductoItemList == null) {
+      (await this.inventarioService.onGetInventarioProItem(invPro.id, 0)).pipe(untilDestroyed(this)).subscribe(res => {
+        if (res != null) {
+          this.selectedInventario.inventarioProductoList[index].inventarioProductoItemList = res;
+        }
+      })
+    }
+  }
+
+  async onCargarMas(invPro: InventarioProducto, index) {
+    let page = Math.floor((invPro.inventarioProductoItemList.length - 1) / 5) + 1;
+    (await this.inventarioService.onGetInventarioProItem(invPro.id, page)).pipe(untilDestroyed(this)).subscribe(res => {
+      console.log(res);
+      if (res != null) {
+        this.selectedInventario.inventarioProductoList[index].inventarioProductoItemList = this.selectedInventario.inventarioProductoList[index].inventarioProductoItemList.concat(res);
+      }
+    })
+  }
+
+  async onCargarMenos(invPro: InventarioProducto, index) {
+    let length = this.selectedInventario.inventarioProductoList[index].inventarioProductoItemList.length;
+    let sobra = length - 4;
+    this.selectedInventario.inventarioProductoList[index].inventarioProductoItemList.splice(length-sobra, sobra-1)
+  }
+
+
 }
+
+
+

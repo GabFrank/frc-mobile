@@ -19,6 +19,7 @@ import { SaveInventarioProductoItemGQL } from './graphql/saveInventarioProductoI
 import { untilDestroyed } from '@ngneat/until-destroy';
 import { GetInventarioPorUsuarioGQL } from './graphql/getInventarioPorUsuario';
 import { GetInventarioAbiertoPorSucursalGQL } from './graphql/getInventarioAbiertoPorSucursal';
+import { GetInventarioItemPorInvetarioProductoGQL } from './graphql/getInventarioProductoItemPorInventarioProducto copy';
 
 @UntilDestroy()
 @Injectable({
@@ -42,7 +43,8 @@ export class InventarioService {
     private mainService: MainService,
     private finalizarInventario: FinalizarInventarioGQL,
     private cancelarInventrio: CancelarInventarioGQL,
-    private inventarioAbiertoPorSucursal: GetInventarioAbiertoPorSucursalGQL
+    private inventarioAbiertoPorSucursal: GetInventarioAbiertoPorSucursalGQL,
+    private getInventarioProItem: GetInventarioItemPorInvetarioProductoGQL
 
   ) { }
 
@@ -60,6 +62,10 @@ export class InventarioService {
 
   async onGetInventario(id): Promise<Observable<Inventario>> {
     return this.genericCrudService.onGetById(this.getInventario, id);
+  }
+
+  async onGetInventarioProItem(id, page): Promise<Observable<InventarioProductoItem[]>> {
+    return this.genericCrudService.onGetById(this.getInventarioProItem, id, page, 5);
   }
 
   async onSaveInventario(input): Promise<Observable<Inventario>> {

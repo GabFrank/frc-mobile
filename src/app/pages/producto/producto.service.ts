@@ -21,6 +21,8 @@ import { ProductoPorIdGQL } from "./graphql/productoPorId";
 import { ProductoForPdvGQL } from "./graphql/productoSearchForPdv";
 import { SaveImagenProductoGQL } from "./graphql/saveImagenProducto";
 import { SaveProductoGQL } from "./graphql/saveProducto";
+import { ProductoStockBySucursalGQL } from './graphql/stockBySucursalAndProductoId';
+import { ProductoPorCodigoGQL } from './graphql/productoPorCodigo';
 
 @UntilDestroy({ checkProperties: true })
 @Injectable({
@@ -41,7 +43,9 @@ export class ProductoService {
     private searchForPdv: ProductoForPdvGQL,
     private getAllProductos: AllProductosGQL,
     private genericService: GenericCrudService,
-    private cargandoService: CargandoService
+    private cargandoService: CargandoService,
+    private getStockPorSucursal: ProductoStockBySucursalGQL,
+    private productoPorCodigo: ProductoPorCodigoGQL
   ) {
     this.productosList = [];
   }
@@ -147,5 +151,9 @@ export class ProductoService {
         }
       });
     // })
+  }
+
+  async onGetStockPorSucursal(productoId: number, sucursalId: number): Promise<Observable<number>>{
+    return await this.genericService.onGet(this.getStockPorSucursal, {proId: productoId, sucId: sucursalId});
   }
 }

@@ -35,7 +35,6 @@ import {
 } from "@angular/common";
 import { NgxQRCodeModule } from '@techiediaries/ngx-qrcode';
 import { CambiarContrasenhaDialogComponent } from './dialog/login/cambiar-contrasenha-dialog/cambiar-contrasenha-dialog.component';
-import { AppVersion } from '@ionic-native/app-version/ngx'
 
 registerLocaleData(localePY);
 
@@ -95,13 +94,11 @@ export class HammerConfig extends HammerGestureConfig {
     NgxCurrencyModule,
     FuncionarioModule,
     NgxQRCodeModule,
-    HttpClientModule,
-    AppVersion
+    HttpClientModule
     ],
   exports: [
   ],
   providers: [
-    AppVersion,
     {
       provide: HAMMER_GESTURE_CONFIG,
       useClass: HammerConfig

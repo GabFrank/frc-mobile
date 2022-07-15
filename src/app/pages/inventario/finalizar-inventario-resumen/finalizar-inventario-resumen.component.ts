@@ -13,6 +13,7 @@ import { Sector } from 'src/app/domains/sector/sector.model';
 import { SectorService } from 'src/app/domains/sector/sector.service';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
 import { convertMsToTime } from 'src/app/generic/utils/dateUtils';
+import { CargandoService } from 'src/app/services/cargando.service';
 
 @UntilDestroy()
 @Component({
@@ -45,7 +46,8 @@ export class FinalizarInventarioResumenComponent implements OnInit {
     private _location: Location,
     private sectorService: SectorService,
     private mainService: MainService,
-    private dialogoService: DialogoService
+    private dialogoService: DialogoService,
+    private cargandoService: CargandoService
   ) { }
 
   ngOnInit() {
@@ -119,11 +121,13 @@ export class FinalizarInventarioResumenComponent implements OnInit {
   onFinalizar() {
     let texto = 'Realmente desea finalizar este inventario?. Se procedera a ajustar el stock';
     if (this.terminadas > 0) texto = `Aún quedan zonas sin inventariar. Realmente desea finalizar este inventario?. Se procedera a ajustar el stock`;
-    this.dialogoService.open('Atención!', texto).then(res => {
+    this.dialogoService.open('Atención!', texto).then(async res => {
       if (res.role == 'aceptar') {
+        let loading = await this.cargandoService.open('Finalizando...')
         this.inventarioService.onFinalizarInventario(this.selectedInventario?.id)
           .pipe(untilDestroyed(this)) //cuando recibe respuesta se cierra observable
           .subscribe(respuesta => {
+            this.cargandoService.close(loading)
             if(respuesta!=null) this.selectedInventario = respuesta;
           })
       }
@@ -131,7 +135,7 @@ export class FinalizarInventarioResumenComponent implements OnInit {
   }
 
   onCancelar() {
-    let texto = 'Realmente desea cancelar este inventario?. Se procedera a ajustar el stock. Esta acción no se puede deshacer.';
+    let texto = 'Realmente desea cancelar este inventario?. Se procedera a reajustar el stock. Esta acción no se puede deshacer.';
     this.dialogoService.open('Atención!', texto).then(res => {
       if (res.role == 'aceptar') {
         this.inventarioService.onCancelarInventario(this.selectedInventario?.id)

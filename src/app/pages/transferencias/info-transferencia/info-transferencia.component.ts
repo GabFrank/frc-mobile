@@ -12,6 +12,11 @@ import { Location } from '@angular/common';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
 import { MenuActionService } from 'src/app/services/menu-action.service';
 import { updateDataSourceWithId } from 'src/app/generic/utils/numbersUtils';
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { CargandoService } from 'src/app/services/cargando.service';
+import { Platform } from '@ionic/angular';
+import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
+import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
 
 
 @UntilDestroy()
@@ -19,11 +24,17 @@ import { updateDataSourceWithId } from 'src/app/generic/utils/numbersUtils';
   selector: 'app-info-transferencia',
   templateUrl: './info-transferencia.component.html',
   styleUrls: ['./info-transferencia.component.scss'],
+  providers: [BarcodeScanner]
 })
 export class InfoTransferenciaComponent implements OnInit {
 
   selectedTransferencia: Transferencia;
   selectedResponsable: Usuario;
+
+  isWeb = false;
+
+
+
 
   isPreTransferenciaCreacion = false;
   isPreTransferenciaOrigen = false;
@@ -46,8 +57,16 @@ export class InfoTransferenciaComponent implements OnInit {
     private _location: Location,
     private mainService: MainService,
     private menuActionService: MenuActionService,
-    private popoverService: PopOverService
-  ) { }
+    private popoverService: PopOverService,
+    private barcodeScanner: BarcodeScanner,
+    private cargandoService: CargandoService,
+    private plf: Platform,
+    private notificacionService: NotificacionService
+
+  ) {
+    this.isWeb = this.plf.platforms().includes('mobileweb')
+
+  }
 
   ngOnInit() {
     //innicializar arrays
@@ -66,8 +85,8 @@ export class InfoTransferenciaComponent implements OnInit {
         .subscribe(res => {
           if (res != null) {
             this.selectedTransferencia = res;
-            this.selectedTransferencia.transferenciaItemList.sort((a,b)=>{
-              if(a.id < b.id){
+            this.selectedTransferencia.transferenciaItemList.sort((a, b) => {
+              if (a.id < b.id) {
                 return -1;
               } else {
                 return 1;
@@ -216,9 +235,12 @@ export class InfoTransferenciaComponent implements OnInit {
     }) : null;
   }
 
-  onAvanzarEtapa(etapa) {
-    console.log(etapa)
-    this.transferenciaService.onAvanzarEtapa(this.selectedTransferencia, etapa)
+  async onAvanzarEtapa(etapa) {
+    let ok = true;
+    if (etapa == EtapaTransferencia.RECEPCION_EN_VERIFICACION) {
+      ok = await this.onVerificarSucursal()
+    }
+    ok ? this.transferenciaService.onAvanzarEtapa(this.selectedTransferencia, etapa)
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         if (res) {
@@ -238,6 +260,8 @@ export class InfoTransferenciaComponent implements OnInit {
           this.verificarEtapa()
         }
       })
+      :
+      null;
   }
 
   async onConfirm(item: TransferenciaItem) {
@@ -410,10 +434,39 @@ export class InfoTransferenciaComponent implements OnInit {
     })
   }
 
-  onAvatarClick(image){
+  onAvatarClick(image) {
     this.popoverService.open(ImagePopoverComponent, {
       image
     }, PopoverSize.MD)
+  }
+
+  async onVerificarSucursal(): Promise<boolean> {
+    let loading = await this.cargandoService.open('Abriendo camara...')
+    setTimeout(() => {
+      this.cargandoService.close(loading)
+    }, 1000);
+    if (!this.isWeb) {
+      this.barcodeScanner.scan().then(async barcodeData => {
+        this.notificacionService.open('Escaneado con éxito!', TipoNotificacion.SUCCESS, 1)
+        let codigo: string = barcodeData.text;
+        let arr = codigo.split('-')
+        let prefix = arr[2]
+        let sucId: number = +arr[1]
+        if (prefix == TipoEntidad.SUCURSAL && sucId != null) {
+          if (this.selectedTransferencia?.sucursalDestino?.id == sucId) {
+            return true;
+          }
+        } else {
+          this.notificacionService.openItemNoEncontrado()
+          return false;
+        }
+      }).catch(err => {
+        this.notificacionService.openAlgoSalioMal()
+        return false;
+      });
+    } else {
+      return true;
+    }
   }
 
 }

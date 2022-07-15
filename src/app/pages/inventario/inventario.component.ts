@@ -12,6 +12,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
+import { Platform } from '@ionic/angular';
 
 @UntilDestroy()
 @Component({
@@ -22,6 +23,7 @@ import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
 })
 export class InventarioComponent implements OnInit {
 
+    isWeb = false;
 
  constructor(private scannerService: ScannerService,
     private cargandoService: CargandoService,
@@ -32,11 +34,10 @@ export class InventarioComponent implements OnInit {
     private activatedRoute: ActivatedRoute,
     private barcodeScanner: BarcodeScanner,
     private notificacionService: NotificacionService,
-    private modalService: ModalService
+    private modalService: ModalService,
   ) { }
 
   async ngOnInit() {
-
   }
 
   async onScanQr() {
@@ -72,8 +73,7 @@ export class InventarioComponent implements OnInit {
 
   onNuevoInventario(){
     this.modalService.openModal(NuevoInventarioComponent).then(res => {
-      console.log(res)
-      if(res.data?.inventario!=null){
+      if(res.data?.inventario?.id!=null){
         this.router.navigate(['list/info', res.data.inventario.id], { relativeTo: this.route });
       } else {
 
