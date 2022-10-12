@@ -16,6 +16,7 @@ import { PrepararTransferenciaGQL } from './graphql/prepararTransferencia';
 import { SaveTransferenciaGQL } from './graphql/saveTransferencia';
 import { SaveTransferenciaItemGQL } from './graphql/saveTransferenciaItem';
 import { Transferencia, TransferenciaItem, TransferenciaEstado, EtapaTransferencia } from './transferencia.model';
+import { GetTransferenciaItensPorTransferenciaIdGQL } from './graphql/getTransferenciaItensPorTransferenciaId';
 
 @UntilDestroy()
 @Injectable({
@@ -36,7 +37,8 @@ export class TransferenciaService {
     private mainService: MainService,
     private dialogoService: DialogoService,
     private notificacionService: NotificacionService,
-    private transferenciasPorUsuario: GetTransferenciasPorUsuarioGQL
+    private transferenciasPorUsuario: GetTransferenciasPorUsuarioGQL,
+    private transferenciaItemPorTransferenciaId: GetTransferenciaItensPorTransferenciaIdGQL
   ) { }
 
   async onGetTrasferenciasPorFecha(inicio, fin) {
@@ -54,6 +56,10 @@ export class TransferenciaService {
 
   async onDeleteTransferencia(id): Promise<Observable<boolean>> {
     return await this.genericCrudService.onDelete(this.deleteTransfencia, id, 'Realmente  desea eliminar esta transferencia?')
+  }
+
+  async onGetTransferenciaItensPorTransferenciaId(id, page?, size?): Promise<Observable<TransferenciaItem[]>> {
+    return await this.genericCrudService.onGetById(this.transferenciaItemPorTransferenciaId, id, page, size);
   }
 
   async onSaveTransferenciaItem(input): Promise<Observable<TransferenciaItem>> {

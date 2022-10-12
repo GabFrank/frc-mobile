@@ -35,6 +35,7 @@ import {
 } from "@angular/common";
 import { NgxQRCodeModule } from '@techiediaries/ngx-qrcode';
 import { CambiarContrasenhaDialogComponent } from './dialog/login/cambiar-contrasenha-dialog/cambiar-contrasenha-dialog.component';
+import { AdicionarConteoDialogComponent } from './pages/operaciones/conteo/adicionar-conteo-dialog/adicionar-conteo-dialog.component';
 
 registerLocaleData(localePY);
 

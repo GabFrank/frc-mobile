@@ -72,103 +72,6 @@ export const transferenciaQuery = gql`
           nombre
         }
       }
-      transferenciaItemList {
-        id
-        transferencia {
-          id
-        }
-        presentacionPreTransferencia {
-          id
-          producto {
-            id
-            descripcion
-            codigoPrincipal
-            costo {
-              costoMedio
-              ultimoPrecioCompra
-            }
-          }
-          cantidad
-          imagenPrincipal
-          precioPrincipal {
-            precio
-          }
-        }
-        presentacionPreparacion {
-          id
-          producto {
-            id
-            descripcion
-            codigoPrincipal
-            costo {
-              costoMedio
-              ultimoPrecioCompra
-            }
-          }
-          cantidad
-          imagenPrincipal
-          precioPrincipal {
-            precio
-          }
-        }
-        presentacionTransporte {
-          id
-          producto {
-            id
-            descripcion
-            codigoPrincipal
-            costo {
-              costoMedio
-              ultimoPrecioCompra
-            }
-          }
-          cantidad
-          imagenPrincipal
-          precioPrincipal {
-            precio
-          }
-        }
-        presentacionRecepcion {
-          id
-          producto {
-            id
-            descripcion
-            codigoPrincipal
-            costo {
-              costoMedio
-              ultimoPrecioCompra
-            }
-          }
-          cantidad
-          imagenPrincipal
-          precioPrincipal {
-            precio
-          }
-        }
-        cantidadPreTransferencia
-        cantidadPreparacion
-        cantidadTransporte
-        cantidadRecepcion
-        observacionPreTransferencia
-        observacionPreparacion
-        observacionTransporte
-        observacionRecepcion
-        vencimientoPreTransferencia
-        vencimientoPreparacion
-        vencimientoTransporte
-        vencimientoRecepcion
-        motivoModificacionPreTransferencia
-        motivoModificacionPreparacion
-        motivoModificacionTransporte
-        motivoModificacionRecepcion
-        motivoRechazoPreTransferencia
-        motivoRechazoPreparacion
-        motivoRechazoTransporte
-        motivoRechazoRecepcion
-        activo
-        poseeVencimiento
-        creadoEn
-      }
     }
   }
 `;
@@ -544,6 +447,108 @@ export const transferenciasPorUsuarioQuery = gql`
           nombre
         }
       }
+    }
+  }
+`;
+
+export const transferenciaItemPorTransferenciaIdQuery = gql`
+  query ($id: ID!, $page: Int, $size: Int) {
+    data: transferenciaItensPorTransferenciaId(id: $id, page: $page, size: $size) {
+      id
+      transferencia {
+        id
+      }
+      presentacionPreTransferencia {
+        id
+        producto {
+          id
+          descripcion
+          codigoPrincipal
+          costo {
+            costoMedio
+            ultimoPrecioCompra
+          }
+        }
+        cantidad
+        imagenPrincipal
+        precioPrincipal {
+          precio
+        }
+      }
+      presentacionPreparacion {
+        id
+        producto {
+          id
+          descripcion
+          codigoPrincipal
+          costo {
+            costoMedio
+            ultimoPrecioCompra
+          }
+        }
+        cantidad
+        imagenPrincipal
+        precioPrincipal {
+          precio
+        }
+      }
+      presentacionTransporte {
+        id
+        producto {
+          id
+          descripcion
+          codigoPrincipal
+          costo {
+            costoMedio
+            ultimoPrecioCompra
+          }
+        }
+        cantidad
+        imagenPrincipal
+        precioPrincipal {
+          precio
+        }
+      }
+      presentacionRecepcion {
+        id
+        producto {
+          id
+          descripcion
+          codigoPrincipal
+          costo {
+            costoMedio
+            ultimoPrecioCompra
+          }
+        }
+        cantidad
+        imagenPrincipal
+        precioPrincipal {
+          precio
+        }
+      }
+      cantidadPreTransferencia
+      cantidadPreparacion
+      cantidadTransporte
+      cantidadRecepcion
+      observacionPreTransferencia
+      observacionPreparacion
+      observacionTransporte
+      observacionRecepcion
+      vencimientoPreTransferencia
+      vencimientoPreparacion
+      vencimientoTransporte
+      vencimientoRecepcion
+      motivoModificacionPreTransferencia
+      motivoModificacionPreparacion
+      motivoModificacionTransporte
+      motivoModificacionRecepcion
+      motivoRechazoPreTransferencia
+      motivoRechazoPreparacion
+      motivoRechazoTransporte
+      motivoRechazoRecepcion
+      activo
+      poseeVencimiento
+      creadoEn
     }
   }
 `;

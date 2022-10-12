@@ -1,0 +1,52 @@
+<ion-content fullscreen>
+  <ion-col size="2">
+    <ion-icon
+      name="arrow-back"
+      style="font-size: 1.5em"
+      (click)="onBack()"
+    ></ion-icon>
+  </ion-col>
+  <ion-row *ngIf="data?.search">
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Buscar</ion-label>
+        <ion-input
+          #buscarInput
+          [formControl]="buscarControl"
+          autocapitalize="on"
+          (keyup.enter)="onBuscarClick()"
+        ></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="buscarControl.valid">
+    <ion-col size="12" style="text-align: center">
+      <ion-button
+        class="btn-success-flat"
+        fill="clear"
+        (click)="onBuscarClick()"
+        >Buscar</ion-button
+      >
+    </ion-col>
+  </ion-row>
+  <ion-list>
+    <ng-container *ngFor="let item of itemList">
+      <ion-card (click)="onItemClick(item)" class="estado-abierto">
+        <ion-grid>
+          <ion-row *ngFor="let info of data.tableData" wrap>
+            <ng-container *ngIf="!info.nested">
+              <ion-col [size]="info.width"
+              >{{ info.nombre }}: {{ item[info?.id] }}</ion-col
+            >
+            </ng-container>
+            <ng-container *ngIf="info.nested">
+              <ion-col [size]="info.width"
+              >{{ info.nombre }}: {{ item[info?.id][info?.nestedId] }}</ion-col
+            >
+            </ng-container>
+          </ion-row>
+        </ion-grid>
+      </ion-card>
+    </ng-container>
+  </ion-list>
+</ion-content>

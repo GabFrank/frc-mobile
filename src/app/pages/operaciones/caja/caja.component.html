@@ -1,0 +1,37 @@
+<!-- <ion-content style="top: 40%; bottom: 60%;">
+  <ion-button expand="block">Scanear QR</ion-button>
+  <ion-button expand="block">Scanear QR</ion-button>
+  <ion-button expand="block">Scanear QR</ion-button>
+</ion-content> -->
+<ion-content>
+  <ion-card class="card" (click)="abrirCaja()">
+    <ion-card-header style="color: white">
+      <ion-card-title>Abrir Caja</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content style="color: white">
+      Abrir caja de una sucursal. Es necesario estar en la sucursal en donde será abierta la caja.
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="card" (click)="buscarCaja()">
+    <ion-card-header style="color: white">
+      <ion-card-title>Buscar caja abierta</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content style="color: white">
+      Buscar cajas abiertas en todas las sucursales
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="card" (click)="buscarHistoricoDeCajas()">
+    <ion-card-header style="color: white">
+      <ion-card-title>Historial de cajas</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content style="color: white">
+      Lista de cajas en la cual fuiste responsable
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>

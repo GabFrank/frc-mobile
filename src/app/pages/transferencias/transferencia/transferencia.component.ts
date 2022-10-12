@@ -59,34 +59,29 @@ export class TransferenciaComponent implements OnInit {
     setTimeout(() => {
       this.cargandoService.close(loading)
     }, 1000);
-    if(!this.isWeb){
-      this.barcodeScanner.scan().then(async barcodeData => {
-        this.notificacionService.open('Escaneado con éxito!', TipoNotificacion.SUCCESS, 1)
-        let codigo: string = barcodeData.text;
-        let arr = codigo.split('-')
-        let prefix = arr[2]
-        let sucId: number = +arr[1]
-        let transferenciaId = arr[3]
-        if (prefix == TipoEntidad.TRANSFERENCIA && sucId != null && transferenciaId != null) {
-          (await this.transferenciaService.onGetTransferencia(+transferenciaId))
-            .pipe(untilDestroyed(this))
-            .subscribe(res => {
-              if (res != null && ((res.sucursalOrigen.id == sucId || res.sucursalDestino.id == sucId))) {
-                this.router.navigate(['list/info', res.id], { relativeTo: this.route });
-              } else {
-                this.notificacionService.openItemNoEncontrado()
-              }
-            })
-        } else {
-          this.notificacionService.openItemNoEncontrado()
-        }
-      }).catch(err => {
-        this.notificacionService.openAlgoSalioMal()
-      });
-    } else {
-      this.router.navigate(['list/info', 15], { relativeTo: this.route });
-    }
-
+    this.barcodeScanner.scan().then(async barcodeData => {
+      this.notificacionService.open('Escaneado con éxito!', TipoNotificacion.SUCCESS, 1)
+      let codigo: string = barcodeData.text;
+      let arr = codigo.split('-')
+      let prefix = arr[2]
+      let sucId: number = +arr[1]
+      let transferenciaId = arr[3]
+      if (prefix == TipoEntidad.TRANSFERENCIA && transferenciaId != null) {
+        (await this.transferenciaService.onGetTransferencia(+transferenciaId))
+          .pipe(untilDestroyed(this))
+          .subscribe(res => {
+            if (res != null) {
+              this.router.navigate(['list/info', res.id], { relativeTo: this.route });
+            } else {
+              this.notificacionService.openItemNoEncontrado()
+            }
+          })
+      } else {
+        this.notificacionService.openItemNoEncontrado()
+      }
+    }).catch(err => {
+      this.notificacionService.openAlgoSalioMal()
+    });
   }
 
   ingresarCodigo() {

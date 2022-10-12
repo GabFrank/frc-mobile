@@ -60,7 +60,7 @@ export class Transferencia {
   isOrigen: boolean;
   isDestino: boolean;
   creadoEn: Date;
-  transferenciaItemList: TransferenciaItem[]
+  transferenciaItemList: TransferenciaItem[] = []
 
   toInput(): TransferenciaInput {
     let input = new TransferenciaInput;

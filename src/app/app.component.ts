@@ -1,14 +1,13 @@
-import { Router } from '@angular/router';
-import { ModalService } from './services/modal.service';
-import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
-import { CargandoService } from './services/cargando.service';
-import { Component, NgZone, OnInit } from '@angular/core';
-import { MenuController, Platform, PopoverController } from '@ionic/angular';
+import { Component, OnInit } from '@angular/core';
+import { MenuController, PopoverController } from '@ionic/angular';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
+import { connectionStatusSub } from './app.module';
 import { LoginComponent } from './dialog/login/login.component';
+import { CargandoService } from './services/cargando.service';
 import { LoginService } from './services/login.service';
 import { MainService } from './services/main.service';
-import { connectionStatusSub } from './app.module';
+import { ModalService } from './services/modal.service';
 // import { App, URLOpenListenerEvent } from '@capacitor/app';
 
 

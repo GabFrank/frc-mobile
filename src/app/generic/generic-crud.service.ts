@@ -25,6 +25,26 @@ export class GenericCrudService {
   ) {
   }
 
+  async onCustomGet(gql: Query, data:any): Promise<Observable<any>> {
+    let loading = await this.cargandoService.open(null, false)
+    return new Observable((obs) => {
+      gql
+        .fetch(data, { fetchPolicy: "no-cache", errorPolicy: "all" }).pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          this.isLoading = false
+          this.cargandoService.close(loading)
+          if (res.errors == null) {
+            obs.next(res.data["data"]);
+            if(res.data["data"]!=null){
+              this.notificacionService.success("Item encontrada");
+            }
+          } else {
+            this.notificacionService.open('Ups!! Algo salió mal', TipoNotificacion.DANGER, 2)
+          }
+        });
+    });
+  }
+
   async onGetAll(gql: Query, page?, size?): Promise<Observable<any>> {
     let loading = await this.cargandoService.open(null, false)
     return new Observable((obs) => {
@@ -42,12 +62,12 @@ export class GenericCrudService {
     });
   }
 
-  async onGetById<T>(gql: any, id: number, page?, size?): Promise<Observable<T>> {
+  async onGetById<T>(gql: any, id: number, page?, size?, sucId?): Promise<Observable<T>> {
     this.isLoading = true;
     let loading = await this.cargandoService.open('Buscando...', false)
     return new Observable((obs) => {
       gql
-        .fetch({ id, page, size }, { fetchPolicy: "no-cache", errorPolicy: "all" }).pipe(untilDestroyed(this))
+        .fetch({ id, page, size , sucId}, { fetchPolicy: "no-cache", errorPolicy: "all" }).pipe(untilDestroyed(this))
         .subscribe((res) => {
           this.isLoading = false;
           this.cargandoService.close(loading)
@@ -106,7 +126,27 @@ export class GenericCrudService {
     });
   }
 
-  async onSave<T>(gql: Mutation, input): Promise<Observable<T>> {
+  async onGetByTextoPorSucursal(gql: Query, texto: string, sucId): Promise<Observable<any>> {
+    this.isLoading = true;
+    let loading = await this.cargandoService.open(null, false)
+    return new Observable((obs) => {
+      gql
+        .fetch({ texto, sucId }, { fetchPolicy: "no-cache", errorPolicy: "all" }).pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          console.log(res)
+          this.cargandoService.close(loading)
+          this.isLoading = false;
+          if (res.errors == null) {
+            obs.next(res.data["data"]);
+          } else {
+            console.log(res.errors)
+            this.notificacionService.open('Ups!! Algo salió mal', TipoNotificacion.DANGER, 2)
+          }
+        });
+    });
+  }
+
+  async onSave<T>(gql: Mutation, input, sucId?): Promise<Observable<T>> {
     this.isLoading = true;
     let loading = await this.cargandoService.open(null, false)
     if (input.usuarioId == null) {
@@ -115,7 +155,7 @@ export class GenericCrudService {
     return new Observable((obs) => {
       gql
         .mutate(
-          { entity: input },
+          { entity: input, sucId },
           { fetchPolicy: "no-cache", errorPolicy: "all" }
         ).pipe(untilDestroyed(this))
         .subscribe((res) => {
