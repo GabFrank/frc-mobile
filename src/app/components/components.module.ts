@@ -5,11 +5,12 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { NgxQRCodeModule } from '@techiediaries/ngx-qrcode';
+import { GenericListDialogComponent } from './generic-list-dialog/generic-list-dialog.component';
 
 
 
 @NgModule({
-  declarations: [QrScannerDialogComponent, QrGeneratorComponent],
+  declarations: [QrScannerDialogComponent, QrGeneratorComponent, GenericListDialogComponent],
   imports: [
     CommonModule,
     IonicModule,

@@ -1,0 +1,337 @@
+<ion-content>
+  <ion-row>
+    <ion-col size="2">
+      <ion-icon
+        name="arrow-back"
+        style="font-size: 1.5em"
+        (click)="onBack()"
+      ></ion-icon>
+    </ion-col>
+    <ion-col *ngIf="isApertura===true" size="8" style="text-align: center">Conteo apertura</ion-col>
+    <ion-col *ngIf="isApertura!==true" size="8" style="text-align: center">Conteo cierre</ion-col>
+  </ion-row>
+  <ion-content>
+    <ion-row>
+      <ion-col size="4">
+        <div class="ion-text-center">
+          <ion-button (click)="tabClick('gs')" expand="block" [fill]="moneda === 'gs' ? 'outline' : 'clear'">
+            Guaraní
+          </ion-button>
+        </div>
+      </ion-col>
+      <ion-col size="4">
+        <ion-button (click)="tabClick('rs')" expand="block" [fill]="moneda === 'rs' ? 'outline' : 'clear'">
+          Real
+        </ion-button>
+      </ion-col>
+      <ion-col size="4">
+        <ion-button (click)="tabClick('ds')" expand="block" [fill]="moneda === 'ds' ? 'outline' : 'clear'">
+          Dolar
+        </ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-grid style="height: 60%; overflow-y: auto">
+      <ion-row>
+        <ion-col size="12" [formGroup]="gsFormGroup" *ngIf="moneda === 'gs'">
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>500:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="500"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>1.000:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="1000"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>2.000:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="2000"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>5.000:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="5000"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>10.000:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="10000"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>20.000:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="20000"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>50.000:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="50000"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>100.000:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="100000"
+                (keyup.enter)="tabClick('rs')"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+        </ion-col>
+        <ion-col size="12" [formGroup]="rsFormGroup" *ngIf="moneda === 'rs'">
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>0.05:</ion-label>
+              <ion-input
+                #rs
+                type="number"
+                class="ion-text-end"
+                formControlName="0.05"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>0.10:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="0.1"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>0.25:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="0.25"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>0.50:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="0.5"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>1:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="1"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>2:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="2"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>5:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="5"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>10:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="10"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>20:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="20"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>50:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="50"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>100:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="100"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>200:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="200"
+                (keyup.enter)="tabClick('ds')"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+        </ion-col>
+        <ion-col size="12" [formGroup]="dsFormGroup" *ngIf="moneda === 'ds'">
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>1:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="1"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>5:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="5"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>10:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="10"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>20:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="20"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>50:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="50"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+          <ion-row>
+            <ion-item style="width: 100%">
+              <ion-label>100:</ion-label>
+              <ion-input
+                type="number"
+                class="ion-text-end"
+                formControlName="100"
+                (keyup.enter)="onGuardar()"
+              ></ion-input>
+            </ion-item>
+          </ion-row>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <ion-card>
+      <ion-row center>
+        <ion-col size="12" class="ion-text-center totales"
+          >{{ totalGs | number: '1.0-0' }} G$</ion-col
+        >
+      </ion-row>
+      <ion-row>
+        <ion-col size="12" class="ion-text-center totales"
+          >{{ totalRs | number: '1.0-2' }} R$</ion-col
+        >
+      </ion-row>
+      <ion-row>
+        <ion-col size="12" class="ion-text-center totales"
+          >{{ totalDs | number: '1.0-2' }} D$</ion-col
+        >
+      </ion-row>
+    </ion-card>
+    <ion-row style="overflow-y: auto;">
+      <ion-col size="12" class="ion-align-items-center">
+        <ion-button type="button" class="btn-success" (click)="onGuardar()" expand="block">
+          Guardar
+        </ion-button>
+      </ion-col>
+      <ion-col size="12" class="ion-align-items-center">
+        <ion-button type="button" class="btn-danger" (click)="onCancel()" expand="block">
+          Cancelar
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-content>
+</ion-content>

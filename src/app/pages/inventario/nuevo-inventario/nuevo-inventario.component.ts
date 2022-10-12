@@ -69,7 +69,7 @@ export class NuevoInventarioComponent implements OnInit {
   }
 
   onScanQr() {
-    !this.isWeb ? this.barcodeScanner.scan().then(async barcodeData => {
+    this.barcodeScanner.scan().then(async barcodeData => {
       if (barcodeData.text != null) {
         let qrData: QrData;
         qrData = descodificarQr(barcodeData.text)
@@ -80,7 +80,7 @@ export class NuevoInventarioComponent implements OnInit {
       } else {
 
       }
-    }) : this.cargarDatos(6);
+    });
   }
 
   onBack() {

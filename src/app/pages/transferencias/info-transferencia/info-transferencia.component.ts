@@ -17,6 +17,11 @@ import { CargandoService } from 'src/app/services/cargando.service';
 import { Platform } from '@ionic/angular';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
+import { CodigoService } from '../../codigo/codigo.service';
+import { rejects } from 'assert';
+import { codificarQr, QrData } from 'src/app/generic/utils/qrUtils';
+import { QrGeneratorComponent } from 'src/app/components/qr-generator/qr-generator.component';
+import { DialogoService } from 'src/app/services/dialogo.service';
 
 
 @UntilDestroy()
@@ -32,8 +37,9 @@ export class InfoTransferenciaComponent implements OnInit {
   selectedResponsable: Usuario;
 
   isWeb = false;
-
-
+  page = 0;
+  size = 10;
+  isLastPage = false;
 
 
   isPreTransferenciaCreacion = false;
@@ -61,7 +67,9 @@ export class InfoTransferenciaComponent implements OnInit {
     private barcodeScanner: BarcodeScanner,
     private cargandoService: CargandoService,
     private plf: Platform,
-    private notificacionService: NotificacionService
+    private notificacionService: NotificacionService,
+    private codigoService: CodigoService,
+    private dialogoService: DialogoService
 
   ) {
     this.isWeb = this.plf.platforms().includes('mobileweb')
@@ -72,38 +80,60 @@ export class InfoTransferenciaComponent implements OnInit {
     //innicializar arrays
     this.actionMenuOptionsList = []
 
-    this.route.paramMap.subscribe(res => {
-      this.buscarTransferencia(res.get('id'))
-    });
+    setTimeout(() => {
+      this.route.paramMap.subscribe(res => {
+        console.log(res);
+        this.buscarTransferencia(res.get('id'))
+      });
+    }, 1000);
 
   }
 
   async buscarTransferencia(id) {
+    console.log(id);
+
     if (id != null) {
       (await this.transferenciaService.onGetTransferencia(id))
         .pipe(untilDestroyed(this))
-        .subscribe(res => {
+        .subscribe(async res => {
+          console.log(res);
+
           if (res != null) {
             this.selectedTransferencia = res;
-            this.selectedTransferencia.transferenciaItemList.sort((a, b) => {
-              if (a.id < b.id) {
-                return -1;
-              } else {
-                return 1;
-              }
-            })
-            console.log(res)
+            this.selectedTransferencia.transferenciaItemList = [];
             this.verificarEtapa()
           }
         })
     }
   }
 
+  async getTransferenciaItemList(): Promise<Boolean> {
+    return new Promise(async (resolve, rejects) => {
+      (await this.transferenciaService.onGetTransferenciaItensPorTransferenciaId(this.selectedTransferencia.id)).pipe(untilDestroyed(this))
+        .subscribe(res => {
+          if (res != null) {
+            if (res.length < this.size) {
+              this.isLastPage = true;
+            }
+            if (this.selectedTransferencia.transferenciaItemList.length == 0) {
+              this.selectedTransferencia.transferenciaItemList = res;
+            } else {
+              this.selectedTransferencia.transferenciaItemList.concat(res)
+            }
+            return resolve(true)
+          } else {
+            return resolve(false);
+          }
+        })
+    })
+
+  }
+
   onBack() {
     this._location.back()
   }
 
-  verificarEtapa() {
+  async verificarEtapa() {
     this.setAllEtapasFalse()
     switch (this.selectedTransferencia?.etapa) {
       case EtapaTransferencia.PRE_TRANSFERENCIA_CREACION:
@@ -118,28 +148,48 @@ export class InfoTransferenciaComponent implements OnInit {
         this.isPreparacionMercaderia = true;
         this.selectedResponsable = this.selectedTransferencia?.usuarioPreparacion;
         this.actionMenuOptionsList = [
+          { texto: 'Verificar', role: 'verificar' },
           { texto: 'Confirmar', role: 'confirmar' },
           { texto: 'Desconfirmar', role: 'desconfirmar' },
           { texto: 'Modif. cantidad', role: 'cantidad' },
           { texto: 'Modif. vencimiento', role: 'vencimiento' },
-          { texto: 'Rechazar', role: 'rechazar' },
+          { texto: 'Rechazar', role: 'rechazar' }
         ]
         break;
       case EtapaTransferencia.PREPARACION_MERCADERIA_CONCLUIDA:
         this.selectedResponsable = this.selectedTransferencia?.usuarioPreparacion;
         this.isPreparacionMercaderiaConcluida = true;
         this.actionMenuOptionsList = []
+
         this.selectedTransferencia.transferenciaItemList = this.selectedTransferencia.transferenciaItemList.filter(i => i.motivoRechazoPreparacion == null)
         break;
       case EtapaTransferencia.TRANSPORTE_VERIFICACION:
         this.isTransporteVerificacion = true;
         this.selectedResponsable = this.selectedTransferencia?.usuarioTransporte;
         this.actionMenuOptionsList = [
+          { texto: 'Verificar', role: 'verificar' },
           { texto: 'Confirmar', role: 'confirmar' },
           { texto: 'Desconfirmar', role: 'desconfirmar' },
           { texto: 'Rechazar', role: 'rechazar' },
         ]
         this.selectedTransferencia.transferenciaItemList = this.selectedTransferencia.transferenciaItemList.filter(i => i.motivoRechazoPreparacion == null)
+        if(this.selectedTransferencia.usuarioPreparacion?.id == this.mainService.usuarioActual?.id){
+          this.dialogoService.open('Atención!!', 'Desea confirmar todos los itens automaticamente?').then(async res => {
+            if (res.role=='aceptar') {
+             let isLoaded = await this.getTransferenciaItemList();
+              if(isLoaded){
+                let cargando = this.cargandoService.open(null, false)
+                this.selectedTransferencia.transferenciaItemList.forEach(item => {
+                  if(item.cantidadPreparacion > 0 && item.presentacionPreparacion != null){
+                    this.onConfirm(item)
+                  }
+                })
+                this.cargandoService.close(await cargando);
+                await this.notificacionService.success('Itens confirmados con éxito!!')
+              }
+            }
+          })
+        }
         break;
       case EtapaTransferencia.TRANSPORTE_EN_CAMINO:
         this.selectedResponsable = this.selectedTransferencia?.usuarioTransporte;
@@ -156,6 +206,7 @@ export class InfoTransferenciaComponent implements OnInit {
         this.isRecepcionEnVerificacion = true;
         this.selectedResponsable = this.selectedTransferencia?.usuarioRecepcion;
         this.actionMenuOptionsList = [
+          { texto: 'Verificar', role: 'verificar' },
           { texto: 'Confirmar', role: 'confirmar' },
           { texto: 'Desconfirmar', role: 'desconfirmar' },
           { texto: 'Rechazar', role: 'rechazar' },
@@ -175,7 +226,10 @@ export class InfoTransferenciaComponent implements OnInit {
       this.puedeEditar = true;
     }
 
-    this.onVerificarConfirmados()
+    let isItemLoaded = await this.getTransferenciaItemList();
+    if (isItemLoaded) {
+      this.onVerificarConfirmados()
+    }
   }
 
   setAllEtapasFalse() {
@@ -213,6 +267,9 @@ export class InfoTransferenciaComponent implements OnInit {
     this.actionMenuOptionsList.length > 0 ? this.menuActionService.presentActionSheet(this.actionMenuOptionsList).then(res => {
       let role = res.role;
       switch (role) {
+        case 'verificar':
+          this.onVerificarProducto(item)
+          break;
         case 'confirmar':
           this.onConfirm(item)
           break;
@@ -247,6 +304,7 @@ export class InfoTransferenciaComponent implements OnInit {
           this.selectedTransferencia.etapa = etapa;
           if (etapa == EtapaTransferencia.TRANSPORTE_VERIFICACION) {
             this.selectedTransferencia.usuarioTransporte = this.mainService.usuarioActual;
+
           } else if (etapa == EtapaTransferencia.PREPARACION_MERCADERIA) {
             this.selectedTransferencia.usuarioPreparacion = this.mainService.usuarioActual;
           } else if (etapa == EtapaTransferencia.PRE_TRANSFERENCIA_ORIGEN) {
@@ -290,7 +348,8 @@ export class InfoTransferenciaComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         if (res != null) {
-          this.selectedTransferencia.transferenciaItemList = updateDataSourceWithId(this.selectedTransferencia.transferenciaItemList, item, item.id)
+          let index = this.selectedTransferencia.transferenciaItemList.findIndex(i => i.id == res.id)
+          this.selectedTransferencia.transferenciaItemList.splice(index, 1)
         }
         this.onVerificarConfirmados()
       })
@@ -445,28 +504,67 @@ export class InfoTransferenciaComponent implements OnInit {
     setTimeout(() => {
       this.cargandoService.close(loading)
     }, 1000);
-    if (!this.isWeb) {
-      this.barcodeScanner.scan().then(async barcodeData => {
-        this.notificacionService.open('Escaneado con éxito!', TipoNotificacion.SUCCESS, 1)
-        let codigo: string = barcodeData.text;
-        let arr = codigo.split('-')
-        let prefix = arr[2]
-        let sucId: number = +arr[1]
-        if (prefix == TipoEntidad.SUCURSAL && sucId != null) {
-          if (this.selectedTransferencia?.sucursalDestino?.id == sucId) {
-            return true;
-          }
-        } else {
-          this.notificacionService.openItemNoEncontrado()
-          return false;
+    return this.barcodeScanner.scan().then(async barcodeData => {
+      this.notificacionService.open('Escaneado con éxito!', TipoNotificacion.SUCCESS, 1)
+      let codigo: string = barcodeData.text;
+      let arr = codigo.split('-')
+      let prefix = arr[2]
+      let sucId: number = +arr[1]
+      if (prefix == TipoEntidad.SUCURSAL && sucId != null) {
+        if (this.selectedTransferencia?.sucursalDestino?.id == sucId) {
+          return true;
         }
-      }).catch(err => {
-        this.notificacionService.openAlgoSalioMal()
+      } else {
+        this.notificacionService.openItemNoEncontrado()
         return false;
-      });
-    } else {
-      return true;
+      }
+    }).catch(err => {
+      this.notificacionService.openAlgoSalioMal()
+      return false;
+    });
+
+  }
+
+  onVerificarProducto(item: TransferenciaItem) {
+    let producto = item?.presentacionPreTransferencia?.producto;
+    if (producto?.id != null) {
+      this.barcodeScanner.scan().then(async res => {
+        if (res.text != null) {
+          (await this.codigoService.onGetCodigoPorCodigo(res.text)).subscribe(codigoRes => {
+            if (codigoRes.length > 0) {
+              if (codigoRes.find(c => c.presentacion?.producto?.id == producto?.id) != null) {
+                this.notificacionService.success("Producto correcto!!")
+              } else {
+                this.notificacionService.danger("Producto no corresponde")
+              }
+            } else {
+              this.notificacionService.danger("Código no encontrado")
+            }
+          })
+        } else {
+          this.notificacionService.danger("Error en leer código")
+        }
+      })
     }
+  }
+
+  onCargarMenos() {
+    let tam = this.selectedTransferencia?.transferenciaItemList?.length;
+    let diff = tam - this.size;
+    this.selectedTransferencia?.transferenciaItemList?.splice(this.size - 1, diff)
+  }
+
+  onCargarMas() {
+    this.page++;
+    this.getTransferenciaItemList()
+  }
+
+  onShare() {
+    let codigo = new QrData;
+    codigo.tipoEntidad = TipoEntidad.TRANSFERENCIA;
+    codigo.idCentral = this.selectedTransferencia?.id;
+    codigo.idOrigen = this.selectedTransferencia?.id;
+    this.popoverService.open(QrGeneratorComponent, codificarQr(codigo), PopoverSize.XS)
   }
 
 }

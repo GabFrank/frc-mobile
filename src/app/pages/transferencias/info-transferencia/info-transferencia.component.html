@@ -31,8 +31,11 @@
         </ion-col>
       </ion-row>
       <ion-row>
-        <ion-col size="12">
+        <ion-col size="10">
           Estado: {{ selectedTransferencia?.estado }}
+        </ion-col>
+        <ion-col size="2">
+          <ion-icon name="share-social-outline" style="font-size: 2em;" (click)="onShare()"></ion-icon>
         </ion-col>
       </ion-row>
       <ion-row>
@@ -117,7 +120,12 @@
       *ngFor="let item of selectedTransferencia?.transferenciaItemList"
       (press)="puedeEditar ? onItemPress(item) : null"
     >
-      <ion-avatar slot="start" (click)="onAvatarClick(item?.presentacionPreTransferencia?.imagenPrincipal)">
+      <ion-avatar
+        slot="start"
+        (click)="
+          onAvatarClick(item?.presentacionPreTransferencia?.imagenPrincipal)
+        "
+      >
         <img [src]="item?.presentacionPreTransferencia?.imagenPrincipal" />
       </ion-avatar>
       <ion-label>
@@ -201,7 +209,12 @@
       *ngFor="let item of selectedTransferencia?.transferenciaItemList"
       (press)="puedeEditar ? onItemPress(item) : null"
     >
-      <ion-avatar slot="start" (click)="onAvatarClick(item?.presentacionPreTransferencia?.imagenPrincipal)">
+      <ion-avatar
+        slot="start"
+        (click)="
+          onAvatarClick(item?.presentacionPreTransferencia?.imagenPrincipal)
+        "
+      >
         <img [src]="item?.presentacionPreTransferencia?.imagenPrincipal" />
       </ion-avatar>
       <ion-label>
@@ -267,7 +280,12 @@
       *ngFor="let item of selectedTransferencia?.transferenciaItemList"
       (press)="puedeEditar ? onItemPress(item) : null"
     >
-      <ion-avatar slot="start" (click)="onAvatarClick(item?.presentacionPreTransferencia?.imagenPrincipal)">
+      <ion-avatar
+        slot="start"
+        (click)="
+          onAvatarClick(item?.presentacionPreTransferencia?.imagenPrincipal)
+        "
+      >
         <img [src]="item?.presentacionTransporte?.imagenPrincipal" />
       </ion-avatar>
       <ion-label>
@@ -320,4 +338,33 @@
       </ion-label>
     </ion-item>
   </ion-list>
+  <!-- <ion-item>
+    <ion-row class="dark2">
+      <ion-col class="center">
+        <ion-button
+          class="btn-success-flat"
+          fill="clear"
+          (click)="onCargarMenos()"
+          expand="block"
+          *ngIf="selectedTransferencia?.transferenciaItemList?.length > 0"
+          [disabled]="
+            selectedTransferencia?.transferenciaItemList.length > size
+          "
+        >
+          Menos
+        </ion-button>
+      </ion-col>
+      <ion-col class="center">
+        <ion-button
+          class="btn-success-flat"
+          fill="clear"
+          (click)="onCargarMas()"
+          expand="block"
+          *ngIf="selectedTransferencia?.transferenciaItemList?.length > 0"
+        >
+          Cargar más
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-item> -->
 </ion-content>

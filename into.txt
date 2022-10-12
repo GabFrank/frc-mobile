@@ -12,6 +12,8 @@ npx cap open android
 -- reiniciar adb
 adb kill-server
 adb start-server
+-- cambiar de puerto tcpip
+adb forward tcp:7612 tcp:7612
 
 -- crear puente tcpip //con el dispositivo conectado
 /Users/gabfranck/Library/Android/sdk/platform-tools/adb tcpip 5555

@@ -44,6 +44,18 @@ export class NotificacionService {
     this.open(text, TipoNotificacion.NEUTRAL, 2)
   }
 
+  success(text){
+    this.open(text, TipoNotificacion.SUCCESS, 2)
+  }
+
+  danger(text){
+    this.open(text, TipoNotificacion.DANGER, 3)
+  }
+
+  warn(text){
+    this.open(text, TipoNotificacion.WARN, 3)
+  }
+
 
 
 
