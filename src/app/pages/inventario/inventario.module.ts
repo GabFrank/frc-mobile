@@ -20,7 +20,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
     InventarioRoutingModule,
     IonicModule,
     ReactiveFormsModule,
-    FormsModule,
-  ]
+    FormsModule
+    ]
 })
 export class InventarioModule { }

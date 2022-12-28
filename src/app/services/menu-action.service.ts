@@ -31,7 +31,7 @@ export class MenuActionService {
       header: 'Opciones',
       cssClass: 'action-menu',
       buttons: actionButtons,
-      backdropDismiss: false,
+      backdropDismiss: true,
       mode: "ios"
     });
     await actionSheet.present();

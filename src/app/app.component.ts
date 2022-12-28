@@ -1,17 +1,22 @@
 import { Component, OnInit } from '@angular/core';
-import { MenuController, PopoverController } from '@ionic/angular';
+import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
+import { MenuController, Platform, PopoverController } from '@ionic/angular';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { connectionStatusSub } from './app.module';
+import { ChangeServerIpDialogComponent } from './components/change-server-ip-dialog/change-server-ip-dialog.component';
 import { LoginComponent } from './dialog/login/login.component';
 import { CargandoService } from './services/cargando.service';
 import { LoginService } from './services/login.service';
 import { MainService } from './services/main.service';
 import { ModalService } from './services/modal.service';
+import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
+import { FingerprintAuthService } from './services/fingerprint-auth.service';
+
 // import { App, URLOpenListenerEvent } from '@capacitor/app';
 
 
-declare let window: any; // Don't forget this part!
+// declare let window: any; // Don't forget this part!
 
 
 @UntilDestroy()
@@ -19,15 +24,20 @@ declare let window: any; // Don't forget this part!
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
+  providers: [PhotoViewer, AppVersion]
+
 })
 export class AppComponent implements OnInit {
 
   statusSub;
   online = false;
   puedeVerInventario = false;
+  currentVersion = null;
 
   optionZbar: any;
   scannedOutput: any;
+
+  isFarma = false;
 
   constructor(
     private menu: MenuController,
@@ -37,11 +47,20 @@ export class AppComponent implements OnInit {
     private cargandoService: CargandoService,
     private notificacionService: NotificacionService,
     private modalService: ModalService,
+    private photoViewer: PhotoViewer,
+    public appVersion: AppVersion,
+    private platfform: Platform,
+    private fingerprintService: FingerprintAuthService
   ) {
     this.optionZbar = {
       flash: 'off',
       drawSight: false
     }
+    appVersion.getVersionNumber().then(res => {
+      this.currentVersion = res
+    })
+
+    this.isFarma = localStorage.getItem('serverIp').includes('158')
   }
 
   // initializeApp() {
@@ -117,6 +136,25 @@ export class AppComponent implements OnInit {
   }
 
   openTransferencias() {
+
+  }
+
+  onAvatarClick() {
+
+  }
+
+  onIpChange(){
+    this.modalService.openModal(ChangeServerIpDialogComponent).then(res => {
+      if(res==true){
+        window.location.reload()
+      }
+    })
+  }
+
+  openInfoPersonales(){
+  }
+
+  openMisFinanzas(){
 
   }
 }

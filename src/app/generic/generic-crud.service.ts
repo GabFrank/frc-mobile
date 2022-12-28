@@ -4,7 +4,7 @@ import { NotificacionService } from 'src/app/services/notificacion.service';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { Injectable } from "@angular/core";
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
-import { Apollo, Mutation, Query } from "apollo-angular";
+import { Apollo, Mutation, Query, Subscription } from "apollo-angular";
 import { Observable } from "rxjs";
 import { MainService } from "../services/main.service";
 
@@ -39,6 +39,28 @@ export class GenericCrudService {
               this.notificacionService.success("Item encontrada");
             }
           } else {
+            console.log(res.errors);
+            this.notificacionService.open('Ups!! Algo salió mal', TipoNotificacion.DANGER, 2)
+          }
+        });
+    });
+  }
+
+  async onCustomSub(gql: Subscription, data:any): Promise<Observable<any>> {
+    let loading = await this.cargandoService.open(null, false)
+    return new Observable((obs) => {
+      gql
+        .subscribe(data, { fetchPolicy: "no-cache", errorPolicy: "all" }).pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          this.isLoading = false
+          this.cargandoService.close(loading)
+          if (res.errors == null) {
+            obs.next(res.data["data"]);
+            if(res.data["data"]!=null){
+              this.notificacionService.success("Item encontrada");
+            }
+          } else {
+            console.log(res.errors);
             this.notificacionService.open('Ups!! Algo salió mal', TipoNotificacion.DANGER, 2)
           }
         });

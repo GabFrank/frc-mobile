@@ -1,0 +1,37 @@
+<ion-content>
+  <ion-row>
+    <ion-col size="12">
+      <h3>Configuración del servidor</h3>
+    </ion-col>
+  </ion-row>
+  <ion-card (click)="onBodegaClick()">
+    <h3>Bodega Franco</h3>
+    <p>Ip: 150.136.137.98</p>
+    <p>Port: 8081</p>
+  </ion-card>
+  <ion-card (click)="onFarmaciaClick()">
+    <h3>Farmacia Franco</h3>
+    <p>Ip: 158.101.114.87</p>
+    <p>Port: 8081</p>
+  </ion-card>
+  <ion-item class="ion-text-right">
+    <ion-label>Custom IP</ion-label>
+    <ion-input type="text" [formControl]="serverIpControl"> </ion-input>
+  </ion-item>
+  <ion-item class="ion-text-right">
+    <ion-label>Custom Port</ion-label>
+    <ion-input type="text" [formControl]="serverPortControl"> </ion-input>
+  </ion-item>
+  <ion-row>
+    <ion-col size="6" class="center">
+      <ion-button fill="clear" class="btn-danger-flat" (click)="onCancel()"
+        >Cancelar</ion-button
+      >
+    </ion-col>
+    <ion-col size="6" class="center">
+      <ion-button fill="clear" class="btn-success-flat" (click)="onGuardar()"
+        >Aceptar</ion-button
+      >
+    </ion-col>
+  </ion-row>
+</ion-content>

@@ -4,8 +4,6 @@ export const inventariosQuery = gql`
   {
     data: inventarios {
       id
-      idOrigen
-      idCentral
       sucursal {
         id
         nombre
@@ -58,8 +56,6 @@ export const inventarioQuery = gql`
   query ($id: ID!) {
     data: inventario(id: $id) {
       id
-      idOrigen
-      idCentral
       sucursal {
         id
         nombre
@@ -134,8 +130,6 @@ export const inventarioPorUsuarioQuery = gql`
   query ($id: ID!) {
     data: inventarioPorUsuario(id: $id) {
       id
-      idOrigen
-      idCentral
       sucursal {
         id
         nombre
@@ -195,8 +189,6 @@ export const saveInventario = gql`
   mutation saveInventario($entity: InventarioInput!) {
     data: saveInventario(inventario: $entity) {
       id
-      idOrigen
-      idCentral
       sucursal {
         id
         nombre
@@ -255,8 +247,6 @@ export const inventarioPorFechaQuery = gql`
   query ($inicio: String, $fin: String) {
     data: inventarioPorFecha(inicio: $inicio, fin: $fin) {
       id
-      idOrigen
-      idCentral
       sucursal {
         id
         nombre
@@ -397,8 +387,6 @@ export const finalizarInventarioQuery = gql`
   mutation finalizarInventario($id: ID!) {
     data: finalizarInventario(id: $id){
       id
-      idOrigen
-      idCentral
       sucursal {
         id
         nombre
@@ -458,8 +446,6 @@ export const inverntarioAbiertoPorSucursalQuery = gql`
   query ($id: ID!) {
     data: inventarioAbiertoPorSucursal(sucId: $id) {
       id
-      idOrigen
-      idCentral
       sucursal {
         id
         nombre

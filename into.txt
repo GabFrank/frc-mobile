@@ -18,5 +18,5 @@ adb forward tcp:7612 tcp:7612
 -- crear puente tcpip //con el dispositivo conectado
 /Users/gabfranck/Library/Android/sdk/platform-tools/adb tcpip 5555
 -- conectar con el ceulalar
-/Users/gabfranck/Library/Android/sdk/platform-tools/adb connect 172.25.0.199:5555
+/Users/gabfranck/Library/Android/sdk/platform-tools/adb connect 192.168.1.61:5555
 

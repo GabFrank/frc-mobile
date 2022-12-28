@@ -198,7 +198,9 @@ export class EditInventarioComponent implements OnInit {
   }
 
   onAddProducto(invPro, i) {
-    this.modalService.openModal(SearchProductoDialogComponent).then(res => {
+    console.log(this.selectedInventario);
+    let data = {sucursalId: +this.selectedInventario.sucursal.id};
+    this.modalService.openModal(SearchProductoDialogComponent, {data}).then(res => {
       if (res?.data) {
         let selectedPresentacion = res.data['presentacion'];
         let selectedProducto = res.data['producto'];

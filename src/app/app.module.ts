@@ -1,56 +1,68 @@
-import { FuncionarioModule } from './pages/funcionario/funcionario.module';
-import { ProductoModule } from './pages/producto/producto.module';
-import { ComponentsModule } from './components/components.module';
-import { TransferenciasModule } from './pages/transferencias/transferencias.module';
-import { InventarioModule } from './pages/inventario/inventario.module';
+import {
+  registerLocaleData
+} from "@angular/common";
+import { HttpClientModule } from '@angular/common/http';
+import localePY from "@angular/common/locales/es-PY";
 import { APP_INITIALIZER, Injectable, LOCALE_ID, NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule, HammerGestureConfig, HammerModule, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
-import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
-import { onError } from '@apollo/client/link/error';
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { serverAdress } from 'src/environments/environment';
-import { ApolloModule, APOLLO_OPTIONS } from 'apollo-angular';
-import { setContext } from '@apollo/client/link/context';
-import { HttpLink } from 'apollo-angular/http';
 import {
   ApolloClientOptions,
   ApolloLink,
   InMemoryCache,
-  split,
+  split
 } from '@apollo/client/core';
-import { getMainDefinition } from '@apollo/client/utilities';
-import { HttpClientModule } from '@angular/common/http';
-import { MainService } from './services/main.service';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { LoginComponent } from './dialog/login/login.component';
-import { NgxCurrencyModule } from 'ngx-currency';
-import { SubscriptionClient } from 'subscriptions-transport-ws';
-import { BehaviorSubject } from 'rxjs';
+import { setContext } from '@apollo/client/link/context';
+import { onError } from '@apollo/client/link/error';
 import { WebSocketLink } from "@apollo/client/link/ws";
-import localePY from "@angular/common/locales/es-PY";
-import {
-  registerLocaleData,
-} from "@angular/common";
+import { getMainDefinition } from '@apollo/client/utilities';
+import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { NgxQRCodeModule } from '@techiediaries/ngx-qrcode';
+import { ApolloModule, APOLLO_OPTIONS } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
+import { NgxCurrencyModule } from 'ngx-currency';
+import { BehaviorSubject } from 'rxjs';
+import { serverAdress } from 'src/environments/environment';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
 import { CambiarContrasenhaDialogComponent } from './dialog/login/cambiar-contrasenha-dialog/cambiar-contrasenha-dialog.component';
-import { AdicionarConteoDialogComponent } from './pages/operaciones/conteo/adicionar-conteo-dialog/adicionar-conteo-dialog.component';
+import { LoginComponent } from './dialog/login/login.component';
+import { FuncionarioModule } from './pages/funcionario/funcionario.module';
+import { InventarioModule } from './pages/inventario/inventario.module';
+import { ProductoModule } from './pages/producto/producto.module';
+import { TransferenciasModule } from './pages/transferencias/transferencias.module';
+import { MainService } from './services/main.service';
+import { FingerprintAIO } from '@ionic-native/fingerprint-aio/ngx';
 
 registerLocaleData(localePY);
 
+switch (localStorage.getItem('serverIp')) {
+  case null:
+    localStorage.setItem('serverIp', serverAdress.serverIp)
+    localStorage.setItem('serverPort', serverAdress.serverPort)
+    break;
+  case '':
+    localStorage.setItem('serverIp', serverAdress.serverIp)
+    localStorage.setItem('serverPort', serverAdress.serverPort)
+    break;
+  case 'null':
+    localStorage.setItem('serverIp', serverAdress.serverIp)
+    localStorage.setItem('serverPort', serverAdress.serverPort)
+    break;
+  default:
+    break;
+}
 
-
-
-const uri = `http://${serverAdress.serverIp}:${serverAdress.serverPort}`;
-const wUri = `ws://${serverAdress.serverIp}:${serverAdress.serverPort}/subscriptions`;
+const uri = `http://${localStorage.getItem('serverIp')}:${localStorage.getItem('serverPort')}/graphql`;
+const wUri = `ws://${localStorage.getItem('serverIp')}:${localStorage.getItem('serverPort')}/subscriptions`;
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
 });
 
 const wsClient = new SubscriptionClient(wUri, {
-  reconnect: true,
-  inactivityTimeout: 5
+  reconnect: true
 });
 
 export const connectionStatusSub = new BehaviorSubject<any>(null);
@@ -69,11 +81,11 @@ wsClient.onReconnected(() => {
 
 @Injectable()
 export class HammerConfig extends HammerGestureConfig {
-  overrides = <any> {
-      // I will only use the swap gesture so
-      // I will deactivate the others to avoid overlaps
-      'pinch': { enable: false },
-      'rotate': { enable: false }
+  overrides = <any>{
+    // I will only use the swap gesture so
+    // I will deactivate the others to avoid overlaps
+    'pinch': { enable: false },
+    'rotate': { enable: false }
   }
 }
 
@@ -95,11 +107,13 @@ export class HammerConfig extends HammerGestureConfig {
     NgxCurrencyModule,
     FuncionarioModule,
     NgxQRCodeModule,
-    HttpClientModule
-    ],
+    HttpClientModule,
+
+  ],
   exports: [
   ],
   providers: [
+    FingerprintAIO,
     {
       provide: HAMMER_GESTURE_CONFIG,
       useClass: HammerConfig
@@ -134,7 +148,7 @@ export class HammerConfig extends HammerGestureConfig {
           basic,
           auth,
           httpLink.create({
-            uri: `http://${serverAdress.serverIp}:${serverAdress.serverPort}/graphql`,
+            uri: uri,
           }),
         ]);
 
@@ -178,7 +192,7 @@ export class HammerConfig extends HammerGestureConfig {
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }
 
 export function appInit(appConfigService: MainService) {
   return () => appConfigService.load();
