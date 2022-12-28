@@ -15,7 +15,6 @@ import { ComponentsModule } from 'src/app/components/components.module';
   imports: [
     ProductoRoutingModule,
     CommonModule,
-    CommonModule,
     IonicModule,
     ComponentsModule,
     ReactiveFormsModule,

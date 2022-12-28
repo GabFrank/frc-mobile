@@ -46,8 +46,6 @@ export class InventarioInput {
 
 export class InventarioProducto {
   id: number;
-  idOrigen: number;
-  idCentral: number;
   inventario: Inventario;
   producto: Producto;
   zona: Zona;
@@ -71,8 +69,6 @@ export class InventarioProducto {
 
 export class InventarioProductoInput {
   id: number;
-  idOrigen: number;
-  idCentral: number;
   inventarioId: number;
   productoId: number;
   concluido: boolean;

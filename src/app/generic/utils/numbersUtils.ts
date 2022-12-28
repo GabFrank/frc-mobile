@@ -68,7 +68,7 @@ export function updateDataSource(arr, value?, index?){
   } else {
     arr = arr.splice(index, 1)
   }
-  
+
   return aux;
 }
 
@@ -78,10 +78,10 @@ export function updateDataSourceWithId(arr, value, id?): any[]{
     let index = arr.findIndex(e => e.id == id);
     if(index!=-1){
       aux[index] = value;
-    } else {     
+    } else {
       aux.push(value)
     }
-  } 
+  }
   return aux;
 }
 
@@ -98,7 +98,7 @@ export function stringToInteger(texto: string){
 
 export function stringToDecimal(texto: string){
   // if(texto[texto.length-1]=='0' && texto[texto.length-2]=='0' && texto[texto.length-3]=='.'){
-  //   texto = texto.slice(0, texto.length - 3); 
+  //   texto = texto.slice(0, texto.length - 3);
   // }
   if(texto == '0'){
     return '0,00'
@@ -107,17 +107,17 @@ export function stringToDecimal(texto: string){
     let dotIndex = texto.indexOf(',');
     if(texto[dotIndex+2]==null){
       texto = texto+'0';
-    } 
+    }
     texto = stringToInteger(texto.slice(0, texto.length - 3)) + texto.slice(texto.length - 3, texto.length)
-  
+
     return texto;
   }
-  
+
 }
 
 export function stringToCantidad(texto: string){
   if(texto[texto.length-1]=='0' && texto[texto.length-2]=='0' && texto[texto.length-3]=='0' && texto[texto.length-4]=='.'){
-    texto = texto.slice(0, texto.length - 4); 
+    texto = texto.slice(0, texto.length - 4);
   }
   if(texto == '0'){
     return '0,00'
@@ -126,12 +126,12 @@ export function stringToCantidad(texto: string){
     let dotIndex = texto.indexOf(',');
     if(texto[dotIndex+2]==null){
       texto = texto+'0';
-    } 
+    }
     texto = stringToInteger(texto.slice(0, texto.length - 3)) + texto.slice(texto.length - 3, texto.length)
-  
+
     return texto;
   }
-  
+
 }
 
 export function stringToUnknown(texto: string){

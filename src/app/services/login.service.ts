@@ -105,7 +105,7 @@ export class LoginService {
                             if(res2!=null){
                               response.usuario = res2;
                               this.usuarioActual = res2;
-                              obs.next(response);
+                              window.location.reload()
                             }
                           })
                         } else {

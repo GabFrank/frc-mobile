@@ -1,11 +1,10 @@
+import { Component, Input, OnInit } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Presentacion } from 'src/app/domains/productos/presentacion.model';
+import { Producto } from 'src/app/domains/productos/producto.model';
 import { CargandoService } from './../../../services/cargando.service';
 import { ModalService } from './../../../services/modal.service';
-import { FormControl, Validators, FormGroup } from '@angular/forms';
 import { InventarioProducto, InventarioProductoEstado, InventarioProductoItem } from './../inventario.model';
-import { Producto } from 'src/app/domains/productos/producto.model';
-import { Presentacion } from 'src/app/domains/productos/presentacion.model';
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { IonInput } from '@ionic/angular';
 
 export interface InventarioItemData {
   inventarioProducto?: InventarioProducto;

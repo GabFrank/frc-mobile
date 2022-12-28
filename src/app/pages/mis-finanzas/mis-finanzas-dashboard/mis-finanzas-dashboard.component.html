@@ -1,0 +1,41 @@
+<ion-content>
+  <ion-card class="card" [routerLink]="['list-convenio']">
+    <ion-card-header style="color: white">
+      <ion-card-title>Convenios</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content style="color: white">
+      Lista de convenios realizados
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="card" (click)="onQrConfirm()">
+    <ion-card-header style="color: white">
+      <ion-card-title>Confirmar via QR</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content style="color: white">
+      Confirmar convenios via QR
+    </ion-card-content>
+  </ion-card>
+
+  <!-- <ion-card class="card" [routerLink]="['list-vales']">
+    <ion-card-header style="color: white">
+      <ion-card-title>Vales y anticipos</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content style="color: white">
+      Histórico de anticipos. Solicitar un vale.
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="card" [routerLink]="['resumen-financiero']">
+    <ion-card-header style="color: white">
+      <ion-card-title>Estado financiero</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content style="color: white">
+      Resumen general del estado financiero.
+    </ion-card-content>
+  </ion-card> -->
+</ion-content>

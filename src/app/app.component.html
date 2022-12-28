@@ -16,15 +16,49 @@
         </ion-row>
       </ion-toolbar>
     </ion-header>
-    <ion-content *ngIf="loginService?.usuarioActual?.id !== null">
+    <ion-content *ngIf="loginService?.usuarioActual?.id !== null" style="background-color: rgb(32, 32, 32)">
       <ion-list>
-        <ion-item [hidden]="loginService.usuarioActual === null">
+        <ion-item
+          (click)="onAvatarClick()"
+          [hidden]="loginService.usuarioActual === null"
+          style="text-align: center"
+        >
+          <ion-avatar>
+            <img
+              alt=""
+              [src]="'/assets/avatar.svg'"
+            />
+          </ion-avatar>
           <ion-label>{{
-            loginService.usuarioActual?.persona?.nombre | uppercase
+            loginService.usuarioActual?.persona?.nombre | titlecase
           }}</ion-label>
         </ion-item>
+        <ion-accordion-group>
+          <ion-accordion value="first">
+            <ion-item slot="header">
+              <ion-icon name="person-outline" slot="start"></ion-icon>
+              <ion-label>Mi cuenta</ion-label>
+            </ion-item>
+            <ion-item
+              slot="content"
+              (click)="openInfoPersonales(); closeMenu()"
+              style="padding-left: 10%"
+            >
+              <ion-icon name="id-card-outline" slot="start"></ion-icon>
+              <ion-label>Informaciones personales</ion-label>
+            </ion-item>
+            <ion-item
+              slot="content"
+              [routerLink]="['/mis-finanzas']" (click)="closeMenu()"
+              style="padding-left: 10%"
+            >
+              <ion-icon name="wallet-outline" slot="start"></ion-icon>
+              <ion-label>Mis finanzas</ion-label>
+            </ion-item>
+          </ion-accordion>
+        </ion-accordion-group>
         <ion-item [routerLink]="['/producto']" (click)="closeMenu()">
-          <ion-icon name="clipboard" slot="start"></ion-icon>
+          <ion-icon name="beer-outline" slot="start"></ion-icon>
           <ion-label>Producto</ion-label>
         </ion-item>
         <ion-item
@@ -32,7 +66,7 @@
           [routerLink]="['/inventario']"
           (click)="closeMenu()"
         >
-          <ion-icon name="clipboard" slot="start"></ion-icon>
+          <ion-icon name="newspaper-outline" slot="start"></ion-icon>
           <ion-label>Inventario</ion-label>
         </ion-item>
         <!--<ion-item [routerLink]="['/scanner']" (click)="closeMenu()">
@@ -46,24 +80,41 @@
           [routerLink]="['/transferencias']"
           (click)="closeMenu()"
         >
-          <ion-icon name="clipboard" slot="start"></ion-icon>
+          <ion-icon name="git-compare-outline" slot="start"></ion-icon>
           <ion-label>Transferencia</ion-label>
         </ion-item>
 
         <ion-accordion-group>
           <ion-accordion value="first">
             <ion-item slot="header">
-              <ion-icon name="clipboard" slot="start"></ion-icon>
+              <ion-icon name="barbell-outline" slot="start"></ion-icon>
               <ion-label>Operaciones</ion-label>
             </ion-item>
             <ion-item
               slot="content"
               [routerLink]="['/operaciones/caja']"
               (click)="closeMenu()"
-              style="padding-left: 10%;"
+              style="padding-left: 10%"
             >
-              <ion-icon name="clipboard" slot="start"></ion-icon>
+              <ion-icon name="cash-outline" slot="start"></ion-icon>
               <ion-label>Caja</ion-label>
+            </ion-item>
+          </ion-accordion>
+        </ion-accordion-group>
+
+        <ion-accordion-group>
+          <ion-accordion value="first">
+            <ion-item slot="header">
+              <ion-icon name="settings-outline" slot="start"></ion-icon>
+              <ion-label>Configuración</ion-label>
+            </ion-item>
+            <ion-item
+              slot="content"
+              (click)="onIpChange(); closeMenu()"
+              style="padding-left: 10%"
+            >
+              <ion-icon name="globe-outline" slot="start"></ion-icon>
+              <ion-label>Configuración del servidor</ion-label>
             </ion-item>
           </ion-accordion>
         </ion-accordion-group>
@@ -90,6 +141,10 @@
         </ion-item> -->
       </ion-list>
     </ion-content>
+    <div style="width: 100%; text-align: center">
+        Versión actual: {{ currentVersion }}
+    </div>
+    <br />
   </ion-menu>
 
   <div class="ion-page" id="main-content" style="height: 100%">
@@ -122,7 +177,7 @@
         <ion-row>
           <ion-col size="12" class="center">
             <img
-              src="/assets/logo.png"
+              [src]="isFarma ? '/assets/logof.png' : '/assets/logo.png'"
               alt=""
               style="width: auto; max-height: 45px; object-fit: contain"
             />

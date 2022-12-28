@@ -55,7 +55,11 @@ export class LoginComponent implements OnInit {
 
   async onLogin() {
     this.error = null;
-    (await this.loginService.login(this.usuarioControl.value, this.passwordControl.value))
+    let usuario: string = this.usuarioControl.value;
+    if(usuario[usuario.length-1] == ' '){
+      usuario = usuario.substring(0, usuario.length-2);
+    }
+    (await this.loginService.login(usuario, this.passwordControl.value))
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         if (res.error == null) {

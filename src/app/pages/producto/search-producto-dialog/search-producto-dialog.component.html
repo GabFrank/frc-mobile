@@ -10,14 +10,27 @@
     <ion-col size="12">
       <ion-item>
         <ion-label position="floating">Nombre o Código de Barra</ion-label>
-        <ion-input #buscarInput [formControl]="buscarControl" autocapitalize="on" (keyup.enter)="onBuscarClick()"></ion-input>
-        <ion-icon style="font-size: 2em; padding-top: 5px;" name="camera-outline" slot="end" (click)="onCameraClick()"></ion-icon>
+        <ion-input
+          #buscarInput
+          [formControl]="buscarControl"
+          autocapitalize="on"
+          (keyup.enter)="onBuscarClick()"
+        ></ion-input>
+        <ion-icon
+          style="font-size: 2em; padding-top: 5px"
+          name="camera-outline"
+          slot="end"
+          (click)="onCameraClick()"
+        ></ion-icon>
       </ion-item>
     </ion-col>
   </ion-row>
   <ion-row *ngIf="buscarControl.valid">
     <ion-col size="12" style="text-align: center">
-      <ion-button class="btn-success-flat" fill="clear" (click)="onBuscarClick()"
+      <ion-button
+        class="btn-success-flat"
+        fill="clear"
+        (click)="onBuscarClick()"
         >Buscar</ion-button
       >
     </ion-col>
@@ -56,13 +69,29 @@
             />
           </ion-avatar>
           <ion-label>
-            <h4>Presentación: {{ presentacion?.cantidad | number: '1.0-2' }}</h4>
+            <h4>
+              Presentación: {{ presentacion?.cantidad | number: '1.0-2' }}
+            </h4>
             <p>
               Cod. barra:
               {{ presentacion?.codigoPrincipal?.codigo | uppercase }}
             </p>
             <p *ngIf="mostrarPrecio">
-              Precio: {{presentacion?.precioPrincipal?.precio | number: '1.0-2'}}
+              Precio:
+              {{ presentacion?.precioPrincipal?.precio | number: '1.0-2' }}
+            </p>
+            <p *ngIf="data?.data?.sucursalId">
+              <ng-container
+                *ngIf="
+                  producto?.stockPorProducto === undefined;
+                  else elseTemplate
+                "
+              >
+                <ion-spinner></ion-spinner>
+              </ng-container>
+              <ng-template #elseTemplate>
+                Stock: {{ producto?.stockPorProducto / presentacion?.cantidad | number: '1.0-2' }}
+              </ng-template>
             </p>
           </ion-label>
         </ion-item>
@@ -71,7 +100,10 @@
   </ion-accordion-group>
   <ion-row *ngIf="productosList?.length > 0 && showCargarMas">
     <ion-col size="12" style="text-align: center">
-      <ion-button class="btn-success-flat" fill="clear" (click)="onMasProductos()"
+      <ion-button
+        class="btn-success-flat"
+        fill="clear"
+        (click)="onMasProductos()"
         >Cargar más</ion-button
       >
     </ion-col>

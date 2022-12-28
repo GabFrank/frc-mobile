@@ -14,9 +14,11 @@ import { ImagePopoverComponent } from 'src/app/components/image-popover/image-po
 import { Location } from '@angular/common';
 import { Platform } from '@ionic/angular';
 import { CodigoService } from '../../codigo/codigo.service';
+import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 
 export interface SearchProductoDialogData {
   mostrarPrecio: boolean;
+  sucursalId?: number;
 }
 
 @UntilDestroy()
@@ -24,7 +26,7 @@ export interface SearchProductoDialogData {
   selector: 'app-search-producto-dialog',
   templateUrl: './search-producto-dialog.component.html',
   styleUrls: ['./search-producto-dialog.component.scss'],
-  providers: [BarcodeScanner]
+  providers: [BarcodeScanner, PhotoViewer]
 })
 export class SearchProductoDialogComponent implements OnInit {
 
@@ -38,6 +40,7 @@ export class SearchProductoDialogComponent implements OnInit {
   onSearchTimer
   showCargarMas = true;
   mostrarPrecio = false;
+  isSearchingList: boolean[] = []
 
   isWeb = false;
 
@@ -50,7 +53,8 @@ export class SearchProductoDialogComponent implements OnInit {
     private route: ActivatedRoute,
     private _location: Location,
     private plf: Platform,
-    private codigoService: CodigoService
+    private codigoService: CodigoService,
+    private photoViewer: PhotoViewer
 
   ) {
     this.isWeb = plf.platforms().includes('mobileweb');
@@ -62,6 +66,9 @@ export class SearchProductoDialogComponent implements OnInit {
     }
 
     this.isWeb ? null : this.onCameraClick()
+
+    console.log(this.data);
+
   }
 
   onBuscarClick() {
@@ -98,11 +105,13 @@ export class SearchProductoDialogComponent implements OnInit {
           (await this.productoService.onSearch(text, offset)).pipe(untilDestroyed(this)).subscribe((res) => {
             if (offset == null) {
               this.productosList = res;
+              // this.isSearchingList = new Array(this.isSearchingList.length)
               this.showCargarMas = true
             } else {
               if (res?.length > 0) this.showCargarMas = true
               const arr = [...this.productosList.concat(res)];
               this.productosList = arr;
+              // this.isSearchingList = new Array(this.isSearchingList.length)
             }
             this.isSearching = false;
           });
@@ -113,9 +122,10 @@ export class SearchProductoDialogComponent implements OnInit {
   }
 
   onAvatarClick(image) {
-    this.popoverService.open(ImagePopoverComponent, {
-      image
-    }, PopoverSize.MD)
+    // this.popoverService.open(ImagePopoverComponent, {
+    //   image
+    // }, PopoverSize.MD)
+    this.photoViewer.show(image, '')
   }
 
   onMasProductos() {
@@ -129,6 +139,18 @@ export class SearchProductoDialogComponent implements OnInit {
         console.log(res);
         this.productosList[index].presentaciones = res.presentaciones;
       });
+    }
+    if(this.data?.data?.sucursalId!=null && producto?.stockPorProducto==null){
+      this.isSearchingList[index] = true;
+      (await this.productoService.onGetStockPorSucursal(producto.id, this.data?.data?.sucursalId)).pipe(untilDestroyed(this)).subscribe(res =>{
+        this.isSearchingList[index] = false;
+        console.log(res);
+        if(res!=null){
+          setTimeout(() => {
+            this.productosList[index].stockPorProducto = res;
+          }, 2000);
+        }
+      })
     }
   }
 
