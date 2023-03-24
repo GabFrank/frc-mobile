@@ -7,7 +7,12 @@ const config: CapacitorConfig = {
   bundledWebRuntime: false,
   server: {
     'cleartext': true
-  }
+  },
+  plugins: {
+		CapacitorUpdater: {
+			autoUpdate: true
+		}
+	}
 };
 
 export default config;

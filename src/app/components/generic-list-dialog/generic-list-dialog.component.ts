@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { PdvCaja } from 'src/app/pages/operaciones/caja/caja.model';
@@ -44,8 +45,12 @@ export class GenericListDialogComponent implements OnInit {
     }
   }
 
-  onItemClick(item: any){
+  onItemClick(item: any) {
     this.modalService.closeModal(item)
+  }
+
+  onBack() {
+    this.modalService.closeModal(null)
   }
 
 }

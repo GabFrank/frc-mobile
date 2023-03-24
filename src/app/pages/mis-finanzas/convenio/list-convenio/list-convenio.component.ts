@@ -1,10 +1,15 @@
 import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { GenericListDialogComponent, GenericListDialogData, TableData } from 'src/app/components/generic-list-dialog/generic-list-dialog.component';
+import { Cliente } from 'src/app/domains/cliente/cliente.model';
 import { EstadoVentaCredito, VentaCredito } from 'src/app/domains/venta-credito/venta-credito.model';
+import { Venta } from 'src/app/domains/venta/venta.model';
 import { VentaCreditoService } from 'src/app/graphql/financiero/venta-credito/venta-credito.service';
+import { VentaService } from 'src/app/graphql/operaciones/venta/venta.service';
 import { ClienteService } from 'src/app/graphql/personas/cliente/graphql/cliente.service';
 import { MainService } from 'src/app/services/main.service';
 import { MenuActionService } from 'src/app/services/menu-action.service';
+import { ModalService } from 'src/app/services/modal.service';
 
 @Component({
   selector: 'app-list-convenio',
@@ -17,17 +22,23 @@ export class ListConvenioComponent implements OnInit {
   totalVentaCredito = 0;
   totalAbiertos = 0;
   selectedEstado = EstadoVentaCredito.ABIERTO;
+  selectedCliente: Cliente;
+
   constructor(
     private ventaCreditoService: VentaCreditoService,
     private mainService: MainService,
     private clienteService: ClienteService,
     private _location: Location,
-    private menuActionService: MenuActionService
+    private menuActionService: MenuActionService,
+    private ventaService: VentaService,
+    private modalService: ModalService
   ) { }
 
   async ngOnInit() {
-    (await this.clienteService.onGetByPersonaId(this.mainService.usuarioActual.persona.id)).subscribe(async res => {
+    (await this.clienteService.onGetByPersonaId(this.mainService.usuarioActual?.persona.id)).subscribe(async res => {
+      this.selectedCliente = res;
       console.log(res);
+
       if (res != null) {
         (await this.ventaCreditoService.onGetPorClienteId(res.id, this.selectedEstado, 0, this.totalVentaCredito)).subscribe(res3 => {
           this.ventaCreditoList = res3;
@@ -45,18 +56,7 @@ export class ListConvenioComponent implements OnInit {
   }
 
   onItemClick(ventaCredito: VentaCredito) {
-    this.menuActionService.presentActionSheet(
-      [
-        {
-          texto: 'Ver detalles de compra',
-          role: 'venta'
-        }
-      ]
-    ).then(res => {
-      if (res['role'] == 'venta') {
 
-      }
-    })
   }
 
   onBack() {
@@ -65,6 +65,47 @@ export class ListConvenioComponent implements OnInit {
 
   openFilterMenu() {
 
+  }
+
+  async openVentaDetalle(venta: Venta) {
+    (await this.ventaService.onGetPorId(venta.id, venta.sucursalId)).subscribe((res: Venta) => {
+      if(res!=null){
+        let tableData: TableData[] = [
+          {
+            id: 'producto',
+            nombre: 'Producto',
+            width: 100,
+            nested: true,
+            nestedId: 'descripcion'
+          },
+          {
+            id: 'presentacion',
+            nombre: 'Presentación',
+            width: 100,
+            nested: true,
+            nestedId: 'cantidad'
+          },
+          {
+            id: 'cantidad',
+            nombre: 'cantidad',
+            width: 100
+          },
+          {
+            id: 'valorTotal',
+            nombre: 'Total',
+            width: 100
+          }
+        ];
+        let data: GenericListDialogData = {
+          tableData: tableData,
+          titulo: 'Detalle de venta',
+          search: false,
+          inicialData: res.ventaItemList
+        }
+
+        this.modalService.openModal(GenericListDialogComponent, data)
+      }
+    })
   }
 
 }

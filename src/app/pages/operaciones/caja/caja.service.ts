@@ -17,6 +17,7 @@ import { DeleteCajaGQL } from "./graphql/deleleCaja";
 import { ImprimirBalanceGQL } from "./graphql/imprimirBalance";
 import { SaveCajaGQL } from "./graphql/saveCaja";
 import { SaveCajaPorSucursalGQL } from "./graphql/saveCajaPorSucursal";
+// import { AbrirCajaGQL } from "./graphql/abrirCaja";
 
 @UntilDestroy({ checkProperties: true })
 @Injectable({
@@ -40,7 +41,8 @@ export class CajaService {
     private cargandoService: CargandoService,
     private notificacionService: NotificacionService,
     private onSaveCajaPorSucursal: SaveCajaPorSucursalGQL,
-    private cajasPorUsuario: CajasPorUsuarioIdGQL
+    private cajasPorUsuario: CajasPorUsuarioIdGQL,
+    // private abrirCaja: AbrirCajaGQL
   ) {
 
   }
@@ -138,4 +140,9 @@ export class CajaService {
       .subscribe((res) => {
       });
   }
+
+  // async onAbrirCaja(cajaInput, conteoInput, conteoMonedaInputList): Promise<Observable<any>> {
+  //   return await this.genericService.onCustomSave(this.abrirCaja, { input: cajaInput, conteoInput: conteoInput, conteoMonedaInputList: conteoMonedaInputList });
+  // }
+
 }

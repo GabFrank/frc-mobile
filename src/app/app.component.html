@@ -11,12 +11,15 @@
             <ion-title>Menu</ion-title>
           </ion-col>
           <ion-col size="6" [class.online]="online" [class.offline]="!online">
-            {{ online ? 'Online' : 'Offline' }}
+            {{ online ? 'Online' : 'Offline' }} {{isDev ? ' - DEV' : ''}}
           </ion-col>
         </ion-row>
       </ion-toolbar>
     </ion-header>
-    <ion-content *ngIf="loginService?.usuarioActual?.id !== null" style="background-color: rgb(32, 32, 32)">
+    <ion-content
+      *ngIf="loginService?.usuarioActual?.id !== null"
+      style="background-color: rgb(32, 32, 32)"
+    >
       <ion-list>
         <ion-item
           (click)="onAvatarClick()"
@@ -24,14 +27,14 @@
           style="text-align: center"
         >
           <ion-avatar>
-            <img
-              alt=""
-              [src]="'/assets/avatar.svg'"
-            />
+            <img alt="" [src]="'/assets/avatar.svg'" />
           </ion-avatar>
-          <ion-label>{{
-            loginService.usuarioActual?.persona?.nombre | titlecase
-          }}</ion-label>
+          <ion-label
+            >{{ loginService.usuarioActual?.persona?.id }} -
+            {{
+              loginService.usuarioActual?.persona?.nombre | titlecase
+            }}</ion-label
+          >
         </ion-item>
         <ion-accordion-group>
           <ion-accordion value="first">
@@ -49,7 +52,8 @@
             </ion-item>
             <ion-item
               slot="content"
-              [routerLink]="['/mis-finanzas']" (click)="closeMenu()"
+              [routerLink]="['/mis-finanzas']"
+              (click)="closeMenu()"
               style="padding-left: 10%"
             >
               <ion-icon name="wallet-outline" slot="start"></ion-icon>
@@ -142,7 +146,7 @@
       </ion-list>
     </ion-content>
     <div style="width: 100%; text-align: center">
-        Versión actual: {{ currentVersion }}
+      Versión actual: {{ currentVersion }}
     </div>
     <br />
   </ion-menu>

@@ -44,11 +44,11 @@ export class SelectZonaDialogComponent implements OnInit {
   }
 
   onZonaClick(zona: Zona){
-    this.dialogService.open('Atención!', `Estas iniciando el inventario en la zona ${zona.descripcion}. Solo una persona puede inventariar una zona. Desea continuar?`).then(res => {
-      if(res.role=='aceptar'){
-        this.modalService.closeModal(zona)
-      }
-    })
+    // this.dialogService.open('Atención!', `Estas iniciando el inventario en la zona ${zona.descripcion}. Solo una persona puede inventariar una zona. Desea continuar?`).then(res => {
+    //   if(res.role=='aceptar'){
+    //   }
+    // })
+    this.modalService.closeModal(zona)
   }
 
   onBack() {

@@ -6,6 +6,9 @@
       (click)="onBack()"
     ></ion-icon>
   </ion-col>
+  <ion-col size="12">
+    <ion-label>{{data?.titulo | titlecase}}</ion-label>
+  </ion-col>
   <ion-row *ngIf="data?.search">
     <ion-col size="12">
       <ion-item>
@@ -31,18 +34,19 @@
   </ion-row>
   <ion-list>
     <ng-container *ngFor="let item of itemList">
-      <ion-card (click)="onItemClick(item)" class="estado-abierto">
+      <ion-card (click)="onItemClick(item)">
         <ion-grid>
           <ion-row *ngFor="let info of data.tableData" wrap>
             <ng-container *ngIf="!info.nested">
               <ion-col [size]="info.width"
-              >{{ info.nombre }}: {{ item[info?.id] }}</ion-col
-            >
+                >{{ info.nombre }}: {{ item[info?.id] }}</ion-col
+              >
             </ng-container>
             <ng-container *ngIf="info.nested">
               <ion-col [size]="info.width"
-              >{{ info.nombre }}: {{ item[info?.id][info?.nestedId] }}</ion-col
-            >
+                >{{ info.nombre }}:
+                {{ item[info?.id][info?.nestedId] }}</ion-col
+              >
             </ng-container>
           </ion-row>
         </ion-grid>

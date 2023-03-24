@@ -16,17 +16,29 @@
       ></ion-icon>
     </ion-col>
   </ion-row>
-  <div style="padding-left: 5px; padding-right: 5px;">
+  <div style="padding-left: 5px; padding-right: 5px">
     <ion-row>
-      <ion-col size="8"> Convenios pendientes: </ion-col>
+      <ion-col size="8"> Convenios del mes: </ion-col>
       <ion-col size="4" style="text-align: end">
         {{ totalVentaCredito | number: '1.0-0' }}
       </ion-col>
     </ion-row>
     <ion-row>
-      <ion-col size="8"> Total en Gs: </ion-col>
+      <ion-col size="8"> Crédito: </ion-col>
       <ion-col size="4" style="text-align: end">
-        {{ totalAbiertos | number: '1.0-0' }}
+        {{ selectedCliente?.credito | number: '1.0-0' }} Gs.
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="8"> Utilizado: </ion-col>
+      <ion-col size="4" style="text-align: end">
+        {{ totalAbiertos | number: '1.0-0' }} Gs.
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="8"> Saldo: </ion-col>
+      <ion-col size="4" style="text-align: end">
+        {{ selectedCliente?.saldo | number: '1.0-0' }} Gs.
       </ion-col>
     </ion-row>
   </div>
@@ -77,6 +89,16 @@
                   <div class="valores success">
                     Gs. {{ ventaCredito.valorTotal | number: '1.0-0' }}
                   </div>
+                </ion-col>
+              </ion-row>
+              <ion-row style="width: 100%">
+                <ion-col size="12" class="center">
+                  <ion-button
+                    fill="clear"
+                    class="btn-success-flat"
+                    (click)="openVentaDetalle(ventaCredito.venta)"
+                    >VER DETALLE</ion-button
+                  >
                 </ion-col>
               </ion-row>
             </ion-grid>

@@ -49,7 +49,7 @@ export class LoginService {
     return new Observable((obs) => {
       let isToken = localStorage.getItem('token');
       let id = localStorage.getItem('usuarioId');
-      if (isToken != null && id != null) {
+      if (id != null) {
         this.usuarioService
           .onGetUsuario(+id)
           .pipe(untilDestroyed(this))
@@ -77,7 +77,7 @@ export class LoginService {
       };
       let httpResponse = this.http
         .post(
-          `http://${serverAdress.serverIp}:${serverAdress.serverPort}/login`,
+          `http://${localStorage.getItem('serverIp')}:${localStorage.getItem('serverPort')}/login`,
           httpBody,
           this.httpOptions
         )

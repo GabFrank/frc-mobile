@@ -59,12 +59,12 @@ export const ventaCreditoQuery = gql
     }
   }`
 
-  export const ventaCreditoQrAuthQuery = gql
-  `query($id: ID!, $timestamp: String){
-    data: ventaCreditoQrAuth(id: $id, timestamp :$timestamp)
+export const ventaCreditoQrAuthQuery = gql
+  `query($id: ID!, $timestamp: String, $sucursalId: Int, $secretKey: String){
+    data: ventaCreditoQrAuth(id: $id, timestamp :$timestamp, sucursalId: $sucursalId, secretKey: $secretKey)
   }`
 
-  export const ventaCreditoPorClienteQuery = gql
+export const ventaCreditoPorClienteQuery = gql
   `query($id: ID!, $estado: EstadoVentaCredito, $page: Int, $size: Int){
     data: ventaCreditoPorCliente(id: $id, estado: $estado, page: $page, size: $size){
       id
@@ -79,6 +79,7 @@ export const ventaCreditoQuery = gql
             nombre
           }
         }
+        sucursalId
       }
       cliente {
         id
@@ -111,7 +112,7 @@ export const deleteVentaCreditoQuery = gql
 }`
 
 export const countByClienteAndEstado = gql
-`query($id: ID!, $estado: EstadoVentaCredito){
+  `query($id: ID!, $estado: EstadoVentaCredito){
   data: countByClienteIdAndEstado(id: $id, estado: $estado)
 }`
 

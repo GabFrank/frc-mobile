@@ -1,5 +1,5 @@
 import { Usuario } from "src/app/domains/personas/usuario.model";
-import { ConteoMoneda } from "./conteo-moneda/conteo-moneda.model";
+import { ConteoMoneda, ConteoMonedaInput } from "./conteo-moneda/conteo-moneda.model";
 
 export class Conteo {
     id:number;
@@ -21,6 +21,14 @@ export class Conteo {
         conteoInput.totalRs = this.totalRs;
         conteoInput.totalDs = this.totalDs;
         return conteoInput;
+    }
+
+    public toInpuList(): ConteoMonedaInput[] {
+      let aux: ConteoMonedaInput[] = []
+      this.conteoMonedaList.forEach(cm => {
+        aux.push(cm.toInput())
+      })
+      return aux;
     }
 }
 

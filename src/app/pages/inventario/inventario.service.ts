@@ -114,8 +114,8 @@ export class InventarioService {
     return await this.genericCrudService.onSave(this.saveInventarioProductoItem, input);
   }
 
-  async onDeleteInventarioProductoItem(id): Promise<Observable<boolean>> {
-    return await this.genericCrudService.onDelete(this.deleteInventarioProductoItem, id, 'Realmente  desea eliminar este item')
+  async onDeleteInventarioProductoItem(id, item?): Promise<Observable<boolean>> {
+    return await this.genericCrudService.onDelete(this.deleteInventarioProductoItem, id, item)
   }
 
   onFinalizarInventario(id): Observable<Inventario>{

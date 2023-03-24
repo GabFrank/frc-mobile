@@ -8,7 +8,7 @@ import { descodificarQr, QrData } from './../../../generic/utils/qrUtils';
 import { ModalService } from './../../../services/modal.service';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { InventarioService } from './../inventario.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
 import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
@@ -26,9 +26,11 @@ import { Platform } from '@ionic/angular';
 })
 export class NuevoInventarioComponent implements OnInit {
 
+  @Input() data;
+
   selectedSucursal: Sucursal;
   selectedInventario: Inventario;
-  isNew = false;
+  isNew = true;
   isWeb = false;
 
   constructor(
@@ -45,6 +47,9 @@ export class NuevoInventarioComponent implements OnInit {
 
   ngOnInit() {
     this.isWeb = this.plf.platforms().includes('mobileweb')
+    if(this.data!=null){
+      this.selectedSucursal = this.data.data
+    }
   }
 
   async cargarDatos(sucId) {
@@ -59,8 +64,6 @@ export class NuevoInventarioComponent implements OnInit {
               if (res2.length > 0) {
                 this.modalService.closeModal({ inventario: res2[0] })
                 this.notificacionService.open('Hay un inventario abierto en esta sucursal', TipoNotificacion.WARN, 2)
-              } else {
-                this.isNew = true;
               }
             })
         }
@@ -69,18 +72,23 @@ export class NuevoInventarioComponent implements OnInit {
   }
 
   onScanQr() {
-    this.barcodeScanner.scan().then(async barcodeData => {
-      if (barcodeData.text != null) {
-        let qrData: QrData;
-        qrData = descodificarQr(barcodeData.text)
-        if (qrData.tipoEntidad == TipoEntidad.SUCURSAL && qrData.sucursalId != null) {
-          this.cargarDatos(qrData.sucursalId)
+    if (this.data != null) {
+      this.cargarDatos(this.data.data.data?.id)
+    } else {
+      this.barcodeScanner.scan().then(async barcodeData => {
+        if (barcodeData.text != null) {
+          let qrData: QrData;
+          qrData = descodificarQr(barcodeData.text)
+          if (qrData.tipoEntidad == TipoEntidad.SUCURSAL && qrData.sucursalId != null) {
+            this.cargarDatos(qrData.sucursalId)
+          }
+
+        } else {
+
         }
+      });
+    }
 
-      } else {
-
-      }
-    });
   }
 
   onBack() {

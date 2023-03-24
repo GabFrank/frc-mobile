@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, isDevMode } from '@angular/core';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { MenuController, Platform, PopoverController } from '@ionic/angular';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -39,6 +39,8 @@ export class AppComponent implements OnInit {
 
   isFarma = false;
 
+  isDev = false;
+
   constructor(
     private menu: MenuController,
     public mainService: MainService,
@@ -52,6 +54,9 @@ export class AppComponent implements OnInit {
     private platfform: Platform,
     private fingerprintService: FingerprintAuthService
   ) {
+
+    this.isDev = isDevMode()
+
     this.optionZbar = {
       flash: 'off',
       drawSight: false
@@ -61,6 +66,7 @@ export class AppComponent implements OnInit {
     })
 
     this.isFarma = localStorage.getItem('serverIp').includes('158')
+
   }
 
   // initializeApp() {

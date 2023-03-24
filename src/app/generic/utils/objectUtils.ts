@@ -10,3 +10,11 @@ function getClassProperties(instanceOfClass) {
     return names.filter(name => name != 'constructor');
 }
 
+export function objToJson(obj: any): string{
+  return JSON.stringify(obj);
+}
+
+export function jsonToObj(json: string) {
+  return JSON.parse(json);
+}
+

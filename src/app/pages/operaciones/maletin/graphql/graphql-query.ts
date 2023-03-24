@@ -91,8 +91,8 @@ export const maletinPorDescripcionQuery = gql`
 `;
 
 export const maletinPorDescripcionPorSucursalQuery = gql`
-  query ($texto: String, $sucId: Int!) {
-    data: maletinPorDescripcionPorSucursal(texto: $texto, sucId: $sucId) {
+  query ($texto: String) {
+    data: maletinPorDescripcion(texto: $texto) {
       id
       descripcion
       activo

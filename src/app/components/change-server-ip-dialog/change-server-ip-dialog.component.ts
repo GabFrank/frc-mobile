@@ -19,6 +19,8 @@ export class ChangeServerIpDialogComponent implements OnInit {
   onGuardar() {
     localStorage.setItem('serverIp', this.serverIpControl.value)
     localStorage.setItem('serverPort', this.serverPortControl.value)
+    localStorage.setItem('usuarioId', null)
+    localStorage.setItem('token', null)
     window.location.reload()
   }
 
@@ -29,12 +31,17 @@ export class ChangeServerIpDialogComponent implements OnInit {
   onBodegaClick(){
     localStorage.setItem('serverIp', '150.136.137.98')
     localStorage.setItem('serverPort', '8081')
+    localStorage.setItem('usuarioId', null)
+    localStorage.setItem('token', null)
     window.location.reload()
 
   }
   onFarmaciaClick(){
     localStorage.setItem('serverIp', '158.101.114.87')
     localStorage.setItem('serverPort', '8081')
+    localStorage.setItem('usuarioId', null)
+    localStorage.setItem('token', null)
+
     window.location.reload()
 
   }
