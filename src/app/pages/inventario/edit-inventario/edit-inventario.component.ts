@@ -87,8 +87,6 @@ export class EditInventarioComponent implements OnInit {
           this.buscarInventario(this.inventarioId)
         }
       })
-
-
   }
 
   async buscarInventario(id) {
@@ -199,8 +197,8 @@ export class EditInventarioComponent implements OnInit {
 
   onAddProducto(invPro, i) {
     console.log(this.selectedInventario);
-    let data = {sucursalId: +this.selectedInventario.sucursal.id};
-    this.modalService.openModal(SearchProductoDialogComponent, {data}).then(res => {
+    let data = { sucursalId: +this.selectedInventario.sucursal.id };
+    this.modalService.openModal(SearchProductoDialogComponent, { data }).then(res => {
       if (res?.data) {
         let selectedPresentacion = res.data['presentacion'];
         let selectedProducto = res.data['producto'];
@@ -240,6 +238,19 @@ export class EditInventarioComponent implements OnInit {
     })
   }
 
+  async onDeleteProducto(invProItem: InventarioProductoItem, index, invPro: InventarioProducto) {
+    (await this.inventarioService.onDeleteInventarioProductoItem(invProItem.id, invProItem.presentacion.producto.descripcion)).subscribe(res => {
+      if (res) {
+        this.selectedInventario.inventarioProductoList.forEach((i) => {
+          this.selectedInventario.inventarioProductoList.forEach(i => {
+            if (i.inventarioProductoItemList == null) i.inventarioProductoItemList = []
+            if (i.id == invPro.id) i.inventarioProductoItemList.splice(index, 1);
+          })
+        })
+      }
+    })
+  }
+
   onEditProducto(invProItem: InventarioProductoItem, index, invPro: InventarioProducto) {
     let selectedPresentacion = invProItem?.presentacion;
     let selectedProducto = invProItem?.presentacion?.producto;
@@ -257,7 +268,7 @@ export class EditInventarioComponent implements OnInit {
             if (res3 != null) {
               this.selectedInventario.inventarioProductoList.forEach(i => {
                 if (i.inventarioProductoItemList == null) i.inventarioProductoItemList = []
-                i.inventarioProductoItemList[index] = res3
+                if (i.id == invPro.id) i.inventarioProductoItemList[index] = res3
               })
             }
           })
@@ -329,7 +340,7 @@ export class EditInventarioComponent implements OnInit {
   async onCargarMenos(invPro: InventarioProducto, index) {
     let length = this.selectedInventario.inventarioProductoList[index].inventarioProductoItemList.length;
     let sobra = length - 4;
-    this.selectedInventario.inventarioProductoList[index].inventarioProductoItemList.splice(length-sobra, sobra-1)
+    this.selectedInventario.inventarioProductoList[index].inventarioProductoItemList.splice(length - sobra, sobra - 1)
   }
 
 

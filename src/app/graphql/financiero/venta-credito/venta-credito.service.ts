@@ -26,7 +26,7 @@ export class VentaCreditoService {
     return this.genericService.onCustomGet(this.countByClienteAndEstado, { id, estado });
   }
 
-  async onVentaCreditoQrAuth(id: number, timestamp:string): Promise<Observable<number>> {
-    return this.genericService.onCustomGet(this.ventaCreditoQrAuth, { id, timestamp });
+  async onVentaCreditoQrAuth(id: number, timestamp:string, sucursalId?, secretKey?): Promise<Observable<number>> {
+    return this.genericService.onCustomGet(this.ventaCreditoQrAuth, { id, timestamp, sucursalId, secretKey });
   }
 }

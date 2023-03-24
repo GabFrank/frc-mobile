@@ -174,14 +174,18 @@ export class AdicionarConteoDialogComponent implements OnInit {
     conteo.conteoMonedaList = this.createMonedaBilletes()
     this.dialogoService.open('Atención', 'Estas seguro que deseas guardar este conteo?').then(res => {
       if (res.role == 'aceptar') {
-        this.conteoService
-          .onSave(conteo, this.cajaService.selectedCaja?.id, this.isApertura, this.cajaService.selectedCaja.sucursal.id)
-          .pipe(untilDestroyed(this))
-          .subscribe((res) => {
-            if (res != null) {
-              this.modalService.closeModal(res)
-            }
-          });
+        if (this.cajaService.selectedCaja != null) {
+          this.conteoService
+            .onSave(conteo, this.cajaService.selectedCaja?.id, this.isApertura, this.cajaService.selectedCaja.sucursal.id)
+            .pipe(untilDestroyed(this))
+            .subscribe((res) => {
+              if (res != null) {
+                this.modalService.closeModal(res)
+              }
+            });
+        } else {
+          this.modalService.closeModal({conteo: conteo})
+        }
       }
     })
   }

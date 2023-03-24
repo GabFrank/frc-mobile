@@ -91,7 +91,7 @@ export class CajaInfoComponent implements OnInit {
 
   async verificarMaletin() {
     (await this.maletinService
-      .onGetPorDescripcion(this.descripcionMaletinControl.value, this.cajaService.selectedCaja.sucursal.id)).pipe(untilDestroyed(this))
+      .onGetPorDescripcion(this.descripcionMaletinControl.value)).pipe(untilDestroyed(this))
       .subscribe((res) => {
         if (res != null) {
           let maletinEncontrado: Maletin = res;

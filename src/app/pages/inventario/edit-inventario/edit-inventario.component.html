@@ -186,22 +186,32 @@
                   <p class="title">Estado:</p>
                   <p>{{ invProItem.estado }}</p>
                 </ion-col>
-                <ion-col size="4">
-                  <ion-button
+                <ion-col size="2">
+                  <ion-icon
                     class="btn-success-flat"
                     (click)="onEditProducto(invProItem, i2, invPro)"
-                    expand="block"
-                    fill="clear"
+                    name="create-outline"
+                    size="large"
                     *ngIf="
                       invPro?.concluido !== true &&
                       selectedInventario?.estado === 'ABIERTO'
                     "
-                    [disabled]="
-                      mainService?.usuarioActual?.id !== invPro?.usuario?.id
+                  >
+                  </ion-icon>
+                </ion-col>
+                <ion-icon slot="start" name="add"></ion-icon>
+                <ion-col size="2">
+                  <ion-icon
+                    class="btn-danger-flat"
+                    (click)="onDeleteProducto(invProItem, i2, invPro)"
+                    name="trash-outline"
+                    size="large"
+                    *ngIf="
+                      invPro?.concluido !== true &&
+                      selectedInventario?.estado === 'ABIERTO'
                     "
                   >
-                    Editar
-                  </ion-button>
+                  </ion-icon>
                 </ion-col>
               </ion-row>
             </ion-label>

@@ -1,7 +1,7 @@
 <ion-content style="top: 20%">
   <ion-row *ngIf="selectedUsuario === null">
     <ion-col size="12" class="center">
-      <img src="/assets/logo.png" alt="" style="width: 200px" />
+      <img src="/assets/logo.png" alt="" style="width: 200px" (click)="onDev()"/>
       <p style="margin-top: 2px">POWERED BY FRC</p>
     </ion-col>
   </ion-row>

@@ -226,10 +226,11 @@ export class GenericCrudService {
             }
           });
       } else {
+        this.cargandoService.close(loading)
         this.dialogoService
           .open(
             "Atención!!",
-            "Realemente desea eliminar este " + titulo,
+            "Realemente desea eliminar este item:" + titulo,
             true
           ).then((res1) => {
             if (res1) {
@@ -307,6 +308,31 @@ export class GenericCrudService {
             entity,
             detalleList,
           },
+          {
+            fetchPolicy: "no-cache",
+            errorPolicy: "all",
+          }
+        ).pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          this.cargandoService.close(loading)
+          if (res.errors == null) {
+            this.notificacionService.open('Guardado con éxito', TipoNotificacion.SUCCESS, 2)
+            obs.next(res.data['data']);
+          } else {
+            this.notificacionService.open('Ups!! Algo salió mal', TipoNotificacion.DANGER, 2)
+            console.log(res);
+            obs.next(null);
+          }
+        });
+    });
+  }
+
+  async onCustomSave(gql: Mutation, data) {
+    let loading = await this.cargandoService.open(null, false)
+    return new Observable((obs) => {
+      gql
+        .mutate(
+          data,
           {
             fetchPolicy: "no-cache",
             errorPolicy: "all",

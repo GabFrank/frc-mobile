@@ -1,19 +1,15 @@
-import { CargandoService } from './../../../services/cargando.service';
-import { TipoEntidad } from './../../../domains/enums/tipo-entidad.enum';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { TransferenciaService } from './../transferencia.service';
-import { IngresarCodigoPopComponent } from './../ingresar-codigo-pop/ingresar-codigo-pop.component';
-import { PopOverService } from './../../../services/pop-over.service';
-import { QrScannerDialogComponent } from './../../../components/qr-scanner-dialog/qr-scanner-dialog.component';
-import { ModalService } from './../../../services/modal.service';
-import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
-import { BarcodeFormat, ScannerService } from '../../../components/qr-scanner-dialog/scanner.service';
-import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
-import { BarcodeScanner, BarcodeScannerOptions } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { ActivatedRoute, Router } from '@angular/router';
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { Platform } from '@ionic/angular';
-import { MainService } from 'src/app/services/main.service';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
+import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
+import { TipoEntidad } from './../../../domains/enums/tipo-entidad.enum';
+import { CargandoService } from './../../../services/cargando.service';
+import { PopOverService } from './../../../services/pop-over.service';
+import { IngresarCodigoPopComponent } from './../ingresar-codigo-pop/ingresar-codigo-pop.component';
+import { TransferenciaService } from './../transferencia.service';
 
 declare let window: any; // Don't forget this part!
 

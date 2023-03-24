@@ -31,8 +31,8 @@ export class MaletinService {
     return await this.genericCrud.onGetById(this.getMaletinPorId, id)
   }
 
-  async onGetPorDescripcion(texto, id): Promise<Observable<any>>{
-    return await this.genericCrud.onGetByTextoPorSucursal(this.getMaletinPorDescripcion, texto, id)
+  async onGetPorDescripcion(texto): Promise<Observable<any>>{
+    return await this.genericCrud.onGetByTexto(this.getMaletinPorDescripcion, texto)
   }
 
   async onSave(input: MaletinInput): Promise<Observable<any>>{

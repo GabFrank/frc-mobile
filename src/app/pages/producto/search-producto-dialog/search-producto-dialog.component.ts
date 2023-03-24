@@ -97,7 +97,7 @@ export class SearchProductoDialogComponent implements OnInit {
         if (isPesable) {
           (await this.codigoService.onGetCodigoPorCodigo(codigo)).pipe(untilDestroyed(this)).subscribe(codigoRes => {
             console.log(codigoRes);
-            if(codigoRes.length == 1){
+            if (codigoRes.length == 1) {
               this.onPresentacionClick(codigoRes[0]?.presentacion, codigoRes[0]?.presentacion?.producto, peso);
             }
           })
@@ -140,12 +140,12 @@ export class SearchProductoDialogComponent implements OnInit {
         this.productosList[index].presentaciones = res.presentaciones;
       });
     }
-    if(this.data?.data?.sucursalId!=null && producto?.stockPorProducto==null){
+    if (this.data?.data?.sucursalId != null && producto?.stockPorProducto == null) {
       this.isSearchingList[index] = true;
-      (await this.productoService.onGetStockPorSucursal(producto.id, this.data?.data?.sucursalId)).pipe(untilDestroyed(this)).subscribe(res =>{
+      (await this.productoService.onGetStockPorSucursal(producto.id, this.data?.data?.sucursalId)).pipe(untilDestroyed(this)).subscribe(res => {
         this.isSearchingList[index] = false;
         console.log(res);
-        if(res!=null){
+        if (res != null) {
           setTimeout(() => {
             this.productosList[index].stockPorProducto = res;
           }, 2000);
@@ -155,13 +155,14 @@ export class SearchProductoDialogComponent implements OnInit {
   }
 
   onPresentacionClick(presentacion: Presentacion, producto: Producto, peso?: number) {
-    this.dialogService.open('Atención', `Seleccionaste el producto ${producto.descripcion} con la presentacion de ${presentacion.cantidad} unidades.`)
-      .then(res => {
-        if (res.role == 'aceptar') {
-          this.modalService.closeModal({ presentacion: presentacion, producto: producto, peso: peso})
+    // this.dialogService.open('Atención', `Seleccionaste el producto ${producto.descripcion} con la presentacion de ${presentacion.cantidad} unidades.`)
+    //   .then(res => {
+    //     if (res.role == 'aceptar') {
 
-        }
-      })
+    //     }
+    //   })
+    this.modalService.closeModal({ presentacion: presentacion, producto: producto, peso: peso })
+
   }
 
   onBack() {
