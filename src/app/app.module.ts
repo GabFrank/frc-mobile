@@ -16,7 +16,7 @@ import {
 import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 import { WebSocketLink } from "@apollo/client/link/ws";
-import { getMainDefinition } from '@apollo/client/utilities';
+import { Observable, getMainDefinition } from '@apollo/client/utilities';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { NgxQRCodeModule } from '@techiediaries/ngx-qrcode';
 import { ApolloModule, APOLLO_OPTIONS } from 'apollo-angular';

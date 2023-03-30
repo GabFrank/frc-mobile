@@ -1,4 +1,4 @@
-import { Component, OnInit, isDevMode } from '@angular/core';
+import { Component, OnDestroy, OnInit, isDevMode } from '@angular/core';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { MenuController, Platform, PopoverController } from '@ionic/angular';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -27,7 +27,7 @@ import { FingerprintAuthService } from './services/fingerprint-auth.service';
   providers: [PhotoViewer, AppVersion]
 
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
 
   statusSub;
   online = false;
@@ -40,6 +40,9 @@ export class AppComponent implements OnInit {
   isFarma = false;
 
   isDev = false;
+
+  loadingOpen = false; // track loading dialog state
+  dialog: any;
 
   constructor(
     private menu: MenuController,
@@ -68,6 +71,9 @@ export class AppComponent implements OnInit {
     this.isFarma = localStorage.getItem('serverIp').includes('158')
 
   }
+  ngOnDestroy(): void {
+    this.statusSub?.unsubscribe();
+  }
 
   // initializeApp() {
   //   App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
@@ -94,21 +100,31 @@ export class AppComponent implements OnInit {
 
     this.showLoginPop();
 
-    this.statusSub = connectionStatusSub
-      .pipe(untilDestroyed(this))
-      .subscribe(async (res) => {
-        let loading = await this.cargandoService.open('Conectando al servidor..')
-        if (res == true) {
-          this.cargandoService.close(loading)
-          this.notificacionService.open('Servidor conectado', TipoNotificacion.SUCCESS, 2)
-          this.online = true;
-        } else if (res == false) {
-          this.online = false;
-          this.notificacionService.open('No se puede acceder al servidor', TipoNotificacion.DANGER, 2)
-        } else {
-          this.cargandoService.close(loading)
+    // this.statusSub = connectionStatusSub
+    //   .pipe(untilDestroyed(this))
+    //   .subscribe(async (res) => {
+    //     if (res == true) {
+
+    //     }
+    //   });
+
+
+    this.statusSub = connectionStatusSub.pipe(untilDestroyed(this)).subscribe(async (res) => {
+      if (res === true) {
+        if (this.loadingOpen) { // only close if loading dialog is open
+          if(this.dialog!=null) this.cargandoService.close(this.dialog);
+          this.notificacionService.open('Servidor conectado', TipoNotificacion.SUCCESS, 2);
+          this.loadingOpen = false; // set loading state to closed
         }
-      });
+        this.online = true;
+      } else if (res === false) {
+        this.online = false;
+        if (!this.loadingOpen) { // only open if loading dialog is not already open
+          this.dialog = await this.cargandoService.open('No se puede acceder al servidor');
+          this.loadingOpen = true; // set loading state to open
+        }
+      }
+    });
 
   }
 
@@ -149,18 +165,18 @@ export class AppComponent implements OnInit {
 
   }
 
-  onIpChange(){
+  onIpChange() {
     this.modalService.openModal(ChangeServerIpDialogComponent).then(res => {
-      if(res==true){
+      if (res == true) {
         window.location.reload()
       }
     })
   }
 
-  openInfoPersonales(){
+  openInfoPersonales() {
   }
 
-  openMisFinanzas(){
+  openMisFinanzas() {
 
   }
 }

@@ -1,15 +1,22 @@
 <ion-content>
-  <ion-row>
+  <ion-row class="ion-align-items-center">
     <ion-col size="2">
       <ion-icon
         name="arrow-back"
-        style="font-size: 1.5em"
+        style="font-size: 2em"
         (click)="onBack()"
       ></ion-icon>
     </ion-col>
     <ion-col size="8" style="text-align: center"
       >Detalles de transferencia</ion-col
     >
+    <ion-col size="2">
+      <ion-icon
+        name="share-social-outline"
+        style="font-size: 2em"
+        (click)="onShare()"
+      ></ion-icon>
+    </ion-col>
   </ion-row>
   <ion-card *ngIf="selectedTransferencia !== null" style="margin-top: 10px">
     <ion-grid>
@@ -33,9 +40,6 @@
       <ion-row>
         <ion-col size="10">
           Estado: {{ selectedTransferencia?.estado }}
-        </ion-col>
-        <ion-col size="2">
-          <ion-icon name="share-social-outline" style="font-size: 2em;" (click)="onShare()"></ion-icon>
         </ion-col>
       </ion-row>
       <ion-row>
@@ -107,17 +111,34 @@
       </ion-row>
     </ion-grid>
   </ion-card>
-
+  <ion-row>
+    <ion-col size="12">
+      <ion-item>
+        <ion-label position="floating">Nombre o Código de Barra</ion-label>
+        <ion-input
+          #buscarInput
+          [formControl]="buscarControl"
+          autocapitalize="on"
+          (keyup.enter)="onBuscarClick()"
+          (focusin)="onBuscarFocus()"
+        ></ion-input>
+        <ion-icon
+          style="font-size: 2em; padding-top: 5px"
+          name="camera-outline"
+          slot="end"
+          (click)="onCameraClick()"
+        ></ion-icon>
+      </ion-item>
+    </ion-col>
+  </ion-row>
   <ion-list
     *ngIf="
       selectedTransferencia?.etapa === 'PRE_TRANSFERENCIA_ORIGEN' ||
       selectedTransferencia?.etapa === 'PREPARACION_MERCADERIA'
     "
   >
-    <ion-list-header> Lista de productos </ion-list-header>
-
     <ion-item
-      *ngFor="let item of selectedTransferencia?.transferenciaItemList"
+      *ngFor="let item of filteredTransferenciaItemList"
       (press)="puedeEditar ? onItemPress(item) : null"
     >
       <ion-avatar
@@ -203,10 +224,8 @@
       isTransporteEnCamino
     "
   >
-    <ion-list-header> Lista de productos </ion-list-header>
-
     <ion-item
-      *ngFor="let item of selectedTransferencia?.transferenciaItemList"
+      *ngFor="let item of filteredTransferenciaItemList"
       (press)="puedeEditar ? onItemPress(item) : null"
     >
       <ion-avatar
@@ -274,10 +293,8 @@
       selectedTransferencia?.etapa === 'RECEPCION_CONCLUIDA'
     "
   >
-    <ion-list-header> Lista de productos </ion-list-header>
-
     <ion-item
-      *ngFor="let item of selectedTransferencia?.transferenciaItemList"
+      *ngFor="let item of filteredTransferenciaItemList"
       (press)="puedeEditar ? onItemPress(item) : null"
     >
       <ion-avatar
@@ -338,6 +355,31 @@
       </ion-label>
     </ion-item>
   </ion-list>
+  <ion-row>
+    <ion-col class="center">
+      <ion-button
+        class="btn-warn-flat"
+        fill="clear"
+        (click)="onCargarMenos()"
+        expand="block"
+        [disabled]="page <= 1"
+      >
+        MENOS
+      </ion-button>
+    </ion-col>
+    <ion-col class="center">
+      <ion-button
+        class="btn-success-flat"
+        fill="clear"
+        (click)="onCargarMas()"
+        expand="block"
+        [disabled]="selectedTransferencia?.transferenciaItemList?.length <= filteredTransferenciaItemList?.length"
+      >
+        MÁS
+      </ion-button>
+    </ion-col>
+  </ion-row>
+
   <!-- <ion-item>
     <ion-row class="dark2">
       <ion-col class="center">
@@ -346,9 +388,9 @@
           fill="clear"
           (click)="onCargarMenos()"
           expand="block"
-          *ngIf="selectedTransferencia?.transferenciaItemList?.length > 0"
+          *ngIf="filteredTransferenciaItemList?.length > 0"
           [disabled]="
-            selectedTransferencia?.transferenciaItemList.length > size
+            filteredTransferenciaItemList.length > size
           "
         >
           Menos
@@ -360,7 +402,7 @@
           fill="clear"
           (click)="onCargarMas()"
           expand="block"
-          *ngIf="selectedTransferencia?.transferenciaItemList?.length > 0"
+          *ngIf="filteredTransferenciaItemList?.length > 0"
         >
           Cargar más
         </ion-button>

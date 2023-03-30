@@ -17,13 +17,13 @@ export class CargandoService {
   constructor(public loadingController: LoadingController,
   ) { }
 
-  async open(texto?, disable?): Promise<HTMLIonLoadingElement> {
+  async open(texto?, disable?, duration?): Promise<HTMLIonLoadingElement> {
     let loading = await this.loadingController.create(
       {
         id: new Date().getTime() + '',
         message: texto,
-        backdropDismiss: true,
-
+        backdropDismiss: disable == null ? true : disable,
+        duration: duration
       }
     )
     await loading.present()

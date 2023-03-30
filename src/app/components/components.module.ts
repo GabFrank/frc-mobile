@@ -7,18 +7,18 @@ import { IonicModule } from '@ionic/angular';
 import { NgxQRCodeModule } from '@techiediaries/ngx-qrcode';
 import { GenericListDialogComponent } from './generic-list-dialog/generic-list-dialog.component';
 import { ChangeServerIpDialogComponent } from './change-server-ip-dialog/change-server-ip-dialog.component';
+import { ImagePopoverComponent } from './image-popover/image-popover.component';
 
 
 
 @NgModule({
-  declarations: [QrScannerDialogComponent, QrGeneratorComponent, GenericListDialogComponent, ChangeServerIpDialogComponent],
+  declarations: [QrScannerDialogComponent, QrGeneratorComponent, GenericListDialogComponent, ChangeServerIpDialogComponent, ImagePopoverComponent],
   imports: [
     CommonModule,
     IonicModule,
     ReactiveFormsModule,
     FormsModule,
     NgxQRCodeModule
-
   ],
   exports: [
     QrScannerDialogComponent,
