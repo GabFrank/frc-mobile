@@ -25,6 +25,18 @@ export class CajaComponent implements OnInit {
 
   ngOnInit() { }
 
+  abrirCaja(){
+
+  }
+
+  buscarCaja(){
+
+  }
+
+  buscarHistoricoDeCajas(){
+
+  }
+
   // async buscarCaja() {
   //   (await this.cajaService.onGetByUsuarioIdAndAbierto(this.mainService.usuarioActual?.id)).subscribe(res => {
   //     console.log(res);

@@ -76,4 +76,8 @@ export class CambiarContrasenhaDialogComponent implements OnInit {
       })
   }
 
+  onLogin(){
+
+  }
+
 }

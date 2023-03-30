@@ -7,7 +7,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ActivatedRoute } from '@angular/router';
 import { TransferenciaService } from './../transferencia.service';
 import { EtapaTransferencia, Transferencia, TransferenciaEstado, TransferenciaItem, TransferenciaItemMotivoModificacion, TransferenciaItemMotivoRechazo } from './../transferencia.model';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, isDevMode } from '@angular/core';
 import { Location } from '@angular/common';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
 import { MenuActionService } from 'src/app/services/menu-action.service';
@@ -22,6 +22,9 @@ import { rejects } from 'assert';
 import { codificarQr, QrData } from 'src/app/generic/utils/qrUtils';
 import { QrGeneratorComponent } from 'src/app/components/qr-generator/qr-generator.component';
 import { DialogoService } from 'src/app/services/dialogo.service';
+import { TransferListItem } from 'worker_threads';
+import { FormControl, Validators } from '@angular/forms';
+import { comparatorLike } from 'src/app/generic/utils/string-utils';
 
 
 @UntilDestroy()
@@ -37,8 +40,8 @@ export class InfoTransferenciaComponent implements OnInit {
   selectedResponsable: Usuario;
 
   isWeb = false;
-  page = 0;
-  size = 10;
+  page = 1;
+  size = 20;
   isLastPage = false;
 
 
@@ -56,6 +59,8 @@ export class InfoTransferenciaComponent implements OnInit {
   isAllConfirmedRecepcion = false;
   actionMenuOptionsList: ActionMenuData[];
   puedeEditar = false;
+  filteredTransferenciaItemList: TransferenciaItem[]
+  buscarControl = new FormControl(null, [Validators.required, Validators.minLength(1)])
 
   constructor(
     private transferenciaService: TransferenciaService,
@@ -87,17 +92,23 @@ export class InfoTransferenciaComponent implements OnInit {
       });
     }, 1000);
 
+    this.buscarControl.valueChanges.pipe(untilDestroyed(this)).subscribe(res => {
+      setTimeout(() => {
+        this.onFilterTransferenciaItem()
+      }, 100);
+    })
+
+  }
+
+  onBuscarFocus() {
+    this.page = 1;
   }
 
   async buscarTransferencia(id) {
-    console.log(id);
-
     if (id != null) {
       (await this.transferenciaService.onGetTransferencia(id))
         .pipe(untilDestroyed(this))
         .subscribe(async res => {
-          console.log(res);
-
           if (res != null) {
             this.selectedTransferencia = res;
             this.selectedTransferencia.transferenciaItemList = [];
@@ -112,21 +123,27 @@ export class InfoTransferenciaComponent implements OnInit {
       (await this.transferenciaService.onGetTransferenciaItensPorTransferenciaId(this.selectedTransferencia.id)).pipe(untilDestroyed(this))
         .subscribe(res => {
           if (res != null) {
-            if (res.length < this.size) {
-              this.isLastPage = true;
-            }
-            if (this.selectedTransferencia.transferenciaItemList.length == 0) {
-              this.selectedTransferencia.transferenciaItemList = res;
-            } else {
-              this.selectedTransferencia.transferenciaItemList.concat(res)
-            }
-            return resolve(true)
+            this.selectedTransferencia.transferenciaItemList = res;
+            resolve(true)
           } else {
-            return resolve(false);
+            rejects()
           }
         })
     })
+  }
 
+  onFilterTransferenciaItem() {
+    let end = 5;
+    let auxList = []
+    end = this.page * 5;
+
+    if (this.buscarControl.valid) {
+      this.filteredTransferenciaItemList = this.selectedTransferencia.transferenciaItemList.filter(ti => {
+        return comparatorLike(this.buscarControl.value?.toUpperCase(), ti.presentacionPreTransferencia.producto.descripcion) || comparatorLike(this.buscarControl.value?.toUpperCase(), ti.presentacionPreTransferencia.producto?.codigoPrincipal);
+      }).slice(0, end);
+    } else {
+      this.filteredTransferenciaItemList = this.selectedTransferencia.transferenciaItemList.slice(0, end);
+    }
   }
 
   onBack() {
@@ -134,102 +151,83 @@ export class InfoTransferenciaComponent implements OnInit {
   }
 
   async verificarEtapa() {
+    console.log(this.selectedTransferencia);
     this.setAllEtapasFalse()
-    switch (this.selectedTransferencia?.etapa) {
-      case EtapaTransferencia.PRE_TRANSFERENCIA_CREACION:
-        this.isPreTransferenciaCreacion = true;
-        this.selectedResponsable = this.selectedTransferencia?.usuarioPreTransferencia;
-        break;
-      case EtapaTransferencia.PRE_TRANSFERENCIA_ORIGEN:
-        this.isPreTransferenciaOrigen = true;
-        this.selectedResponsable = this.selectedTransferencia?.usuarioPreTransferencia;
-        break;
-      case EtapaTransferencia.PREPARACION_MERCADERIA:
-        this.isPreparacionMercaderia = true;
-        this.selectedResponsable = this.selectedTransferencia?.usuarioPreparacion;
-        this.actionMenuOptionsList = [
-          { texto: 'Verificar', role: 'verificar' },
-          { texto: 'Confirmar', role: 'confirmar' },
-          { texto: 'Desconfirmar', role: 'desconfirmar' },
-          { texto: 'Modif. cantidad', role: 'cantidad' },
-          { texto: 'Modif. vencimiento', role: 'vencimiento' },
-          { texto: 'Rechazar', role: 'rechazar' }
-        ]
-        break;
-      case EtapaTransferencia.PREPARACION_MERCADERIA_CONCLUIDA:
-        this.selectedResponsable = this.selectedTransferencia?.usuarioPreparacion;
-        this.isPreparacionMercaderiaConcluida = true;
-        this.actionMenuOptionsList = []
-
-        this.selectedTransferencia.transferenciaItemList = this.selectedTransferencia.transferenciaItemList.filter(i => i.motivoRechazoPreparacion == null)
-        break;
-      case EtapaTransferencia.TRANSPORTE_VERIFICACION:
-        this.isTransporteVerificacion = true;
-        this.selectedResponsable = this.selectedTransferencia?.usuarioTransporte;
-        this.actionMenuOptionsList = [
-          { texto: 'Verificar', role: 'verificar' },
-          { texto: 'Confirmar', role: 'confirmar' },
-          { texto: 'Desconfirmar', role: 'desconfirmar' },
-          { texto: 'Rechazar', role: 'rechazar' },
-        ]
-        this.selectedTransferencia.transferenciaItemList = this.selectedTransferencia.transferenciaItemList.filter(i => i.motivoRechazoPreparacion == null)
-        if(this.selectedTransferencia.usuarioPreparacion?.id == this.mainService.usuarioActual?.id){
-          this.dialogoService.open('Atención!!', 'Desea confirmar todos los itens automaticamente?').then(async res => {
-            if (res.role=='aceptar') {
-             let isLoaded = await this.getTransferenciaItemList();
-              if(isLoaded){
-                let cargando = this.cargandoService.open(null, false)
-                this.selectedTransferencia.transferenciaItemList.forEach(item => {
-                  if(item.cantidadPreparacion > 0 && item.presentacionPreparacion != null){
-                    this.onConfirm(item)
-                  }
-                })
-                this.cargandoService.close(await cargando);
-                await this.notificacionService.success('Itens confirmados con éxito!!')
-              }
-            }
-          })
-        }
-        break;
-      case EtapaTransferencia.TRANSPORTE_EN_CAMINO:
-        this.selectedResponsable = this.selectedTransferencia?.usuarioTransporte;
-        this.isTransporteEnCamino = true;
-        this.actionMenuOptionsList = []
-        this.selectedTransferencia.transferenciaItemList = this.selectedTransferencia.transferenciaItemList.filter(i => i.motivoRechazoPreparacion == null && i.motivoRechazoTransporte == null)
-        break;
-      case EtapaTransferencia.TRANSPORTE_EN_DESTINO:
-        this.isTransporteEnDestino = true;
-        this.selectedResponsable = this.selectedTransferencia?.usuarioRecepcion;
-        this.actionMenuOptionsList = []
-        break;
-      case EtapaTransferencia.RECEPCION_EN_VERIFICACION:
-        this.isRecepcionEnVerificacion = true;
-        this.selectedResponsable = this.selectedTransferencia?.usuarioRecepcion;
-        this.actionMenuOptionsList = [
-          { texto: 'Verificar', role: 'verificar' },
-          { texto: 'Confirmar', role: 'confirmar' },
-          { texto: 'Desconfirmar', role: 'desconfirmar' },
-          { texto: 'Rechazar', role: 'rechazar' },
-        ]
-        this.selectedTransferencia.transferenciaItemList = this.selectedTransferencia.transferenciaItemList.filter(i => i.motivoRechazoPreparacion == null && i.motivoRechazoTransporte == null)
-        break;
-      case EtapaTransferencia.RECEPCION_CONCLUIDA:
-        this.isRecepcionConcluida = true;
-        this.selectedResponsable = this.selectedTransferencia?.usuarioRecepcion;
-        this.actionMenuOptionsList = []
-        break;
-      default:
-        break;
-    }
-
-    if (this.selectedResponsable.id == this.mainService.usuarioActual.id || this.selectedResponsable.id == null) {
-      this.puedeEditar = true;
-    }
-
     let isItemLoaded = await this.getTransferenciaItemList();
     if (isItemLoaded) {
       this.onVerificarConfirmados()
+      this.onFilterTransferenciaItem()
+      console.log(this.selectedTransferencia);
+      switch (this.selectedTransferencia?.etapa) {
+        case EtapaTransferencia.PRE_TRANSFERENCIA_CREACION:
+          this.isPreTransferenciaCreacion = true;
+          this.selectedResponsable = this.selectedTransferencia?.usuarioPreTransferencia;
+          break;
+        case EtapaTransferencia.PRE_TRANSFERENCIA_ORIGEN:
+          this.isPreTransferenciaOrigen = true;
+          this.selectedResponsable = this.selectedTransferencia?.usuarioPreTransferencia;
+          break;
+        case EtapaTransferencia.PREPARACION_MERCADERIA:
+          this.isPreparacionMercaderia = true;
+          this.selectedResponsable = this.selectedTransferencia?.usuarioPreparacion;
+          this.actionMenuOptionsList = [
+            { texto: 'Verificar', role: 'verificar' },
+            { texto: 'Confirmar', role: 'confirmar' },
+            { texto: 'Desconfirmar', role: 'desconfirmar' },
+            { texto: 'Modif. cantidad', role: 'cantidad' },
+            { texto: 'Modif. vencimiento', role: 'vencimiento' },
+            { texto: 'Rechazar', role: 'rechazar' }
+          ]
+          break;
+        case EtapaTransferencia.PREPARACION_MERCADERIA_CONCLUIDA:
+          this.selectedResponsable = this.selectedTransferencia?.usuarioPreparacion;
+          this.isPreparacionMercaderiaConcluida = true;
+          this.actionMenuOptionsList = []
+          break;
+        case EtapaTransferencia.TRANSPORTE_VERIFICACION:
+          this.isTransporteVerificacion = true;
+          this.selectedResponsable = this.selectedTransferencia?.usuarioTransporte;
+          this.actionMenuOptionsList = [
+            { texto: 'Verificar', role: 'verificar' },
+            { texto: 'Confirmar', role: 'confirmar' },
+            { texto: 'Desconfirmar', role: 'desconfirmar' },
+            { texto: 'Rechazar', role: 'rechazar' },
+          ]
+          break;
+        case EtapaTransferencia.TRANSPORTE_EN_CAMINO:
+          this.selectedResponsable = this.selectedTransferencia?.usuarioTransporte;
+          this.isTransporteEnCamino = true;
+          this.actionMenuOptionsList = []
+          break;
+        case EtapaTransferencia.TRANSPORTE_EN_DESTINO:
+          this.isTransporteEnDestino = true;
+          this.selectedResponsable = this.selectedTransferencia?.usuarioRecepcion;
+          this.actionMenuOptionsList = []
+          break;
+        case EtapaTransferencia.RECEPCION_EN_VERIFICACION:
+          this.isRecepcionEnVerificacion = true;
+          this.selectedResponsable = this.selectedTransferencia?.usuarioRecepcion;
+          this.actionMenuOptionsList = [
+            { texto: 'Verificar', role: 'verificar' },
+            { texto: 'Confirmar', role: 'confirmar' },
+            { texto: 'Desconfirmar', role: 'desconfirmar' },
+            { texto: 'Rechazar', role: 'rechazar' },
+          ]
+          break;
+        case EtapaTransferencia.RECEPCION_CONCLUIDA:
+          this.isRecepcionConcluida = true;
+          this.selectedResponsable = this.selectedTransferencia?.usuarioRecepcion;
+          this.actionMenuOptionsList = []
+          break;
+        default:
+          break;
+      }
+
+      if (this.selectedResponsable.id == this.mainService.usuarioActual.id || this.selectedResponsable.id == null) {
+        this.puedeEditar = true;
+      }
     }
+
   }
 
   setAllEtapasFalse() {
@@ -253,9 +251,10 @@ export class InfoTransferenciaComponent implements OnInit {
         okPreparacion = false;
       } else if (this.selectedTransferencia.etapa == EtapaTransferencia.TRANSPORTE_VERIFICACION && i.cantidadTransporte == null && i.vencimientoTransporte == null && i.motivoRechazoTransporte == null) {
         okTransporte = false;
+      } else if (this.selectedTransferencia.etapa == EtapaTransferencia.TRANSPORTE_EN_CAMINO && i.cantidadTransporte == null && i.vencimientoTransporte == null && i.motivoRechazoTransporte == null) {
+        okTransporte = false;
       } else if (this.selectedTransferencia.etapa == EtapaTransferencia.RECEPCION_EN_VERIFICACION && i.cantidadRecepcion == null && i.vencimientoRecepcion == null && i.motivoRechazoRecepcion == null) {
         okRecepcion = false;
-        console.log('es falso')
       }
     })
     this.isAllConfirmedPreparacion = okPreparacion;
@@ -295,7 +294,7 @@ export class InfoTransferenciaComponent implements OnInit {
   async onAvanzarEtapa(etapa) {
     let ok = true;
     if (etapa == EtapaTransferencia.RECEPCION_EN_VERIFICACION) {
-      ok = await this.onVerificarSucursal()
+      ok = await this.onVerificarSucursal() || isDevMode();
     }
     ok ? this.transferenciaService.onAvanzarEtapa(this.selectedTransferencia, etapa)
       .pipe(untilDestroyed(this))
@@ -304,7 +303,6 @@ export class InfoTransferenciaComponent implements OnInit {
           this.selectedTransferencia.etapa = etapa;
           if (etapa == EtapaTransferencia.TRANSPORTE_VERIFICACION) {
             this.selectedTransferencia.usuarioTransporte = this.mainService.usuarioActual;
-
           } else if (etapa == EtapaTransferencia.PREPARACION_MERCADERIA) {
             this.selectedTransferencia.usuarioPreparacion = this.mainService.usuarioActual;
           } else if (etapa == EtapaTransferencia.PRE_TRANSFERENCIA_ORIGEN) {
@@ -350,6 +348,8 @@ export class InfoTransferenciaComponent implements OnInit {
         if (res != null) {
           let index = this.selectedTransferencia.transferenciaItemList.findIndex(i => i.id == res.id)
           this.selectedTransferencia.transferenciaItemList.splice(index, 1)
+          let index2 = this.filteredTransferenciaItemList.findIndex(i => i.id == res.id)
+          this.filteredTransferenciaItemList.splice(index2, 1)
         }
         this.onVerificarConfirmados()
       })
@@ -383,6 +383,7 @@ export class InfoTransferenciaComponent implements OnInit {
       .subscribe(res => {
         if (res != null) {
           this.selectedTransferencia.transferenciaItemList = updateDataSourceWithId(this.selectedTransferencia.transferenciaItemList, item, item.id)
+          this.filteredTransferenciaItemList = updateDataSourceWithId(this.filteredTransferenciaItemList, item, item.id)
         }
         this.onVerificarConfirmados()
       })
@@ -424,6 +425,7 @@ export class InfoTransferenciaComponent implements OnInit {
         .subscribe(res => {
           if (res != null) {
             this.selectedTransferencia.transferenciaItemList = updateDataSourceWithId(this.selectedTransferencia.transferenciaItemList, item, item.id)
+            this.filteredTransferenciaItemList = updateDataSourceWithId(this.filteredTransferenciaItemList, item, item.id)
           }
           this.onVerificarConfirmados()
         })
@@ -485,6 +487,8 @@ export class InfoTransferenciaComponent implements OnInit {
           .subscribe(res => {
             if (res != null) {
               this.selectedTransferencia.transferenciaItemList = updateDataSourceWithId(this.selectedTransferencia.transferenciaItemList, res, res.id)
+              this.filteredTransferenciaItemList = updateDataSourceWithId(this.filteredTransferenciaItemList, res, res.id)
+
             }
             this.onVerificarConfirmados()
           })
@@ -549,14 +553,14 @@ export class InfoTransferenciaComponent implements OnInit {
   }
 
   onCargarMenos() {
-    let tam = this.selectedTransferencia?.transferenciaItemList?.length;
-    let diff = tam - this.size;
-    this.selectedTransferencia?.transferenciaItemList?.splice(this.size - 1, diff)
+    this.page--;
+    if(this.page==0) this.page = 1;
+    this.onFilterTransferenciaItem()
   }
 
   onCargarMas() {
     this.page++;
-    this.getTransferenciaItemList()
+    this.onFilterTransferenciaItem()
   }
 
   onShare() {
@@ -566,5 +570,9 @@ export class InfoTransferenciaComponent implements OnInit {
     codigo.idOrigen = this.selectedTransferencia?.id;
     this.popoverService.open(QrGeneratorComponent, codificarQr(codigo), PopoverSize.XS)
   }
+
+
+  onBuscarClick() { }
+  onCameraClick() { }
 
 }

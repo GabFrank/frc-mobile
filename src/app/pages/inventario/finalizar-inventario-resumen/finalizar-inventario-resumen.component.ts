@@ -45,7 +45,7 @@ export class FinalizarInventarioResumenComponent implements OnInit {
     private router: Router,
     private _location: Location,
     private sectorService: SectorService,
-    private mainService: MainService,
+    public mainService: MainService,
     private dialogoService: DialogoService,
     private cargandoService: CargandoService
   ) { }

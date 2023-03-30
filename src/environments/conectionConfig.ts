@@ -1,7 +1,8 @@
 import { isDevMode } from "@angular/core"
 
 // export const ipAddress = 'localhost'
-// export const ipAddress = '192.168.1.33'
+// export const ipAddress = '172.25.0.1'
+// export const ipAddress = '192.168.1.100'
 const isDev = isDevMode()
 
 export const port = '8081'

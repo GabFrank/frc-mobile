@@ -31,14 +31,10 @@ export class MisFinanzasDashboardComponent implements OnInit {
         let idCliente = data.idOrigen
         let timestamp = stringToInteger(data.timestamp);
         let sucursalId = data.sucursalId;
-        let secretKey = data.data
-        console.log(idCliente,
-          timestamp,
-          sucursalId,
-          secretKey);
-        // (await this.ventaCreditoService.onVentaCreditoQrAuth(this.mainService.usuarioActual?.persona?.id, timestamp, sucursalId, data?.data['secretKey'])).subscribe(res => {
-        //   console.log(res);
-        // })
+        let secretKey = data.data;
+        (await this.ventaCreditoService.onVentaCreditoQrAuth(this.mainService.usuarioActual?.persona?.id, timestamp, sucursalId, secretKey)).subscribe(res => {
+          console.log(res);
+        })
       })
     }
   }
