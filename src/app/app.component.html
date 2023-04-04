@@ -44,8 +44,9 @@
             </ion-item>
             <ion-item
               slot="content"
-              (click)="openInfoPersonales(); closeMenu()"
+              (click)="closeMenu()"
               style="padding-left: 10%"
+              [routerLink]="['/informaciones-personales']"
             >
               <ion-icon name="id-card-outline" slot="start"></ion-icon>
               <ion-label>Informaciones personales</ion-label>
