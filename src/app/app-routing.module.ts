@@ -37,8 +37,8 @@ const routes: Routes = [
     loadChildren: () => import('./pages/operaciones/operaciones.module').then( m => m.OperacionesModule)
   },
   {
-    path: 'mis-finanzas',
-    loadChildren: () => import('./pages/mis-finanzas/mis-finanzas.module').then( m => m.MisFinanzasModule)
+    path: 'informaciones-personales',
+    loadChildren: () => import('./pages/informaciones-personales/informaciones-personales.module').then( m => m.InformacionesPersonalesModule)
   }
 ];
 @NgModule({

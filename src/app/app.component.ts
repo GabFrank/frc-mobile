@@ -12,6 +12,8 @@ import { MainService } from './services/main.service';
 import { ModalService } from './services/modal.service';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { FingerprintAuthService } from './services/fingerprint-auth.service';
+import { UpdateServiceService } from './services/update-service.service';
+import { log } from 'console';
 
 // import { App, URLOpenListenerEvent } from '@capacitor/app';
 
@@ -43,7 +45,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   loadingOpen = false; // track loading dialog state
   dialog: any;
-
+  intervalID;
   constructor(
     private menu: MenuController,
     public mainService: MainService,
@@ -55,7 +57,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private photoViewer: PhotoViewer,
     public appVersion: AppVersion,
     private platfform: Platform,
-    private fingerprintService: FingerprintAuthService
+    private fingerprintService: FingerprintAuthService,
+    private updateService: UpdateServiceService
   ) {
 
     this.isDev = isDevMode()
@@ -69,10 +72,32 @@ export class AppComponent implements OnInit, OnDestroy {
     })
 
     this.isFarma = localStorage.getItem('serverIp').includes('158')
+    this.searchUpdate()
+    this.intervalID = setInterval(this.searchUpdate, 50000); // 5000 milliseconds = 5 seconds
 
   }
   ngOnDestroy(): void {
     this.statusSub?.unsubscribe();
+    clearInterval(this.intervalID);
+  }
+
+
+
+  searchUpdate() {
+    let currentVersion;
+    let latestVersion;
+    this.updateService.getCurrentAppVersion().then(res => {
+      currentVersion = res;
+      this.updateService.getAvailableAppVersion().then(res2 => {
+        latestVersion = res2;
+        if(+currentVersion < +latestVersion && !isDevMode()){
+          this.updateService.performImmediateUpdate().then(res3 => {
+            this.notificacionService.success("Nueva version instalada")
+          })
+        }
+      })
+    })
+
   }
 
   // initializeApp() {
@@ -171,12 +196,5 @@ export class AppComponent implements OnInit, OnDestroy {
         window.location.reload()
       }
     })
-  }
-
-  openInfoPersonales() {
-  }
-
-  openMisFinanzas() {
-
   }
 }
