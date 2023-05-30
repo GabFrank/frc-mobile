@@ -93,108 +93,94 @@ export class HammerConfig extends HammerGestureConfig {
 }
 
 @NgModule({
-  declarations: [AppComponent, LoginComponent, CambiarContrasenhaDialogComponent, StockPorSucursalDialogComponent],
-  entryComponents: [],
-  imports: [
-    BrowserModule,
-    IonicModule.forRoot(),
-    AppRoutingModule,
-    HttpClientModule,
-    ApolloModule,
-    ReactiveFormsModule,
-    FormsModule,
-    InventarioModule,
-    TransferenciasModule,
-    ProductoModule,
-    HammerModule,
-    NgxCurrencyModule,
-    FuncionarioModule,
-    NgxQRCodeModule,
-    HttpClientModule,
-    CommonModule
-    // OperacionesModule
-  ],
-  exports: [
-  ],
-  providers: [
-    FingerprintAIO,
-    {
-      provide: HAMMER_GESTURE_CONFIG,
-      useClass: HammerConfig
-    },
-    { provide: LOCALE_ID, useValue: "es-PY" },
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    {
-      provide: APOLLO_OPTIONS,
-      useFactory(httpLink: HttpLink): ApolloClientOptions<any> {
-        const basic = setContext((operation, context) => ({
-          // headers: {
-          //   Accept: 'charset=utf-8'
-          // }
-        }));
-
-        const auth = setContext((operation, context) => {
-          const token = localStorage.getItem('token');
-          if (token === null) {
-            return {};
-          } else {
-            return {
-              headers: {
-                Authorization: `Token ${token}`,
-                "Access-Control-Allow-Origin": "*"
-              },
-            };
-          }
-        });
-
-        // Create an http link:
-        const http = ApolloLink.from([
-          basic,
-          auth,
-          httpLink.create({
-            uri: uri,
-          }),
-        ]);
-
-        // Create a WebSocket link:
-        const ws = new WebSocketLink(wsClient);
-
-        // using the ability to split links, you can send data to each link
-        // depending on what kind of operation is being sent
-        const link = errorLink.concat(
-          split(
-            // split based on operation type
-
-            ({ query }) => {
-              const definition = getMainDefinition(query);
-              return (
-                definition.kind === 'OperationDefinition' &&
-                definition.operation === 'subscription'
-              );
-            },
-            ws,
-            http
-          )
-        );
-
-        return {
-          link,
-          cache: new InMemoryCache(),
-        };
-      },
-      deps: [HttpLink],
-    },
-    [
-      MainService,
-      {
-        provide: APP_INITIALIZER,
-        useFactory: appInit,
-        deps: [MainService],
-        multi: true,
-      },
+    declarations: [AppComponent, LoginComponent, CambiarContrasenhaDialogComponent, StockPorSucursalDialogComponent],
+    imports: [
+        BrowserModule,
+        IonicModule.forRoot(),
+        AppRoutingModule,
+        HttpClientModule,
+        ApolloModule,
+        ReactiveFormsModule,
+        FormsModule,
+        InventarioModule,
+        TransferenciasModule,
+        ProductoModule,
+        HammerModule,
+        NgxCurrencyModule,
+        FuncionarioModule,
+        NgxQRCodeModule,
+        HttpClientModule,
+        CommonModule
+        // OperacionesModule
     ],
-  ],
-  bootstrap: [AppComponent],
+    exports: [],
+    providers: [
+        FingerprintAIO,
+        {
+            provide: HAMMER_GESTURE_CONFIG,
+            useClass: HammerConfig
+        },
+        { provide: LOCALE_ID, useValue: "es-PY" },
+        { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+        {
+            provide: APOLLO_OPTIONS,
+            useFactory(httpLink: HttpLink): ApolloClientOptions<any> {
+                const basic = setContext((operation, context) => ({
+                // headers: {
+                //   Accept: 'charset=utf-8'
+                // }
+                }));
+                const auth = setContext((operation, context) => {
+                    const token = localStorage.getItem('token');
+                    if (token === null) {
+                        return {};
+                    }
+                    else {
+                        return {
+                            headers: {
+                                Authorization: `Token ${token}`,
+                                "Access-Control-Allow-Origin": "*"
+                            },
+                        };
+                    }
+                });
+                // Create an http link:
+                const http = ApolloLink.from([
+                    basic,
+                    auth,
+                    httpLink.create({
+                        uri: uri,
+                    }),
+                ]);
+                // Create a WebSocket link:
+                const ws = new WebSocketLink(wsClient);
+                // using the ability to split links, you can send data to each link
+                // depending on what kind of operation is being sent
+                const link = errorLink.concat(split(
+                // split based on operation type
+                ({ query }) => {
+                    const definition = getMainDefinition(query);
+                    return (definition.kind === 'OperationDefinition' &&
+                        definition.operation === 'subscription');
+                }, ws, http));
+                return {
+                    link,
+                    cache: new InMemoryCache(),
+                };
+            },
+            deps: [HttpLink],
+        },
+        [
+            MainService,
+            {
+                provide: APP_INITIALIZER,
+                useFactory: appInit,
+                deps: [MainService],
+                multi: true,
+            },
+        ],
+    ],
+    bootstrap: [AppComponent]
 })
 export class AppModule { }
 

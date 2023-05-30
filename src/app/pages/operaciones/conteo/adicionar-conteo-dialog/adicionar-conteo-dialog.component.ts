@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { MainService } from 'src/app/services/main.service';
@@ -35,9 +35,9 @@ export class AdicionarConteoDialogComponent implements OnInit {
 
   isApertura = false;
 
-  gsFormGroup: FormGroup;
-  rsFormGroup: FormGroup;
-  dsFormGroup: FormGroup;
+  gsFormGroup: UntypedFormGroup;
+  rsFormGroup: UntypedFormGroup;
+  dsFormGroup: UntypedFormGroup;
   conteoMonedaList: ConteoMoneda[];
   guaraniList: MonedaBillete[];
   realList: MonedaBillete[];
@@ -61,37 +61,37 @@ export class AdicionarConteoDialogComponent implements OnInit {
     } else {
       modalService.closeModal(null)
     }
-    this.gsFormGroup = new FormGroup({
-      '500': new FormControl(null, [Validators.min(0)]),
-      '1000': new FormControl(null, [Validators.min(0)]),
-      '2000': new FormControl(null, [Validators.min(0)]),
-      '5000': new FormControl(null, [Validators.min(0)]),
-      '10000': new FormControl(null, [Validators.min(0)]),
-      '20000': new FormControl(null, [Validators.min(0)]),
-      '50000': new FormControl(null, [Validators.min(0)]),
-      '100000': new FormControl(null, [Validators.min(0)]),
+    this.gsFormGroup = new UntypedFormGroup({
+      '500': new UntypedFormControl(null, [Validators.min(0)]),
+      '1000': new UntypedFormControl(null, [Validators.min(0)]),
+      '2000': new UntypedFormControl(null, [Validators.min(0)]),
+      '5000': new UntypedFormControl(null, [Validators.min(0)]),
+      '10000': new UntypedFormControl(null, [Validators.min(0)]),
+      '20000': new UntypedFormControl(null, [Validators.min(0)]),
+      '50000': new UntypedFormControl(null, [Validators.min(0)]),
+      '100000': new UntypedFormControl(null, [Validators.min(0)]),
     })
-    this.rsFormGroup = new FormGroup({
-      '0.05': new FormControl(null, [Validators.min(0)]),
-      '0.1': new FormControl(null, [Validators.min(0)]),
-      '0.25': new FormControl(null, [Validators.min(0)]),
-      '0.5': new FormControl(null, [Validators.min(0)]),
-      '1': new FormControl(null, [Validators.min(0)]),
-      '2': new FormControl(null, [Validators.min(0)]),
-      '5': new FormControl(null, [Validators.min(0)]),
-      '10': new FormControl(null, [Validators.min(0)]),
-      '20': new FormControl(null, [Validators.min(0)]),
-      '50': new FormControl(null, [Validators.min(0)]),
-      '100': new FormControl(null, [Validators.min(0)]),
-      '200': new FormControl(null, [Validators.min(0)]),
+    this.rsFormGroup = new UntypedFormGroup({
+      '0.05': new UntypedFormControl(null, [Validators.min(0)]),
+      '0.1': new UntypedFormControl(null, [Validators.min(0)]),
+      '0.25': new UntypedFormControl(null, [Validators.min(0)]),
+      '0.5': new UntypedFormControl(null, [Validators.min(0)]),
+      '1': new UntypedFormControl(null, [Validators.min(0)]),
+      '2': new UntypedFormControl(null, [Validators.min(0)]),
+      '5': new UntypedFormControl(null, [Validators.min(0)]),
+      '10': new UntypedFormControl(null, [Validators.min(0)]),
+      '20': new UntypedFormControl(null, [Validators.min(0)]),
+      '50': new UntypedFormControl(null, [Validators.min(0)]),
+      '100': new UntypedFormControl(null, [Validators.min(0)]),
+      '200': new UntypedFormControl(null, [Validators.min(0)]),
     })
-    this.dsFormGroup = new FormGroup({
-      '1': new FormControl(null, [Validators.min(0)]),
-      '5': new FormControl(null, [Validators.min(0)]),
-      '10': new FormControl(null, [Validators.min(0)]),
-      '20': new FormControl(null, [Validators.min(0)]),
-      '50': new FormControl(null, [Validators.min(0)]),
-      '100': new FormControl(null, [Validators.min(0)]),
+    this.dsFormGroup = new UntypedFormGroup({
+      '1': new UntypedFormControl(null, [Validators.min(0)]),
+      '5': new UntypedFormControl(null, [Validators.min(0)]),
+      '10': new UntypedFormControl(null, [Validators.min(0)]),
+      '20': new UntypedFormControl(null, [Validators.min(0)]),
+      '50': new UntypedFormControl(null, [Validators.min(0)]),
+      '100': new UntypedFormControl(null, [Validators.min(0)]),
     })
 
     this.cargarMonedas()
