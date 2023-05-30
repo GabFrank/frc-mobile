@@ -1,6 +1,7 @@
 .container {
   width: 100%;
-  padding: 16px;
+  padding-top: 16px;
+  align-items: center; // Add this line
 }
 
 .avatar-container {
@@ -10,21 +11,21 @@
 }
 
 .avatar {
-  width: 100px;
-  height: 100px;
+  width: 150px;
+  height: 150px;
 }
 
 .camera-icon {
   position: absolute;
-  font-size: 60px;
-  width: 60px;
-  height: 60px;
-  line-height: 60px;
+  font-size: 30px;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
   text-align: center;
   border-radius: 50%;
   background-color: rgba(0, 0, 0, 0.5);
   color: white;
-  top: 50%;
-  left: 50%;
+  top: 80%;
+  left: 90%;
   transform: translate(-50%, -50%);
 }

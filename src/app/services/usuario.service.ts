@@ -8,6 +8,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Injectable } from '@angular/core';
 import { CargandoService } from './cargando.service';
 import { NotificacionService, TipoNotificacion } from './notificacion.service';
+import { GenericCrudService } from '../generic/generic-crud.service';
 
 @UntilDestroy()
 @Injectable({
@@ -20,7 +21,8 @@ export class UsuarioService {
     private saveUsuario: SaveUsuarioGQL,
     private searchUsuario: UsuarioSearchGQL,
     private cargandoService: CargandoService,
-    private notificacionService: NotificacionService
+    private notificacionService: NotificacionService,
+    private genericService: GenericCrudService
   ) // private mainService: MainService
   { }
 

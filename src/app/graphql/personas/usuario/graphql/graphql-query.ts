@@ -48,6 +48,9 @@ export const usuarioQuery = gql`
       persona {
         id
         nombre
+        telefono
+        email
+        nacimiento
       }
       password
       creadoEn

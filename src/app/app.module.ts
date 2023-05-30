@@ -1,4 +1,5 @@
 import {
+  CommonModule,
   registerLocaleData
 } from "@angular/common";
 import { HttpClientModule } from '@angular/common/http';
@@ -35,6 +36,8 @@ import { ProductoModule } from './pages/producto/producto.module';
 import { TransferenciasModule } from './pages/transferencias/transferencias.module';
 import { MainService } from './services/main.service';
 import { FingerprintAIO } from '@ionic-native/fingerprint-aio/ngx';
+import { OperacionesModule } from "./pages/operaciones/operaciones.module";
+import { StockPorSucursalDialogComponent } from "./pages/operaciones/movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component";
 
 registerLocaleData(localePY);
 
@@ -90,7 +93,7 @@ export class HammerConfig extends HammerGestureConfig {
 }
 
 @NgModule({
-  declarations: [AppComponent, LoginComponent, CambiarContrasenhaDialogComponent],
+  declarations: [AppComponent, LoginComponent, CambiarContrasenhaDialogComponent, StockPorSucursalDialogComponent],
   entryComponents: [],
   imports: [
     BrowserModule,
@@ -108,7 +111,8 @@ export class HammerConfig extends HammerGestureConfig {
     FuncionarioModule,
     NgxQRCodeModule,
     HttpClientModule,
-
+    CommonModule
+    // OperacionesModule
   ],
   exports: [
   ],
