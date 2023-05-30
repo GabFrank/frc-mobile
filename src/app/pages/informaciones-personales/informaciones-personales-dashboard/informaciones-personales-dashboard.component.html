@@ -13,18 +13,19 @@
 </ion-header>
 
 <ion-content>
-  <div class="container">
-    <div class="avatar-container" (click)="presentActionSheet()">
+  <div class="container" style="text-align: center;">
+    <div class="avatar-container">
       <ion-avatar class="avatar">
         <!-- Add [src] attribute with the user's avatar URL -->
-        <img src="assets/dummy-avatar.png" />
+        <img [src]="src === '' ? '/assets/avatar.svg' : src " />
       </ion-avatar>
-      <ion-icon class="camera-icon" name="camera"></ion-icon>
+      <ion-icon class="camera-icon" name="camera" (click)="presentActionSheet()"></ion-icon>
+      <div class="nickname">{{ selectedUsuario?.nickname }}</div>
     </div>
 
     <ion-list>
       <ion-item>
-        <ion-label position="stacked">Nombre Completo</ion-label>
+        <ion-label position="floating">Nombre Completo</ion-label>
         <ion-input
           type="text"
           [formControl]="fullNameControl"
@@ -33,23 +34,22 @@
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Email</ion-label>
+        <ion-label position="floating">Email</ion-label>
         <ion-input type="email" [formControl]="emailControl"></ion-input>
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Teléfono</ion-label>
+        <ion-label position="floating">Teléfono</ion-label>
         <ion-input type="tel" [formControl]="phoneControl"></ion-input>
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Fecha de nacimiento</ion-label>
-        <ion-datetime-button datetime="datetime"></ion-datetime-button>
-        <ion-modal [keepContentsMounted]="true">
-          <ng-template>
-            <ion-datetime id="datetime"></ion-datetime>
-          </ng-template>
-        </ion-modal>
+        <ion-label position="floating">Fecha de nacimiento</ion-label>
+        <ion-input
+          type="date"
+          [formControl]="birthDateControl"
+          value="{{ birthDateControl?.value | date: 'yyyy-MM-dd' }}"
+        ></ion-input>
       </ion-item>
     </ion-list>
   </div>

@@ -15,6 +15,7 @@ import { Location } from '@angular/common';
 import { Platform } from '@ionic/angular';
 import { CodigoService } from '../../codigo/codigo.service';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
+import { StockPorSucursalDialogComponent, StockPorSucursalDialogData } from '../../operaciones/movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component';
 
 export interface SearchProductoDialogData {
   mostrarPrecio: boolean;
@@ -177,6 +178,15 @@ export class SearchProductoDialogComponent implements OnInit {
     this.barcodeScanner.scan().then(barcodeData => {
       this.buscarControl.setValue(barcodeData.text)
       this.onSearchProducto(this.buscarControl.value, null)
+    })
+  }
+
+  onVerStock(producto) {
+    let data: StockPorSucursalDialogData = {
+      producto: producto
+    }
+    this.modalService.openModal(StockPorSucursalDialogComponent, data).then(res => {
+
     })
   }
 

@@ -11,7 +11,13 @@ const config: CapacitorConfig = {
   plugins: {
 		CapacitorUpdater: {
 			autoUpdate: true
-		}
+		},
+    Camera: {
+      "androidSource": "both"
+    },
+    Filesystem: {
+      "androidStorage": "external"
+    }
 	}
 };
 
