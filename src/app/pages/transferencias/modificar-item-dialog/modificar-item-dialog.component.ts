@@ -1,5 +1,5 @@
 import { PopOverService } from './../../../services/pop-over.service';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { Component, Input, OnInit } from '@angular/core';
 
 export interface ModificarItemData {
@@ -26,8 +26,8 @@ export class ModificarItemDialogComponent implements OnInit {
   constructor(private popoverService: PopOverService) { }
 
   ngOnInit() {
-    this.cantidadControl = new FormControl(null, [Validators.required, Validators.min(1)])
-    this.vencimientoControl = new FormControl(null, [Validators.required])
+    this.cantidadControl = new UntypedFormControl(null, [Validators.required, Validators.min(1)])
+    this.vencimientoControl = new UntypedFormControl(null, [Validators.required])
     if(this.data.isCantidad){
       this.isCantidad = true;
     } else if(this.data.isVencimiento){

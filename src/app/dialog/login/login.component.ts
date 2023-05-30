@@ -7,7 +7,7 @@ import { CargandoService } from './../../services/cargando.service';
 import { Usuario } from './../../domains/personas/usuario.model';
 import { Platform, PopoverController, ToastController } from '@ionic/angular';
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { LoginService } from 'src/app/services/login.service';
 import { ChangeServerIpDialogComponent } from 'src/app/components/change-server-ip-dialog/change-server-ip-dialog.component';
@@ -23,9 +23,9 @@ export class LoginComponent implements OnInit {
   @ViewChild('password', { static: false }) passwordInput: ElementRef;
 
   selectedUsuario: Usuario = null;
-  usuarioControl = new FormControl(null, Validators.required)
-  passwordControl = new FormControl(null, Validators.required)
-  formGroup: FormGroup;
+  usuarioControl = new UntypedFormControl(null, Validators.required)
+  passwordControl = new UntypedFormControl(null, Validators.required)
+  formGroup: UntypedFormGroup;
   showPassword = false;
   msg = "Bienvenido/a";
   subscription;
@@ -43,7 +43,7 @@ export class LoginComponent implements OnInit {
   ) { }
 
   async ngOnInit() {
-    this.formGroup = new FormGroup({
+    this.formGroup = new UntypedFormGroup({
       'usuario': this.usuarioControl,
       'password': this.passwordControl
     })

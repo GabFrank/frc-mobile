@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
@@ -32,7 +32,7 @@ export class CajaInfoComponent implements OnInit {
   selectedMaletin: Maletin;
   tentativas = 0;
   isApertura = false;
-  descripcionMaletinControl = new FormControl(null, [Validators.required])
+  descripcionMaletinControl = new UntypedFormControl(null, [Validators.required])
 
   constructor(
     private route: ActivatedRoute,

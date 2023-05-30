@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { PdvCaja } from 'src/app/pages/operaciones/caja/caja.model';
 import { CajaService } from 'src/app/pages/operaciones/caja/caja.service';
 import { ModalService } from 'src/app/services/modal.service';
@@ -32,7 +32,7 @@ export class GenericListDialogComponent implements OnInit {
   @Input()
   data: GenericListDialogData;
 
-  buscarControl = new FormControl(null, [Validators.required, Validators.minLength(1)])
+  buscarControl = new UntypedFormControl(null, [Validators.required, Validators.minLength(1)])
   itemList = [];
 
   constructor(

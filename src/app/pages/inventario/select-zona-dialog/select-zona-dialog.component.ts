@@ -3,7 +3,7 @@ import { DialogoService } from 'src/app/services/dialogo.service';
 import { ModalService } from './../../../services/modal.service';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { untilDestroyed } from '@ngneat/until-destroy';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Sector } from './../../../domains/sector/sector.model';
 import { Component, Input, OnInit } from '@angular/core';
 import { comparatorLike } from './../../../generic/utils/string-utils'
@@ -20,7 +20,7 @@ export class SelectZonaDialogComponent implements OnInit {
   @Input()
   data;
 
-  buscarControl = new FormControl('')
+  buscarControl = new UntypedFormControl('')
   sectorList: Sector[] = []
 
   constructor(
