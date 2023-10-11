@@ -4,7 +4,7 @@ import { FuncionarioService } from './../funcionario.service';
 import { PreRegistroFuncionario } from './../funcionario.model';
 import { LoginComponent } from './../../../dialog/login/login.component';
 import { ModalService } from './../../../services/modal.service';
-import { UntypedFormControl, Validators, UntypedFormGroup } from '@angular/forms';
+import { FormControl, Validators, FormGroup } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
@@ -18,30 +18,30 @@ import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.s
 })
 export class PreRegistroFuncionarioComponent implements OnInit {
 
-  formGroup: UntypedFormGroup;
+  formGroup: FormGroup;
   subscription;
   sucursalList: Sucursal[];
 
-  nombreCompleto = new UntypedFormControl(null, Validators.required)
-  apodo = new UntypedFormControl()
-  documento = new UntypedFormControl(null, Validators.required)
-  telefonoPersonal = new UntypedFormControl(null, Validators.required)
-  telefonoEmergencia = new UntypedFormControl(null, Validators.required)
-  nombreContactoEmergencia = new UntypedFormControl(null, Validators.required)
-  email = new UntypedFormControl()
-  ciudad = new UntypedFormControl(null, Validators.required)
-  direccion = new UntypedFormControl(null, Validators.required)
-  sucursal = new UntypedFormControl(null, Validators.required)
-  fechaNacimiento = new UntypedFormControl(null, Validators.required)
-  fechaIngreso = new UntypedFormControl()
-  habilidades = new UntypedFormControl(null, Validators.required)
-  registroConducir = new UntypedFormControl(false)
-  nivelEducacion = new UntypedFormControl()
-  observacion = new UntypedFormControl()
-  generoControl = new UntypedFormControl()
+  nombreCompleto = new FormControl(null, Validators.required)
+  apodo = new FormControl()
+  documento = new FormControl(null, Validators.required)
+  telefonoPersonal = new FormControl(null, Validators.required)
+  telefonoEmergencia = new FormControl(null, Validators.required)
+  nombreContactoEmergencia = new FormControl(null, Validators.required)
+  email = new FormControl()
+  ciudad = new FormControl(null, Validators.required)
+  direccion = new FormControl(null, Validators.required)
+  sucursal = new FormControl(null, Validators.required)
+  fechaNacimiento = new FormControl(null, Validators.required)
+  fechaIngreso = new FormControl()
+  habilidades = new FormControl(null, Validators.required)
+  registroConducir = new FormControl(false)
+  nivelEducacion = new FormControl()
+  observacion = new FormControl()
+  generoControl = new FormControl()
 
-  habilidadesInformaticas = new UntypedFormControl([])
-  habilidadesGenerales = new UntypedFormControl([])
+  habilidadesInformaticas = new FormControl([])
+  habilidadesGenerales = new FormControl([])
 
   constructor(
     private modalService: ModalService,
@@ -69,7 +69,7 @@ export class PreRegistroFuncionarioComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.formGroup = new UntypedFormGroup({
+    this.formGroup = new FormGroup({
       'nombreControl': this.nombreCompleto,
       'apodo': this.apodo,
       'documento': this.documento,

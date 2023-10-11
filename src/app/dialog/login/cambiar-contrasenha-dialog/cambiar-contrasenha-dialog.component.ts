@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
 import { UsuarioSearchGQL } from 'src/app/graphql/personas/usuario/graphql/usuarioSearch';
@@ -18,9 +18,9 @@ export class CambiarContrasenhaDialogComponent implements OnInit {
   @Input()
   data;
 
-  formGroup: UntypedFormGroup;
-  password1Control = new UntypedFormControl(null, [Validators.required, Validators.minLength(3)])
-  password2Control = new UntypedFormControl(null, [Validators.required, Validators.minLength(3)])
+  formGroup: FormGroup;
+  password1Control = new FormControl(null, [Validators.required, Validators.minLength(3)])
+  password2Control = new FormControl(null, [Validators.required, Validators.minLength(3)])
   isError = false;
 
   showPassword1 = false
@@ -37,7 +37,7 @@ export class CambiarContrasenhaDialogComponent implements OnInit {
   }
 
   async ngOnInit() {
-    this.formGroup = new UntypedFormGroup({
+    this.formGroup = new FormGroup({
       'pass1': this.password1Control,
       'pass2': this.password2Control
     })

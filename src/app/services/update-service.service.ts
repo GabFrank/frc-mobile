@@ -1,51 +1,40 @@
-import { Injectable } from '@angular/core';
+
 import { AppUpdate, AppUpdateAvailability } from '@capawesome/capacitor-app-update';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class UpdateServiceService {
+export const getCurrentAppVersion = async () => {
+  const result = await AppUpdate.getAppUpdateInfo();
+  return result.currentVersion;
+};
 
-  constructor() { }
+export const getAvailableAppVersion = async () => {
+  const result = await AppUpdate.getAppUpdateInfo();
+  return result.availableVersion;
+};
 
-  getCurrentAppVersion = async () => {
-    let result = await AppUpdate.getAppUpdateInfo();
-    return result.currentVersion;
-  };
+export const openAppStore = async () => {
+  await AppUpdate.openAppStore();
+};
 
-  getAvailableAppVersion = async () => {
-    let result = await AppUpdate.getAppUpdateInfo();
-    console.log(result);
+export const performImmediateUpdate = async () => {
+  const result = await AppUpdate.getAppUpdateInfo();
+  if (result.updateAvailability !== AppUpdateAvailability.UPDATE_AVAILABLE) {
+    return;
+  }
+  if (result.immediateUpdateAllowed) {
+    await AppUpdate.performImmediateUpdate();
+  }
+};
 
-    return result.availableVersion;
-  };
+export const startFlexibleUpdate = async () => {
+  const result = await AppUpdate.getAppUpdateInfo();
+  if (result.updateAvailability !== AppUpdateAvailability.UPDATE_AVAILABLE) {
+    return;
+  }
+  if (result.flexibleUpdateAllowed) {
+    await AppUpdate.startFlexibleUpdate();
+  }
+};
 
-  openAppStore = async () => {
-    await AppUpdate.openAppStore();
-  };
-
-  performImmediateUpdate = async () => {
-    let result = await AppUpdate.getAppUpdateInfo();
-    if (result.updateAvailability !== AppUpdateAvailability.UPDATE_AVAILABLE) {
-      return;
-    }
-    if (result.immediateUpdateAllowed) {
-      await AppUpdate.performImmediateUpdate();
-    }
-  };
-
-  startFlexibleUpdate = async () => {
-    let result = await AppUpdate.getAppUpdateInfo();
-    if (result.updateAvailability !== AppUpdateAvailability.UPDATE_AVAILABLE) {
-      return;
-    }
-    if (result.flexibleUpdateAllowed) {
-      await AppUpdate.startFlexibleUpdate();
-    }
-  };
-
-  completeFlexibleUpdate = async () => {
-    await AppUpdate.completeFlexibleUpdate();
-  };
-
-}
+export const completeFlexibleUpdate = async () => {
+  await AppUpdate.completeFlexibleUpdate();
+};

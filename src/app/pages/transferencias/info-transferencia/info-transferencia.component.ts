@@ -23,7 +23,7 @@ import { codificarQr, QrData } from 'src/app/generic/utils/qrUtils';
 import { QrGeneratorComponent } from 'src/app/components/qr-generator/qr-generator.component';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { TransferListItem } from 'worker_threads';
-import { UntypedFormControl, Validators } from '@angular/forms';
+import { FormControl, Validators } from '@angular/forms';
 import { comparatorLike } from 'src/app/generic/utils/string-utils';
 
 
@@ -60,7 +60,7 @@ export class InfoTransferenciaComponent implements OnInit {
   actionMenuOptionsList: ActionMenuData[];
   puedeEditar = false;
   filteredTransferenciaItemList: TransferenciaItem[]
-  buscarControl = new UntypedFormControl(null, [Validators.required, Validators.minLength(1)])
+  buscarControl = new FormControl(null, [Validators.required, Validators.minLength(1)])
 
   constructor(
     private transferenciaService: TransferenciaService,

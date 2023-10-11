@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Presentacion } from 'src/app/domains/productos/presentacion.model';
 import { Producto } from 'src/app/domains/productos/producto.model';
 import { CargandoService } from './../../../services/cargando.service';
@@ -28,16 +28,16 @@ export class EditInventarioItemDialogComponent implements OnInit {
 
   estadosList = Object.values(InventarioProductoEstado)
   selectedInventarioProductoItem: InventarioProductoItem;
-  cantidadControl = new UntypedFormControl(null, [Validators.required, Validators.min(0)])
-  vencimientoControl = new UntypedFormControl(null, [Validators.required])
-  estadoControl = new UntypedFormControl(InventarioProductoEstado.BUENO)
+  cantidadControl = new FormControl(null, [Validators.required, Validators.min(0)])
+  vencimientoControl = new FormControl(null, [Validators.required])
+  estadoControl = new FormControl(InventarioProductoEstado.BUENO)
   formGroup;
 
   constructor(
     private modalService: ModalService,
     private cargandoService: CargandoService
   ) {
-    this.formGroup = new UntypedFormGroup({
+    this.formGroup = new FormGroup({
       cantidad: this.cantidadControl,
       vencimiento: this.vencimientoControl,
       estado: this.estadoControl
