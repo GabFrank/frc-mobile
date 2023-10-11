@@ -19,3 +19,12 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keep class com.getcapacitor.** { *; }
+-dontwarn com.getcapacitor.**
+
+-keep class org.apache.cordova.** { *; }
+-dontwarn org.apache.cordova.**
+
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile

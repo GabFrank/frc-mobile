@@ -12,18 +12,7 @@ import { MainService } from './services/main.service';
 import { ModalService } from './services/modal.service';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { FingerprintAuthService } from './services/fingerprint-auth.service';
-import { UpdateServiceService } from './services/update-service.service';
-import {
-  ActionPerformed,
-  PushNotificationSchema,
-  PushNotifications,
-  Token,
-} from '@capacitor/push-notifications';
-// import { App, URLOpenListenerEvent } from '@capacitor/app';
-
-
-// declare let window: any; // Don't forget this part!
-
+import { getAvailableAppVersion, getCurrentAppVersion, performImmediateUpdate } from './services/update-service.service';
 
 @UntilDestroy()
 @Component({
@@ -50,6 +39,7 @@ export class AppComponent implements OnInit, OnDestroy {
   loadingOpen = false; // track loading dialog state
   dialog: any;
   intervalID;
+
   constructor(
     private menu: MenuController,
     public mainService: MainService,
@@ -62,7 +52,6 @@ export class AppComponent implements OnInit, OnDestroy {
     public appVersion: AppVersion,
     private platfform: Platform,
     private fingerprintService: FingerprintAuthService,
-    private updateService: UpdateServiceService
   ) {
 
     this.isDev = isDevMode()
@@ -71,8 +60,11 @@ export class AppComponent implements OnInit, OnDestroy {
       flash: 'off',
       drawSight: false
     }
-    appVersion.getVersionNumber().then(res => {
-      this.currentVersion = res
+
+    this.platfform.ready().then(res => {
+      appVersion.getVersionNumber().then(res => {
+        this.currentVersion = res
+      })
     })
 
     this.isFarma = localStorage.getItem('serverIp').includes('158')
@@ -90,12 +82,12 @@ export class AppComponent implements OnInit, OnDestroy {
   searchUpdate() {
     let currentVersion;
     let latestVersion;
-    this.updateService.getCurrentAppVersion().then(res => {
+    getCurrentAppVersion().then(res => {
       currentVersion = res;
-      this.updateService.getAvailableAppVersion().then(res2 => {
+      getAvailableAppVersion().then(res2 => {
         latestVersion = res2;
         if(+currentVersion < +latestVersion){
-          this.updateService.performImmediateUpdate().then(res3 => {
+          performImmediateUpdate().then(res3 => {
             this.notificacionService.success("Nueva version instalada")
           })
         }
@@ -103,22 +95,6 @@ export class AppComponent implements OnInit, OnDestroy {
     })
 
   }
-
-  // initializeApp() {
-  //   App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
-  //     this.zone.run(() => {
-  //       // Example url: https://beerswift.app/tabs/tab2
-  //       // slug = /tabs/tab2
-  //       console.log(event)
-  //       const slug = event.url.split(".app").pop();
-  //       if (slug) {
-  //         this.router.navigateByUrl(slug);
-  //       }
-  //       // If no match, do nothing - let regular routing
-  //       // logic take over
-  //     });
-  //   });
-  // }
 
   openInventario() {
 
@@ -128,14 +104,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
 
     this.showLoginPop();
-
-    // this.statusSub = connectionStatusSub
-    //   .pipe(untilDestroyed(this))
-    //   .subscribe(async (res) => {
-    //     if (res == true) {
-
-    //     }
-    //   });
 
 
     this.statusSub = connectionStatusSub.pipe(untilDestroyed(this)).subscribe(async (res) => {
@@ -160,42 +128,42 @@ export class AppComponent implements OnInit, OnDestroy {
     // Request permission to use push notifications
     // iOS will prompt user and return if they granted permission or not
     // Android will just grant without prompting
-    PushNotifications.requestPermissions().then(result => {
-      if (result.receive === 'granted') {
-        // Register with Apple / Google to receive push via APNS/FCM
-        PushNotifications.register();
-      } else {
-        // Show some error
-      }
-    });
+    // PushNotifications.requestPermissions().then(result => {
+    //   if (result.receive === 'granted') {
+    //     // Register with Apple / Google to receive push via APNS/FCM
+    //     PushNotifications.register();
+    //   } else {
+    //     // Show some error
+    //   }
+    // });
 
-    // On success, we should be able to receive notifications
-    PushNotifications.addListener('registration',
-      (token: Token) => {
-        alert('Push registration success, token: ' + token.value);
-      }
-    );
+    // // On success, we should be able to receive notifications
+    // PushNotifications.addListener('registration',
+    //   (token: Token) => {
+    //     alert('Push registration success, token: ' + token.value);
+    //   }
+    // );
 
-    // Some issue with our setup and push will not work
-    PushNotifications.addListener('registrationError',
-      (error: any) => {
-        alert('Error on registration: ' + JSON.stringify(error));
-      }
-    );
+    // // Some issue with our setup and push will not work
+    // PushNotifications.addListener('registrationError',
+    //   (error: any) => {
+    //     alert('Error on registration: ' + JSON.stringify(error));
+    //   }
+    // );
 
-    // Show us the notification payload if the app is open on our device
-    PushNotifications.addListener('pushNotificationReceived',
-      (notification: PushNotificationSchema) => {
-        alert('Push received: ' + JSON.stringify(notification));
-      }
-    );
+    // // Show us the notification payload if the app is open on our device
+    // PushNotifications.addListener('pushNotificationReceived',
+    //   (notification: PushNotificationSchema) => {
+    //     alert('Push received: ' + JSON.stringify(notification));
+    //   }
+    // );
 
-    // Method called when tapping on a notification
-    PushNotifications.addListener('pushNotificationActionPerformed',
-      (notification: ActionPerformed) => {
-        alert('Push action performed: ' + JSON.stringify(notification));
-      }
-    );
+    // // Method called when tapping on a notification
+    // PushNotifications.addListener('pushNotificationActionPerformed',
+    //   (notification: ActionPerformed) => {
+    //     alert('Push action performed: ' + JSON.stringify(notification));
+    //   }
+    // );
 
   }
 

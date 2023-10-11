@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { UntypedFormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { ModalService } from 'src/app/services/modal.service';
 
 @Component({
@@ -9,8 +9,8 @@ import { ModalService } from 'src/app/services/modal.service';
 })
 export class ChangeServerIpDialogComponent implements OnInit {
 
-  serverIpControl = new UntypedFormControl()
-  serverPortControl = new UntypedFormControl()
+  serverIpControl = new FormControl()
+  serverPortControl = new FormControl()
   constructor(private modalService: ModalService) { }
 
   ngOnInit() {
@@ -29,7 +29,7 @@ export class ChangeServerIpDialogComponent implements OnInit {
   }
 
   onBodegaClick(){
-    localStorage.setItem('serverIp', '150.136.137.98')
+    localStorage.setItem('serverIp', '159.203.86.103')
     localStorage.setItem('serverPort', '8081')
     localStorage.setItem('usuarioId', null)
     localStorage.setItem('token', null)
@@ -37,8 +37,8 @@ export class ChangeServerIpDialogComponent implements OnInit {
 
   }
   onFarmaciaClick(){
-    localStorage.setItem('serverIp', '158.101.114.87')
-    localStorage.setItem('serverPort', '8081')
+    localStorage.setItem('serverIp', '159.203.86.103')
+    localStorage.setItem('serverPort', '8082')
     localStorage.setItem('usuarioId', null)
     localStorage.setItem('token', null)
 

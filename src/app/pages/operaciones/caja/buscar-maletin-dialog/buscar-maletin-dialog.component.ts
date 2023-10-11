@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { UntypedFormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { PopOverService } from 'src/app/services/pop-over.service';
 import { MaletinService } from '../../maletin/maletin.service';
 import { Maletin } from '../../maletin/maletin.model';
@@ -23,7 +23,7 @@ export class BuscarMaletinDialogComponent implements OnInit, AfterViewInit {
   @ViewChild('buscarInput', { read: IonInput }) buscarInput: IonInput;
 
   selectedMaletin: Maletin;
-  codigoControl = new UntypedFormControl(null, Validators.required)
+  codigoControl = new FormControl(null, Validators.required)
 
   @Input() data: BuscarMaletinData;
 

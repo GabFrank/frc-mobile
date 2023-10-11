@@ -5,7 +5,7 @@ import { ImagePopoverComponent } from 'src/app/components/image-popover/image-po
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { MainService } from 'src/app/services/main.service';
-import { UntypedFormControl } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { Zona } from 'src/app/domains/zona/zona.model';
 import { EditInventarioItemDialogComponent, InventarioItemData } from './../edit-inventario-item-dialog/edit-inventario-item-dialog.component';
@@ -54,7 +54,7 @@ export class EditInventarioComponent implements OnInit {
   sectorList: Sector[] = []
   inventarioDataList: InventarioData[] = [];
   inventarioId;
-  mostrarControl = new UntypedFormControl(OpcionesMostrar.MIOS)
+  mostrarControl = new FormControl(OpcionesMostrar.MIOS)
   opcionesMostrarList = Object.values(OpcionesMostrar)
   selectedResponsable: Usuario;
   isAddZona = false;

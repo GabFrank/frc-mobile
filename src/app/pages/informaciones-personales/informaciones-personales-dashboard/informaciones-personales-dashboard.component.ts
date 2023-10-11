@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { UntypedFormControl, Validators } from '@angular/forms';
+import { FormControl, Validators } from '@angular/forms';
 import { ActionSheetController, NavController } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Filesystem, Directory } from '@capacitor/filesystem';
@@ -14,13 +14,13 @@ import { UsuarioService } from 'src/app/services/usuario.service';
 })
 export class InformacionesPersonalesDashboardComponent implements OnInit {
   src = "";
-  fullNameControl = new UntypedFormControl('', [Validators.required]);
-  emailControl = new UntypedFormControl('', [Validators.email]);
-  phoneControl = new UntypedFormControl('', [
+  fullNameControl = new FormControl('', [Validators.required]);
+  emailControl = new FormControl('', [Validators.email]);
+  phoneControl = new FormControl('', [
     Validators.required,
     Validators.pattern(/^\d{4}-?\d{3}-?\d{3}$/), // Paraguayan phone number pattern
   ]);
-  birthDateControl = new UntypedFormControl('', [Validators.required]);
+  birthDateControl = new FormControl('', [Validators.required]);
   selectedUsuario: Usuario;
 
   constructor(

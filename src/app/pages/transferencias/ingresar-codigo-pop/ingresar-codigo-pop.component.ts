@@ -1,6 +1,6 @@
 import { PopOverService } from './../../../services/pop-over.service';
 import { Component, OnInit } from '@angular/core';
-import { UntypedFormControl, Validators, FormGroup } from '@angular/forms';
+import { FormControl, Validators, FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-ingresar-codigo-pop',
@@ -9,7 +9,7 @@ import { UntypedFormControl, Validators, FormGroup } from '@angular/forms';
 })
 export class IngresarCodigoPopComponent implements OnInit {
 
-  codigoControl = new UntypedFormControl(null, [Validators.required, Validators.minLength(6)])
+  codigoControl = new FormControl(null, [Validators.required, Validators.minLength(6)])
 
   constructor(private popoverService: PopOverService) { }
 
