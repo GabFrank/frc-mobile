@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="11" />
+    <bytecodeTargetLevel target="11">
+      <module name="android.app" target="17" />
+      <module name="android.capacitor-android" target="17" />
+      <module name="android.capacitor-app" target="17" />
+      <module name="android.capacitor-camera" target="17" />
+      <module name="android.capacitor-cordova-android-plugins" target="17" />
+      <module name="android.capacitor-filesystem" target="17" />
+      <module name="android.capacitor-haptics" target="17" />
+      <module name="android.capacitor-keyboard" target="17" />
+      <module name="android.capacitor-splash-screen" target="17" />
+      <module name="android.capacitor-status-bar" target="17" />
+      <module name="android.capawesome-capacitor-app-update" target="17" />
+      <module name="android.capgo-capacitor-updater" target="17" />
+    </bytecodeTargetLevel>
   </component>
 </project>
