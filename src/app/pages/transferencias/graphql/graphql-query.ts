@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import gql from 'graphql-tag';
 
 export const transferenciasQuery = gql`
   {
@@ -183,7 +183,11 @@ export const finalizarTransferencia = gql`
 `;
 
 export const prepararTransferencia = gql`
-  mutation avanzarEtapaTransferencia($id: ID!, $etapa: EtapaTransferencia!, $usuarioId: ID!) {
+  mutation avanzarEtapaTransferencia(
+    $id: ID!
+    $etapa: EtapaTransferencia!
+    $usuarioId: ID!
+  ) {
     avanzarEtapaTransferencia(id: $id, etapa: $etapa, usuarioId: $usuarioId)
   }
 `;
@@ -197,263 +201,6 @@ export const imprimirTransferencia = gql`
 export const saveTransferenciaItem = gql`
   mutation saveTransferenciaItem($entity: TransferenciaItemInput!) {
     data: saveTransferenciaItem(transferenciaItem: $entity) {
-      id
-        transferencia {
-          id
-        }
-        presentacionPreTransferencia {
-          id
-          producto {
-            id
-            descripcion
-            codigoPrincipal
-            costo {
-              costoMedio
-              ultimoPrecioCompra
-            }
-          }
-          cantidad
-          imagenPrincipal
-          precioPrincipal {
-            precio
-          }
-        }
-        presentacionPreparacion {
-          id
-          producto {
-            id
-            descripcion
-            codigoPrincipal
-            costo {
-              costoMedio
-              ultimoPrecioCompra
-            }
-          }
-          cantidad
-          imagenPrincipal
-          precioPrincipal {
-            precio
-          }
-        }
-        presentacionTransporte {
-          id
-          producto {
-            id
-            descripcion
-            codigoPrincipal
-            costo {
-              costoMedio
-              ultimoPrecioCompra
-            }
-          }
-          cantidad
-          imagenPrincipal
-          precioPrincipal {
-            precio
-          }
-        }
-        presentacionRecepcion {
-          id
-          producto {
-            id
-            descripcion
-            codigoPrincipal
-            costo {
-              costoMedio
-              ultimoPrecioCompra
-            }
-          }
-          cantidad
-          imagenPrincipal
-          precioPrincipal {
-            precio
-          }
-        }
-        cantidadPreTransferencia
-        cantidadPreparacion
-        cantidadTransporte
-        cantidadRecepcion
-        observacionPreTransferencia
-        observacionPreparacion
-        observacionTransporte
-        observacionRecepcion
-        vencimientoPreTransferencia
-        vencimientoPreparacion
-        vencimientoTransporte
-        vencimientoRecepcion
-        motivoModificacionPreTransferencia
-        motivoModificacionPreparacion
-        motivoModificacionTransporte
-        motivoModificacionRecepcion
-        motivoRechazoPreTransferencia
-        motivoRechazoPreparacion
-        motivoRechazoTransporte
-        motivoRechazoRecepcion
-        activo
-        poseeVencimiento
-        usuario {
-          id
-          persona {
-            nombre
-          }
-        }
-        creadoEn
-    }
-  }
-`;
-
-export const deleteTransferenciaItemQuery = gql`
-  mutation deleteTransferenciaItem($id: ID!) {
-    deleteTransferenciaItem(id: $id)
-  }
-`;
-
-export const saveTransferenciaItemDetalle = gql`
-  mutation saveTransferenciaItemDetalle($entity: TransferenciaItemDetalleInput!) {
-    data: saveTransferenciaItemDetalle(transferenciaItemDetalle: $entity) {
-      id
-        transferencia {
-          id
-        }
-        presentacionPreTransferencia {
-          id
-          producto {
-            id
-            descripcion
-            codigoPrincipal
-            costo {
-              costoMedio
-              ultimoPrecioCompra
-            }
-          }
-          cantidad
-          imagenPrincipal
-          precioPrincipal {
-            precio
-          }
-        }
-        presentacionPreparacion {
-          id
-          producto {
-            id
-            descripcion
-            codigoPrincipal
-            costo {
-              costoMedio
-              ultimoPrecioCompra
-            }
-          }
-          cantidad
-          imagenPrincipal
-          precioPrincipal {
-            precio
-          }
-        }
-        presentacionTransporte {
-          id
-          producto {
-            id
-            descripcion
-            codigoPrincipal
-            costo {
-              costoMedio
-              ultimoPrecioCompra
-            }
-          }
-          cantidad
-          imagenPrincipal
-          precioPrincipal {
-            precio
-          }
-        }
-        presentacionRecepcion {
-          id
-          producto {
-            id
-            descripcion
-            codigoPrincipal
-            costo {
-              costoMedio
-              ultimoPrecioCompra
-            }
-          }
-          cantidad
-          imagenPrincipal
-          precioPrincipal {
-            precio
-          }
-        }
-        cantidadPreTransferencia
-        cantidadPreparacion
-        cantidadTransporte
-        cantidadRecepcion
-        observacionPreTransferencia
-        observacionPreparacion
-        observacionTransporte
-        observacionRecepcion
-        vencimientoPreTransferencia
-        vencimientoPreparacion
-        vencimientoTransporte
-        vencimientoRecepcion
-        motivoModificacionPreTransferencia
-        motivoModificacionPreparacion
-        motivoModificacionTransporte
-        motivoModificacionRecepcion
-        motivoRechazoPreTransferencia
-        motivoRechazoPreparacion
-        motivoRechazoTransporte
-        motivoRechazoRecepcion
-        activo
-        poseeVencimiento
-        usuario {
-          id
-          persona {
-            nombre
-          }
-        }
-        creadoEn
-    }
-  }
-`;
-
-export const deleteTransferenciaItemDetalleQuery = gql`
-  mutation deleteTransferenciaItemDetalle($id: ID!) {
-    deleteTransferenciaItemDetalle(id: $id)
-  }
-`;
-
-export const transferenciasPorUsuarioQuery = gql`
-  query ($id: ID!) {
-    data: transferenciasPorUsuario(id: $id) {
-      id
-      sucursalOrigen {
-        id
-        nombre
-      }
-      sucursalDestino {
-        id
-        nombre
-      }
-      isOrigen
-      isDestino
-      tipo
-      estado
-      etapa
-      observacion
-      creadoEn
-      usuarioPreTransferencia {
-        id
-        persona {
-          nombre
-        }
-      }
-    }
-  }
-`;
-
-export const transferenciaItemPorTransferenciaIdQuery = gql`
-  query ($id: ID!, $page: Int, $size: Int) {
-    data: transferenciaItensPorTransferenciaId(id: $id, page: $page, size: $size) {
       id
       transferencia {
         id
@@ -548,7 +295,403 @@ export const transferenciaItemPorTransferenciaIdQuery = gql`
       motivoRechazoRecepcion
       activo
       poseeVencimiento
+      usuario {
+        id
+        persona {
+          nombre
+        }
+      }
       creadoEn
+    }
+  }
+`;
+
+export const deleteTransferenciaItemQuery = gql`
+  mutation deleteTransferenciaItem($id: ID!) {
+    deleteTransferenciaItem(id: $id)
+  }
+`;
+
+export const saveTransferenciaItemDetalle = gql`
+  mutation saveTransferenciaItemDetalle(
+    $entity: TransferenciaItemDetalleInput!
+  ) {
+    data: saveTransferenciaItemDetalle(transferenciaItemDetalle: $entity) {
+      id
+      transferencia {
+        id
+      }
+      presentacionPreTransferencia {
+        id
+        producto {
+          id
+          descripcion
+          codigoPrincipal
+          costo {
+            costoMedio
+            ultimoPrecioCompra
+          }
+        }
+        cantidad
+        imagenPrincipal
+        precioPrincipal {
+          precio
+        }
+      }
+      presentacionPreparacion {
+        id
+        producto {
+          id
+          descripcion
+          codigoPrincipal
+          costo {
+            costoMedio
+            ultimoPrecioCompra
+          }
+        }
+        cantidad
+        imagenPrincipal
+        precioPrincipal {
+          precio
+        }
+      }
+      presentacionTransporte {
+        id
+        producto {
+          id
+          descripcion
+          codigoPrincipal
+          costo {
+            costoMedio
+            ultimoPrecioCompra
+          }
+        }
+        cantidad
+        imagenPrincipal
+        precioPrincipal {
+          precio
+        }
+      }
+      presentacionRecepcion {
+        id
+        producto {
+          id
+          descripcion
+          codigoPrincipal
+          costo {
+            costoMedio
+            ultimoPrecioCompra
+          }
+        }
+        cantidad
+        imagenPrincipal
+        precioPrincipal {
+          precio
+        }
+      }
+      cantidadPreTransferencia
+      cantidadPreparacion
+      cantidadTransporte
+      cantidadRecepcion
+      observacionPreTransferencia
+      observacionPreparacion
+      observacionTransporte
+      observacionRecepcion
+      vencimientoPreTransferencia
+      vencimientoPreparacion
+      vencimientoTransporte
+      vencimientoRecepcion
+      motivoModificacionPreTransferencia
+      motivoModificacionPreparacion
+      motivoModificacionTransporte
+      motivoModificacionRecepcion
+      motivoRechazoPreTransferencia
+      motivoRechazoPreparacion
+      motivoRechazoTransporte
+      motivoRechazoRecepcion
+      activo
+      poseeVencimiento
+      usuario {
+        id
+        persona {
+          nombre
+        }
+      }
+      creadoEn
+    }
+  }
+`;
+
+export const deleteTransferenciaItemDetalleQuery = gql`
+  mutation deleteTransferenciaItemDetalle($id: ID!) {
+    deleteTransferenciaItemDetalle(id: $id)
+  }
+`;
+
+export const transferenciasPorUsuarioQuery = gql`
+  query ($id: ID!) {
+    data: transferenciasPorUsuario(id: $id) {
+      id
+      sucursalOrigen {
+        id
+        nombre
+      }
+      sucursalDestino {
+        id
+        nombre
+      }
+      isOrigen
+      isDestino
+      tipo
+      estado
+      etapa
+      observacion
+      creadoEn
+      usuarioPreTransferencia {
+        id
+        persona {
+          nombre
+        }
+      }
+    }
+  }
+`;
+
+export const transferenciaItemPorTransferenciaIdQuery = gql`
+  query ($id: ID!, $page: Int, $size: Int) {
+    data: transferenciaItensPorTransferenciaId(
+      id: $id
+      page: $page
+      size: $size
+    ) {
+      getTotalPages
+      getTotalElements
+      getNumberOfElements
+      isFirst
+      isLast
+      hasNext
+      hasPrevious
+      getPageable {
+        getPageNumber
+        getPageSize
+      }
+      getContent {
+        id
+        transferencia {
+          id
+        }
+        presentacionPreTransferencia {
+          id
+          producto {
+            id
+            descripcion
+            codigoPrincipal
+            costo {
+              costoMedio
+              ultimoPrecioCompra
+            }
+          }
+          cantidad
+          imagenPrincipal
+          precioPrincipal {
+            precio
+          }
+        }
+        presentacionPreparacion {
+          id
+          producto {
+            id
+            descripcion
+            codigoPrincipal
+            costo {
+              costoMedio
+              ultimoPrecioCompra
+            }
+          }
+          cantidad
+          imagenPrincipal
+          precioPrincipal {
+            precio
+          }
+        }
+        presentacionTransporte {
+          id
+          producto {
+            id
+            descripcion
+            codigoPrincipal
+            costo {
+              costoMedio
+              ultimoPrecioCompra
+            }
+          }
+          cantidad
+          imagenPrincipal
+          precioPrincipal {
+            precio
+          }
+        }
+        presentacionRecepcion {
+          id
+          producto {
+            id
+            descripcion
+            codigoPrincipal
+            costo {
+              costoMedio
+              ultimoPrecioCompra
+            }
+          }
+          cantidad
+          imagenPrincipal
+          precioPrincipal {
+            precio
+          }
+        }
+        cantidadPreTransferencia
+        cantidadPreparacion
+        cantidadTransporte
+        cantidadRecepcion
+        observacionPreTransferencia
+        observacionPreparacion
+        observacionTransporte
+        observacionRecepcion
+        vencimientoPreTransferencia
+        vencimientoPreparacion
+        vencimientoTransporte
+        vencimientoRecepcion
+        motivoModificacionPreTransferencia
+        motivoModificacionPreparacion
+        motivoModificacionTransporte
+        motivoModificacionRecepcion
+        motivoRechazoPreTransferencia
+        motivoRechazoPreparacion
+        motivoRechazoTransporte
+        motivoRechazoRecepcion
+        activo
+        poseeVencimiento
+        creadoEn
+      }
+    }
+  }
+`;
+
+export const transferenciaItemPorTransferenciaIdWithFilterQuery = gql`
+  query ($id: ID!, $name: String, $page: Int, $size: Int) {
+    data: transferenciaItensPorTransferenciaIdWithFilter(
+      id: $id
+      name: $name
+      page: $page
+      size: $size
+    ) {
+      getTotalPages
+      getTotalElements
+      getNumberOfElements
+      isFirst
+      isLast
+      hasNext
+      hasPrevious
+      getPageable {
+        getPageNumber
+        getPageSize
+      }
+      getContent {
+        id
+        transferencia {
+          id
+        }
+        presentacionPreTransferencia {
+          id
+          producto {
+            id
+            descripcion
+            codigoPrincipal
+            costo {
+              costoMedio
+              ultimoPrecioCompra
+            }
+          }
+          cantidad
+          imagenPrincipal
+          precioPrincipal {
+            precio
+          }
+        }
+        presentacionPreparacion {
+          id
+          producto {
+            id
+            descripcion
+            codigoPrincipal
+            costo {
+              costoMedio
+              ultimoPrecioCompra
+            }
+          }
+          cantidad
+          imagenPrincipal
+          precioPrincipal {
+            precio
+          }
+        }
+        presentacionTransporte {
+          id
+          producto {
+            id
+            descripcion
+            codigoPrincipal
+            costo {
+              costoMedio
+              ultimoPrecioCompra
+            }
+          }
+          cantidad
+          imagenPrincipal
+          precioPrincipal {
+            precio
+          }
+        }
+        presentacionRecepcion {
+          id
+          producto {
+            id
+            descripcion
+            codigoPrincipal
+            costo {
+              costoMedio
+              ultimoPrecioCompra
+            }
+          }
+          cantidad
+          imagenPrincipal
+          precioPrincipal {
+            precio
+          }
+        }
+        cantidadPreTransferencia
+        cantidadPreparacion
+        cantidadTransporte
+        cantidadRecepcion
+        observacionPreTransferencia
+        observacionPreparacion
+        observacionTransporte
+        observacionRecepcion
+        vencimientoPreTransferencia
+        vencimientoPreparacion
+        vencimientoTransporte
+        vencimientoRecepcion
+        motivoModificacionPreTransferencia
+        motivoModificacionPreparacion
+        motivoModificacionTransporte
+        motivoModificacionRecepcion
+        motivoRechazoPreTransferencia
+        motivoRechazoPreparacion
+        motivoRechazoTransporte
+        motivoRechazoRecepcion
+        activo
+        poseeVencimiento
+        creadoEn
+      }
     }
   }
 `;

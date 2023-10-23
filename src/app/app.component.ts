@@ -14,6 +14,23 @@ import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { FingerprintAuthService } from './services/fingerprint-auth.service';
 import { getAvailableAppVersion, getCurrentAppVersion, performImmediateUpdate } from './services/update-service.service';
 
+export class Pageable {
+  getPageNumber: number;
+  getPageSize: number;
+}
+
+export class PageInfo<T> {
+  getTotalPages: number;
+  getTotalElements: number;
+  getNumberOfElements: number;
+  isFirst: boolean;
+  isLast: boolean;
+  hasNext: boolean;
+  hasPrevious: boolean;
+  getPageable: Pageable;
+  getContent: T[];
+}
+
 @UntilDestroy()
 @Component({
   selector: 'app-root',

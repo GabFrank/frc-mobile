@@ -21,5 +21,5 @@ adb forward tcp:5555 tcp:5555
 /Users/gabfranck/Library/Android/sdk/platform-tools/adb forward tcp:5555 tcp:5555
 /Users/gabfranck/Library/Android/sdk/platform-tools/adb tcpip 5555
 -- conectar con el ceulalar
-/Users/gabfranck/Library/Android/sdk/platform-tools/adb connect 192.168.1.103:5555
+/Users/gabfranck/Library/Android/sdk/platform-tools/adb connect 192.168.1.110:5555
 

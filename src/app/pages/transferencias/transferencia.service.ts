@@ -17,6 +17,9 @@ import { SaveTransferenciaGQL } from './graphql/saveTransferencia';
 import { SaveTransferenciaItemGQL } from './graphql/saveTransferenciaItem';
 import { Transferencia, TransferenciaItem, TransferenciaEstado, EtapaTransferencia } from './transferencia.model';
 import { GetTransferenciaItensPorTransferenciaIdGQL } from './graphql/getTransferenciaItensPorTransferenciaId';
+import { PageInfo } from 'src/app/app.component';
+import { TransferListItem } from 'worker_threads';
+import { GetTransferenciaItensWithFilterGQL } from './graphql/getTransferenciaItensWithFilter';
 
 @UntilDestroy()
 @Injectable({
@@ -38,7 +41,8 @@ export class TransferenciaService {
     private dialogoService: DialogoService,
     private notificacionService: NotificacionService,
     private transferenciasPorUsuario: GetTransferenciasPorUsuarioGQL,
-    private transferenciaItemPorTransferenciaId: GetTransferenciaItensPorTransferenciaIdGQL
+    private transferenciaItemPorTransferenciaId: GetTransferenciaItensPorTransferenciaIdGQL,
+    private transferenciaItemPorTransferenciaIdWithFilter: GetTransferenciaItensWithFilterGQL
   ) { }
 
   async onGetTrasferenciasPorFecha(inicio, fin) {
@@ -58,8 +62,12 @@ export class TransferenciaService {
     return await this.genericCrudService.onDelete(this.deleteTransfencia, id, 'Realmente  desea eliminar esta transferencia?')
   }
 
-  async onGetTransferenciaItensPorTransferenciaId(id, page?, size?): Promise<Observable<TransferenciaItem[]>> {
+  async onGetTransferenciaItensPorTransferenciaId(id, page?, size?): Promise<Observable<PageInfo<TransferenciaItem>>> {
     return await this.genericCrudService.onGetById(this.transferenciaItemPorTransferenciaId, id, page, size);
+  }
+
+  async onGetTransferenciaItensWithFilters(id, name?, page?, size?): Promise<Observable<PageInfo<TransferenciaItem>>> {
+    return await this.genericCrudService.onCustomGet(this.transferenciaItemPorTransferenciaIdWithFilter, {id, name, page, size});
   }
 
   async onSaveTransferenciaItem(input): Promise<Observable<TransferenciaItem>> {

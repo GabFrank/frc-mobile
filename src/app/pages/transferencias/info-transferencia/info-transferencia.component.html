@@ -23,7 +23,7 @@
       <ion-row>
         <ion-col size="6"> Id: {{ selectedTransferencia?.id }} </ion-col>
         <ion-col size="6">
-          Fecha: {{ selectedTransferencia?.creadoEn | date: 'short' }}
+          Fecha: {{ selectedTransferencia?.creadoEn | date : 'short' }}
         </ion-col>
       </ion-row>
       <ion-row>
@@ -128,7 +128,26 @@
           slot="end"
           (click)="onCameraClick()"
         ></ion-icon>
+        <!-- <ion-icon
+          style="font-size: 2em; padding-top: 5px"
+          name="filter-outline"
+          slot="end"
+          (click)="onSelectFilter()"
+        ></ion-icon> -->
       </ion-item>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col class="center">
+      <ion-button
+        class="btn-warn-flat"
+        fill="clear"
+        (click)="onCargarMenos()"
+        expand="block"
+        *ngIf="selectedPageInfo?.hasPrevious"
+      >
+        MENOS
+      </ion-button>
     </ion-col>
   </ion-row>
   <ion-list
@@ -161,11 +180,11 @@
             <h3>
               Presentacion:
               {{
-                item?.presentacionPreTransferencia?.cantidad | number: '1.0-2'
+                item?.presentacionPreTransferencia?.cantidad | number : '1.0-2'
               }}
             </h3>
             <h3>
-              Cantidad: {{ item.cantidadPreTransferencia | number: '1.0-2' }}
+              Cantidad: {{ item.cantidadPreTransferencia | number : '1.0-2' }}
               {{
                 item?.motivoModificacionPreparacion === 'CANTIDAD_INCORRECTA'
                   ? ' / ' + item?.cantidadPreparacion
@@ -174,10 +193,10 @@
             </h3>
             <h3>
               Vencimiento:
-              {{ item.vencimientoPreTransferencia | date: 'shortDate' }}
+              {{ item.vencimientoPreTransferencia | date : 'shortDate' }}
               {{
                 item?.motivoModificacionPreparacion === 'VENCIMIENTO_INCORRECTO'
-                  ? ' - ' + (item?.vencimientoPreparacion | date: 'shortDate')
+                  ? ' - ' + (item?.vencimientoPreparacion | date : 'shortDate')
                   : null
               }}
             </h3>
@@ -244,12 +263,12 @@
           <ion-col size="10">
             <h3>
               Presentacion:
-              {{ item?.presentacionPreparacion?.cantidad | number: '1.0-2' }}
+              {{ item?.presentacionPreparacion?.cantidad | number : '1.0-2' }}
             </h3>
-            <h3>Cantidad: {{ item.cantidadPreparacion | number: '1.0-2' }}</h3>
+            <h3>Cantidad: {{ item.cantidadPreparacion | number : '1.0-2' }}</h3>
             <h3>
               Vencimiento:
-              {{ item.vencimientoPreparacion | date: 'shortDate' }}
+              {{ item.vencimientoPreparacion | date : 'shortDate' }}
             </h3>
             <!-- <h3 *ngIf="item.motivoModificacionPreparacion !== null">
               Motivo: {{ item.motivoModificacionPreparacion }}
@@ -313,12 +332,12 @@
           <ion-col size="10">
             <h3>
               Presentacion:
-              {{ item?.presentacionTransporte?.cantidad | number: '1.0-2' }}
+              {{ item?.presentacionTransporte?.cantidad | number : '1.0-2' }}
             </h3>
-            <h3>Cantidad: {{ item.cantidadTransporte | number: '1.0-2' }}</h3>
+            <h3>Cantidad: {{ item.cantidadTransporte | number : '1.0-2' }}</h3>
             <h3>
               Vencimiento:
-              {{ item.vencimientoTransporte | date: 'shortDate' }}
+              {{ item.vencimientoTransporte | date : 'shortDate' }}
             </h3>
             <h3 *ngIf="item.motivoModificacionRecepcion !== null">
               Motivo: {{ item.motivoModificacionRecepcion }}
@@ -358,22 +377,11 @@
   <ion-row>
     <ion-col class="center">
       <ion-button
-        class="btn-warn-flat"
-        fill="clear"
-        (click)="onCargarMenos()"
-        expand="block"
-        [disabled]="page <= 1"
-      >
-        MENOS
-      </ion-button>
-    </ion-col>
-    <ion-col class="center">
-      <ion-button
         class="btn-success-flat"
         fill="clear"
         (click)="onCargarMas()"
         expand="block"
-        [disabled]="selectedTransferencia?.transferenciaItemList?.length <= filteredTransferenciaItemList?.length"
+        *ngIf="selectedPageInfo?.hasNext"
       >
         MÁS
       </ion-button>
