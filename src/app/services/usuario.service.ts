@@ -9,6 +9,9 @@ import { Injectable } from '@angular/core';
 import { CargandoService } from './cargando.service';
 import { NotificacionService, TipoNotificacion } from './notificacion.service';
 import { GenericCrudService } from '../generic/generic-crud.service';
+import { SaveInicioSesionGQL } from '../graphql/personas/usuario/graphql/saveInicioSesion';
+import { PageInfo } from '../app.component';
+import { InicioSesionInput, InicioSesion } from '../domains/configuracion/inicio-sesion.model';
 
 @UntilDestroy()
 @Injectable({
@@ -22,7 +25,8 @@ export class UsuarioService {
     private searchUsuario: UsuarioSearchGQL,
     private cargandoService: CargandoService,
     private notificacionService: NotificacionService,
-    private genericService: GenericCrudService
+    private genericService: GenericCrudService,
+    private saveInicioSesion: SaveInicioSesionGQL
   ) // private mainService: MainService
   { }
 
@@ -113,6 +117,12 @@ export class UsuarioService {
           }
         });
     });
+  }
+
+  async onSaveInicioSesion(entity: InicioSesionInput): Promise<Observable<any>>{
+    console.log('guardando inicio sesion');
+
+    return this.genericService.onSave(this.saveInicioSesion, entity) ;
   }
 }
 

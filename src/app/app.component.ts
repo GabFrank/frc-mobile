@@ -2,7 +2,10 @@ import { Component, OnDestroy, OnInit, isDevMode } from '@angular/core';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { MenuController, Platform, PopoverController } from '@ionic/angular';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
+import {
+  NotificacionService,
+  TipoNotificacion
+} from 'src/app/services/notificacion.service';
 import { connectionStatusSub } from './app.module';
 import { ChangeServerIpDialogComponent } from './components/change-server-ip-dialog/change-server-ip-dialog.component';
 import { LoginComponent } from './dialog/login/login.component';
@@ -12,7 +15,12 @@ import { MainService } from './services/main.service';
 import { ModalService } from './services/modal.service';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { FingerprintAuthService } from './services/fingerprint-auth.service';
-import { getAvailableAppVersion, getCurrentAppVersion, performImmediateUpdate } from './services/update-service.service';
+import {
+  getAvailableAppVersion,
+  getCurrentAppVersion,
+  performImmediateUpdate
+} from './services/update-service.service';
+import { PushNotificationsService } from './services/push-notifications.service';
 
 export class Pageable {
   getPageNumber: number;
@@ -37,10 +45,8 @@ export class PageInfo<T> {
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   providers: [PhotoViewer, AppVersion]
-
 })
 export class AppComponent implements OnInit, OnDestroy {
-
   statusSub;
   online = false;
   puedeVerInventario = false;
@@ -69,76 +75,79 @@ export class AppComponent implements OnInit, OnDestroy {
     public appVersion: AppVersion,
     private platfform: Platform,
     private fingerprintService: FingerprintAuthService,
+    private pushNotificacionService: PushNotificationsService
   ) {
-
-    this.isDev = isDevMode()
+    this.isDev = isDevMode();
 
     this.optionZbar = {
       flash: 'off',
       drawSight: false
-    }
+    };
 
-    this.platfform.ready().then(res => {
-      appVersion.getVersionNumber().then(res => {
-        this.currentVersion = res
-      })
-    })
+    this.platfform.ready().then((res) => {
+      appVersion.getVersionNumber().then((res) => {
+        this.currentVersion = res;
+      });
+    });
 
-    this.isFarma = localStorage.getItem('serverIp').includes('158')
-    this.searchUpdate()
+    this.isFarma = localStorage.getItem('serverIp').includes('158');
+    this.searchUpdate();
     this.intervalID = setInterval(this.searchUpdate, 50000); // 5000 milliseconds = 5 seconds
-
   }
   ngOnDestroy(): void {
     this.statusSub?.unsubscribe();
     clearInterval(this.intervalID);
   }
 
-
-
   searchUpdate() {
     let currentVersion;
     let latestVersion;
-    getCurrentAppVersion().then(res => {
+    getCurrentAppVersion().then((res) => {
       currentVersion = res;
-      getAvailableAppVersion().then(res2 => {
+      getAvailableAppVersion().then((res2) => {
         latestVersion = res2;
-        if(+currentVersion < +latestVersion){
-          performImmediateUpdate().then(res3 => {
-            this.notificacionService.success("Nueva version instalada")
-          })
+        if (+currentVersion < +latestVersion) {
+          performImmediateUpdate().then((res3) => {
+            this.notificacionService.success('Nueva version instalada');
+          });
         }
-      })
-    })
-
+      });
+    });
   }
 
-  openInventario() {
-
-  }
+  openInventario() {}
 
   async ngOnInit(): Promise<void> {
-
+    this.pushNotificacionService.initPush();
 
     this.showLoginPop();
 
-
-    this.statusSub = connectionStatusSub.pipe(untilDestroyed(this)).subscribe(async (res) => {
-      if (res === true) {
-        if (this.loadingOpen) { // only close if loading dialog is open
-          if(this.dialog!=null) this.cargandoService.close(this.dialog);
-          this.notificacionService.open('Servidor conectado', TipoNotificacion.SUCCESS, 2);
-          this.loadingOpen = false; // set loading state to closed
+    this.statusSub = connectionStatusSub
+      .pipe(untilDestroyed(this))
+      .subscribe(async (res) => {
+        if (res === true) {
+          if (this.loadingOpen) {
+            // only close if loading dialog is open
+            if (this.dialog != null) this.cargandoService.close(this.dialog);
+            this.notificacionService.open(
+              'Servidor conectado',
+              TipoNotificacion.SUCCESS,
+              2
+            );
+            this.loadingOpen = false; // set loading state to closed
+          }
+          this.online = true;
+        } else if (res === false) {
+          this.online = false;
+          if (!this.loadingOpen) {
+            // only open if loading dialog is not already open
+            this.dialog = await this.cargandoService.open(
+              'No se puede acceder al servidor'
+            );
+            this.loadingOpen = true; // set loading state to open
+          }
         }
-        this.online = true;
-      } else if (res === false) {
-        this.online = false;
-        if (!this.loadingOpen) { // only open if loading dialog is not already open
-          this.dialog = await this.cargandoService.open('No se puede acceder al servidor');
-          this.loadingOpen = true; // set loading state to open
-        }
-      }
-    });
+      });
 
     console.log('Initializing HomePage');
 
@@ -181,7 +190,6 @@ export class AppComponent implements OnInit, OnDestroy {
     //     alert('Push action performed: ' + JSON.stringify(notification));
     //   }
     // );
-
   }
 
   openMenu() {
@@ -193,39 +201,24 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   async onSalir() {
-    let loading = await this.cargandoService.open("Saliendo...")
-    setTimeout(() => {
-      this.cargandoService.close(loading)
-      this.loginService.logOut();
-      this.showLoginPop()
-      this.menu.close();
-    }, 1000);
+    await this.loginService.logOut();
+    this.showLoginPop();
+    this.menu.close();
   }
 
   async showLoginPop() {
-    // const pop = await this.popoverController.create({
-    //   component: LoginComponent,
-    //   cssClass: 'my-custom-class',
-    //   translucent: true,
-    //   backdropDismiss: false
-    // });
-    // await pop.present();
-    this.modalService.openModal(LoginComponent)
+    this.modalService.openModal(LoginComponent);
   }
 
-  openTransferencias() {
+  openTransferencias() {}
 
-  }
-
-  onAvatarClick() {
-
-  }
+  onAvatarClick() {}
 
   onIpChange() {
-    this.modalService.openModal(ChangeServerIpDialogComponent).then(res => {
+    this.modalService.openModal(ChangeServerIpDialogComponent).then((res) => {
       if (res == true) {
-        window.location.reload()
+        window.location.reload();
       }
-    })
+    });
   }
 }
