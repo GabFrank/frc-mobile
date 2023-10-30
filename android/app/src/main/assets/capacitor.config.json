@@ -15,6 +15,13 @@
 		},
 		"Filesystem": {
 			"androidStorage": "external"
+		},
+		"PushNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"alert"
+			]
 		}
 	}
 }

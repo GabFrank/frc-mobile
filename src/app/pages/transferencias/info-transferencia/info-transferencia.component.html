@@ -157,7 +157,7 @@
     "
   >
     <ion-item
-      *ngFor="let item of filteredTransferenciaItemList"
+      *ngFor="let item of filteredTransferenciaItemList; let i3 = index"
       (press)="puedeEditar ? onItemPress(item) : null"
     >
       <ion-avatar
@@ -170,7 +170,7 @@
       </ion-avatar>
       <ion-label>
         <h2>
-          {{
+          {{i3 + 1 + (selectedPageInfo?.getPageable?.getPageSize * selectedPageInfo?.getPageable?.getPageNumber)}} - {{
             item?.presentacionPreTransferencia?.producto?.descripcion
               | titlecase
           }}
@@ -244,7 +244,7 @@
     "
   >
     <ion-item
-      *ngFor="let item of filteredTransferenciaItemList"
+      *ngFor="let item of filteredTransferenciaItemList; let i1 = index"
       (press)="puedeEditar ? onItemPress(item) : null"
     >
       <ion-avatar
@@ -257,7 +257,7 @@
       </ion-avatar>
       <ion-label>
         <h2>
-          {{ item?.presentacionPreparacion?.producto?.descripcion | titlecase }}
+          {{i1 + 1 + (selectedPageInfo?.getPageable?.getPageSize * selectedPageInfo?.getPageable?.getPageNumber)}} - {{ item?.presentacionPreparacion?.producto?.descripcion | titlecase }}
         </h2>
         <ion-row>
           <ion-col size="10">
@@ -313,7 +313,7 @@
     "
   >
     <ion-item
-      *ngFor="let item of filteredTransferenciaItemList"
+      *ngFor="let item of filteredTransferenciaItemList; let i2 = index"
       (press)="puedeEditar ? onItemPress(item) : null"
     >
       <ion-avatar
@@ -326,7 +326,7 @@
       </ion-avatar>
       <ion-label>
         <h2>
-          {{ item?.presentacionTransporte?.producto?.descripcion | titlecase }}
+          {{(i2 + 1) + (selectedPageInfo?.getPageable?.getPageSize * selectedPageInfo?.getPageable?.getPageNumber)}} - {{ item?.presentacionTransporte?.producto?.descripcion | titlecase }}
         </h2>
         <ion-row>
           <ion-col size="10">

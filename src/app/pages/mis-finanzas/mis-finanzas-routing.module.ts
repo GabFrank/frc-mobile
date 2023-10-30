@@ -11,6 +11,10 @@ const routes: Routes = [
   {
     path: 'list-convenio',
     component: ListConvenioComponent,
+  },
+  {
+    path: 'list-convenio/:id/:sucId',
+    component: ListConvenioComponent,
   }
 ];
 

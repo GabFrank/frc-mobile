@@ -17,7 +17,10 @@ const config: CapacitorConfig = {
     },
     Filesystem: {
       "androidStorage": "external"
-    }
+    },
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "alert"],
+    },
 	}
 };
 

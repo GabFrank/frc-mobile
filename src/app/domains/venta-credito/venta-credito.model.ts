@@ -1,9 +1,11 @@
 import { Cliente } from "../cliente/cliente.model"
+import { Sucursal } from "../empresarial/sucursal/sucursal.model";
 import { Usuario } from "../personas/usuario.model"
 import { Venta } from "../venta/venta.model"
 
 export class VentaCredito {
   id: number
+  sucursalId: number;
   venta: Venta
   cliente: Cliente
   tipoConfirmacion: TipoConfirmacion
@@ -16,6 +18,7 @@ export class VentaCredito {
   estado: EstadoVentaCredito
   creadoEn: Date
   usuario: Usuario
+  sucursal: Sucursal;
 }
 
 export enum TipoConfirmacion {

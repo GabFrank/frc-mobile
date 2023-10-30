@@ -1,3 +1,4 @@
+import { InicioSesion } from "../configuracion/inicio-sesion.model";
 import { Persona } from "./persona.model";
 
 export class Usuario {
@@ -10,6 +11,7 @@ export class Usuario {
   usuario: Usuario;
   roles: string[];
   avatar: string;
+  inicioSesion: InicioSesion
 
   toInput(): UsuarioInput {
     let input = new UsuarioInput;

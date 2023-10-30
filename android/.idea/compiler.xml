@@ -14,6 +14,7 @@
       <module name="android.capacitor-status-bar" target="17" />
       <module name="android.capawesome-capacitor-app-update" target="17" />
       <module name="android.capgo-capacitor-updater" target="17" />
+      <module name="push-notifications.android.capacitor-push-notifications" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>

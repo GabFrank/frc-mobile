@@ -17,6 +17,11 @@
     "strict": false,
     "useDefineForClassFields": false
   },
+  "exclude": [
+    "node_modules",
+    "android",
+    ".angular"
+  ],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": true,
     "strictInjectionParameters": false,

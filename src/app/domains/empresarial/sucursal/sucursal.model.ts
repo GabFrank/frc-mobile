@@ -10,4 +10,8 @@ export class Sucursal {
   depositoPredeterminado: Boolean
   creadoEn: Date;
   usuario: Usuario;
+
+  constructor(id){
+    this.id = id;
+  }
 }
