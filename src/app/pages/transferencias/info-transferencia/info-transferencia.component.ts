@@ -1,14 +1,34 @@
+import { Location } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormControl, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { Platform } from '@ionic/angular';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { PageInfo } from 'src/app/app.component';
+import { QrGeneratorComponent } from 'src/app/components/qr-generator/qr-generator.component';
+import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
+import { Usuario } from 'src/app/domains/personas/usuario.model';
+import { updateDataSourceWithId } from 'src/app/generic/utils/numbersUtils';
+import { codificarQr, QrData } from 'src/app/generic/utils/qrUtils';
+import { CargandoService } from 'src/app/services/cargando.service';
+import { DialogoService } from 'src/app/services/dialogo.service';
+import { MainService } from 'src/app/services/main.service';
+import { MenuActionService } from 'src/app/services/menu-action.service';
+import {
+  NotificacionService,
+  TipoNotificacion
+} from 'src/app/services/notificacion.service';
+import { CodigoService } from '../../codigo/codigo.service';
+import { NotificacionPushInput } from '../../configuracion/notificacion-push/notificacion-push.model';
+import { NotificacionPushService } from '../../configuracion/notificacion-push/notificacion-push.service';
 import { ImagePopoverComponent } from './../../../components/image-popover/image-popover.component';
-import { ModificarItemDialogComponent } from './../modificar-item-dialog/modificar-item-dialog.component';
+import { ActionMenuData } from './../../../services/menu-action.service';
 import {
   PopOverService,
   PopoverSize
 } from './../../../services/pop-over.service';
-import { ActionMenuData } from './../../../services/menu-action.service';
-import { MainService } from 'src/app/services/main.service';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { ActivatedRoute } from '@angular/router';
-import { TransferenciaService } from './../transferencia.service';
+import { ModificarItemDialogComponent } from './../modificar-item-dialog/modificar-item-dialog.component';
 import {
   EtapaTransferencia,
   Transferencia,
@@ -17,28 +37,8 @@ import {
   TransferenciaItemMotivoModificacion,
   TransferenciaItemMotivoRechazo
 } from './../transferencia.model';
-import { Component, OnInit, isDevMode } from '@angular/core';
-import { Location } from '@angular/common';
-import { Usuario } from 'src/app/domains/personas/usuario.model';
-import { MenuActionService } from 'src/app/services/menu-action.service';
-import { updateDataSourceWithId } from 'src/app/generic/utils/numbersUtils';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
-import { CargandoService } from 'src/app/services/cargando.service';
-import { InfiniteScrollCustomEvent, Platform } from '@ionic/angular';
-import {
-  NotificacionService,
-  TipoNotificacion
-} from 'src/app/services/notificacion.service';
-import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
-import { CodigoService } from '../../codigo/codigo.service';
-import { rejects } from 'assert';
-import { codificarQr, QrData } from 'src/app/generic/utils/qrUtils';
-import { QrGeneratorComponent } from 'src/app/components/qr-generator/qr-generator.component';
-import { DialogoService } from 'src/app/services/dialogo.service';
-import { TransferListItem } from 'worker_threads';
-import { FormControl, Validators } from '@angular/forms';
-import { comparatorLike } from 'src/app/generic/utils/string-utils';
-import { PageInfo } from 'src/app/app.component';
+import { TransferenciaService } from './../transferencia.service';
+import { getEnumValueByValue } from 'src/app/generic/utils/enumUtils';
 
 @UntilDestroy()
 @Component({
@@ -90,7 +90,8 @@ export class InfoTransferenciaComponent implements OnInit {
     private plf: Platform,
     private notificacionService: NotificacionService,
     private codigoService: CodigoService,
-    private dialogoService: DialogoService
+    private dialogoService: DialogoService,
+    private notificacionPushService: NotificacionPushService
   ) {
     this.isWeb = this.plf.platforms().includes('mobileweb');
   }
@@ -125,7 +126,7 @@ export class InfoTransferenciaComponent implements OnInit {
           if (res != null) {
             this.selectedTransferencia = res;
             this.selectedTransferencia.transferenciaItemList = [];
-            await this.getTransferenciaItemList()
+            await this.getTransferenciaItemList();
             this.verificarEtapa();
           }
         });
@@ -181,7 +182,6 @@ export class InfoTransferenciaComponent implements OnInit {
   }
 
   async verificarEtapa() {
-    console.log(this.selectedTransferencia);
     this.setAllEtapasFalse();
     let isItemLoaded = await this.getTransferenciaItemList();
     if (isItemLoaded) {
@@ -206,8 +206,7 @@ export class InfoTransferenciaComponent implements OnInit {
             { texto: 'Verificar', role: 'verificar' },
             { texto: 'Confirmar', role: 'confirmar' },
             { texto: 'Desconfirmar', role: 'desconfirmar' },
-            { texto: 'Modif. cantidad', role: 'cantidad' },
-            { texto: 'Modif. vencimiento', role: 'vencimiento' },
+            { texto: 'Modif. Item', role: 'cantidad' },
             { texto: 'Rechazar', role: 'rechazar' }
           ];
           break;
@@ -224,6 +223,7 @@ export class InfoTransferenciaComponent implements OnInit {
           this.actionMenuOptionsList = [
             { texto: 'Verificar', role: 'verificar' },
             { texto: 'Confirmar', role: 'confirmar' },
+            { texto: 'Modif. Item', role: 'cantidad' },
             { texto: 'Desconfirmar', role: 'desconfirmar' },
             { texto: 'Rechazar', role: 'rechazar' }
           ];
@@ -247,6 +247,7 @@ export class InfoTransferenciaComponent implements OnInit {
           this.actionMenuOptionsList = [
             { texto: 'Verificar', role: 'verificar' },
             { texto: 'Confirmar', role: 'confirmar' },
+            // { texto: 'Modif. Item', role: 'cantidad' },
             { texto: 'Desconfirmar', role: 'desconfirmar' },
             { texto: 'Rechazar', role: 'rechazar' }
           ];
@@ -362,7 +363,7 @@ export class InfoTransferenciaComponent implements OnInit {
   async onAvanzarEtapa(etapa) {
     let ok = true;
     if (etapa == EtapaTransferencia.RECEPCION_EN_VERIFICACION) {
-      ok = (await this.onVerificarSucursal());
+      ok = await this.onVerificarSucursal();
     }
     ok
       ? this.transferenciaService
@@ -495,7 +496,7 @@ export class InfoTransferenciaComponent implements OnInit {
       });
   }
 
-  onRechazar(item) {
+  onRechazar(item: TransferenciaItem) {
     let newItem = new TransferenciaItem();
     item = Object.assign(newItem, item);
     this.menuActionService
@@ -518,50 +519,83 @@ export class InfoTransferenciaComponent implements OnInit {
         }
       ])
       .then(async (res) => {
-        switch (this.selectedTransferencia.etapa) {
-          case EtapaTransferencia.PREPARACION_MERCADERIA:
-            item.cantidadPreparacion = null;
-            item.motivoModificacionPreparacion = null;
-            item.vencimientoPreparacion = null;
-            item.motivoRechazoPreparacion = res.role;
-            break;
-          case EtapaTransferencia.TRANSPORTE_VERIFICACION:
-            item.cantidadTransporte = null;
-            item.motivoModificacionTransporte = null;
-            item.vencimientoTransporte = null;
-            item.motivoRechazoTransporte = res.role;
-            break;
-          case EtapaTransferencia.RECEPCION_EN_VERIFICACION:
-            item.cantidadRecepcion = null;
-            item.motivoModificacionRecepcion = null;
-            item.vencimientoRecepcion = null;
-            item.motivoRechazoRecepcion = res.role;
-            break;
-          default:
-            break;
-        }
-        (
-          await this.transferenciaService.onSaveTransferenciaItem(
-            item.toInput()
+        let responsableId: Usuario = null;
+        if (
+          res.role != null &&
+          res.role != undefined &&
+          res.role != 'backdrop'
+        ) {
+          switch (this.selectedTransferencia.etapa) {
+            case EtapaTransferencia.PREPARACION_MERCADERIA:
+              // item.cantidadPreparacion = null;
+              // item.motivoModificacionPreparacion = null;
+              // item.vencimientoPreparacion = null;
+              item.motivoRechazoPreparacion = getEnumValueByValue(
+                TransferenciaItemMotivoRechazo,
+                res.role
+              );
+              responsableId = this.selectedTransferencia.usuarioPreparacion;
+              break;
+            case EtapaTransferencia.TRANSPORTE_VERIFICACION:
+              // item.cantidadTransporte = null;
+              // item.motivoModificacionTransporte = null;
+              // item.vencimientoTransporte = null;
+              item.motivoRechazoTransporte = getEnumValueByValue(
+                TransferenciaItemMotivoRechazo,
+                res.role
+              );
+              responsableId = this.selectedTransferencia.usuarioTransporte;
+              break;
+            case EtapaTransferencia.RECEPCION_EN_VERIFICACION:
+              // item.cantidadRecepcion = null;
+              // item.motivoModificacionRecepcion = null;
+              // item.vencimientoRecepcion = null;
+              item.motivoRechazoRecepcion = getEnumValueByValue(
+                TransferenciaItemMotivoRechazo,
+                res.role
+              );
+              responsableId = this.selectedTransferencia.usuarioRecepcion;
+              break;
+            default:
+              break;
+          }
+          (
+            await this.transferenciaService.onSaveTransferenciaItem(
+              item.toInput()
+            )
           )
-        )
-          .pipe(untilDestroyed(this))
-          .subscribe((res) => {
-            if (res != null) {
-              this.selectedTransferencia.transferenciaItemList =
-                updateDataSourceWithId(
-                  this.selectedTransferencia.transferenciaItemList,
+            .pipe(untilDestroyed(this))
+            .subscribe(async (res2) => {
+              if (res2 != null) {
+                this.selectedTransferencia.transferenciaItemList =
+                  updateDataSourceWithId(
+                    this.selectedTransferencia.transferenciaItemList,
+                    item,
+                    item.id
+                  );
+                this.filteredTransferenciaItemList = updateDataSourceWithId(
+                  this.filteredTransferenciaItemList,
                   item,
                   item.id
                 );
-              this.filteredTransferenciaItemList = updateDataSourceWithId(
-                this.filteredTransferenciaItemList,
-                item,
-                item.id
-              );
-            }
-            this.onVerificarConfirmados();
-          });
+                let notificacionInput = new NotificacionPushInput();
+                notificacionInput.titulo =
+                  'Item rechazado en transferencia ' + item.transferencia?.id;
+                notificacionInput.mensaje =
+                  'Un item acaba de ser rechazado por el siguiente motivo: ' +
+                  res.role;
+                notificacionInput.personaId = responsableId.persona.id;
+                (
+                  await this.notificacionPushService.sendNotificacionPush(
+                    notificacionInput
+                  )
+                ).subscribe((notiRes) => {
+                  console.log(notiRes);
+                });
+              }
+              this.onVerificarConfirmados();
+            });
+        }
       });
   }
 
@@ -580,70 +614,33 @@ export class InfoTransferenciaComponent implements OnInit {
         ModificarItemDialogComponent,
         {
           isCantidad,
-          isVencimiento
+          isVencimiento,
+          item,
+          transferencia: this.selectedTransferencia
         },
         PopoverSize.XS
       )
       .then(async (res) => {
         if (res.data != null) {
-          if (isCantidad) {
-            if (
-              this.selectedTransferencia?.etapa ==
-              EtapaTransferencia.PREPARACION_MERCADERIA
-            ) {
-              item.presentacionPreparacion = item.presentacionPreTransferencia;
-              item.vencimientoPreparacion = item.vencimientoPreTransferencia;
+          switch (this.selectedTransferencia.etapa) {
+            case EtapaTransferencia.PREPARACION_MERCADERIA:
+              item.motivoModificacionPreparacion = TransferenciaItemMotivoModificacion.CANTIDAD_INCORRECTA;
+              item.presentacionPreparacion = res?.data.presentacion;
+              item.vencimientoPreparacion = res?.data?.vencimiento;
               item.cantidadPreparacion = res.data?.cantidad;
-              item.motivoModificacionPreparacion =
-                TransferenciaItemMotivoModificacion.CANTIDAD_INCORRECTA;
-            } else if (
-              this.selectedTransferencia?.etapa ==
-              EtapaTransferencia.TRANSPORTE_VERIFICACION
-            ) {
-              item.cantidadTransporte = res.data?.cantidad;
-              item.vencimientoTransporte = item.vencimientoPreparacion;
-              item.presentacionTransporte = item.presentacionPreparacion;
-              item.motivoModificacionTransporte =
-                TransferenciaItemMotivoModificacion.CANTIDAD_INCORRECTA;
-            } else if (
-              this.selectedTransferencia?.etapa ==
-              EtapaTransferencia.RECEPCION_EN_VERIFICACION
-            ) {
-              item.cantidadRecepcion = res.data?.cantidad;
-              item.vencimientoRecepcion = item.vencimientoTransporte;
-              item.presentacionRecepcion = item.presentacionTransporte;
-              item.motivoModificacionRecepcion =
-                TransferenciaItemMotivoModificacion.CANTIDAD_INCORRECTA;
-            }
-          } else if (isVencimiento) {
-            if (
-              this.selectedTransferencia?.etapa ==
-              EtapaTransferencia.PREPARACION_MERCADERIA
-            ) {
-              item.vencimientoPreparacion = res.data?.vencimiento;
-              item.presentacionPreparacion = item.presentacionPreTransferencia;
-              item.cantidadPreparacion = item.cantidadPreTransferencia;
-              item.motivoModificacionPreparacion =
-                TransferenciaItemMotivoModificacion.VENCIMIENTO_INCORRECTO;
-            } else if (
-              this.selectedTransferencia?.etapa ==
-              EtapaTransferencia.TRANSPORTE_VERIFICACION
-            ) {
-              item.vencimientoTransporte = res.data?.vencimiento;
-              item.presentacionTransporte = item.presentacionPreparacion;
-              item.cantidadTransporte = item.cantidadPreparacion;
-              item.motivoModificacionTransporte =
-                TransferenciaItemMotivoModificacion.VENCIMIENTO_INCORRECTO;
-            } else if (
-              this.selectedTransferencia?.etapa ==
-              EtapaTransferencia.RECEPCION_EN_VERIFICACION
-            ) {
-              item.vencimientoRecepcion = res.data?.vencimiento;
-              item.presentacionRecepcion = item.presentacionTransporte;
-              item.cantidadRecepcion = item.cantidadTransporte;
-              item.motivoModificacionRecepcion =
-                TransferenciaItemMotivoModificacion.VENCIMIENTO_INCORRECTO;
-            }
+              break;
+              case EtapaTransferencia.TRANSPORTE_VERIFICACION:
+                item.motivoModificacionTransporte = TransferenciaItemMotivoModificacion.CANTIDAD_INCORRECTA;
+                item.presentacionTransporte = res?.data.presentacion;
+                item.vencimientoTransporte = res?.data.vencimiento;
+                item.cantidadTransporte = res.data?.cantidad;
+              break;
+              case EtapaTransferencia.RECEPCION_EN_VERIFICACION:
+                item.motivoModificacionRecepcion = TransferenciaItemMotivoModificacion.CANTIDAD_INCORRECTA;
+                item.presentacionRecepcion = res?.data.presentacion;
+                item.vencimientoRecepcion = res?.data.vencimiento;
+                item.cantidadRecepcion = res.data?.cantidad;
+              break;
           }
           (
             await this.transferenciaService.onSaveTransferenciaItem(

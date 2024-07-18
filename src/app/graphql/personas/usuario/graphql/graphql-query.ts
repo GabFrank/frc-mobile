@@ -210,4 +210,20 @@ export const saveInicioSesionGQL = gql`
   }
 `;
 
-// usuarioPorPersonaId
+export const saveUsuarioImageQuery = gql`
+  query ($id: ID!, $type: String!, $image: String!) {
+    data: saveUsuarioImage(id: $id, type: $type, image: $image)
+  }
+`;
+
+export const getUsuarioImagesQuery = gql`
+  query ($id: ID!, $type: String!) {
+    data: getUsuarioImages(id: $id, type: $type)
+  }
+`;
+
+export const isUserFaceAuthQuery = gql`
+  query ($id: ID!) {
+    data: isUserFaceAuth(id: $id)
+  }
+`;

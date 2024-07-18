@@ -29,6 +29,11 @@
                 "glob": "**/*.svg",
                 "input": "node_modules/ionicons/dist/ionicons/svg",
                 "output": "./svg"
+              },
+              {
+                "glob": "*.{bin,json}",
+                "input": "node_modules/ngx-scanner-face/models",
+                "output": "./models"
               }
             ],
             "styles": ["src/theme/variables.scss", "src/global.scss"],

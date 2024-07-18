@@ -11,11 +11,17 @@ import { NotificacionService, TipoNotificacion } from './notificacion.service';
 import { GenericCrudService } from '../generic/generic-crud.service';
 import { SaveInicioSesionGQL } from '../graphql/personas/usuario/graphql/saveInicioSesion';
 import { PageInfo } from '../app.component';
-import { InicioSesionInput, InicioSesion } from '../domains/configuracion/inicio-sesion.model';
+import {
+  InicioSesionInput,
+  InicioSesion
+} from '../domains/configuracion/inicio-sesion.model';
+import { SaveUsuarioImageGQL } from '../graphql/personas/usuario/graphql/saveUsuarioImage';
+import { GetUsuarioImagesGQL } from '../graphql/personas/usuario/graphql/getUsuarioImages';
+import { IsUserFaceAuthGQL } from '../graphql/personas/usuario/graphql/isUserFaceAuth';
 
 @UntilDestroy()
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class UsuarioService {
   constructor(
@@ -26,22 +32,25 @@ export class UsuarioService {
     private cargandoService: CargandoService,
     private notificacionService: NotificacionService,
     private genericService: GenericCrudService,
-    private saveInicioSesion: SaveInicioSesionGQL
-  ) // private mainService: MainService
-  { }
+    private saveInicioSesion: SaveInicioSesionGQL,
+    private saveUsuarioImage: SaveUsuarioImageGQL,
+    private getUsuarioImages: GetUsuarioImagesGQL,
+    private isUserFaceAuth: IsUserFaceAuthGQL // private mainService: MainService
+  ) {}
 
   onGetUsuario(id: number): Observable<any> {
     return new Observable((obs) => {
       this.getUsuario
         .fetch(
           {
-            id,
+            id
           },
           {
             fetchPolicy: 'no-cache',
-            errorPolicy: 'all',
+            errorPolicy: 'all'
           }
-        ).pipe(untilDestroyed(this))
+        )
+        .pipe(untilDestroyed(this))
         .subscribe((res) => {
           if (res?.errors == null) {
             obs.next(res?.data.data);
@@ -57,13 +66,14 @@ export class UsuarioService {
       this.getUsuarioPorPersonaId
         .fetch(
           {
-            id,
+            id
           },
           {
             fetchPolicy: 'no-cache',
-            errorPolicy: 'all',
+            errorPolicy: 'all'
           }
-        ).pipe(untilDestroyed(this))
+        )
+        .pipe(untilDestroyed(this))
         .subscribe((res) => {
           if (res?.errors == null) {
             obs.next(res?.data.data);
@@ -80,11 +90,11 @@ export class UsuarioService {
         this.searchUsuario
           .fetch(
             {
-              texto: texto.toUpperCase(),
+              texto: texto.toUpperCase()
             },
             {
               fetchPolicy: 'no-cache',
-              errorPolicy: 'all',
+              errorPolicy: 'all'
             }
           )
           .pipe(untilDestroyed(this))
@@ -98,32 +108,59 @@ export class UsuarioService {
   }
 
   async onSaveUsuario(input: UsuarioInput): Promise<Observable<Usuario>> {
-    let loading = await this.cargandoService.open(null, false)
+    let loading = await this.cargandoService.open(null, false);
     return new Observable((obs) => {
       this.saveUsuario
         .mutate(
           { entity: input },
-          { fetchPolicy: "no-cache", errorPolicy: "all" }
-        ).pipe(untilDestroyed(this))
+          { fetchPolicy: 'no-cache', errorPolicy: 'all' }
+        )
+        .pipe(untilDestroyed(this))
         .subscribe((res) => {
-          this.cargandoService.close(loading)
+          this.cargandoService.close(loading);
           if (res.errors == null) {
-            obs.next(res.data["data"]);
-            this.notificacionService.open('Guardado con éxito', TipoNotificacion.SUCCESS, 2)
-
+            obs.next(res.data['data']);
+            this.notificacionService.open(
+              'Guardado con éxito',
+              TipoNotificacion.SUCCESS,
+              2
+            );
           } else {
-            console.log(res.errors)
-            this.notificacionService.open('Ups!! Algo salió mal', TipoNotificacion.DANGER, 2)
+            console.log(res.errors);
+            this.notificacionService.open(
+              'Ups!! Algo salió mal',
+              TipoNotificacion.DANGER,
+              2
+            );
           }
         });
     });
   }
 
-  async onSaveInicioSesion(entity: InicioSesionInput): Promise<Observable<any>>{
+  async onSaveInicioSesion(
+    entity: InicioSesionInput
+  ): Promise<Observable<any>> {
     console.log('guardando inicio sesion');
 
-    return this.genericService.onSave(this.saveInicioSesion, entity) ;
+    return this.genericService.onSave(this.saveInicioSesion, entity);
+  }
+
+  async onSaveUsuarioImage(id: number, type: string, image: string) {
+    return await this.genericService.onCustomGet(this.saveUsuarioImage, {
+      id,
+      type,
+      image
+    });
+  }
+
+  async onGetUsuarioImages(id: number, type: string) {
+    return await this.genericService.onCustomGet(this.getUsuarioImages, {
+      id,
+      type
+    });
+  }
+
+  async getIsUserFaceAuth(id: number) {
+    return await this.genericService.onCustomGet(this.isUserFaceAuth, { id });
   }
 }
-
-

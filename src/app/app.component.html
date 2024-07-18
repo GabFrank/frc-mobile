@@ -106,7 +106,6 @@
             </ion-item>
           </ion-accordion>
         </ion-accordion-group>
-
         <ion-accordion-group>
           <ion-accordion value="first">
             <ion-item slot="header">
@@ -123,6 +122,11 @@
             </ion-item>
           </ion-accordion>
         </ion-accordion-group>
+
+        <ion-item [routerLink]="['/marcacion']" (click)="closeMenu()">
+          <ion-icon name="checkbox-outline" slot="start"></ion-icon>
+          <ion-label>Marcar horario</ion-label>
+        </ion-item>
 
         <ion-item (click)="onSalir()">
           <ion-icon name="exit" slot="start"></ion-icon>

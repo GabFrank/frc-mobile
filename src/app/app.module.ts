@@ -4,7 +4,7 @@ import {
 } from "@angular/common";
 import { HttpClientModule } from '@angular/common/http';
 import localePY from "@angular/common/locales/es-PY";
-import { APP_INITIALIZER, Injectable, LOCALE_ID, NgModule } from '@angular/core';
+import { APP_INITIALIZER, CUSTOM_ELEMENTS_SCHEMA, Injectable, LOCALE_ID, NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule, HAMMER_GESTURE_CONFIG, HammerGestureConfig, HammerModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
@@ -37,6 +37,7 @@ import { ProductoModule } from './pages/producto/producto.module';
 import { TransferenciasModule } from './pages/transferencias/transferencias.module';
 import { MainService } from './services/main.service';
 import { NgxCurrencyModule } from "ngx-currency";
+import { MarcacionModule } from "./pages/marcacion/marcacion.module";
 
 registerLocaleData(localePY);
 
@@ -92,6 +93,7 @@ export class HammerConfig extends HammerGestureConfig {
 }
 
 @NgModule({
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [AppComponent, LoginComponent, CambiarContrasenhaDialogComponent, StockPorSucursalDialogComponent],
   imports: [
     BrowserModule,

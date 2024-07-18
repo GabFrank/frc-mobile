@@ -1,0 +1,63 @@
+<ion-list style="height: 100%">
+  <ion-item>
+    <ion-card>
+      <ion-row>
+        <ion-col size="2">
+          <ion-icon
+            name="arrow-back"
+            style="font-size: 1.5em"
+            (click)="onBack()"
+          ></ion-icon>
+        </ion-col>
+      </ion-row>
+    </ion-card>
+  </ion-item>
+  <div *ngIf="cantidadImagenes < 3">
+    <ion-item style="text-align: center">
+      <ion-label style="white-space: normal; font-size: large"
+        >Vemos que todavia no concluiste la etapa de registro facial.</ion-label
+      >
+    </ion-item>
+    <ion-item style="text-align: center">
+      <ion-label style="white-space: normal; font-size: large"
+        >Faltan {{ 3 - cantidadImagenes }} imagen(es)</ion-label
+      >
+    </ion-item>
+    <ion-row>
+      <ion-col size="12" class="ion-text-center">
+        <ion-button
+          (click)="onCargarImagen()"
+          expand="block"
+          fill="clear"
+          shape="round"
+        >
+          Cargar imagen
+        </ion-button>
+      </ion-col>
+    </ion-row>
+
+    <ion-grid fixed>
+      <ion-row>
+        <ion-col size="6" *ngFor="let image of userImageList; let i = index">
+          <div style="position: relative; display: inline-block; width: 100%">
+            <img [src]="image" alt="img" style="width: 100%; height: auto" />
+            <ion-icon
+              name="close"
+              style="
+                position: absolute;
+                top: 0;
+                right: 0;
+                font-size: 25px;
+                color: #f44336;
+                cursor: pointer;
+              "
+              (click)="deleteImage(i)"
+            ></ion-icon>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  <ion-item> </ion-item>
+</ion-list>

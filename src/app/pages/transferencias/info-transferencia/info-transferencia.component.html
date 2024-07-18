@@ -170,7 +170,14 @@
       </ion-avatar>
       <ion-label>
         <h2>
-          {{i3 + 1 + (selectedPageInfo?.getPageable?.getPageSize * selectedPageInfo?.getPageable?.getPageNumber)}} - {{
+          {{
+            i3 +
+              1 +
+              selectedPageInfo?.getPageable?.getPageSize *
+                selectedPageInfo?.getPageable?.getPageNumber
+          }}
+          -
+          {{
             item?.presentacionPreTransferencia?.producto?.descripcion
               | titlecase
           }}
@@ -179,21 +186,30 @@
           <ion-col size="10">
             <h3>
               Presentacion:
-              {{
-                item?.presentacionPreTransferencia?.cantidad | number : '1.0-2'
-              }}
+              <!-- <ion-content *ngIf="item?.presentacionPreparacion?.cantidad === null"> -->
+              <span *ngIf="item.presentacionPreTransferencia.cantidad !== item.presentacionPreparacion?.cantidad" [class.tachado]="item?.presentacionPreparacion !== null">
+                {{
+                  item?.presentacionPreTransferencia?.cantidad
+                    | number : '1.0-2'
+                }}
+              </span>
+
+              {{ item?.presentacionPreparacion?.cantidad | number : '1.0-2' }}
             </h3>
             <h3>
-              Cantidad: {{ item.cantidadPreTransferencia | number : '1.0-2' }}
-              {{
-                item?.motivoModificacionPreparacion === 'CANTIDAD_INCORRECTA'
-                  ? ' / ' + item?.cantidadPreparacion
-                  : null
-              }}
+              Cantidad:
+              <span *ngIf="item.cantidadPreTransferencia !== item.cantidadPreparacion" [class.tachado]="item.cantidadPreparacion !== null">
+                {{ item.cantidadPreTransferencia | number : '1.0-2' }}
+              </span>
+
+              {{ item.cantidadPreparacion | number : '1.0-2' }}
             </h3>
             <h3>
               Vencimiento:
-              {{ item.vencimientoPreTransferencia | date : 'shortDate' }}
+              <span *ngIf="item.vencimientoPreparacion !== item.vencimientoPreTransferencia" [class.tachado]="item?.vencimientoPreparacion !== null">
+                {{ item?.vencimientoPreTransferencia| date : 'shortDate' }}
+              </span>
+              {{ item?.vencimientoPreparacion | date : 'shortDate' }}
               {{
                 item?.motivoModificacionPreparacion === 'VENCIMIENTO_INCORRECTO'
                   ? ' - ' + (item?.vencimientoPreparacion | date : 'shortDate')
@@ -201,10 +217,10 @@
               }}
             </h3>
             <h3 *ngIf="item.motivoModificacionPreparacion !== null">
-              Motivo: {{ item.motivoModificacionPreparacion }}
+              Item Modificado
             </h3>
             <h3 *ngIf="item.motivoRechazoPreparacion !== null">
-              Motivo: {{ item.motivoRechazoPreparacion }}
+              Item Rechazado
             </h3>
           </ion-col>
           <ion-col size="2">
@@ -257,25 +273,43 @@
       </ion-avatar>
       <ion-label>
         <h2>
-          {{i1 + 1 + (selectedPageInfo?.getPageable?.getPageSize * selectedPageInfo?.getPageable?.getPageNumber)}} - {{ item?.presentacionPreparacion?.producto?.descripcion | titlecase }}
+          {{
+            i1 +
+              1 +
+              selectedPageInfo?.getPageable?.getPageSize *
+                selectedPageInfo?.getPageable?.getPageNumber
+          }}
+          -
+          {{ item?.presentacionPreparacion?.producto?.descripcion | titlecase }}
         </h2>
         <ion-row>
           <ion-col size="10">
             <h3>
               Presentacion:
-              {{ item?.presentacionPreparacion?.cantidad | number : '1.0-2' }}
+              <span *ngIf=" item?.presentacionPreparacion?.cantidad !==  item?.presentacionTransporte?.cantidad" [class.tachado]="item?.presentacionTransporte !== null">
+                {{
+                  item?.presentacionPreparacion?.cantidad
+                    | number : '1.0-2'
+                }}
+              </span>
+              {{ item?.presentacionTransporte?.cantidad | number : '1.0-2' }}
             </h3>
-            <h3>Cantidad: {{ item.cantidadPreparacion | number : '1.0-2' }}</h3>
+            <h3>Cantidad:
+              <span *ngIf=" item?.cantidadTransporte !==  item?.cantidadPreparacion" [class.tachado]="item?.cantidadTransporte!== null">
+                {{
+                  item?.cantidadPreparacion
+                    | number : '1.0-2'
+                }}
+              </span>
+              {{ item.cantidadTransporte | number : '1.0-2' }}</h3>
             <h3>
               Vencimiento:
-              {{ item.vencimientoPreparacion | date : 'shortDate' }}
+              <span *ngIf="item.vencimientoTransporte !== item.vencimientoPreparacion" [class.tachado]="item?.vencimientoTransporte !== null">
+                {{ item?.vencimientoPreparacion | date : 'shortDate' }}
+              </span>
+              {{ item.vencimientoTransporte | date : 'shortDate' }}
             </h3>
-            <!-- <h3 *ngIf="item.motivoModificacionPreparacion !== null">
-              Motivo: {{ item.motivoModificacionPreparacion }}
-            </h3>
-            <h3 *ngIf="item.motivoRechazoPreparacion !== null">
-              Motivo: {{ item.motivoRechazoPreparacion }}
-            </h3> -->
+
           </ion-col>
           <ion-col size="2">
             <ion-icon
@@ -326,24 +360,48 @@
       </ion-avatar>
       <ion-label>
         <h2>
-          {{(i2 + 1) + (selectedPageInfo?.getPageable?.getPageSize * selectedPageInfo?.getPageable?.getPageNumber)}} - {{ item?.presentacionTransporte?.producto?.descripcion | titlecase }}
+          {{
+            i2 +
+              1 +
+              selectedPageInfo?.getPageable?.getPageSize *
+                selectedPageInfo?.getPageable?.getPageNumber
+          }}
+          -
+          {{ item?.presentacionTransporte?.producto?.descripcion | titlecase }}
         </h2>
         <ion-row>
           <ion-col size="10">
             <h3>
               Presentacion:
-              {{ item?.presentacionTransporte?.cantidad | number : '1.0-2' }}
+              <span *ngIf=" item?.presentacionRecepcion?.cantidad !==  item?.presentacionTransporte?.cantidad" [class.tachado]="item?.presentacionRecepcion !== null">
+                {{
+                  item?.presentacionTransporte?.cantidad
+                    | number : '1.0-2'
+                }}
+              </span>
+              {{ item?.presentacionRecepcion?.cantidad | number : '1.0-2' }}
             </h3>
-            <h3>Cantidad: {{ item.cantidadTransporte | number : '1.0-2' }}</h3>
+            <h3>
+              Cantidad:
+              <span *ngIf=" item?.cantidadTransporte !==  item?.cantidadRecepcion" [class.tachado]="item?.cantidadRecepcion!== null">
+                {{
+                  item?.cantidadTransporte
+                    | number : '1.0-2'
+                }}
+              </span>
+              {{ item.cantidadRecepcion | number : '1.0-2' }}</h3>
             <h3>
               Vencimiento:
-              {{ item.vencimientoTransporte | date : 'shortDate' }}
+              <span *ngIf="item.vencimientoTransporte !== item.vencimientoRecepcion" [class.tachado]="item?.vencimientoRecepcion !== null">
+                {{ item?.vencimientoTransporte | date : 'shortDate' }}
+              </span>
+              {{ item.vencimientoRecepcion | date : 'shortDate' }}
             </h3>
             <h3 *ngIf="item.motivoModificacionRecepcion !== null">
-              Motivo: {{ item.motivoModificacionRecepcion }}
+              Item modificado
             </h3>
             <h3 *ngIf="item.motivoRechazoRecepcion !== null">
-              Motivo: {{ item.motivoRechazoRecepcion }}
+              Item rechazado
             </h3>
           </ion-col>
           <ion-col size="2">
