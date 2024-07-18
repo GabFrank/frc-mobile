@@ -57,11 +57,11 @@ export class ListConvenioComponent implements OnInit {
             res.id,
             this.selectedEstado,
             0,
-            this.totalVentaCredito
+            1000
           )
         ).subscribe((res3) => {
-          this.ventaCreditoList = res3;
-          this.totalVentaCredito = this.ventaCreditoList.length;
+          this.ventaCreditoList = res3.getContent;
+          this.totalVentaCredito = res3.getTotalElements;
           this.calcularTotal();
         });
       }

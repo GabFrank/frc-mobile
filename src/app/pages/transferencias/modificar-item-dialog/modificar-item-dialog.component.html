@@ -1,26 +1,84 @@
-<ion-content style="width: 100%;">
-  <ion-grid>
+<ion-content style="width: 100%">
+  <ion-grid style="background-color: rgb(50, 50, 50)">
     <ion-row>
-      <ion-col size="12" *ngIf="isCantidad">
-        <ion-item>
-          <ion-label position="floating">Nueva cantidad</ion-label>
-          <ion-input type="text" class="ion-margin-top" [formControl]="cantidadControl"> </ion-input>
-        </ion-item>
-      </ion-col>
-      <ion-col size="12" *ngIf="isVencimiento">
-        <ion-item>
-          <ion-datetime locale="es-PY" [formControl]="vencimientoControl">
-            <div slot="title">Nuevo vencimiento</div>
-          </ion-datetime>
-        </ion-item>
+      <ion-col size="12" style="text-align: center">
+        <ion-label>Modificar Item</ion-label>
       </ion-col>
     </ion-row>
     <ion-row>
+      <ion-col size="6" style="text-align: center">
+        <ion-row>
+          <ion-col size="12">
+            <ion-label>Cantidad anterior:</ion-label>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12">
+            {{ cantidadAnterior | number : '1.0-2' }}
+          </ion-col>
+        </ion-row>
+      </ion-col>
+      <ion-col size="6" style="text-align: center">
+        <ion-row>
+          <ion-col size="12">
+            <ion-label>Presentación anterior:</ion-label>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12">
+            {{ presentacionAnterior?.cantidad | number : '1.0-2' }}
+          </ion-col>
+        </ion-row>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-list>
+        <ion-item>
+          <ion-label>Nueva cantidad</ion-label>
+          <ion-input type="text" [formControl]="cantidadControl"> </ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label>Nueva presentación</ion-label>
+          <ion-select
+            label="Nueva presentación"
+            label-placement="fixed"
+            cancelText="Cancelar"
+            okText="Aceptar"
+            [formControl]="presentacionControl"
+          >
+            <ion-select-option
+              *ngFor="let presentacion of presentacionList"
+              [value]="presentacion"
+              >{{
+                presentacion?.cantidad | number : '1.0-2'
+              }}</ion-select-option
+            >
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label>Vencimiento</ion-label>
+          <ion-datetime
+            displayFormat="DD MM YYYY"
+            [formControl]="vencimientoControl"
+            presentation="date"
+          ></ion-datetime>
+        </ion-item>
+      </ion-list>
+    </ion-row>
+    <ion-row>
       <ion-col size="6">
-        <ion-button fill="clear" class="btn-danger-flat" (click)="onCancel()">Cancelar</ion-button>
+        <ion-button fill="clear" class="btn-danger-flat" (click)="onCancel()"
+          >Cancelar</ion-button
+        >
       </ion-col>
       <ion-col size="6">
-        <ion-button fill="clear" class="btn-success-flat" (click)="onAceptar()" [disabled]="cantidadControl.invalid && vencimientoControl.invalid">Aceptar</ion-button>
+        <ion-button
+          fill="clear"
+          class="btn-success-flat"
+          (click)="onAceptar()"
+          [disabled]="cantidadControl.invalid && vencimientoControl.invalid"
+          >Aceptar</ion-button
+        >
       </ion-col>
     </ion-row>
   </ion-grid>

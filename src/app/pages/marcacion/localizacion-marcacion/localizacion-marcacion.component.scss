@@ -1,0 +1,28 @@
+.map-container {
+  width: 90vw;        /* Full width of the viewport */
+  height: 90vw;       /* Make height equal to the width for a circle */
+  border-radius: 10%;  /* Circular shape */
+  overflow: hidden;    /* Hide overflow to maintain the circle shape */
+  background-color: rgb(32, 32, 32);
+  /* Optional: Center the map container if it's inside another container */
+  margin: auto;
+}
+
+@media (max-width: 600px) {
+  .map-container {
+      height: 90vw; /* Smaller size for smaller screens */
+  }
+}
+
+@media (min-width: 601px) and (max-width: 1024px) {
+  .map-container {
+      height: 60vw; /* Medium size for medium screens */
+  }
+}
+
+ion-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

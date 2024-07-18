@@ -5,6 +5,7 @@ import { GenericCrudService } from 'src/app/generic/generic-crud.service';
 import { CountVentaCreditoByClienteAndEstadoGQL } from './count-by-cliente-id copy';
 import { VentaCreditoPorClienteGQL } from './venta-credito-por-cliente-id';
 import { VentaCreditoQrAuthGQL } from './venta-credito-qr-auth';
+import { PageInfo } from 'src/app/app.component';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +19,7 @@ export class VentaCreditoService {
     private ventaCreditoQrAuth: VentaCreditoQrAuthGQL
   ) { }
 
-  async onGetPorClienteId(id, estado, page, size): Promise<Observable<VentaCredito[]>> {
+  async onGetPorClienteId(id, estado, page, size): Promise<Observable<PageInfo<VentaCredito>>> {
     return this.genericService.onCustomGet(this.ventaCreditoPorCliente, { id, estado, page, size });
   }
 

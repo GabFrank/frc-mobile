@@ -13,3 +13,21 @@
 .rechazado {
   color: #f44336 !important;
 }
+
+.tachado {
+  color: #f44336;
+  position: relative;
+  display: inline-block;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -10%;
+    width: 120%; // Aumenta la longitud de la línea
+    height: 1px;
+    background-color: rgba(255, 0, 0, 0.868);
+    transform: rotate(10deg);
+    transform-origin: center;
+  }
+}

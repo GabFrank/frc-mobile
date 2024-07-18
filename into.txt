@@ -1,7 +1,7 @@
 org.gradle.jvmargs=-Xmx1536M --add-exports=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED
 
 --comanndo para actualizar
-npx cap sync
+ng build && npx cap sync && npx cap copy
 
 -- comando para iniciar la app enn un dispositivo externo
 ionic capacitor run android -l --external

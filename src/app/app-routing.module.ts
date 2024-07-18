@@ -21,6 +21,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/funcionario/funcionario.module').then(m => m.FuncionarioModule)
   },
   {
+    path: 'marcacion',
+    loadChildren: () => import('./pages/marcacion/marcacion.module').then(m => m.MarcacionModule)
+  },
+  {
     path: 'salir',
     component: SalirComponent
   },
