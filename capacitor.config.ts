@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.system.frc',
+  appId: 'com.sistemasinformaticos.frc',
   appName: 'Bodega Franco',
   webDir: 'www',
   bundledWebRuntime: false,

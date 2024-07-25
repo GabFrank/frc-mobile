@@ -32,7 +32,7 @@ export class ZonaService {
     return await this.genericCrud.onSave(this.saveZona, input);
   }
 
-  async onDeleteZona(id): Promise<Observable<boolean>>{
-    return await this.genericCrud.onDelete(this.deleteZona, id)
+  async onDeleteZona(zona: Zona): Promise<Observable<boolean>>{
+    return await this.genericCrud.onDelete(this.deleteZona, zona.id, "Realmente desea eliminar esta zona: " , zona.descripcion)
   }
 }

@@ -240,7 +240,7 @@ export class EditInventarioComponent implements OnInit {
 
   onAddProducto(invPro, i) {
     console.log(this.selectedInventario);
-    let data = { sucursalId: +this.selectedInventario.sucursal.id };
+    let data = {sucursal:this.selectedInventario.sucursal,  sucursalId: +this.selectedInventario.sucursal.id, isInventario: true };
     this.modalService
       .openModal(SearchProductoDialogComponent, { data })
       .then((res) => {
@@ -379,7 +379,8 @@ export class EditInventarioComponent implements OnInit {
     let menu: ActionMenuData[] = [
       { texto: 'Actualizar datos', role: 'actualizar' },
       { texto: 'Resumen', role: 'resumen' },
-      { texto: 'Compartir', role: 'compartir' }
+      { texto: 'Compartir', role: 'compartir' },
+      { texto: 'Zonas y sectores', role: 'zonas' }
     ];
     this.menuActionService.presentActionSheet(menu).then((res) => {
       let role = res.role;
@@ -397,6 +398,8 @@ export class EditInventarioComponent implements OnInit {
           codificarQr(codigo),
           PopoverSize.XS
         );
+      } else if(role == 'zonas'){
+        this.router.navigate(['gestion-zona-sector', this.selectedInventario.sucursal.id], { relativeTo: this.route });
       }
     });
   }

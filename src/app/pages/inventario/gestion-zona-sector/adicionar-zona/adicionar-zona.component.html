@@ -1,0 +1,65 @@
+<ion-content fullscreen="true">
+  <ion-item>
+    <ion-row style="width: 100%">
+      <ion-col size="2">
+        <ion-icon
+          name="arrow-back"
+          style="font-size: 1.5em"
+          (click)="onBack()"
+        ></ion-icon>
+      </ion-col>
+      <ion-col size="8" style="text-align: center">{{
+        selectedZona?.descripcion || 'Nueva Zona' | titlecase
+      }}</ion-col>
+    </ion-row>
+  </ion-item>
+  <ion-list-header>
+    <ion-label>Detalles</ion-label>
+  </ion-list-header>
+  <ion-list>
+    <ion-item *ngIf="selectedZona?.id !== null">
+      <ion-label>Id</ion-label>
+      <ion-input
+        style="text-align: end"
+        [value]="selectedZona?.id"
+        end
+        readonly
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Descripción</ion-label>
+      <ion-input
+        style="text-align: end"
+        [formControl]="descripcionControl"
+        end
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Activo</ion-label>
+      <ion-toggle class="button" [formControl]="activoControl" end></ion-toggle>
+    </ion-item>
+    <ion-item *ngIf="selectedZona?.id !== null">
+      <ion-label>Creado en</ion-label>
+      <ion-input
+        style="text-align: end"
+        [value]="selectedZona?.creadoEn"
+        end
+        readonly
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-row style="width: 100%">
+        <ion-col size="6" style="text-align: center">
+          <ion-button fill="clear" (click)="onEliminar()" style="color: #f44336">
+            Eliminar
+          </ion-button>
+        </ion-col>
+        <ion-col size="6" style="text-align: center">
+          <ion-button fill="clear" (click)="onGuardar()" style="color: #43a047">
+            Guardar
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-item>
+  </ion-list>
+</ion-content>

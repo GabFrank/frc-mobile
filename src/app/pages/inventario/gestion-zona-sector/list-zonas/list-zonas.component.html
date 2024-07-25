@@ -1,0 +1,101 @@
+<ion-content>
+  <ion-item>
+    <ion-row style="width: 100%">
+      <ion-col size="2">
+        <ion-icon
+          name="arrow-back"
+          style="font-size: 1.5em"
+          (click)="onBack()"
+        ></ion-icon>
+      </ion-col>
+      <ion-col size="8" style="text-align: center">{{
+        (selectedSector?.descripcion || "Nuevo Sector") | titlecase
+      }}</ion-col>
+    </ion-row>
+  </ion-item>
+  <ion-list-header>
+    <ion-label>Detalles</ion-label>
+  </ion-list-header>
+  <ion-list>
+    <ion-item *ngIf="selectedSector?.id !== null">
+      <ion-label>Id</ion-label>
+      <ion-input
+        style="text-align: end"
+        [value]="selectedSector?.id"
+        end
+        readonly
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Descripción</ion-label>
+      <ion-input
+        style="text-align: end"
+        [formControl]="descripcionControl"
+        end
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Activo</ion-label>
+      <ion-toggle class="button" [formControl]="activoControl" end></ion-toggle>
+    </ion-item>
+    <ion-item *ngIf="selectedSector?.id !== null">
+      <ion-label>Creado en</ion-label>
+      <ion-input
+        style="text-align: end"
+        [value]="selectedSector?.creadoEn"
+        end
+        readonly
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-row style="width: 100%">
+        <ion-col size="6" style="text-align: center">
+          <ion-button fill="clear" (click)="onEliminar()" style="color: #f44336">
+            Eliminar
+          </ion-button>
+        </ion-col>
+        <!-- <ion-col size="4" style="text-align: center">
+          <ion-button fill="clear" (click)="onCancelar()" style="color: white">
+            Cancelar
+          </ion-button>
+        </ion-col> -->
+        <ion-col size="6" style="text-align: center">
+          <ion-button fill="clear" (click)="onGuardar()" style="color: #43a047">
+            Guardar
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-item>
+  </ion-list>
+  <ion-content *ngIf="selectedSector?.id !== null">
+    <ion-list-header>
+      <ion-label>Lista de zonas</ion-label>
+    </ion-list-header>
+    <!-- <ion-item>
+      <ion-label></ion-label>
+    </ion-item> -->
+    <ion-item-group>
+      <ion-item
+        button
+        *ngFor="let zona of zonaList"
+        (click)="onClickZona(zona)"
+      >
+        <ion-label>
+          <h3>{{ zona.descripcion | titlecase }}</h3>
+        </ion-label>
+        <ion-icon name="chevron-forward-outline" end></ion-icon>
+      </ion-item>
+      <ion-item>
+        <ion-row style="width: 100%;">
+          <ion-col size="12" style="text-align: center;">
+            <ion-button fill="clear" color="success" (click)="onNuevaZona()">
+              Nueva Zona
+              <ion-icon name="add-circle-outline" slot="end"></ion-icon>
+            </ion-button>
+          </ion-col>
+        </ion-row>
+
+      </ion-item>
+    </ion-item-group>
+  </ion-content>
+</ion-content>

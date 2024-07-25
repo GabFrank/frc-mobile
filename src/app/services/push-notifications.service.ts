@@ -25,25 +25,23 @@ export class PushNotificationsService {
 
   initPush() {
     if (!this.plf.platforms().includes('mobileweb')) {
-    }
-    this.registerPush();
-    FCM.subscribeTo({ topic: 'funcionarios' })
-      .then((r) => console.log('sub con exito a funcionarios'))
-      .catch((err) =>
-        console.log(err, 'ocurrio un problemma al sub en funcionario')
-      );
-    FCM.subscribeTo({ topic: 'clientes' })
-      .then((r) => console.log('sub con exito a clientes'))
-      .catch((err) =>
-        console.log(err, 'ocurrio un problemma al sub en funcionario')
-      );
+      this.registerPush();
+      FCM.subscribeTo({ topic: 'funcionarios' })
+        .then((r) => console.log('sub con exito a funcionarios'))
+        .catch((err) =>
+          console.log(err, 'ocurrio un problemma al sub en funcionario')
+        );
+      FCM.subscribeTo({ topic: 'clientes' })
+        .then((r) => console.log('sub con exito a clientes'))
+        .catch((err) =>
+          console.log(err, 'ocurrio un problemma al sub en funcionario')
+        );
 
-      FCM.getToken().then(t => {
+      FCM.getToken().then((t) => {
         localStorage.setItem('pushToken', t.token);
         console.log(t.token);
-
-      })
-
+      });
+    }
   }
 
   private async registerPush() {
@@ -86,19 +84,19 @@ export class PushNotificationsService {
         console.log('Push action performed: ' + JSON.stringify(notification));
         let time = null;
         let attemps = 5;
-          if(notification.notification.data?.path != null){
-            time = setInterval(() => {
-              if(attemps == 0) clearInterval(time);
-              if(this.mainService.usuarioActual != null){
-                console.log('usuario actual existe');
-                this.router.navigate([notification.notification.data?.path]);
-                clearInterval(time)
-              } else {
-                console.log('usuario actual no existe');
-                attemps--;
-              }
-            }, 1000);
-          }
+        if (notification.notification.data?.path != null) {
+          time = setInterval(() => {
+            if (attemps == 0) clearInterval(time);
+            if (this.mainService.usuarioActual != null) {
+              console.log('usuario actual existe');
+              this.router.navigate([notification.notification.data?.path]);
+              clearInterval(time);
+            } else {
+              console.log('usuario actual no existe');
+              attemps--;
+            }
+          }, 1000);
+        }
       }
     );
   }

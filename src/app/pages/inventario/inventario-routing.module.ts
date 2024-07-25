@@ -5,6 +5,10 @@ import { ListInventarioComponent } from './list-inventario/list-inventario.compo
 import { InventarioComponent } from './inventario.component';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { GestionZonaSectorComponent } from './gestion-zona-sector/gestion-zona-sector.component';
+import { ListZonasComponent } from './gestion-zona-sector/list-zonas/list-zonas.component';
+import { AdicionarSectorComponent } from './gestion-zona-sector/adicionar-sector/adicionar-sector.component';
+import { AdicionarZonaComponent } from './gestion-zona-sector/adicionar-zona/adicionar-zona.component';
 
 const routes: Routes = [
   {
@@ -22,6 +26,34 @@ const routes: Routes = [
   {
     path: 'list/info/:id/finalizar',
     component: FinalizarInventarioResumenComponent
+  },
+  {
+    path: 'list/info/:id/gestion-zona-sector/:sucursalId',
+    component: GestionZonaSectorComponent
+  },
+  {
+    path: 'list/info/:id/gestion-zona-sector/:sucursalId/list-zonas/:sectorId',
+    component: ListZonasComponent
+  },
+  {
+    path: 'list/info/:id/gestion-zona-sector/:sucursalId/list-zonas',
+    component: ListZonasComponent
+  },
+  {
+    path: 'list/info/:id/gestion-zona-sector/:sucursalId/list-zonas/:sectorId/adicionar-zona/:zonaId',
+    component: AdicionarZonaComponent
+  },
+  {
+    path: 'list/info/:id/gestion-zona-sector/:sucursalId/adicionar-sector/:sectorId',
+    component: AdicionarSectorComponent
+  },
+  {
+    path: 'list/info/:id/gestion-zona-sector/:sucursalId/list-zonas/:sectorId/adicionar-zona',
+    component: AdicionarZonaComponent
+  },
+  {
+    path: 'list/info/:id/gestion-zona-sector/:sucursalId/adicionar-sector',
+    component: AdicionarSectorComponent
   }
 
 ];

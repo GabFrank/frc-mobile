@@ -16,6 +16,7 @@ import { Platform } from '@ionic/angular';
 import { CodigoService } from '../../codigo/codigo.service';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { StockPorSucursalDialogComponent, StockPorSucursalDialogData } from '../../operaciones/movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component';
+import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 
 export interface SearchProductoDialogData {
   mostrarPrecio: boolean;
@@ -41,7 +42,9 @@ export class SearchProductoDialogComponent implements OnInit {
   onSearchTimer
   showCargarMas = true;
   mostrarPrecio = false;
-  isSearchingList: boolean[] = []
+  isSearchingList: boolean[] = [];
+  isInventario = false;
+  selectedSucursal: Sucursal;
 
   isWeb = false;
 
@@ -64,6 +67,13 @@ export class SearchProductoDialogComponent implements OnInit {
   ngOnInit() {
     if (this.data?.data?.mostrarPrecio != null) {
       this.mostrarPrecio = this.data.data.mostrarPrecio;
+    }
+
+    if(this.data?.data?.isInventario == true){
+      this.isInventario = true;
+      this.selectedSucursal = this.data?.data?.sucursal;
+      console.log('es inventario', this.selectedSucursal);
+
     }
 
     this.isWeb ? null : this.onCameraClick()
@@ -182,12 +192,12 @@ export class SearchProductoDialogComponent implements OnInit {
   }
 
   onVerStock(producto) {
-    let data: StockPorSucursalDialogData = {
-      producto: producto
-    }
-    this.modalService.openModal(StockPorSucursalDialogComponent, data).then(res => {
+    // let data: StockPorSucursalDialogData = {
+    //   producto: producto
+    // }
+    // this.modalService.openModal(StockPorSucursalDialogComponent, data).then(res => {
 
-    })
+    // })
   }
 
 }
