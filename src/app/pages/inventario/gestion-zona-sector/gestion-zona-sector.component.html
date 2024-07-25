@@ -1,0 +1,46 @@
+<ion-content>
+  <ion-list>
+    <ion-item>
+      <ion-row style="width: 100%">
+        <ion-col size="2">
+          <ion-icon
+            name="arrow-back"
+            style="font-size: 1.5em"
+            (click)="onBack()"
+          ></ion-icon>
+        </ion-col>
+        <ion-col size="8" style="text-align: center"
+          >Gestión de lugares</ion-col
+        >
+      </ion-row>
+    </ion-item>
+  </ion-list>
+  <ion-list-header>
+    <ion-label>Lista de sectores</ion-label>
+  </ion-list-header>
+  <!-- <ion-item>
+    <ion-label></ion-label>
+  </ion-item> -->
+  <ion-item-group>
+    <ion-item
+      button
+      *ngFor="let sector of sectorList"
+      (click)="onClickSector(sector)"
+    >
+      <ion-label>
+        <h3>{{ sector?.descripcion | titlecase }}</h3>
+      </ion-label>
+      <ion-icon name="chevron-forward-outline" end></ion-icon>
+    </ion-item>
+    <ion-item>
+      <ion-row style="width: 100%">
+        <ion-col size="12" style="text-align: center">
+          <ion-button fill="clear" color="success" (click)="onNuevoSector()">
+            Nuevo Sector
+            <ion-icon name="add-circle-outline" slot="end"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-item>
+  </ion-item-group>
+</ion-content>

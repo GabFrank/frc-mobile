@@ -33,7 +33,11 @@ export class SectorService {
     return await this.genericCrud.onSave(this.saveSector, input);
   }
 
-  async onDeleteSector(id): Promise<Observable<boolean>>{
-    return await this.genericCrud.onDelete(this.deleteSector, id)
+  async onDeleteSectorById(id): Promise<Observable<boolean>>{
+    return await this.genericCrud.onDelete(this.deleteSector, id, "Realmente desea eliminar este sector?")
+  }
+
+  async onDeleteSector(sector: Sector): Promise<Observable<boolean>>{
+    return await this.genericCrud.onDelete(this.deleteSector, sector.id, "Realmente desea eliminar este sector:", sector.descripcion)
   }
 }

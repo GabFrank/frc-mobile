@@ -230,10 +230,10 @@ export class GenericCrudService {
         this.dialogoService
           .open(
             "Atención!!",
-            "Realemente desea eliminar este item:" + titulo,
+            (titulo || "Realemente desea eliminar este item:") + data + "?",
             true
           ).then((res1) => {
-            if (res1) {
+            if (res1.role == 'aceptar') {
               gql
                 .mutate(
                   {

@@ -1,3 +1,4 @@
+import { dateToString } from 'src/app/generic/utils/dateUtils';
 import { Usuario } from '../personas/usuario.model';
 import { Sector } from '../sector/sector.model';
 
@@ -15,7 +16,7 @@ export class Zona {
         input.sectorId = this.sector?.id;
         input.descripcion = this.descripcion;
         input.activo = this.activo;
-        input.creadoEn = this.creadoEn;
+        input.creadoEn = dateToString(this.creadoEn);
         return input;
     }
 }
@@ -26,5 +27,5 @@ export class ZonaInput {
     descripcion: string;
     activo: number;
     usuarioId: number;
-    creadoEn: Date;
+    creadoEn: string;
 }

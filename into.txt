@@ -24,3 +24,4 @@ adb forward tcp:5555 tcp:5555
 /Users/gabfranck/Library/Android/sdk/platform-tools/adb connect 192.168.1.102:40833
 
 
+keytool -genkey -v -keystore frc.jks -keyalg RSA -keysize 2048 -validity 10000 -alias frc

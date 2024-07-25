@@ -9,7 +9,6 @@ import { LocalizacionMarcacionComponent } from './localizacion-marcacion/localiz
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { WebcamModule } from 'ngx-webcam';
-import { NgxScannerFaceModule } from 'ngx-scanner-face';
 
 @NgModule({
   declarations: [
@@ -30,8 +29,8 @@ import { NgxScannerFaceModule } from 'ngx-scanner-face';
     IonicModule,
     ReactiveFormsModule,
     FormsModule,
-    WebcamModule,
-    NgxScannerFaceModule
+    WebcamModule
+
   ]
 })
 export class MarcacionModule { }

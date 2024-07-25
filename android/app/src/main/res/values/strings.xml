@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Bodega Franco</string>
     <string name="title_activity_main">Bodega Franco</string>
-    <string name="package_name">com.system.frc</string>
-    <string name="custom_url_scheme">com.system.frc</string>
+    <string name="package_name">com.sistemasinformaticos.frc</string>
+    <string name="custom_url_scheme">com.sistemasinformaticos.frc</string>
 </resources>
