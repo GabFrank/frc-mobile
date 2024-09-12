@@ -25,6 +25,9 @@ export class ListZonasComponent implements OnInit {
   zonaList: Zona[];
   descripcionControl = new FormControl(null, [Validators.required]);
   activoControl = new FormControl(true);
+  inventarioId: number;
+  sectorId: number;
+  sucursalId:number;
 
   constructor(
     private _location: Location,
@@ -41,10 +44,11 @@ export class ListZonasComponent implements OnInit {
   ngOnInit() {
     this.descripcionControl.markAsTouched();
     this.route.paramMap.pipe(untilDestroyed(this)).subscribe(async (res) => {
-      let sectorId = +res.get('sectorId');
-      let sucursalId = +res.get('sucursalId');
-      if (sectorId != null && sectorId != 0) {
-        (await this.sectorService.onGetSector(sectorId)).subscribe(
+      this.sectorId = +res.get('sectorId');
+      this.sucursalId = +res.get('sucursalId');
+      this.inventarioId = +res.get('id');
+      if (this.sectorId != null && this.sectorId != 0) {
+        (await this.sectorService.onGetSector(this.sectorId)).subscribe(
           (sectorRes) => {
             if (sectorRes != null) {
               this.selectedSector = new Sector();
@@ -60,7 +64,7 @@ export class ListZonasComponent implements OnInit {
         );
       }
 
-      (await this.sucursalService.onGetSucursal(sucursalId)).subscribe(
+      (await this.sucursalService.onGetSucursal(this.sucursalId)).subscribe(
         (sucursalRes) => {
           if (sucursalRes != null) {
             this.selectedSucursal = sucursalRes;
@@ -80,7 +84,7 @@ export class ListZonasComponent implements OnInit {
   }
 
   onNuevaZona() {
-    this.router.navigate(['adicionar-zona'], { relativeTo: this.route });
+    this.router.navigate(['inventario/list/info', this.inventarioId, 'gestion-zona-sector', this.sucursalId, 'list-zonas', this.sectorId, 'adicionar-zona']);
   }
 
   onCancelar() {}
@@ -98,6 +102,7 @@ export class ListZonasComponent implements OnInit {
       ).subscribe((saveRes) => {
         if (saveRes != null) {
           this.selectedSector = saveRes;
+          this.sectorId = this.selectedSector.id;
         }
       });
     }

@@ -153,7 +153,7 @@ export class ProductoService {
     // })
   }
 
-  async onGetStockPorSucursal(productoId: number, sucursalId: number): Promise<Observable<number>>{
+  async  onGetStockPorSucursal(productoId: number, sucursalId: number): Promise<Observable<number>>{
     return await this.genericService.onGet(this.getStockPorSucursal, {proId: productoId, sucId: sucursalId});
   }
 }

@@ -25,3 +25,4 @@ adb forward tcp:5555 tcp:5555
 
 
 keytool -genkey -v -keystore frc.jks -keyalg RSA -keysize 2048 -validity 10000 -alias frc
+

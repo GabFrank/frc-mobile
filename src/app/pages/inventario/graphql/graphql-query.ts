@@ -397,6 +397,7 @@ export const finalizarInventarioQuery = gql`
       tipo
       estado
       usuario {
+        id
         persona {
           nombre
         }
@@ -439,6 +440,12 @@ export const finalizarInventarioQuery = gql`
 export const cancelarInventarioQuery = gql`
   mutation cancelarInventario($id: ID!) {
     cancelarInventario(id: $id)
+  }
+`;
+
+export const reabrirInventarioQuery = gql`
+  mutation reabrirInventario($id: ID!) {
+    reabrirInventario(id: $id)
   }
 `;
 

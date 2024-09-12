@@ -129,3 +129,50 @@
 .white {
   color: white !important;
 }
+
+:root {
+  --ion-background-color: #000000;
+  --ion-text-color: #ffffff;
+  --ion-color-primary: #3880ff;
+  --ion-color-secondary: #0cd1e8;
+  --ion-color-tertiary: #7044ff;
+  --ion-color-success: #10dc60;
+  --ion-color-warning: #ffce00;
+  --ion-color-danger: #f04141;
+  --ion-color-dark: #222428;
+  --ion-color-medium: #989aa2;
+  --ion-color-light: #f4f5f8;
+}
+
+body.dark {
+  --ion-background-color: #000000;
+  --ion-text-color: #ffffff;
+  --ion-color-primary: #3880ff;
+  --ion-color-secondary: #0cd1e8;
+  --ion-color-tertiary: #7044ff;
+  --ion-color-success: #10dc60;
+  --ion-color-warning: #ffce00;
+  --ion-color-danger: #f04141;
+  --ion-color-dark: #222428;
+  --ion-color-medium: #989aa2;
+  --ion-color-light: #f4f5f8;
+}
+
+ion-icon {
+  color: white !important;
+}
+
+ion-card-title {
+  color: white !important;
+}
+
+ion-loading.my-loading-class {
+  .loading-wrapper {
+    background: black;
+    box-shadow: none;
+    color: white;
+  }
+  .loading-content {
+    color: white !important;
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "170136643206",
+    "project_id": "bodega-franco-frc",
+    "storage_bucket": "bodega-franco-frc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:170136643206:android:b02e8a1da223c98da5d307",
+        "android_client_info": {
+          "package_name": "com.sistemasinformaticos.frc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "170136643206-4uf59o089t66f2s821r7ajrgdve7vaiv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDoKe5RM3O0vgGCBeLXHryAsFF4V91PAfI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "170136643206-4uf59o089t66f2s821r7ajrgdve7vaiv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:170136643206:android:b221a6798f0761ada5d307",
+        "android_client_info": {
+          "package_name": "com.system.frc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "170136643206-4uf59o089t66f2s821r7ajrgdve7vaiv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDoKe5RM3O0vgGCBeLXHryAsFF4V91PAfI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "170136643206-4uf59o089t66f2s821r7ajrgdve7vaiv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

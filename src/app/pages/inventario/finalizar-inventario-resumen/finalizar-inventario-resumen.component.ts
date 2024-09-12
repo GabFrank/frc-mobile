@@ -149,6 +149,23 @@ export class FinalizarInventarioResumenComponent implements OnInit {
     })
   }
 
+  onReabrir(){
+    let texto = 'Realmente desea reabrir este inventario?';
+    this.dialogoService.open('Atención!', texto).then(res => {
+      if (res.role == 'aceptar') {
+        this.inventarioService.onReabrirInventario(this.selectedInventario?.id)
+          .pipe(untilDestroyed(this))
+          .subscribe(res => { //res => true o false
+            if(res){
+              this.selectedInventario.estado = InventarioEstado.ABIERTO
+              this.selectedInventario.abierto = true;
+              this.onBack();
+            }
+          })
+      }
+    })
+  }
+
 }
 
 // this.menuActionService.presentActionSheet(menu).then(res => {
