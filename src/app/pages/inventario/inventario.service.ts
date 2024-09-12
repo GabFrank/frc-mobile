@@ -20,6 +20,7 @@ import { untilDestroyed } from '@ngneat/until-destroy';
 import { GetInventarioPorUsuarioGQL } from './graphql/getInventarioPorUsuario';
 import { GetInventarioAbiertoPorSucursalGQL } from './graphql/getInventarioAbiertoPorSucursal';
 import { GetInventarioItemPorInvetarioProductoGQL } from './graphql/getInventarioProductoItemPorInventarioProducto copy';
+import { ReabrirInventarioGQL } from './graphql/reabrir-inventario copy';
 
 @UntilDestroy()
 @Injectable({
@@ -43,6 +44,7 @@ export class InventarioService {
     private mainService: MainService,
     private finalizarInventario: FinalizarInventarioGQL,
     private cancelarInventrio: CancelarInventarioGQL,
+    private reabrirInventrio: ReabrirInventarioGQL,
     private inventarioAbiertoPorSucursal: GetInventarioAbiertoPorSucursalGQL,
     private getInventarioProItem: GetInventarioItemPorInvetarioProductoGQL
 
@@ -140,6 +142,26 @@ export class InventarioService {
   onCancelarInventario(id): Observable<boolean> {
     return new Observable(obs => {
       this.cancelarInventrio.mutate(
+        {
+          id,
+        },
+        { errorPolicy: "all" }
+      ).pipe(untilDestroyed(this))
+        .subscribe(res => {
+          if (res?.errors?.length > 0) {
+            this.notificacionService.openAlgoSalioMal()
+            obs.next(false)
+          } else {
+            obs.next(true)
+            this.notificacionService.openGuardadoConExito()
+          }
+        })
+    })
+  }
+
+  onReabrirInventario(id): Observable<boolean> {
+    return new Observable(obs => {
+      this.reabrirInventrio.mutate(
         {
           id,
         },

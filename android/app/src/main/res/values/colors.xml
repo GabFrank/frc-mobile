@@ -1,0 +1,8 @@
+<resources>
+  <color name="colorPrimary">#3F51B5</color>
+  <color name="colorPrimaryDark">#303F9F</color>
+  <color name="colorAccent">#FF4081</color>
+  <color name="black">#000000</color> <!-- Define the black color -->
+  <color name="splash_background">#b40000</color> <!-- Example background color -->
+  <color name="splash_background_dark">#b40000</color> <!-- Dark background color for splash screen -->
+</resources>

@@ -49,7 +49,7 @@
         fill="clear"
         class="btn-success-flat"
         (click)="onAceptar()"
-        [disabled]="formGroup.invalid"
+        [disabled]="formGroup.invalid && cantidadControl.value !== 0"
         >Aceptar</ion-button
       >
     </ion-col>

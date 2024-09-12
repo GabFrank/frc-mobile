@@ -67,6 +67,18 @@
   </ion-row>
   <ion-row
     *ngIf="
+      (selectedInventario?.estado === 'CONCLUIDO' || selectedInventario?.estado === 'CANCELADO') &&
+      mainService?.usuarioActual?.id === selectedInventario?.usuario?.id
+    "
+  >
+    <ion-col size="12" style="text-align: center">
+      <ion-button class="btn-success-flat" fill="clear" (click)="onReabrir()"
+        >Reabrir Invetario</ion-button
+      >
+    </ion-col>
+  </ion-row>
+  <ion-row
+    *ngIf="
       selectedInventario?.estado === 'CONCLUIDO' &&
       mainService?.usuarioActual?.id === selectedInventario?.usuario?.id
     "

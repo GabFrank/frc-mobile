@@ -377,8 +377,8 @@ export class EditInventarioComponent implements OnInit {
 
   onMenuClick() {
     let menu: ActionMenuData[] = [
+      { texto: this.selectedInventario?.estado == 'ABIERTO' ? 'Finalizar' : 'Resumen', role: 'resumen' },
       { texto: 'Actualizar datos', role: 'actualizar' },
-      { texto: 'Resumen', role: 'resumen' },
       { texto: 'Compartir', role: 'compartir' },
       { texto: 'Zonas y sectores', role: 'zonas' }
     ];

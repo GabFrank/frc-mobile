@@ -72,13 +72,49 @@ export const ventaCreditoQrAuthQuery = gql`
 `;
 
 export const ventaCreditoPorClienteQuery = gql`
-  query ($id: ID!, $estado: EstadoVentaCredito, $page: Int, $size: Int) {
+  query ($id: ID!, $estado: EstadoVentaCredito) {
     data: ventaCreditoPorCliente(
       id: $id
       estado: $estado
-      page: $page
-      size: $size
     ) {
+      id
+      sucursal {
+        id
+        nombre
+      }
+      venta {
+        id
+        usuario {
+          nickname
+          persona {
+            nombre
+          }
+        }
+        sucursalId
+      }
+      cliente {
+        id
+      }
+      tipoConfirmacion
+      cantidadCuotas
+      valorTotal
+      saldoTotal
+      plazoEnDias
+      interesPorDia
+      interesMoraDia
+      estado
+      creadoEn
+      usuario {
+        id
+        nickname
+      }
+    }
+  }
+`;
+
+export const ventaCreditoPorClientePageQuery = gql`
+  query ($id: ID!, $estado: EstadoVentaCredito) {
+    data: ventaCreditoPorClientePage(id: $id, estado: $estado) {
       getTotalPages
       getTotalElements
       getNumberOfElements

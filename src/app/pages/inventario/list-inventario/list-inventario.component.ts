@@ -28,7 +28,9 @@ export class ListInventarioComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.verificarUsuario()
+    this.route.paramMap.pipe(untilDestroyed(this)).subscribe(async (res) => {
+      this.verificarUsuario();
+    });
   }
 
   async onGetInventarios() {

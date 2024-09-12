@@ -23,7 +23,9 @@ export class CargandoService {
         id: new Date().getTime() + '',
         message: texto,
         backdropDismiss: disable == null ? true : disable,
-        duration: duration
+        duration: duration,
+        cssClass: 'my-loading-class'
+
       }
     )
     await loading.present()

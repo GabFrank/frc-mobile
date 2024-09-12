@@ -6,6 +6,7 @@ import { CountVentaCreditoByClienteAndEstadoGQL } from './count-by-cliente-id co
 import { VentaCreditoPorClienteGQL } from './venta-credito-por-cliente-id';
 import { VentaCreditoQrAuthGQL } from './venta-credito-qr-auth';
 import { PageInfo } from 'src/app/app.component';
+import { VentaCreditoPorClientePageGQL } from './venta-credito-por-cliente-id-page';
 
 @Injectable({
   providedIn: 'root'
@@ -15,12 +16,17 @@ export class VentaCreditoService {
   constructor(
     private genericService: GenericCrudService,
     private ventaCreditoPorCliente: VentaCreditoPorClienteGQL,
+    private ventaCreditoPorClientePage: VentaCreditoPorClientePageGQL,
     private countByClienteAndEstado: CountVentaCreditoByClienteAndEstadoGQL,
     private ventaCreditoQrAuth: VentaCreditoQrAuthGQL
   ) { }
 
-  async onGetPorClienteId(id, estado, page, size): Promise<Observable<PageInfo<VentaCredito>>> {
-    return this.genericService.onCustomGet(this.ventaCreditoPorCliente, { id, estado, page, size });
+  async onGetPorClienteId(id, estado, page, size): Promise<Observable<any>> {
+    if(page == null && size == null ){
+      return this.genericService.onCustomGet(this.ventaCreditoPorCliente, { id, estado});
+    } else {
+    return this.genericService.onCustomGet(this.ventaCreditoPorClientePage, { id, estado, page, size });
+    }
   }
 
   async countPorClienteIdAndEstado(id, estado): Promise<Observable<number>> {

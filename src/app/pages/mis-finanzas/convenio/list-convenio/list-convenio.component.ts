@@ -56,12 +56,12 @@ export class ListConvenioComponent implements OnInit {
           await this.ventaCreditoService.onGetPorClienteId(
             res.id,
             this.selectedEstado,
-            0,
-            1000
+            null,
+            null
           )
-        ).subscribe((res3) => {
-          this.ventaCreditoList = res3.getContent;
-          this.totalVentaCredito = res3.getTotalElements;
+        ).subscribe((res3: VentaCredito[]) => {
+          this.ventaCreditoList = res3;
+          // this.totalVentaCredito = res3.getTotalElements;
           this.calcularTotal();
         });
       }
@@ -69,9 +69,10 @@ export class ListConvenioComponent implements OnInit {
   }
 
   calcularTotal() {
-    this.ventaCreditoList.forEach((vc) => {
+    this.ventaCreditoList?.forEach((vc) => {
       this.totalAbiertos += vc.valorTotal;
     });
+    this.selectedCliente.saldo = this.selectedCliente.credito - this.totalAbiertos;
   }
 
   onItemClick(ventaCredito: VentaCredito) {}
