@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, FormGroup } from '@angular/forms';
 import { ModalService } from 'src/app/services/modal.service';
 
 @Component({
@@ -9,8 +9,8 @@ import { ModalService } from 'src/app/services/modal.service';
 })
 export class ChangeServerIpDialogComponent implements OnInit {
 
-  serverIpControl = new FormControl()
-  serverPortControl = new FormControl()
+  serverIpControl = new UntypedFormControl()
+  serverPortControl = new UntypedFormControl()
   constructor(private modalService: ModalService) { }
 
   ngOnInit() {

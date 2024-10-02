@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { Platform } from '@ionic/angular';
@@ -73,7 +73,7 @@ export class InfoTransferenciaComponent implements OnInit {
   actionMenuOptionsList: ActionMenuData[];
   puedeEditar = false;
   filteredTransferenciaItemList: TransferenciaItem[];
-  buscarControl = new FormControl(null, [
+  buscarControl = new UntypedFormControl(null, [
     Validators.required,
     Validators.minLength(1)
   ]);
