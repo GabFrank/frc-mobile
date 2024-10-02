@@ -65,7 +65,7 @@
     "i": "^0.3.7",
     "jetifier": "^2.0.0",
     "ngx-currency": "^2.5.3",
-    "ngx-device-detector": "^2.1.0",
+    "ngx-device-detector": "^5.0.1",
     "ngx-webcam": "^0.4.1",
     "npm": "^9.6.7",
     "phonegap-plugin-barcodescanner": "^8.1.0",
