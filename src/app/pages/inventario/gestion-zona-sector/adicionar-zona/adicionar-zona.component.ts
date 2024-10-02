@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Sector } from 'src/app/domains/sector/sector.model';
@@ -18,8 +18,8 @@ import { NotificacionService } from 'src/app/services/notificacion.service';
 export class AdicionarZonaComponent implements OnInit {
   selectedSector: Sector;
   selectedZona: Zona;
-  descripcionControl = new FormControl(null, [Validators.required]);
-  activoControl = new FormControl(true);
+  descripcionControl = new UntypedFormControl(null, [Validators.required]);
+  activoControl = new UntypedFormControl(true);
 
   constructor(
     private _location: Location,

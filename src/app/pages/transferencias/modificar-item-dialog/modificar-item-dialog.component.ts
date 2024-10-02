@@ -1,5 +1,5 @@
 import { PopOverService } from './../../../services/pop-over.service';
-import { Form, FormControl, Validators } from '@angular/forms';
+import { Form, UntypedFormControl, Validators } from '@angular/forms';
 import { Component, Input, OnInit } from '@angular/core';
 import {
   EtapaTransferencia,
@@ -24,9 +24,9 @@ export class ModificarItemDialogComponent implements OnInit {
   cantidadAnterior;
   vencimientoAnterior;
   cantidadControl;
-  vencimientoControl: FormControl;
+  vencimientoControl: UntypedFormControl;
   presentacionAnterior: Presentacion;
-  presentacionControl: FormControl;
+  presentacionControl: UntypedFormControl;
   presentacionList: Presentacion[];
 
   @Input() data: ModificarItemData;
@@ -38,9 +38,9 @@ export class ModificarItemDialogComponent implements OnInit {
     private popoverService: PopOverService,
     private presentacionService: PresentacionService
   ) {
-    this.cantidadControl = new FormControl(null);
-    this.vencimientoControl = new FormControl(null, [Validators.required]);
-    this.presentacionControl = new FormControl(null);
+    this.cantidadControl = new UntypedFormControl(null);
+    this.vencimientoControl = new UntypedFormControl(null, [Validators.required]);
+    this.presentacionControl = new UntypedFormControl(null);
   }
 
   async ngOnInit() {

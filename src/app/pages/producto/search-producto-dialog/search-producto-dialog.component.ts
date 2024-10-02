@@ -7,7 +7,7 @@ import { PopOverService, PopoverSize } from './../../../services/pop-over.servic
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { untilDestroyed } from '@ngneat/until-destroy';
 import { Producto } from 'src/app/domains/productos/producto.model';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { Component, Input, OnInit } from '@angular/core';
 import { ProductoService } from '../producto.service';
 import { ImagePopoverComponent } from 'src/app/components/image-popover/image-popover.component';
@@ -35,7 +35,7 @@ export class SearchProductoDialogComponent implements OnInit {
   @Input()
   data;
 
-  buscarControl = new FormControl('', [Validators.required, Validators.minLength(1)])
+  buscarControl = new UntypedFormControl('', [Validators.required, Validators.minLength(1)])
   productosList: Producto[]
 
   isSearching

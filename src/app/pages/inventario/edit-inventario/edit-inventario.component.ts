@@ -8,7 +8,7 @@ import {
   TipoNotificacion
 } from 'src/app/services/notificacion.service';
 import { MainService } from 'src/app/services/main.service';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { Zona } from 'src/app/domains/zona/zona.model';
 import {
@@ -65,7 +65,7 @@ export class EditInventarioComponent implements OnInit {
   sectorList: Sector[] = [];
   inventarioDataList: InventarioData[] = [];
   inventarioId;
-  mostrarControl = new FormControl(OpcionesMostrar.MIOS);
+  mostrarControl = new UntypedFormControl(OpcionesMostrar.MIOS);
   opcionesMostrarList = Object.values(OpcionesMostrar);
   selectedResponsable: Usuario;
   isAddZona = false;
