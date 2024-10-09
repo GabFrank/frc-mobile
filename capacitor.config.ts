@@ -6,31 +6,32 @@ const config: CapacitorConfig = {
   webDir: 'www',
   bundledWebRuntime: false,
   server: {
-    'cleartext': true
+    cleartext: true,
+    androidScheme: 'http'
   },
   plugins: {
-		CapacitorUpdater: {
-			autoUpdate: true
-		},
+    CapacitorUpdater: {
+      autoUpdate: true
+    },
     Camera: {
-      "androidSource": "both"
+      androidSource: 'both'
     },
     Filesystem: {
-      "androidStorage": "external"
+      androidStorage: 'external'
     },
     PushNotifications: {
-      presentationOptions: ["badge", "sound", "alert"],
+      presentationOptions: ['badge', 'sound', 'alert']
     },
     SplashScreen: {
-      "backgroundColor": "#b40000",
-      "launchAutoHide": true,
-      "androidSplashResourceName": "splash",
-      "androidScaleType": "CENTER_CROP",
-      "showSpinner": false,
-      "splashFullScreen": true,
-      "splashImmersive": true
+      backgroundColor: '#b40000',
+      launchAutoHide: true,
+      androidSplashResourceName: 'splash',
+      androidScaleType: 'CENTER_CROP',
+      showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true
     }
-	}
+  }
 };
 
 export default config;
