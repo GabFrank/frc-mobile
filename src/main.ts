@@ -1,12 +1,12 @@
 import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import 'hammerjs'
-CapacitorUpdater.notifyAppReady()
+// CapacitorUpdater.notifyAppReady()
 
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
 import { App } from '@capacitor/app'
-import { CapacitorUpdater } from '@capgo/capacitor-updater'
+// import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { SplashScreen } from '@capacitor/splash-screen'
 if (environment.production) {
   enableProdMode();
