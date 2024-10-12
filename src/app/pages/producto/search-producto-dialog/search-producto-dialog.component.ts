@@ -192,12 +192,12 @@ export class SearchProductoDialogComponent implements OnInit {
   }
 
   onVerStock(producto) {
-    // let data: StockPorSucursalDialogData = {
-    //   producto: producto
-    // }
-    // this.modalService.openModal(StockPorSucursalDialogComponent, data).then(res => {
+    let data: StockPorSucursalDialogData = {
+      producto: producto
+    }
+    this.modalService.openModal(StockPorSucursalDialogComponent, data).then(res => {
 
-    // })
+    })
   }
 
 }
