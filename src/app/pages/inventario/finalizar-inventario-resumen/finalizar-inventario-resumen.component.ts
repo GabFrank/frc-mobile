@@ -14,6 +14,8 @@ import { SectorService } from 'src/app/domains/sector/sector.service';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
 import { convertMsToTime } from 'src/app/generic/utils/dateUtils';
 import { CargandoService } from 'src/app/services/cargando.service';
+import { ModalService } from 'src/app/services/modal.service';
+import { NuevoInventarioComponent } from '../nuevo-inventario/nuevo-inventario.component';
 
 @UntilDestroy()
 @Component({
@@ -47,7 +49,8 @@ export class FinalizarInventarioResumenComponent implements OnInit {
     private sectorService: SectorService,
     public mainService: MainService,
     private dialogoService: DialogoService,
-    private cargandoService: CargandoService
+    private cargandoService: CargandoService,
+    private modalService: ModalService
   ) { }
 
   ngOnInit() {
@@ -162,6 +165,16 @@ export class FinalizarInventarioResumenComponent implements OnInit {
               this.onBack();
             }
           })
+      }
+    })
+  }
+
+  onNuevoInventario(){
+    this.modalService.openModal(NuevoInventarioComponent, {data: this.selectedInventario?.sucursal}).then(res => {
+      if(res.data?.inventario?.id!=null){
+        this.router.navigate(['/inventario/list/info', res.data.inventario.id], { relativeTo: this.route });
+      } else {
+
       }
     })
   }
