@@ -235,6 +235,10 @@ export const productoPorCodigoQuery = gql`
           principal
           activo
         }
+        precioPrincipal{
+          id
+          precio
+        }
         tipoPresentacion {
           id
           descripcion
@@ -252,6 +256,7 @@ export const productoPorCodigoQuery = gql`
           activo
         }
       }
+        codigoPrincipal
     }
   }
 `;

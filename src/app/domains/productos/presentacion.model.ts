@@ -1,3 +1,4 @@
+import { Moneda } from "src/app/pages/operaciones/moneda/moneda.model"
 import { Usuario } from "../personas/usuario.model"
 import { Codigo } from "./codigo.model"
 import { PrecioPorSucursal } from "./precio-por-sucursal.model"
@@ -19,4 +20,5 @@ export class Presentacion {
     precios: PrecioPorSucursal[];
     codigoPrincipal?: Codigo
     precioPrincipal?: PrecioPorSucursal;
+    precioConvertido?: number;
 }

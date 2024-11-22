@@ -11,6 +11,7 @@ export class Moneda {
   creadoEn: Date;
   usuario: Usuario;
   cambio: number;
+  imagen: string;
   monedaBilleteList: MonedaBillete[]
 
   toInput(): MonedaInput {
