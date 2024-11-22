@@ -4,6 +4,9 @@ import { ProductoDashboardComponent } from './producto-dashboard/producto-dashbo
 
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { ConsultarPrecioDashboardComponent } from './consultar-precio-dashboard/consultar-precio-dashboard.component';
+import { MostrarPrecioComponent } from './mostrar-precio/mostrar-precio.component';
+import { PrecioConfigComponent } from './precio-config/precio-config.component';
 
 const routes: Routes = [
   {
@@ -17,6 +20,18 @@ const routes: Routes = [
   {
     path: 'edit/:id', // producto/edit/1
     component: EditProductoComponent,
+  },
+  {
+    path: 'consultar-precio',
+    component: ConsultarPrecioDashboardComponent
+  },
+  {
+    path: 'mostrar-precio',
+    component: MostrarPrecioComponent
+  },
+  {
+    path: 'precio-config',
+    component: PrecioConfigComponent
   }
 ];
 

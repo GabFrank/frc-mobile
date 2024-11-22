@@ -156,8 +156,8 @@ export class ProductoService {
   async  onGetStockPorSucursal(productoId: number, sucursalId: number): Promise<Observable<number>>{
     return await this.genericService.onGet(this.getStockPorSucursal, {proId: productoId, sucId: sucursalId});
   }
-
-  async onGetProductoPorCodigoBarra(codigoBarra: string): Promise<Observable<Producto>> {
-    return await this.genericService.onGet(this.productoPorCodigo, {texto: codigoBarra});
-  }
+  
+  async onGetProductoPorCodigo(texto): Promise<Observable<Producto>> {
+    return await this.genericService.onCustomGet(this.productoPorCodigo, { texto });
+    }
 }

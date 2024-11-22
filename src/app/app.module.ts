@@ -131,9 +131,10 @@ export class HammerConfig extends HammerGestureConfig {
     NgxQRCodeModule,
     HttpClientModule,
     CommonModule
-  ],
+    ],
   exports: [],
   providers: [
+    BarcodeScanner,
     FingerprintAIO,
     {
       provide: HAMMER_GESTURE_CONFIG,
