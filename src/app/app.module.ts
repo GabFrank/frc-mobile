@@ -38,6 +38,7 @@ import { TransferenciasModule } from './pages/transferencias/transferencias.modu
 import { MainService } from './services/main.service';
 import { NgxCurrencyModule } from "ngx-currency";
 import { MarcacionModule } from "./pages/marcacion/marcacion.module";
+import { BarcodeScanner } from "@awesome-cordova-plugins/barcode-scanner/ngx";
 
 registerLocaleData(localePY);
 
@@ -112,9 +113,10 @@ export class HammerConfig extends HammerGestureConfig {
     NgxQRCodeModule,
     HttpClientModule,
     CommonModule
-  ],
+    ],
   exports: [],
   providers: [
+    BarcodeScanner,
     FingerprintAIO,
     {
       provide: HAMMER_GESTURE_CONFIG,
