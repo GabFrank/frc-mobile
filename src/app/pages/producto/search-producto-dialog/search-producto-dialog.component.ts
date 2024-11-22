@@ -8,15 +8,16 @@ import { UntilDestroy } from '@ngneat/until-destroy';
 import { untilDestroyed } from '@ngneat/until-destroy';
 import { Producto } from 'src/app/domains/productos/producto.model';
 import { UntypedFormControl, Validators } from '@angular/forms';
-import { Component, Input, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ProductoService } from '../producto.service';
 import { ImagePopoverComponent } from 'src/app/components/image-popover/image-popover.component';
 import { Location } from '@angular/common';
-import { Platform } from '@ionic/angular';
+import { IonContent, Platform } from '@ionic/angular';
 import { CodigoService } from '../../codigo/codigo.service';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { StockPorSucursalDialogComponent, StockPorSucursalDialogData } from '../../operaciones/movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
+import { NotificacionService } from 'src/app/services/notificacion.service';
 
 export interface SearchProductoDialogData {
   mostrarPrecio: boolean;
@@ -30,7 +31,9 @@ export interface SearchProductoDialogData {
   styleUrls: ['./search-producto-dialog.component.scss'],
   providers: [BarcodeScanner, PhotoViewer]
 })
-export class SearchProductoDialogComponent implements OnInit {
+export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
+
+  @ViewChild('content', {static: false}) content: IonContent;
 
   @Input()
   data;
@@ -44,7 +47,9 @@ export class SearchProductoDialogComponent implements OnInit {
   mostrarPrecio = false;
   isSearchingList: boolean[] = [];
   isInventario = false;
+  isVisible: boolean = false;
   selectedSucursal: Sucursal;
+
 
   isWeb = false;
 
@@ -58,10 +63,14 @@ export class SearchProductoDialogComponent implements OnInit {
     private _location: Location,
     private plf: Platform,
     private codigoService: CodigoService,
-    private photoViewer: PhotoViewer
+    private photoViewer: PhotoViewer,
+    private notificacionService: NotificacionService
 
   ) {
     this.isWeb = plf.platforms().includes('mobileweb');
+  }
+  ngAfterViewInit(): void {
+    this.content.scrollEvents = true;
   }
 
   ngOnInit() {
@@ -81,6 +90,7 @@ export class SearchProductoDialogComponent implements OnInit {
     console.log(this.data);
 
   }
+  
 
   onBuscarClick() {
     this.onSearchProducto(this.buscarControl.value, null)
@@ -116,6 +126,9 @@ export class SearchProductoDialogComponent implements OnInit {
           (await this.productoService.onSearch(text, offset)).pipe(untilDestroyed(this)).subscribe((res) => {
             if (offset == null) {
               this.productosList = res;
+              if(this.productosList.length === 0){
+                this.notificacionService.warn('Producto no encontrado');
+              }
               // this.isSearchingList = new Array(this.isSearchingList.length)
               this.showCargarMas = true
             } else {
@@ -198,6 +211,15 @@ export class SearchProductoDialogComponent implements OnInit {
     this.modalService.openModal(StockPorSucursalDialogComponent, data).then(res => {
 
     })
+  }
+
+  onScroll(event: any){
+    const scrollTop = event.detail.scrollTop;
+    this.isVisible = scrollTop > 10;
+  }
+
+  scrollToTop(){
+    this.content.scrollToTop(500);
   }
 
 }

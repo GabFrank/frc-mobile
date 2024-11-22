@@ -7,11 +7,22 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { ComponentsModule } from 'src/app/components/components.module';
+import { ConsultarPrecioDashboardComponent } from './consultar-precio-dashboard/consultar-precio-dashboard.component';
+import { MostrarPrecioComponent } from './mostrar-precio/mostrar-precio.component';
+import { PrecioConfigComponent } from './precio-config/precio-config.component';
+import {ZXingScannerModule} from '@zxing/ngx-scanner';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 
 
 @NgModule({
-  declarations: [ProductoDashboardComponent, EditProductoComponent, SearchProductoDialogComponent],
+  declarations: [
+    ProductoDashboardComponent,
+    EditProductoComponent, 
+    SearchProductoDialogComponent, 
+    ConsultarPrecioDashboardComponent, 
+    MostrarPrecioComponent,
+    PrecioConfigComponent,  ],
   imports: [
     ProductoRoutingModule,
     CommonModule,
@@ -19,6 +30,8 @@ import { ComponentsModule } from 'src/app/components/components.module';
     ComponentsModule,
     ReactiveFormsModule,
     FormsModule,
-  ]
+    ZXingScannerModule
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ProductoModule { }

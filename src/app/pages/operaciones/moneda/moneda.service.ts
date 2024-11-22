@@ -23,6 +23,4 @@ export class MonedaService {
   async onGetAll(): Promise<Observable<Moneda[]>> {
     return await this.genericService.onGetAll(this.getAllMonedas);
   }
-
-
 }

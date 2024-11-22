@@ -171,8 +171,26 @@ ion-loading.my-loading-class {
     background: black;
     box-shadow: none;
     color: white;
+    max-width: fit-content;
   }
   .loading-content {
     color: white !important;
   }
 }
+
+ion-spinner{
+  color: white !important;
+}
+
+ion-item.item-has-focus ion-label { 
+  color: #fff !important;
+  /* Elige el color que prefieras */
+}
+
+zxing-scanner video {
+  /* Tus estilos aquí */
+  border: 3px solid red; /* Ejemplo de borde */
+  border-radius: 8px; 
+  max-width: 400px; /* Ajusta el tamaño según lo necesites */
+}
+
