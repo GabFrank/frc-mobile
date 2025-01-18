@@ -33,6 +33,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/transferencias/transferencias.module').then(m => m.TransferenciasModule)
   },
   {
+    path: 'pedidos',
+    loadChildren: () => import('./pages/operaciones/pedidos/pedidos.module').then(m => m.PedidosModule)
+  },
+  {
     path: 'splash',
     loadChildren: () => import('./splash/splash.module').then( m => m.SplashPageModule)
   },
