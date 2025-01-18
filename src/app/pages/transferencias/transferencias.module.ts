@@ -17,10 +17,10 @@ import { TransferenciasRoutingModule } from './transferencias-routing.module';
   imports: [
     CommonModule,
     IonicModule,
-    TransferenciasRoutingModule,
     ComponentsModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    TransferenciasRoutingModule
   ],
   exports: [ListTransferenciasComponent, TransferenciaComponent],
 

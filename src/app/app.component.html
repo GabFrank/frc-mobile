@@ -89,6 +89,17 @@
           <ion-label>Transferencia</ion-label>
         </ion-item>
 
+        <ion-item
+          *ngIf="
+            loginService.usuarioActual?.roles?.includes('RECIBIR PEDIDOS')
+          "
+          [routerLink]="['/pedidos']"
+          (click)="closeMenu()"
+        >
+          <ion-icon name="git-compare-outline" slot="start"></ion-icon>
+          <ion-label>Pedidos</ion-label>
+        </ion-item>
+
         <ion-accordion-group>
           <ion-accordion value="first">
             <ion-item slot="header">
