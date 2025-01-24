@@ -188,9 +188,104 @@ ion-item.item-has-focus ion-label {
 }
 
 zxing-scanner video {
-  /* Tus estilos aquí */
-  border: 3px solid red; /* Ejemplo de borde */
+  border: 3px solid red;
   border-radius: 8px; 
-  max-width: 400px; /* Ajusta el tamaño según lo necesites */
+  max-width: 400px;
 }
 
+.action-sheet-selected.sc-ion-action-sheet-md {
+  color: #f44336 !important;
+}
+.action-sheet-button.sc-ion-action-sheet-md {
+  color: white;
+  display: grid;
+  justify-content: center;
+}
+
+.myCalendar-class {
+  --ion-color-primary: #f44336;
+  --ion-background-color: #000000; 
+}
+
+.myCalendar-class .month-title {
+  color: #ffffff !important; 
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.myCalendar-class .days-btn p {
+  color: #ffffff !important;  
+}
+
+.myCalendar-class .days-btn.today.on-selected p {
+  color: white !important;
+}
+
+.myCalendar-class .days-btn.today p {
+  color: #f44336 !important;
+}
+
+.myCalendar-class .days-btn.today {
+  border: 1px solid #f44336 !important;
+}
+
+.myCalendar-class .days.between p {
+  color: white !important;
+}
+
+.myCalendar-class .days.endSelection p {
+  color: white !important;
+}
+
+
+.myCalendar-class .md.title-default.hydrated {
+  display: grid;
+  justify-content: center;
+}
+
+.ngx-pagination a {
+  color: white !important;
+}
+.ngx-pagination a:hover {
+  background: #e6e6e600 !important;
+  color: #f44336 !important;
+}
+
+.ngx-pagination a::after {
+  content: none !important;
+}
+
+.ngx-pagination a::before {
+  content: none !important;
+}
+
+.ngx-pagination li.pagination-next.disabled::after {
+  content: none !important;
+}
+
+.ngx-pagination li.pagination-previous.disabled::before {
+  content: none !important;
+}
+
+.ngx-pagination .current {
+  background: #f44336 !important;
+  border-radius: 15%;
+}
+
+.ngx-pagination .disabled {
+  color: rgb(97, 97, 97);
+}
+
+.ngx-pagination {
+  display: flex;
+  bottom: 0;
+  position: fixed;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  background: black;
+  margin-top: 0;
+  margin-bottom: 0;
+  height: 40px;
+  padding-left: 0;
+}

@@ -428,6 +428,15 @@ export const deleteTransferenciaItemDetalleQuery = gql`
   }
 `;
 
+export const verificarProducto = gql`
+ mutation verificarProducto($id: ID!, $vencimientoVerificado: Boolean!) {
+  verificarProducto(id: $id, vencimientoVerificado: $vencimientoVerificado) {
+    id
+    vencimientoVerificado
+  } 
+ }
+`;
+
 export const transferenciasPorUsuarioQuery = gql`
   query ($id: ID!) {
     data: transferenciasPorUsuario(id: $id) {

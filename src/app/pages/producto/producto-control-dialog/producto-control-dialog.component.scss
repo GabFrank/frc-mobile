@@ -1,0 +1,100 @@
+ion-list {
+    margin: 10px;
+    padding-bottom: 0;
+    padding-top: 0;
+}
+
+ion-item {
+    --highlight-color-focused: white;
+}
+
+ion-title {
+    display: grid;
+    text-align: center;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+::ng-deep .native-input.sc-ion-input-md {
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+    padding-left: 0px !important;
+    color: white !important;
+    text-align: center;
+}
+
+ion-icon {
+    width: 24px;
+    height: 24px;
+}
+
+ion-button {
+    display: grid;
+    justify-content: center;
+    --background: #f44336;
+}
+
+::ng-deep .label-fixed.sc-ion-label-md-h {
+    color: #f44336;
+    text-align: justify;
+}
+
+h2 {
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 5px 5px 5px;
+}
+
+.selectedDate {
+    display: flex;
+    justify-content: center;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+img {
+    height: 200px;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+img:hover {
+    transform: scale(1.1);
+}
+
+.center-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #f44336;
+}
+
+.noDetailEdit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.noDetailEdit p {
+    color: #666;
+    font-size: x-large;
+}
+
+.noDetailProduct {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 85vh;
+}
+
+.noDetailProduct p {
+    color: #666;
+    font-size: x-large;
+}
+
+.details-title {
+    display: flex;
+    text-align: center;
+    margin-right: 52px;
+}

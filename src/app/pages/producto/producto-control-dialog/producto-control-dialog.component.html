@@ -1,0 +1,75 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="cerrarModal()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title 
+    [ngClass]="onlyView ? 'details-title' : 'edit-title'"
+    >
+      {{onlyView ? 'Detalles del producto' : 'Editar'}}
+    </ion-title>
+    <ion-buttons slot="end" *ngIf="!onlyView">
+      <ion-button color="success" [disabled]="prodVencidoForm.invalid" (click)="guardarCambios()">Aceptar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form *ngIf="!onlyView" [formGroup]="prodVencidoForm">
+    <h2>{{producto?.descripcion || 'Producto sin nombre'}}</h2>
+    <div style="display: grid; justify-content: center;">
+      <img [src]="producto?.img" alt="">
+    </div>
+    <ion-list>
+      <ion-item formArrayName="cantidadVencimiento" *ngFor="let item of cantidadVencimiento.controls; let i = index"
+        fill="outline">
+        <ion-grid>
+          <ion-row [formGroupName]="i">
+            <ion-col size="5">
+              <ion-label class="center-content">Cantidad</ion-label>
+              <ion-input type="number" formControlName="cantidad" placeholder="0"></ion-input>
+            </ion-col>
+            &nbsp;
+            <ion-col size="6">
+              <ion-label class="center-content">Vence</ion-label>
+              <ion-input 
+              readonly 
+              [value]="item.get('vencimiento')?.value | date: 'dd/MM/yyyy'"
+              placeholder="Fecha"
+              (click)="openCalendar(i)">
+              </ion-input>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+        <ion-icon (click)="eliminarfecha(i)" color="danger" name="trash-outline"></ion-icon>
+      </ion-item>
+    </ion-list>
+    <ion-button (click)="agregarFecha()" *ngIf="!onlyView">
+      Añadir
+      &nbsp;
+      <ion-icon name="add"></ion-icon>
+    </ion-button>
+  </form>
+
+  <ion-list *ngIf="onlyView && producto?.cantidadVencimiento?.length">
+    <h2>{{producto?.descripcion}}</h2>
+    <ion-item *ngFor="let detalle of producto?.cantidadVencimiento; let i = index">
+      <ion-label>
+        Cantidad: {{ detalle?.cantidad }}
+      </ion-label>
+      <ion-label>
+        Vence: {{ detalle?.vencimiento | date: 'dd/MM/yyyy' }}
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div
+  *ngIf="!onlyView && cantidadVencimiento.length === 0 || (onlyView && !producto?.cantidadVencimiento?.length)"
+  [ngClass]="onlyView ? 'noDetailProduct' : 'noDetailEdit'"
+>
+  <p>{{ onlyView ? 'SIN DETALLES' : 'SIN DETALLES' }}</p>
+</div>
+
+</ion-content>

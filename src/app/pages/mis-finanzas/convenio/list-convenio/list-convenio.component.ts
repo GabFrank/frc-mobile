@@ -2,6 +2,7 @@ import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { PageInfo } from 'src/app/app.component';
 import {
   GenericListDialogComponent,
   GenericListDialogData,
@@ -32,6 +33,10 @@ export class ListConvenioComponent implements OnInit {
   totalAbiertos = 0;
   selectedEstado = EstadoVentaCredito.ABIERTO;
   selectedCliente: Cliente;
+  page = 1;
+  size = 5;
+  pagActual = 1;
+  selectedPageInfo: PageInfo<VentaCredito> = null;
 
   constructor(
     private ventaCreditoService: VentaCreditoService,
@@ -100,11 +105,11 @@ export class ListConvenioComponent implements OnInit {
               nombre: 'Presentación',
               width: 100,
               nested: true,
-              nestedId: 'cantidad'
+              nestedId: 'cantidad',
             },
             {
               id: 'cantidad',
-              nombre: 'cantidad',
+              nombre: 'Cantidad',
               width: 100
             },
             {

@@ -39,8 +39,7 @@ import { MainService } from './services/main.service';
 import { NgxCurrencyModule } from "ngx-currency";
 import { MarcacionModule } from "./pages/marcacion/marcacion.module";
 import { BarcodeScanner } from "@awesome-cordova-plugins/barcode-scanner/ngx";
-
-registerLocaleData(localePY);
+registerLocaleData(localePY, 'es-PY');
 
 switch (localStorage.getItem('serverIp')) {
   case null:
@@ -112,7 +111,7 @@ export class HammerConfig extends HammerGestureConfig {
     FuncionarioModule,
     NgxQRCodeModule,
     HttpClientModule,
-    CommonModule
+    CommonModule,
     ],
   exports: [],
   providers: [

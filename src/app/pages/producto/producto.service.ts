@@ -23,6 +23,8 @@ import { SaveImagenProductoGQL } from "./graphql/saveImagenProducto";
 import { SaveProductoGQL } from "./graphql/saveProducto";
 import { ProductoStockBySucursalGQL } from './graphql/stockBySucursalAndProductoId';
 import { ProductoPorCodigoGQL } from './graphql/productoPorCodigo';
+import { findProductoVencidoGQL } from './graphql/findProductoVencido';
+import { dateToString } from 'src/app/generic/utils/dateUtils';
 
 @UntilDestroy({ checkProperties: true })
 @Injectable({
@@ -45,7 +47,8 @@ export class ProductoService {
     private genericService: GenericCrudService,
     private cargandoService: CargandoService,
     private getStockPorSucursal: ProductoStockBySucursalGQL,
-    private productoPorCodigo: ProductoPorCodigoGQL
+    private productoPorCodigo: ProductoPorCodigoGQL,
+    private findProductoVencido: findProductoVencidoGQL,
   ) {
     this.productosList = [];
   }
@@ -153,11 +156,35 @@ export class ProductoService {
     // })
   }
 
-  async  onGetStockPorSucursal(productoId: number, sucursalId: number): Promise<Observable<number>>{
-    return await this.genericService.onGet(this.getStockPorSucursal, {proId: productoId, sucId: sucursalId});
+  async onGetStockPorSucursal(productoId: number, sucursalId: number): Promise<Observable<number>> {  
+    return await this.genericService.onGet(this.getStockPorSucursal, { proId: productoId, sucId: sucursalId });
   }
-  
+
   async onGetProductoPorCodigo(texto): Promise<Observable<Producto>> {
-    return await this.genericService.onCustomGet(this.productoPorCodigo, { texto });
-    }
+    return await this.genericService.onCustomGet(this.productoPorCodigo, { texto });
+  }
+
+  onFindProductoVencido(sucId: number, fechaInicio: Date, fechaFin: Date): Observable<any> {
+    const variables = {
+      sucId,
+      fechaInicio: dateToString(fechaInicio),
+      fechaFin: dateToString(fechaFin)
+    };
+
+    console.log('Variables enviadas al servidor:', variables);
+
+    return new Observable((obs) => {
+      this.findProductoVencido.fetch(variables).pipe(untilDestroyed(this)).subscribe(
+        (result) => {
+          obs.next(result.data);
+          obs.complete();
+        },
+        (error) => {
+          console.error('Error al buscar productos vencidos:', error);
+          obs.error(error);
+        }
+      );
+    });
+  }
+
 }

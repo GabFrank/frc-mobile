@@ -12,8 +12,10 @@ import { MostrarPrecioComponent } from './mostrar-precio/mostrar-precio.componen
 import { PrecioConfigComponent } from './precio-config/precio-config.component';
 import {ZXingScannerModule} from '@zxing/ngx-scanner';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-
-
+import { ProductoControlComponent } from './producto-control/producto-control.component';
+import { CalendarModule } from 'ion7-calendar';
+import {NgxPaginationModule} from 'ngx-pagination';
+import { ProductoControlDialogComponent } from './producto-control-dialog/producto-control-dialog.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +24,10 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
     SearchProductoDialogComponent, 
     ConsultarPrecioDashboardComponent, 
     MostrarPrecioComponent,
-    PrecioConfigComponent,  ],
+    PrecioConfigComponent,
+    ProductoControlComponent,
+    ProductoControlDialogComponent
+    ],
   imports: [
     ProductoRoutingModule,
     CommonModule,
@@ -30,7 +35,9 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
     ComponentsModule,
     ReactiveFormsModule,
     FormsModule,
-    ZXingScannerModule
+    ZXingScannerModule,
+    CalendarModule,
+    NgxPaginationModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

@@ -20,6 +20,7 @@ import { GetTransferenciaItensPorTransferenciaIdGQL } from './graphql/getTransfe
 import { PageInfo } from 'src/app/app.component';
 import { TransferListItem } from 'worker_threads';
 import { GetTransferenciaItensWithFilterGQL } from './graphql/getTransferenciaItensWithFilter';
+import { VerificarProductoGQL } from './graphql/verificarProducto';
 
 @UntilDestroy()
 @Injectable({
@@ -42,7 +43,8 @@ export class TransferenciaService {
     private notificacionService: NotificacionService,
     private transferenciasPorUsuario: GetTransferenciasPorUsuarioGQL,
     private transferenciaItemPorTransferenciaId: GetTransferenciaItensPorTransferenciaIdGQL,
-    private transferenciaItemPorTransferenciaIdWithFilter: GetTransferenciaItensWithFilterGQL
+    private transferenciaItemPorTransferenciaIdWithFilter: GetTransferenciaItensWithFilterGQL,
+    private verificarProducto: VerificarProductoGQL
   ) { }
 
   async onGetTrasferenciasPorFecha(inicio, fin) {
@@ -149,4 +151,34 @@ export class TransferenciaService {
       })
     })
   }
+
+  onVerificarProducto(id: number, vencimientoVerificado: boolean): Observable<boolean> {
+    return new Observable<boolean>((observer) => {
+      this.verificarProducto
+        .mutate(
+          { id, vencimientoVerificado },
+          { fetchPolicy: 'no-cache', errorPolicy: 'all' }
+        )
+        .pipe(untilDestroyed(this))
+        .subscribe({
+          next: (res) => {
+            if (!res.errors) {
+              observer.next(true); 
+              this.notificacionService.openGuardadoConExito(); 
+            } else {
+              observer.next(false); 
+              this.notificacionService.openAlgoSalioMal(); 
+            }
+            observer.complete();
+          },
+          error: (err) => {
+            console.error('Error al verificar el producto:', err);
+            observer.next(false);
+            this.notificacionService.openAlgoSalioMal(); 
+            observer.complete();  
+          },
+        });
+    });
+  }
+  
 }

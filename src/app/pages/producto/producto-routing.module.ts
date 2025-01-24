@@ -7,6 +7,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { ConsultarPrecioDashboardComponent } from './consultar-precio-dashboard/consultar-precio-dashboard.component';
 import { MostrarPrecioComponent } from './mostrar-precio/mostrar-precio.component';
 import { PrecioConfigComponent } from './precio-config/precio-config.component';
+import { ProductoControlComponent } from './producto-control/producto-control.component';
+import { ProductoControlDialogComponent } from './producto-control-dialog/producto-control-dialog.component';
 
 const routes: Routes = [
   {
@@ -32,6 +34,10 @@ const routes: Routes = [
   {
     path: 'precio-config',
     component: PrecioConfigComponent
+  },
+  {
+    path: 'controlar-producto',
+    component: ProductoControlComponent
   }
 ];
 

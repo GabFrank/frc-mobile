@@ -161,6 +161,7 @@ export const productoStock = gql`
     data: productoPorSucursalStock(proId: $proId, sucId: $sucId)
   }
 `;
+
 export const productoStockCostoPorProducto = gql`
   query ($proId: ID!, $sucId: ID!) {
     data: costoPorProductolLastPorProductoId(proId: $proId) {
@@ -567,3 +568,35 @@ export const findByPdvGrupoProductoQuery = gql`
     }
   }
 `;
+
+export const findProductoVencidoQuery = gql`
+  query ($sucId: Int!, $fechaInicio: String!, $fechaFin: String!) {
+    data: findProductoVencido(sucId: $sucId, fechaInicio: $fechaInicio, fechaFin: $fechaFin) {
+      producto {
+        id
+        descripcion
+        imagenPrincipal
+      }
+      presentacion {
+        id
+      }
+      sucursal { 
+        id
+        nombre
+      }
+      transferencia {
+        id
+        creadoEn
+        sucursalDestino {
+          id
+        }
+      }
+      transferenciaItem {
+        id
+        vencimientoVerificado
+        cantidadRecepcion
+        vencimientoRecepcion
+      }
+    }
+  }
+`

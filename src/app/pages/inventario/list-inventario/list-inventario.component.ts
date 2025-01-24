@@ -17,6 +17,7 @@ import { Location } from '@angular/common';
 export class ListInventarioComponent implements OnInit {
 
   inventarioList: Inventario[]
+  pagActual: number = 1;
 
   constructor(
     private inventarioService: InventarioService,

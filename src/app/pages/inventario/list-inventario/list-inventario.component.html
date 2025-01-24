@@ -21,7 +21,9 @@
       <ion-col size="12">
         <ion-card
           class="item"
-          *ngFor="let inventario of inventarioList"
+          *ngFor="let inventario of inventarioList | paginate: {
+            itemsPerPage: 10, currentPage: pagActual
+          }; let i = index"
           (click)="onItemClick(inventario)"
         >
           <div
@@ -56,4 +58,16 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+   <!-- ? PRUEBA DE PAGINACIÓN ↓ -->
+  <div>
+    <pagination-controls
+    (pageChange)="pagActual = $event"
+    maxSize="6"
+    previousLabel="Anterior"
+    nextLabel="Siguiente"
+    [autoHide]="true"
+    boundaryLinkds="true"
+  >
+</pagination-controls>
+  </div>
 </ion-content>

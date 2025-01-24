@@ -1,6 +1,9 @@
+import { Transferencia, TransferenciaItem } from "src/app/pages/transferencias/transferencia.model";
 import { Usuario } from "../personas/usuario.model";
 import { Codigo } from "./codigo.model";
 import { Presentacion } from "./presentacion.model";
+import { InventarioProductoItem } from "src/app/pages/inventario/inventario.model";
+import { Sucursal } from "../empresarial/sucursal/sucursal.model";
 
 export class Producto {
   id: number;

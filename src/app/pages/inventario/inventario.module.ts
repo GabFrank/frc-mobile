@@ -15,6 +15,7 @@ import { GestionZonaSectorComponent } from './gestion-zona-sector/gestion-zona-s
 import { ListZonasComponent } from './gestion-zona-sector/list-zonas/list-zonas.component';
 import { AdicionarSectorComponent } from './gestion-zona-sector/adicionar-sector/adicionar-sector.component';
 import { AdicionarZonaComponent } from './gestion-zona-sector/adicionar-zona/adicionar-zona.component';
+import { NgxPaginationModule } from 'ngx-pagination';
 
 
 @NgModule({
@@ -24,7 +25,8 @@ import { AdicionarZonaComponent } from './gestion-zona-sector/adicionar-zona/adi
     InventarioRoutingModule,
     IonicModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    NgxPaginationModule
     ]
 })
 export class InventarioModule { }

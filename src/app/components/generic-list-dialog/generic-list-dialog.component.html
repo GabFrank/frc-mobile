@@ -1,6 +1,7 @@
 <ion-content fullscreen>
-  <ion-col size="2">
+  <!-- <ion-col size="2">
     <ion-icon
+      class="icono"
       name="arrow-back"
       style="font-size: 1.5em"
       (click)="onBack()"
@@ -8,7 +9,20 @@
   </ion-col>
   <ion-col size="12">
     <ion-label>{{data?.titulo | titlecase}}</ion-label>
-  </ion-col>
+  </ion-col> -->
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon name="arrow-back" style="font-size: 1.5em;"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title 
+     style="text-align: center;
+      padding-right: 32px;
+      padding-left: 0;"
+     >
+     {{ data?.titulo | titlecase }}</ion-title>
+  </ion-toolbar>
   <ion-row *ngIf="data?.search">
     <ion-col size="12">
       <ion-item>

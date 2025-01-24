@@ -93,6 +93,7 @@ export class TransferenciaInput {
   usuarioPreparacionId: number;
   usuarioRecepcionId: number;
   creadoEn: Date;
+  vencimientoVerificado: boolean;
 }
 
 export class TransferenciaItem {
@@ -126,6 +127,7 @@ export class TransferenciaItem {
   poseeVencimiento: boolean
   usuario: Usuario;
   creadoEn: Date;
+  vencimientoVerificado: boolean;
 
   toInput(): TransferenciaItemInput {
     let input = new TransferenciaItemInput;
@@ -158,6 +160,7 @@ export class TransferenciaItem {
     input.activo = this.activo;
     input.poseeVencimiento  = this.poseeVencimiento;
     input.usuarioId = this.usuario?.id;
+    input.vencimientoVerificado = this.vencimientoVerificado;
     return input;
   }
 }
@@ -193,4 +196,5 @@ export class TransferenciaItemInput {
   poseeVencimiento: boolean
   usuarioId: number;
   creadoEn: Date;
+  vencimientoVerificado: boolean;
 }
