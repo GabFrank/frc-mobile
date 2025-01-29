@@ -1,0 +1,43 @@
+<ion-grid
+  class="pagination-container"
+  *ngIf="pageData && pageData.getTotalPages > 1"
+>
+  <ion-row class="ion-justify-content-center ion-align-items-center">
+    <!-- Previous Button -->
+    <ion-col size="2">
+      <ion-button
+        fill="clear"
+        [disabled]="pageData?.isFirst"
+        (click)="previousPage()"
+      >
+        <ion-icon name="chevron-back-outline">Atras</ion-icon>
+      </ion-button>
+    </ion-col>
+
+    <!-- Page Numbers -->
+    <ion-col size="8">
+      <ion-row class="pagination-wrapper">
+        <ion-col size="auto" *ngFor="let page of pageList; let i = index">
+          <ion-button
+            fill="{{ pageIndex + 1 === i + 1 ? 'solid' : 'outline' }}"
+            color="primary"
+            (click)="goToPage(i + 1)"
+          >
+            {{ i + 1 }}
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-col>
+
+    <!-- Next Button -->
+    <ion-col size="2">
+      <ion-button
+        fill="clear"
+        [disabled]="pageData?.isLast"
+        (click)="nextPage()"
+      >
+        <ion-icon name="chevron-forward-outline">Siguiente</ion-icon>
+      </ion-button>
+    </ion-col>
+  </ion-row>
+</ion-grid>

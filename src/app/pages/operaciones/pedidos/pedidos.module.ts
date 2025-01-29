@@ -6,17 +6,19 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { ComponentsModule } from 'src/app/components/components.module';
 import { PedidosComponent } from './pedidos.component';
-import { RecepcionNotasComponent } from './recepcion-notas/recepcion-notas.component';
+import { RecepcionNotasComponent } from './nota-recepcion/recepcion-notas/recepcion-notas.component';
+import { NotaRecepcionInfoDialogComponent } from './nota-recepcion/nota-recepcion-info-dialog/nota-recepcion-info-dialog.component';
+import { HistoricoNotaRecepcionComponent } from './nota-recepcion/historico-nota-recepcion/historico-nota-recepcion.component';
 
 @NgModule({
-  declarations: [PedidosComponent, RecepcionNotasComponent],
+  declarations: [PedidosComponent, RecepcionNotasComponent, NotaRecepcionInfoDialogComponent, HistoricoNotaRecepcionComponent],
   imports: [
     CommonModule,
     PedidosRoutingModule,
     IonicModule,
     ComponentsModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
   ]
 })
 export class PedidosModule {}

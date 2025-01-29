@@ -7,6 +7,8 @@ import { ProveedorPorPersonaGQL } from "./graphql/proveedorPorPersona";
 import { ProveedoresSearchByPersonaGQL } from "./graphql/proveedorSearchByPersona";
 import { SaveProveedorGQL } from "./graphql/saveProveedor";
 import { Proveedor } from "./proveedor.model";
+import { ProveedoresSearchByPersonaPageGQL } from "./graphql/proveedorSearchByPersonaPage";
+import { PageInfo } from "src/app/app.component";
 
 @UntilDestroy({ checkProperties: true })
 @Injectable({
@@ -16,13 +18,18 @@ export class ProveedorService {
   constructor(
     private genericService: GenericCrudService,
     public proveedorSearch: ProveedoresSearchByPersonaGQL,
+    public proveedorSearchPage: ProveedoresSearchByPersonaPageGQL,
     private saveProveedor: SaveProveedorGQL,
     private proveedorPorId: ProveedorByIdGQL,
     private proveedorPorPersona: ProveedorPorPersonaGQL,
   ) {}
 
-  async onSearch(text: string): Promise<Observable<Proveedor[]>> {
-    return (await this.genericService.onGetByTexto(this.proveedorSearch, text));
+  async onSearch(texto: string): Promise<Observable<Proveedor[]>> {
+    return (await this.genericService.onGetByTexto(this.proveedorSearch, texto));
+  }
+
+  async onSearchWithPage(texto: string, page, size): Promise<Observable<PageInfo<Proveedor>>> {
+    return (await this.genericService.onCustomGet(this.proveedorSearchPage, {texto, page, size}));
   }
 
   async onSave(input): Promise<Observable<Proveedor[]>> {

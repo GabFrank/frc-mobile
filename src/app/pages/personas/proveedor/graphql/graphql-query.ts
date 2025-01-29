@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import gql from 'graphql-tag';
 
 export const proveedoresQuery = gql`
   {
@@ -47,6 +47,47 @@ export const proveedoresSearchByPersona = gql`
       productos {
         id
         descripcion
+      }
+    }
+  }
+`;
+
+export const proveedoresSearchByPersonaPage = gql`
+  query ($texto: String, $page: Int, $size: Int) {
+    data: proveedorSearchByPersonaPage(
+      texto: $texto
+      page: $page
+      size: $size
+    ) {
+      getTotalPages
+      getTotalElements
+      getNumberOfElements
+      isFirst
+      isLast
+      hasNext
+      hasPrevious
+      getContent {
+        id
+        persona {
+          id
+          nombre
+          documento
+        }
+        vendedores {
+          id
+          persona {
+            id
+            nombre
+            documento
+          }
+        }
+        credito
+        chequeDias
+        tipoCredito
+        productos {
+          id
+          descripcion
+        }
       }
     }
   }

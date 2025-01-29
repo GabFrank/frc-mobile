@@ -1,0 +1,55 @@
+<ion-content fullscreen>
+
+  <ion-segment (ionChange)="changeMode($event.detail.value)" color="danger" value="lector">
+    <ion-segment-button value="lector">Lector</ion-segment-button>
+    <ion-segment-button value="cam">Cámara</ion-segment-button>
+  </ion-segment>
+<form>
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Bodega Franco - Servidor</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label>IP: 159.203.86.103</ion-label>
+          <ion-input readonly="true"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Puerto: 8081</ion-label>
+          <ion-input readonly="true"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-radio (click)="onServerCentral()"></ion-radio>
+          &nbsp;
+          <ion-label>Activar Servidor Central</ion-label>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Bodega Franco - Sucursal</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label>IP:</ion-label>
+          <ion-input type="text" [formControl]="serverIpConsulta"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Puerto:</ion-label>
+          <ion-input type="text" [formControl]="serverPortConsulta"></ion-input>
+        </ion-item> 
+
+        <ion-item lines="none">
+          <ion-radio [disabled]="serverPortConsulta.pristine" (click)="onServerSucursal()"></ion-radio>
+          &nbsp;
+          <ion-label>Activar Servidor Sucursal</ion-label>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+</form>
+
+</ion-content>
