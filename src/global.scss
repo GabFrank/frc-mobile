@@ -176,3 +176,67 @@ ion-loading.my-loading-class {
     color: white !important;
   }
 }
+
+.custom-modal-large {
+  --width: 90%;
+  --height: 80%;
+  --border-radius: 12px;
+  --max-height: 70%;
+  --margin: 0 auto;
+  --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.custom-modal-large .modal-wrapper {
+  width: var(--width);
+  height: var(--height);
+  max-height: var(--max-height);
+  margin: var(--margin);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--box-shadow);
+}
+
+.custom-modal-medium {
+  --width: 90%;
+  --height: 50%;
+  --border-radius: 12px;
+  --max-height: 70%;
+  --margin: 0 auto;
+  --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.custom-modal-medium .modal-wrapper {
+  width: var(--width);
+  height: var(--height);
+  max-height: var(--max-height);
+  margin: var(--margin);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--box-shadow);
+}
+
+.custom-modal {
+  --width: 90%;
+  --height: auto;
+  --border-radius: 12px;
+  --max-height: 70%;
+  --margin: 0 auto;
+  --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.custom-modal .modal-wrapper {
+  width: var(--width);
+  height: var(--height);
+  max-height: var(--max-height);
+  margin: var(--margin);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--box-shadow);
+}
+
+
+.dialog-title {
+  text-align: center;
+  color: rgb(187, 187, 187);
+  font-size: small;
+}

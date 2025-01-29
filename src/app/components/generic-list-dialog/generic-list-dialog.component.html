@@ -7,7 +7,7 @@
     ></ion-icon>
   </ion-col>
   <ion-col size="12">
-    <ion-label>{{data?.titulo | titlecase}}</ion-label>
+    <ion-label>{{ data?.titulo | titlecase }}</ion-label>
   </ion-col>
   <ion-row *ngIf="data?.search">
     <ion-col size="12">
@@ -53,4 +53,14 @@
       </ion-card>
     </ng-container>
   </ion-list>
+  <ng-container *ngIf="this.data?.paginator">
+    <pagination-controls
+      (pageChange)="onPageChange($event)"
+      autoHide="true"
+      previousLabel="Anterior"
+      nextLabel="Próximo"
+      [maxSize]="selectedPageInfo?.getTotalPages"
+    >
+    </pagination-controls>
+  </ng-container>
 </ion-content>

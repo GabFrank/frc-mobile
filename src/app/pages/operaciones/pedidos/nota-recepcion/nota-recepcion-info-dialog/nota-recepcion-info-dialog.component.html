@@ -1,0 +1,46 @@
+<ion-grid fixed>
+  <ion-row>
+    <ion-col size="12" class="dialog-title">Detalle de la nota</ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="6" class="title">Número</ion-col>
+    <ion-col size="6" class="title">Valor</ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="6">{{
+      selectedNotaRecepcion?.numero | number : '1.0-0'
+    }}</ion-col>
+    <ion-col size="6">{{
+      selectedNotaRecepcion?.valor | number : '1.0-0'
+    }}</ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="6" class="title">Fecha</ion-col>
+    <ion-col size="6" class="title">Pagado</ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="6">{{
+      selectedNotaRecepcion?.fecha | date : 'shortDate'
+    }}</ion-col>
+    <ion-col size="6">{{
+      selectedNotaRecepcion?.pagado ? 'Si' : 'No'
+    }}</ion-col>
+  </ion-row>
+</ion-grid>
+<ion-row>
+  <ion-col size="6">
+    <ion-button class="btn-danger" (click)="onCancelar()" expand="block">
+      Cancelar
+    </ion-button>
+  </ion-col>
+  <ion-col size="6" *ngIf="!isAdded">
+    <ion-button class="btn-success" (click)="onAgregar()" expand="block">
+      Agregar
+    </ion-button>
+  </ion-col>
+  <ion-col size="6" *ngIf="isAdded">
+    <ion-button class="btn-danger" (click)="onEliminar()" expand="block">
+      Eliminar
+    </ion-button>
+  </ion-col>
+</ion-row>

@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { PedidosComponent } from './pedidos.component';
-import { RecepcionNotasComponent } from './recepcion-notas/recepcion-notas.component';
+import { RecepcionNotasComponent } from './nota-recepcion/recepcion-notas/recepcion-notas.component';
+import { HistoricoNotaRecepcionComponent } from './nota-recepcion/historico-nota-recepcion/historico-nota-recepcion.component';
 
 const routes: Routes = [
   {
@@ -11,6 +12,10 @@ const routes: Routes = [
   {
     path: 'recibir-nota-recepcion',
     component: RecepcionNotasComponent
+  },
+  {
+    path: 'historico-nota-recepcion',
+    component: HistoricoNotaRecepcionComponent
   },
 
 ];

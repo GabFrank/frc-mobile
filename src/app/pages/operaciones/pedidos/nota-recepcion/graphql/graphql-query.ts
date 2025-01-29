@@ -55,6 +55,37 @@ export const notaRecepcionQuery = gql`
   }
 `;
 
+export const findByProveedorAndNumeroQuery = gql`
+  query ($id: ID!, $numero: Int!) {
+    data: findByProveedorAndNumero(id: $id, numero: $numero) {
+      id
+      pedido {
+        id
+        estado
+      }
+      compra {
+        id
+      }
+      documento {
+        id
+        descripcion
+        activo
+      }
+      valor
+      descuento
+      pagado
+      numero
+      fecha
+      timbrado
+      creadoEn
+      cantidadItensVerificadoRecepcionMercaderia
+      usuario {
+        id
+      }
+    }
+  }
+`;
+
 export const notaRecepcionPorPedidoIdQuery = gql`
   query ($id: ID!) {
     data: notaRecepcionPorPedidoId(id: $id) {

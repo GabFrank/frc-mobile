@@ -1,0 +1,108 @@
+<ion-content #content class="ion-padding">
+
+  <!-- ! MODO LECTOR -->
+
+  <div *ngIf="mode === 'lector'">
+    <form [formGroup]="barcodeForm">
+      <div class="flex">
+
+        <ion-item fill="outline">
+          <ion-label position="floating">Escanear código de barras</ion-label>
+          <ion-input 
+          #inputElement 
+          formControlName="barcode" 
+          clearOnEdit="true" 
+          name="barcodeInput" 
+          type="text"
+          (keyup.enter)="onSubmit()">
+          </ion-input>
+        </ion-item>
+        
+        <ion-fab>
+          <ion-fab-button> 
+            <img [src]="currentCurrency?.imagen || 'assets/flags/paraguay.png'" style="width: 30px; height: 30px; margin-bottom: 0;">
+          </ion-fab-button>
+          <ion-fab-list side="end">
+            <ion-fab-button *ngFor="let moneda of monedas" [value]="moneda.id" (click)="onCurrencyChange(moneda.id)">
+              <img [src]="moneda.imagen" alt="{{moneda.denominacion}}" style="width: 30px; height: 30px; margin-bottom: 0px;">
+            </ion-fab-button>
+          </ion-fab-list>
+        </ion-fab>
+        
+      </div>
+    </form>
+
+    <div *ngIf="producto && presentacionFilter.length > 0">
+      <h1>{{producto.descripcion}}</h1>
+      <div class="container" [ngClass]="{
+                  'container': true, 
+                  'one-item' : presentacionFilter.length === 1,
+                  'few-items': presentacionFilter.length === 2}">
+    
+        <ion-card *ngFor="let presentacion of presentacionFilter"
+          [ngClass]="{'resplandor': presentacion.id === presentacionEscaneadaId}">
+          <ion-card-header>
+            <h2>
+              Cantidad: {{ presentacion.cantidad }}
+            </h2>
+            <h2 class="spacing">
+              Precio:
+              {{ presentacion.precioPrincipal?.precioConvertido
+              ? (presentacion.precioPrincipal?.precioConvertido | number: '1.0-2')
+              : (presentacion.precioPrincipal?.precio * exchangeRate | number: '1.0-2') }}
+              {{ currentSymbol }}
+            </h2>
+    
+            <img [src]="presentacion.imagenPrincipal" alt="">
+          </ion-card-header>
+        </ion-card>
+      </div>
+    </div>
+    </div>
+
+  <!-- ? MODO CÁMARA, AÚN FALTA PULIR ↓ -->
+
+  <div *ngIf="mode === 'cam'" class="camMode">
+    <div class="camView">
+      <zxing-scanner 
+        #videoElement 
+        [start]="true" 
+        (scanSuccess)="handleScanResult($event)"
+        [videoConstraints]="videoConstraints" 
+        [device]="selectedDeviceId" 
+        [formats]="formats" 
+        [timeBetweenScans]="500"
+        [delayBetweenScans]="500" 
+        [autofocusEnable]="true" 
+        [tryHarder]="true">
+      </zxing-scanner>
+    </div>
+
+    <div *ngIf="producto && presentacionFilter.length > 0">
+      <div class="presentaciones-container">
+        <h1>{{producto?.descripcion}}</h1>
+        <div [ngClass]="{
+          'container': true,
+          'one-item' : presentacionFilter.length === 1,
+          'few-items': presentacionFilter.length === 2,
+          'four-items': presentacionFilter.length === 3 || presentacionFilter.length === 4,
+          'more-than-four-items': presentacionFilter.length > 4}">
+
+          <ion-card *ngFor="let presentacion of presentacionFilter"
+            [ngClass]="{'resplandor': presentacion.id === presentacionEscaneadaId}">
+            <ion-card-header>
+              <h2>
+                Cantidad: {{ presentacion.cantidad }}
+              </h2>
+              <h2 class="spacing">
+                Precio: {{ presentacion.precioPrincipal?.precio | number: '1.0-2' }} Gs.
+              </h2>
+              <img [src]="presentacion.imagenPrincipal" alt="">
+            </ion-card-header>
+          </ion-card>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</ion-content>

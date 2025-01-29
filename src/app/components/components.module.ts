@@ -8,21 +8,28 @@ import { NgxQRCodeModule } from '@techiediaries/ngx-qrcode';
 import { GenericListDialogComponent } from './generic-list-dialog/generic-list-dialog.component';
 import { ChangeServerIpDialogComponent } from './change-server-ip-dialog/change-server-ip-dialog.component';
 import { ImagePopoverComponent } from './image-popover/image-popover.component';
+import {NgxPaginationModule} from 'ngx-pagination';
+import { EnumToStringPipe } from '../generic/utils/pipes/enum-to-string';
+import { PaginacionComponent } from './paginacion/paginacion.component';
 
 
 
 @NgModule({
-  declarations: [QrScannerDialogComponent, QrGeneratorComponent, GenericListDialogComponent, ChangeServerIpDialogComponent, ImagePopoverComponent],
+  declarations: [QrScannerDialogComponent, QrGeneratorComponent, GenericListDialogComponent, ChangeServerIpDialogComponent, ImagePopoverComponent, EnumToStringPipe,  PaginacionComponent],
   imports: [
     CommonModule,
     IonicModule,
     ReactiveFormsModule,
     FormsModule,
-    NgxQRCodeModule
+    NgxQRCodeModule,
+    NgxPaginationModule
   ],
   exports: [
     QrScannerDialogComponent,
-    QrGeneratorComponent
+    QrGeneratorComponent,
+    EnumToStringPipe,
+    NgxPaginationModule,
+    PaginacionComponent
   ]
 })
 export class ComponentsModule { }
