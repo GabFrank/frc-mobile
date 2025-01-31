@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { PedidosComponent } from './pedidos.component';
 import { RecepcionNotasComponent } from './nota-recepcion/recepcion-notas/recepcion-notas.component';
 import { HistoricoNotaRecepcionComponent } from './nota-recepcion/historico-nota-recepcion/historico-nota-recepcion.component';
+import { RecepcionProductoComponent } from './nota-recepcion/recepcion-producto/recepcion-producto.component';
 
 const routes: Routes = [
   {
@@ -17,6 +18,10 @@ const routes: Routes = [
     path: 'historico-nota-recepcion',
     component: HistoricoNotaRecepcionComponent
   },
+  {
+    path: 'recepcion-producto/:id',
+    component: RecepcionProductoComponent
+  }
 
 ];
 

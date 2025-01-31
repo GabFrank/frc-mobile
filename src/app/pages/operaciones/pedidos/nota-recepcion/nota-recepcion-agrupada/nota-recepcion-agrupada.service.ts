@@ -6,6 +6,7 @@ import { NotaRecepcionAgrupadaPorProveedorIdGQL } from "./graphql/notaRecepcionA
 import { NotaRecepcionListPorUsuarioIdGQL } from "./graphql/notaRecepcionListPorUsuarioId";
 import { SaveNotaRecepcionAgrupadaGQL } from "./graphql/saveNotaRecepcionAgrupada";
 import { NotaRecepcionAgrupada, NotaRecepcionAgrupadaInput } from "./nota-recepcion-agrupada.model";
+import { NotaRecepcionAgrupadaPorIdGQL } from "./graphql/notaRecepcionAgrupadaPorId";
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +16,8 @@ export class NotaRecepcionAgrupadaService {
     private genericService: GenericCrudService,
     private getNotaRecepcionAgrupadaPorNotaRecepcionId: NotaRecepcionAgrupadaPorProveedorIdGQL,
     private getNotaRecepcionAgrupadaListPorUsuarioId: NotaRecepcionListPorUsuarioIdGQL,
-    private saveNotaRecepcionAgrupada: SaveNotaRecepcionAgrupadaGQL
+    private saveNotaRecepcionAgrupada: SaveNotaRecepcionAgrupadaGQL,
+    private notaRecepcionAgrupadaPorId: NotaRecepcionAgrupadaPorIdGQL
   ) {}
 
   async onGetNotaRecepcionAgrupadaPorNotaRecepcionId(
@@ -41,5 +43,9 @@ export class NotaRecepcionAgrupadaService {
     input: NotaRecepcionAgrupadaInput
   ): Promise<Observable<NotaRecepcionAgrupada>> {
     return await this.genericService.onSave(this.saveNotaRecepcionAgrupada, input);
+  }
+
+  async onGetNotaRecepcionAgrupadaPorId(id): Promise<Observable<NotaRecepcionAgrupada>>{
+    return await this.genericService.onGetById(this.notaRecepcionAgrupadaPorId, id);
   }
 }
