@@ -74,6 +74,33 @@ export const notaRecepcionListPorUsuarioIdQuery = gql`
   }
 `;
 
+export const notaRecepcionAgrupadaPorIdQuery = gql`
+  query ($id: ID!) {
+    data: notaRecepcionAgrupadaPorId(id: $id) {
+      id
+      estado
+      proveedor {
+        id
+        persona {
+          nombre
+        }
+      }
+      cantNotas
+      sucursal {
+        id
+        nombre
+      }
+      creadoEn
+      usuario {
+        id
+        persona {
+          nombre
+        }
+      }
+    }
+  }
+`;
+
 // Mutation: Save NotaRecepcionAgrupada
 export const saveNotaRecepcionAgrupadaMutation = gql`
   mutation saveNotaRecepcionAgrupada($entity: NotaRecepcionAgrupadaInput!) {

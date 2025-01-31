@@ -10,6 +10,8 @@ export class NotaRecepcionAgrupada {
   creadoEn: Date;
   usuario: Usuario;
   estado: NotaRecepcionAgrupadaEstado;
+  cantNotas:number;
+
 
   toInput(): NotaRecepcionAgrupadaInput {
     let input = new NotaRecepcionAgrupadaInput();

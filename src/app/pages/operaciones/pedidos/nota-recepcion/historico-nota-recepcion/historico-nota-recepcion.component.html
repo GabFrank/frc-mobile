@@ -1,4 +1,16 @@
 <ion-content>
+  <ion-row style="align-items: center;">
+    <ion-col size="2">
+      <ion-icon
+        name="arrow-back"
+        style="font-size: 1.5em"
+        (click)="onBack()"
+      ></ion-icon>
+    </ion-col>
+    <ion-col size="8" style="text-align: center"
+      >Historico de recepción</ion-col
+    >
+  </ion-row>
   <ion-list style="background-color: unset">
     <ion-card
       *ngFor="
@@ -46,7 +58,7 @@
         <ion-row style="text-align: center; align-items: center">
           <ion-col size="6" offset="3">
             <ion-button
-              (click)="onItemClick()"
+              (click)="onItemClick(notaRecepcionAgrupada)"
               expand="block"
               class="btn-success"
             >
