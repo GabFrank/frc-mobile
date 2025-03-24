@@ -10,15 +10,14 @@ import { CajaInfoComponent } from './caja-info/caja-info.component';
 import { AdicionarConteoDialogComponent } from './conteo/adicionar-conteo-dialog/adicionar-conteo-dialog.component';
 import { BuscarMaletinDialogComponent } from './caja/buscar-maletin-dialog/buscar-maletin-dialog.component';
 import { StockPorSucursalDialogComponent } from './movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component';
-import { BrowserModule } from '@angular/platform-browser';
 
 @NgModule({
   declarations: [
     ListOperacionesComponent,
-    CajaComponent,
-    CajaInfoComponent,
-    AdicionarConteoDialogComponent,
-    BuscarMaletinDialogComponent,
+    // CajaComponent,
+    // CajaInfoComponent,
+    // AdicionarConteoDialogComponent,
+    // BuscarMaletinDialogComponent,
     // StockPorSucursalDialogComponent
   ],
   imports: [
@@ -28,7 +27,6 @@ import { BrowserModule } from '@angular/platform-browser';
     ComponentsModule,
     ReactiveFormsModule,
     FormsModule,
-    BrowserModule
   ],
   exports: [
 

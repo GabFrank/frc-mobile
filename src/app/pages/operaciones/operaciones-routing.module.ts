@@ -1,4 +1,3 @@
-
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { CajaInfoComponent } from './caja-info/caja-info.component';
@@ -17,9 +16,12 @@ const routes: Routes = [
   {
     path: 'caja/info',
     component: CajaInfoComponent
+  },
+  {
+    path: 'pedidos',
+    loadChildren: () => import('./pedidos/pedidos.module').then(m => m.PedidosModule)
   }
 ];
-
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],

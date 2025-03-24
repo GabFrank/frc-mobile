@@ -82,6 +82,15 @@ export const findByProveedorAndNumeroQuery = gql`
       usuario {
         id
       }
+      notaRecepcionAgrupada {
+        id
+        usuario {
+          id
+          persona {
+            nombre
+          }
+        }
+      }
     }
   }
 `;
@@ -186,5 +195,53 @@ export const notaRecepcionPorPedidoIdAndNumeroQuery = gql`
 export const countNotaRecepcionPorPedidoId = gql`
   query ($id: ID!) {
     data: countNotaRecepcionPorPedidoId(id: $id)
+  }
+`;
+
+export const notaRecepcionPorNotaRecepcionAgrupadaIdQuery = gql`
+  query ($id: ID!) {
+    data: notaRecepcionPorNotaRecepcionAgrupadaId(id: $id) {
+      id
+      pedido {
+        id
+        formaPago {
+          id
+          descripcion
+        }
+        moneda {
+          id
+          denominacion
+          simbolo
+        }
+
+      }
+      compra {
+        id
+      }
+      documento {
+        id
+        descripcion
+        activo
+      }
+      valor
+      descuento
+      pagado
+      numero
+      timbrado
+      tipoBoleta
+      creadoEn
+      fecha
+      cantidadItensVerificadoRecepcionMercaderia
+      usuario {
+        id
+        persona {
+          nombre
+        }
+      }
+      cantidadItens
+      notaRecepcionAgrupada {
+        id
+      }
+    }
   }
 `;

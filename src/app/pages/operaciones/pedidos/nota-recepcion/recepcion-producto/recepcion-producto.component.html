@@ -1,15 +1,9 @@
 <ion-content>
   <ion-row style="align-items: center">
     <ion-col size="2">
-      <ion-icon
-        name="arrow-back"
-        style="font-size: 1.5em"
-        (click)="onBack()"
-      ></ion-icon>
+      <ion-icon name="arrow-back" style="font-size: 1.5em" (click)="onBack()"></ion-icon>
     </ion-col>
-    <ion-col size="8" style="text-align: center"
-      >Recepción de productos</ion-col
-    >
+    <ion-col size="8" style="text-align: center">Recepción de productos</ion-col>
   </ion-row>
   <ion-grid fixed>
     <ion-row>
@@ -18,7 +12,7 @@
     <ion-row style="align-items: center">
       <ion-col size="12" class="center">{{
         selectedNotaRecepcionAgrupada?.proveedor?.persona?.nombre | uppercase
-      }}</ion-col>
+        }}</ion-col>
     </ion-row>
     <!-- <ion-row>
       <ion-col size="12" class="title center">Responsable</ion-col>
@@ -36,46 +30,109 @@
     <ion-row style="text-align: center; font-size: small">
       <ion-col size="4">{{
         selectedNotaRecepcionAgrupada?.creadoEn | date : 'short'
-      }}</ion-col>
+        }}</ion-col>
       <ion-col size="4">{{ selectedNotaRecepcionAgrupada?.cantNotas }}</ion-col>
-      <ion-col
-        size="4"
-        [class.en_recepcion]="
+      <ion-col size="4" [class.en_recepcion]="
           selectedNotaRecepcionAgrupada?.estado == 'EN_RECEPCION'
-        "
-        [class.cancelado]="selectedNotaRecepcionAgrupada?.estado == 'CANCELADO'"
-        [class.concluido]="selectedNotaRecepcionAgrupada?.estado == 'CONCLUIDO'"
-        >{{ selectedNotaRecepcionAgrupada?.estado | enumToString }}</ion-col
-      >
+        " [class.cancelado]="selectedNotaRecepcionAgrupada?.estado == 'CANCELADO'"
+        [class.concluido]="selectedNotaRecepcionAgrupada?.estado == 'CONCLUIDO'">{{
+        selectedNotaRecepcionAgrupada?.estado | enumToString }}</ion-col>
     </ion-row>
     <ion-row style="text-align: center; align-items: center">
       <ion-col size="6">
-        <ion-button
-          (click)="onModificarNotas()"
-          expand="block"
-          class="btn-success"
-        >
+        <ion-button *ngIf="selectedNotaRecepcionAgrupada?.estado != 'CONCLUIDO'" (click)="onModificarNotas()" expand="block" class="btn-success">
           Modificar notas
+        </ion-button>
+        <ion-button *ngIf="selectedNotaRecepcionAgrupada?.estado == 'CONCLUIDO'" (click)="onNuevaRecepcion()" expand="block" class="btn-success">
+          Nueva Recepción
         </ion-button>
       </ion-col>
       <ion-col size="6">
-        <ion-button
-          *ngIf="selectedNotaRecepcionAgrupada?.usuario == null"
-          (click)="onIniciarRecepcion()"
-          expand="block"
-          class="btn-success"
-        >
+        <ion-button *ngIf="selectedNotaRecepcionAgrupada?.usuario == null" (click)="onIniciarRecepcion()" expand="block"
+          class="btn-success">
           Iniciar Recepción
         </ion-button>
-        <ion-button
-          *ngIf="selectedNotaRecepcionAgrupada?.usuario != null"
-          (click)="onIniciarRecepcion()"
-          expand="block"
-          class="btn-success"
-        >
+        <ion-button *ngIf="selectedNotaRecepcionAgrupada?.usuario != null && selectedNotaRecepcionAgrupada?.estado == 'EN_RECEPCION'" (click)="onFinalizarRecepcion()" expand="block"
+          class="btn-success">
           Finalizar Recepción
+        </ion-button>
+        <ion-button *ngIf="selectedNotaRecepcionAgrupada?.usuario != null && selectedNotaRecepcionAgrupada?.estado == 'CONCLUIDO'" (click)="onReabrirRecepcion()" expand="block"
+          class="btn-success">
+          Reabrir Recepción
         </ion-button>
       </ion-col>
     </ion-row>
+    <!-- <ion-row style="align-items: center;">
+      <ion-col size="10" style="text-align: right;">
+        Filtrar
+      </ion-col>
+      <ion-col size="2" style="text-align: center;">
+       <ion-icon name="filter" style="font-size: 1.5em; cursor: pointer;" (click)="openFilterActionSheet()"></ion-icon>
+      </ion-col>
+    </ion-row> -->
   </ion-grid>
+  <ion-list style="background-color: unset">
+    <ion-list-header>
+      <ion-label>
+        <h3>Lista de productos</h3>
+      </ion-label>
+      <ion-row style="align-items: center;">
+        <ion-col size="12" style="text-align: right;">
+          <ion-button fill="clear" (click)="openFilterActionSheet()">
+            Filtrar
+            <ion-icon name="filter" slot="end"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row> 
+    </ion-list-header>
+    <ion-card *ngFor="let pedidoItem of itemList; let i = index" (click)="onItemClick(pedidoItem, i)">
+      <ion-grid fixed>
+        <ion-row>
+          <ion-col size="10">
+            <ion-row>
+              <ion-col size="12" class="title">Producto</ion-col>
+              <ion-col size="12">{{ pedidoItem.producto.descripcion }}</ion-col>
+            </ion-row>
+          </ion-col>
+          <ion-col size="2">
+            <ion-row style="align-items: center; height: 100%;">
+              <ion-col size="12">
+                <ion-icon name="barcode-outline" size="large"></ion-icon>
+              </ion-col>
+            </ion-row>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="12" [ngClass]="{
+            'estado-pendiente': pedidoItem.estado === 'PENDIENTE',
+            'estado-recibido': pedidoItem.estado === 'RECIBIDO',
+            'estado-recibido-parcialmente': pedidoItem.estado === 'RECIBIDO_PARCIALMENTE'
+          }" style="font-size: 12px; width: 100%; text-align: center;">Estado: {{
+            pedidoItem.estado | enumToString }}
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card>
+  </ion-list>
+  <ng-container *ngIf="this.itemList?.length > 0">
+    <app-paginacion [pageData]="selectedPageInfo" [pageIndex]="pageIndex"
+      (pageChange)="handlePagination($event)"></app-paginacion>
+  </ng-container>
 </ion-content>
+<ion-footer>
+  <!-- <ion-toolbar>
+    <ion-title>Footer</ion-title>
+  </ion-toolbar> -->
+  <ion-row>
+    <ion-col size="12">
+      <ion-button *ngIf="selectedNotaRecepcionAgrupada?.usuario != null && selectedNotaRecepcionAgrupada?.estado == 'EN_RECEPCION'" (click)="onBuscarProducto()" expand="block">
+        Buscar producto
+      </ion-button>
+      <ion-button *ngIf="selectedNotaRecepcionAgrupada?.estado == 'CONCLUIDO'" (click)="onSolicitarPago()" expand="block">
+        Solicitar pago
+      </ion-button>
+    </ion-col>
+  </ion-row>
+</ion-footer>
+
+

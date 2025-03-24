@@ -4,6 +4,7 @@ import { Compra } from '../compra/compra.model';
 import { PedidoItem } from '../pedido-item/pedido-item.model';
 import { Pedido } from '../pedido.model';
 import { Documento } from 'src/app/pages/financiero/documento/documento.model';
+import { NotaRecepcionAgrupada } from './nota-recepcion-agrupada/nota-recepcion-agrupada.model';
 
 export class NotaRecepcion {
   id: number;
@@ -22,6 +23,7 @@ export class NotaRecepcion {
   pedidoItemList: PedidoItem[] = [];
   cantidadItens: number = 0;
   cantidadItensVerificadoRecepcionMercaderia: number = 0;
+  notaRecepcionAgrupada: NotaRecepcionAgrupada;
 
   toInput(): NotaRecepcionInput {
     let input = new NotaRecepcionInput();
@@ -38,6 +40,7 @@ export class NotaRecepcion {
     input.tipoBoleta = this.tipoBoleta;
     input.fecha = dateToString(this.fecha);
     input.creadoEn = dateToString(this.creadoEn);
+    input.notaRecepcionAgrupadaId = this.notaRecepcionAgrupada?.id;
     return input;
   }
 }
@@ -56,4 +59,5 @@ export class NotaRecepcionInput {
   creadoEn: string;
   fecha: string;
   usuarioId: number;
+  notaRecepcionAgrupadaId: number;
 }

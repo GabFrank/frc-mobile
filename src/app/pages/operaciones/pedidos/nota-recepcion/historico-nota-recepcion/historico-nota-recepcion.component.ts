@@ -47,7 +47,7 @@ export class HistoricoNotaRecepcionComponent implements OnInit {
 
   onItemClick(notaRecepcionAgrupada: NotaRecepcionAgrupada) {
     this.router.navigate([
-      '/pedidos/recepcion-producto',
+      '/operaciones/pedidos/recepcion-producto',
       notaRecepcionAgrupada.id
     ]);
   }

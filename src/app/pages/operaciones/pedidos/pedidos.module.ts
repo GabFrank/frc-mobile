@@ -10,9 +10,19 @@ import { RecepcionNotasComponent } from './nota-recepcion/recepcion-notas/recepc
 import { NotaRecepcionInfoDialogComponent } from './nota-recepcion/nota-recepcion-info-dialog/nota-recepcion-info-dialog.component';
 import { HistoricoNotaRecepcionComponent } from './nota-recepcion/historico-nota-recepcion/historico-nota-recepcion.component';
 import { RecepcionProductoComponent } from './nota-recepcion/recepcion-producto/recepcion-producto.component';
+import { RecepcionProductoVerificacionDialogComponent } from './nota-recepcion/recepcion-producto-verificacion-dialog/recepcion-producto-verificacion-dialog.component';
+import { SolicitarPagoNotaRecepcionComponent } from './nota-recepcion/solicitar-pago-nota-recepcion/solicitar-pago-nota-recepcion.component';
 
 @NgModule({
-  declarations: [PedidosComponent, RecepcionNotasComponent, NotaRecepcionInfoDialogComponent, HistoricoNotaRecepcionComponent, RecepcionProductoComponent],
+  declarations: [
+    PedidosComponent,
+    RecepcionNotasComponent, 
+    NotaRecepcionInfoDialogComponent, 
+    HistoricoNotaRecepcionComponent, 
+    RecepcionProductoComponent, 
+    RecepcionProductoVerificacionDialogComponent,
+    SolicitarPagoNotaRecepcionComponent
+  ],
   imports: [
     CommonModule,
     PedidosRoutingModule,
@@ -22,4 +32,4 @@ import { RecepcionProductoComponent } from './nota-recepcion/recepcion-producto/
     FormsModule,
   ]
 })
-export class PedidosModule {}
+export class PedidosModule { }

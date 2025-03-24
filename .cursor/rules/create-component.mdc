@@ -1,0 +1,57 @@
+---
+description: Create a new angular component 
+globs: 
+---
+
+# Your rule content
+User will pass the component path, example: /pages/operaciones/pedidos/nota-recepcion/historico-nota-recepcion/
+User will pass the component name, example: historico-nota-recepcion
+User will pass what parameters should this component receive on routing, example: id
+You will create a component ts, html, scss
+You will register the component in corresponding module and add the a rounting to this component on the corresponding routing module
+If user indicates that this component will be a dialog (modal) do not create routing
+The html structure will be this:
+<ion-content>
+  <ion-row style="align-items: center">
+    <ion-col size="2">
+      <ion-icon name="arrow-back" style="font-size: 1.5em" (click)="onBack()"></ion-icon>
+    </ion-col>
+    <ion-col size="8" style="text-align: center">component name</ion-col>
+  </ion-row>
+  <ion-grid fixed>
+  </ion-grid>
+</ion-content>
+<ion-footer>
+  if user indicates that this component will be a model, create those buttons:
+  <ion-row>
+      <ion-col>
+        <ion-button expand="block" class="btn-danger" (click)="onCancel()">
+          Cancelar
+        </ion-button>
+      </ion-col>
+      <ion-col>
+        <ion-button expand="block" class="btn-success" (click)="onConfirm()">
+          Confirmar
+        </ion-button>
+      </ion-col>
+    </ion-row>
+</ion-footer>
+
+if user do not indicate that component will be a modal do this:
+on .ts file you will import on constructor:
+import { Location } from '@angular/common';
+and create this method:
+onBack() {
+    this._location.back();
+}
+
+else do this:
+create a interface with data the user pass for us and name it ComponentNameData
+create an input to receive the data, example:
+@Input()
+  data: NotaRecepcionInfoDialogData;
+create onCancel and onConfirm methods, onCancel should close modal and return null
+
+
+
+

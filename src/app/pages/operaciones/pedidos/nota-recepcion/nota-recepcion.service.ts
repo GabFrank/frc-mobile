@@ -8,6 +8,7 @@ import { NotaRecepcionPorIdGQL } from './graphql/getNotaRecepcionPorId';
 import { NotaRecepcionPorIdAndNumeroGQL } from './graphql/getNotaRecepcionPorIdAndNumero';
 import { NotaRecepcionPorProveedorAndNumeroGQL } from './graphql/getNotaRecepcionPorOriveedorAndNumero';
 import { NotaRecepcionPorPedidoIdGQL } from './graphql/notaRecepcionPorPedidoId';
+import { NotaRecepcionPorNotaRecepcionAgrupadaIdGQL } from './graphql/notaRecepcionPorNotaRecepcionAgrupadaId';
 import { SaveNotaRecepcionGQL } from './graphql/saveNotaRecepcion';
 import { NotaRecepcion, NotaRecepcionInput } from './nota-recepcion.model';
 
@@ -23,7 +24,8 @@ export class NotaRecepcionService {
     private deleteNotaRecepcion: DeleteNotaRecepcionGQL,
     private notaRecepcionPorPedidoAndNumero: NotaRecepcionPorIdAndNumeroGQL,
     private countNotaRecepcionPorPedido: CountNotaRecepcionPorPedidoIdGQL,
-    private getNotaRecepcionPorProveedorAndNumero: NotaRecepcionPorProveedorAndNumeroGQL
+    private getNotaRecepcionPorProveedorAndNumero: NotaRecepcionPorProveedorAndNumeroGQL,
+    private notaRecepcionPorNotaRecepcionAgrupadaId: NotaRecepcionPorNotaRecepcionAgrupadaIdGQL
   ) {}
 
   async onGetNotaRecepcion(id): Promise<Observable<NotaRecepcion>> {
@@ -73,6 +75,15 @@ export class NotaRecepcionService {
       {
         id
       }
+    );
+  }
+
+  async onGetNotaRecepcionPorNotaRecepcionAgrupadaId(
+    id
+  ): Promise<Observable<NotaRecepcion[]>> {
+    return await this.genericService.onGetById(
+      this.notaRecepcionPorNotaRecepcionAgrupadaId,
+      id
     );
   }
 }
