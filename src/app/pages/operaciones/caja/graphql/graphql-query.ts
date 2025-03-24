@@ -453,7 +453,7 @@ export const savePdvCajaPorSucursal = gql`
 
 export const abrirCajaDesdeServidorQuery = gql`
   mutation abrirCajaDesdeServidor($input:PdvCajaInput!, $conteoInput: ConteoInput!, $conteoMonedaInputList: [ConteoMonedaInput]) {
-    data: abrirCajaDesdeServidor($input:input, $conteoInput: conteoInput, $conteoMonedaInputList: conteoMonedaInputList)
+    data: abrirCajaDesdeServidor(input:$input, conteoInput: $conteoInput, conteoMonedaInputList: $conteoMonedaInputList)
   }
 `;
 

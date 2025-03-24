@@ -440,7 +440,7 @@ export class GenericCrudService {
     });
   }
 
-  async onCustomSave(gql: Mutation, data) {
+  async onCustomSave(gql: Mutation, data): Promise<Observable<any>> {
     let loading = await this.cargandoService.open(null, false);
     return new Observable((obs) => {
       gql

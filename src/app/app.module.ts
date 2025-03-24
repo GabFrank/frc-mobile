@@ -47,6 +47,8 @@ import { MainService } from './services/main.service';
 import { NgxCurrencyModule } from 'ngx-currency';
 import { MarcacionModule } from './pages/marcacion/marcacion.module';
 import { EnumToStringPipe } from './generic/utils/pipes/enum-to-string';
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { BarcodeScannerService } from './services/barcode-scanner.service';
 
 registerLocaleData(localePY);
 
@@ -201,7 +203,9 @@ export class HammerConfig extends HammerGestureConfig {
         deps: [MainService],
         multi: true
       }
-    ]
+    ],
+    BarcodeScanner,
+    BarcodeScannerService
   ],
   bootstrap: [AppComponent]
 })

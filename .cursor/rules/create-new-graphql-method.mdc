@@ -1,0 +1,20 @@
+---
+description: creating a new graphql method
+globs: 
+---
+[graphql-query.ts](mdc:src/app/pages/operaciones/pedidos/nota-recepcion/nota-recepcion-agrupada/graphql/graphql-query.ts) - graphql-query example
+[notaRecepcionAgrupadaPorId.ts](mdc:src/app/pages/operaciones/pedidos/nota-recepcion/nota-recepcion-agrupada/graphql/notaRecepcionAgrupadaPorId.ts) - apollo service query example
+[saveNotaRecepcion.ts](mdc:src/app/pages/operaciones/pedidos/nota-recepcion/graphql/saveNotaRecepcion.ts) - apollo service mutation example
+[nota-recepcion.service.ts](mdc:src/app/pages/operaciones/pedidos/nota-recepcion/nota-recepcion.service.ts) - service example
+[nota-recepcion.model.ts](mdc:src/app/pages/operaciones/pedidos/nota-recepcion/nota-recepcion.model.ts) - entity model example
+# Your rule content
+We need to create a new method, add it to the graphql-query.ts file, 
+create the apollo service file (query or mutation), add the new method on service
+
+User will always pass the new method in this format: 
+reabrirRecepcion(id: ID!): NotaRecepcionAgrupada
+User will pass the entity model too, this will show you the path of graphqy-query.ts and service
+
+if you need more information before do the task please ask to the user
+
+

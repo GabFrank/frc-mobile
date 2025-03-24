@@ -26,6 +26,9 @@ import { Proveedor } from 'src/app/pages/personas/proveedor/proveedor.model';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { NotaRecepcionInfoDialogComponent } from '../nota-recepcion-info-dialog/nota-recepcion-info-dialog.component';
 import { IonInput } from '@ionic/angular';
+import { NotaRecepcionAgrupada, NotaRecepcionAgrupadaEstado } from '../nota-recepcion-agrupada/nota-recepcion-agrupada.model';
+import { NotaRecepcionAgrupadaService } from '../nota-recepcion-agrupada/nota-recepcion-agrupada.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-recepcion-notas',
@@ -53,8 +56,9 @@ export class RecepcionNotasComponent implements OnInit {
     private notaRecepcionService: NotaRecepcionService,
     private modalService: ModalService,
     public proveedorSearchPage: ProveedoresSearchByPersonaPageGQL,
-    private dialogService: DialogoService
-  ) {}
+    private dialogService: DialogoService,
+    private notaRecepcionAgrupadaService: NotaRecepcionAgrupadaService
+  ) { }
 
   ngOnInit() {
     console.log(this.mainService.isDev);
@@ -221,9 +225,48 @@ export class RecepcionNotasComponent implements OnInit {
       });
   }
 
-  onIniciarRecepcion() {}
+  async onIniciarRecepcion() {
+    const dialogResult = await this.dialogService.open('Atención!!', 'Realmente desea iniciar la recepción de notas?');
+    if (dialogResult.role === 'aceptar') {
+      try {
+        let notaRecpcionAgrupada = new NotaRecepcionAgrupada();
+        notaRecpcionAgrupada.proveedor = this.selectedProveedor;
+        notaRecpcionAgrupada.usuario = this.mainService.usuarioActual;
+        notaRecpcionAgrupada.sucursal = this.selectedSucursal;
+        notaRecpcionAgrupada.estado = NotaRecepcionAgrupadaEstado.EN_RECEPCION;
 
-  onSolicitarPago() {}
+        (await this.notaRecepcionAgrupadaService.onSaveNotaRecepcionAgrupada(notaRecpcionAgrupada.toInput()))
+          .subscribe(async notaRecepcionAggRes => {
+            if (notaRecepcionAggRes != null) {
+              const saveOperations = this.notaRecepcionList.map(async nota => {
+                let notaAux = new NotaRecepcion();
+                Object.assign(notaAux, nota);
+                notaAux.notaRecepcionAgrupada = notaRecepcionAggRes;
+                console.log('Saving nota:', notaAux);
+                return (await this.notaRecepcionService.onSaveNotaRecepcion(notaAux.toInput())).subscribe();
+              });
+
+              forkJoin(saveOperations).subscribe({
+                next: () => {
+                  console.log('All notas saved successfully');
+                  this.notificacionService.openGuardadoConExito();
+                  this.router.navigate(['/operaciones/pedidos/recepcion-producto', notaRecepcionAggRes.id]);
+                },
+                error: (error) => {
+                  console.error('Error saving notes:', error);
+                  this.notificacionService.openAlgoSalioMal();
+                }
+              });
+            }
+          });
+      } catch (error) {
+        console.error('Error during save operation:', error);
+        this.notificacionService.openAlgoSalioMal();
+      }
+    }
+  }
+
+  onSolicitarPago() { }
 
   onBack() {
     this._location.back();

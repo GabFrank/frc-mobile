@@ -7,11 +7,10 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { ComponentsModule } from 'src/app/components/components.module';
-
-
+import { ProductoVerificacionDialogComponent } from './producto-verificacion-dialog/producto-verificacion-dialog.component';
 
 @NgModule({
-  declarations: [ProductoDashboardComponent, EditProductoComponent, SearchProductoDialogComponent],
+  declarations: [ProductoDashboardComponent, EditProductoComponent, SearchProductoDialogComponent, ProductoVerificacionDialogComponent],
   imports: [
     ProductoRoutingModule,
     CommonModule,

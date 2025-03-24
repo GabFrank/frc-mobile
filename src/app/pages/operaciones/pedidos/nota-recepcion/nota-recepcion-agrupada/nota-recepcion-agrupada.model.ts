@@ -35,7 +35,7 @@ export class NotaRecepcionAgrupadaInput {
 }
 
 export enum NotaRecepcionAgrupadaEstado {
-  EN_RECEPCION,
-  CONCLUIDO,
-  CANCELADO
+  EN_RECEPCION = 'EN_RECEPCION',
+  CONCLUIDO = 'CONCLUIDO',
+  CANCELADO = 'CANCELADO'
 }

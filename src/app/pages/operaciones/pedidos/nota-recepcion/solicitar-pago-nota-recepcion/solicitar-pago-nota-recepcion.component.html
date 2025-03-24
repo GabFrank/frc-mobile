@@ -1,0 +1,49 @@
+<ion-content>
+  <ion-row style="align-items: center">
+    <ion-col size="2">
+      <ion-icon name="arrow-back" style="font-size: 1.5em" (click)="onBack()"></ion-icon>
+    </ion-col>
+    <ion-col size="8" style="text-align: center">Solicitar Pago Nota Recepción</ion-col>
+  </ion-row>
+
+  <ion-grid fixed>
+    <div *ngIf="loading" class="ion-text-center">
+      <ion-spinner></ion-spinner>
+      <p>Cargando información...</p>
+    </div>
+
+    <div *ngIf="!loading && selectedNotaRecepcionAgrupada">
+      <div *ngIf="notaRecepcionList && notaRecepcionList.length === 0">
+        <ion-card>
+          <ion-card-content>
+            <ion-label color="medium">No hay notas de recepción asociadas</ion-label>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <ion-card *ngFor="let nota of notaRecepcionList">
+        <ion-card-content>
+          <h2><span class="title">Número:</span> {{nota.numero}}</h2>
+          <p><span class="title">Valor:</span> {{nota.valor | currency:nota.pedido.moneda.simbolo:'symbol':
+            (nota.pedido.moneda.simbolo === 'PYG' ? '1.0-0' : '1.2-2')}}</p>
+          <p><span class="title">Fecha:</span> {{nota.fecha | date:'dd/MM/yyyy'}}</p>
+          <p><span class="title">Estado:</span> {{nota.pagado ? 'Pagado' : 'Pendiente'}}</p>
+          <p><span class="title">Moneda:</span> {{nota.pedido.moneda.denominacion}}</p>
+          <p><span class="title">Forma de Pago:</span> {{nota.pedido.formaPago.descripcion}}</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </ion-grid>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-item lines="none">
+      <ion-label position="stacked">Comentario (opcional)</ion-label>
+      <ion-textarea style="text-transform: uppercase;" placeholder="Ingrese un comentario si es necesario"></ion-textarea>
+    </ion-item>
+    <ion-button expand="block" color="primary" (click)="solicitarPago()" class="ion-margin">
+      Solicitar Pago
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

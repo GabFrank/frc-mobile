@@ -1,0 +1,20 @@
+---
+description: Create new entity and its included files
+globs: 
+---
+
+# Your rule content
+[nota-recepcion.model.ts](mdc:src/app/pages/operaciones/pedidos/nota-recepcion/nota-recepcion.model.ts) = model.ts example
+[graphql-query.ts](mdc:src/app/pages/operaciones/pedidos/nota-recepcion/graphql/graphql-query.ts) = graphql-query example
+[nota-recepcion.service.ts](mdc:src/app/pages/operaciones/pedidos/nota-recepcion/nota-recepcion.service.ts) = service example
+[notaRecepcionPorPedidoId.ts](mdc:src/app/pages/operaciones/pedidos/nota-recepcion/graphql/notaRecepcionPorPedidoId.ts) = apollo service query example
+[saveNotaRecepcion.ts](mdc:src/app/pages/operaciones/pedidos/nota-recepcion/graphql/saveNotaRecepcion.ts) = apollo service mutation example
+
+User will pass a .graphqls file from spring boot, in this file we have the entity information, the query and mutations method, also any enum needed
+User will pass to you the path where to create a new folder, use entity name if user do not provide a folder name
+You will create the graphql-query file under /new-folder/graphql/ and all querys and mutations under same folder
+You will create a service using entity name followed by .service.ts under /new-folder/ directory
+you will create all methods on service based on apollo service querys and mutations
+you will use [generic-crud.service.ts](mdc:src/app/generic/generic-crud.service.ts) as shown on [nota-recepcion.service.ts](mdc:src/app/pages/operaciones/pedidos/nota-recepcion/nota-recepcion.service.ts) 
+
+if you need any more information before do the task please ask to the user

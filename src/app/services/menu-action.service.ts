@@ -26,7 +26,7 @@ export class MenuActionService {
         actionButtons.push(btn)
       }
     })
-    actionButtons.push({ text: 'Cancelar', role: null })
+    actionButtons.push({ text: 'Cancelar', role: null, cssClass: 'cancelar-btn' })
     const actionSheet = await this.actionControler.create({
       header: 'Opciones',
       cssClass: 'action-menu',

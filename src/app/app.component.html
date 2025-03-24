@@ -93,7 +93,7 @@
           *ngIf="
             loginService.usuarioActual?.roles?.includes('RECIBIR PEDIDOS')
           "
-          [routerLink]="['/pedidos']"
+          [routerLink]="['/operaciones/pedidos']"
           (click)="closeMenu()"
         >
           <ion-icon name="git-compare-outline" slot="start"></ion-icon>

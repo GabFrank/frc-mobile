@@ -33,16 +33,12 @@ const routes: Routes = [
     loadChildren: () => import('./pages/transferencias/transferencias.module').then(m => m.TransferenciasModule)
   },
   {
-    path: 'pedidos',
-    loadChildren: () => import('./pages/operaciones/pedidos/pedidos.module').then(m => m.PedidosModule)
-  },
-  {
     path: 'splash',
     loadChildren: () => import('./splash/splash.module').then( m => m.SplashPageModule)
   },
   {
     path: 'operaciones',
-    loadChildren: () => import('./pages/operaciones/operaciones.module').then( m => m.OperacionesModule)
+    loadChildren: () => import('./pages/operaciones/operaciones.module').then(m => m.OperacionesModule)
   },
   {
     path: 'informaciones-personales',
