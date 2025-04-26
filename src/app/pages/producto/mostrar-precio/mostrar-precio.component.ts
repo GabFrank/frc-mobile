@@ -14,7 +14,7 @@ import { MonedaService } from '../../operaciones/moneda/moneda.service';
 @Component({
   selector: 'app-mostrar-precio',
   templateUrl: './mostrar-precio.component.html',
-  styleUrls: ['./mostrar-precio.component.scss'],
+  styleUrls: ['./mostrar-precio.component.scss']
 })
 export class MostrarPrecioComponent implements OnInit, OnDestroy, AfterViewInit {
 
