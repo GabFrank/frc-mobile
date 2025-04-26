@@ -19,7 +19,8 @@
       "esnext"
     ],
     "strict": false,
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "skipLibCheck": true
   },
   "exclude": [
     "node_modules",
