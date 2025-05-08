@@ -1,14 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title 
+      style="
+      text-align: center; 
+      padding-left: 0; 
+      padding-right: 48px;"
+    >
+      {{ data?.titulo | titlecase }}    
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
 <ion-content fullscreen>
-  <ion-col size="2">
-    <ion-icon
-      name="arrow-back"
-      style="font-size: 1.5em"
-      (click)="onBack()"
-    ></ion-icon>
-  </ion-col>
-  <ion-col size="12">
-    <ion-label>{{ data?.titulo | titlecase }}</ion-label>
-  </ion-col>
   <ion-row *ngIf="data?.search">
     <ion-col size="12">
       <ion-item>
@@ -38,15 +45,19 @@
         <ion-grid>
           <ion-row *ngFor="let info of data.tableData" wrap>
             <ng-container *ngIf="!info.nested">
-              <ion-col [size]="info.width"
-                >{{ info.nombre }}: {{ item[info?.id] }}</ion-col
-              >
+              <ion-col [size]="info.width" style="min-width: 0; height: auto;">
+                <div class="ion-text-wrap" style="width: 100%; overflow-wrap: break-word;">
+                  {{ info.nombre }}: {{ item[info?.id] }}
+                </div>
+              </ion-col>
             </ng-container>
             <ng-container *ngIf="info.nested">
-              <ion-col [size]="info.width"
-                >{{ info.nombre }}:
-                {{ item[info?.id][info?.nestedId] }}</ion-col
-              >
+              <ion-col [size]="info.width" style="min-width: 0; height: auto;">
+                <div class="ion-text-wrap" style="width: 100%; overflow-wrap: break-word;">
+                  {{ info.nombre }}:
+                  {{ item[info?.id][info?.nestedId] }}
+                </div>
+              </ion-col>
             </ng-container>
           </ion-row>
         </ion-grid>
