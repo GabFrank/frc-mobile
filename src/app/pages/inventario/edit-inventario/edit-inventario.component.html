@@ -1,17 +1,22 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title 
+      style="
+      text-align: center; 
+      padding-left: 0; 
+      padding-right: 48px;"
+    >
+      Detalles de Inventario
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
 <ion-content>
   <ion-card>
-    <ion-row>
-      <ion-col size="2">
-        <ion-icon
-          name="arrow-back"
-          style="font-size: 1.5em"
-          (click)="onBack()"
-        ></ion-icon>
-      </ion-col>
-      <ion-col size="8" style="text-align: center"
-        >Detalles de inventario</ion-col
-      >
-    </ion-row>
     <!-- primera linea -->
     <ion-row>
       <ion-col size="3">
@@ -82,7 +87,7 @@
 
   <ion-row>
     <ion-col size="2"> </ion-col>
-    <ion-col size="8" style="text-align: center">Zonas</ion-col>
+    <ion-col size="8" style="text-align: center"><ion-title>Zonas</ion-title></ion-col>
     <ion-col size="2" style="text-align: center">
       <ion-icon
         name="funnel"

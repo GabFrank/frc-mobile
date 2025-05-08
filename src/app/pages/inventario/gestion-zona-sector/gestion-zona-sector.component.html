@@ -1,22 +1,23 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title 
+      style="
+      text-align: center; 
+      padding-left: 0; 
+      padding-right: 48px;"
+    >
+      Gestión de Lugares
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
 <ion-content>
-  <ion-list>
-    <ion-item>
-      <ion-row style="width: 100%">
-        <ion-col size="2">
-          <ion-icon
-            name="arrow-back"
-            style="font-size: 1.5em"
-            (click)="onBack()"
-          ></ion-icon>
-        </ion-col>
-        <ion-col size="8" style="text-align: center"
-          >Gestión de lugares</ion-col
-        >
-      </ion-row>
-    </ion-item>
-  </ion-list>
-  <ion-list-header>
-    <ion-label>Lista de sectores</ion-label>
+  <ion-list-header style="text-align: center;">
+    <ion-title>Lista de sectores</ion-title>
   </ion-list-header>
   <!-- <ion-item>
     <ion-label></ion-label>

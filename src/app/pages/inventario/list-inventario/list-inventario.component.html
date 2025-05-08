@@ -1,21 +1,22 @@
-<ion-content style="width: 100%">
-  <ion-row>
-    <ion-col size="2">
-      <ion-icon
-        name="arrow-back"
-        style="font-size: 1.5em"
-        (click)="onBack()"
-      ></ion-icon>
-    </ion-col>
-    <ion-col size="8" style="text-align: center">Lista de Inventarios</ion-col>
-    <ion-col size="2" style="text-align: center">
-      <ion-icon
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title style="text-align: center">Lista de Inventarios</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openFilterMenu()">
+        <ion-icon
         name="funnel"
         style="font-size: 1.5em"
-        (click)="openFilterMenu()"
       ></ion-icon>
-    </ion-col>
-  </ion-row>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content style="width: 100%">
   <ion-grid>
     <ion-row>
       <ion-col size="12">
