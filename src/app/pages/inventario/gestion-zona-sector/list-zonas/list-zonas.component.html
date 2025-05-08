@@ -1,20 +1,23 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title 
+      style="
+      text-align: center; 
+      padding-left: 0; 
+      padding-right: 48px;"
+    >
+      {{(selectedSector?.descripcion || "Nuevo Sector") | titlecase}}
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
 <ion-content>
-  <ion-item>
-    <ion-row style="width: 100%">
-      <ion-col size="2">
-        <ion-icon
-          name="arrow-back"
-          style="font-size: 1.5em"
-          (click)="onBack()"
-        ></ion-icon>
-      </ion-col>
-      <ion-col size="8" style="text-align: center">{{
-        (selectedSector?.descripcion || "Nuevo Sector") | titlecase
-      }}</ion-col>
-    </ion-row>
-  </ion-item>
-  <ion-list-header>
-    <ion-label>Detalles</ion-label>
+  <ion-list-header style="padding: 0;">
+    <ion-title style="text-align: center;">Detalles</ion-title>
   </ion-list-header>
   <ion-list>
     <ion-item *ngIf="selectedSector?.id !== null">
@@ -68,8 +71,8 @@
     </ion-item>
   </ion-list>
   <ion-content *ngIf="selectedSector?.id !== null">
-    <ion-list-header>
-      <ion-label>Lista de zonas</ion-label>
+    <ion-list-header style="padding: 0;">
+      <ion-title style="text-align: center;">Lista de zonas</ion-title>
     </ion-list-header>
     <!-- <ion-item>
       <ion-label></ion-label>

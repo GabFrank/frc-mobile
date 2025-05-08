@@ -1,23 +1,22 @@
-<ion-content>
-  <ion-row class="ion-align-items-center">
-    <ion-col size="2">
-      <ion-icon
-        name="arrow-back"
-        style="font-size: 2em"
-        (click)="onBack()"
-      ></ion-icon>
-    </ion-col>
-    <ion-col size="8" style="text-align: center"
-      >Detalles de transferencia</ion-col
-    >
-    <ion-col size="2">
-      <ion-icon
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title style="text-align: center">Detalles de Transferencia</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onShare()">
+        <ion-icon
         name="share-social-outline"
-        style="font-size: 2em"
-        (click)="onShare()"
+        style="font-size: 1.5em"
       ></ion-icon>
-    </ion-col>
-  </ion-row>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
   <ion-card *ngIf="selectedTransferencia !== null" style="margin-top: 10px">
     <ion-grid>
       <ion-row>
