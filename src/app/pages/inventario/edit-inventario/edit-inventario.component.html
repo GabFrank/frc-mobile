@@ -97,7 +97,7 @@
     </ion-col>
   </ion-row>
 
-  <ion-accordion-group>
+  <ion-accordion-group [value]="activeAccordionId" (valueChange)="activeAccordionId = $event">
     <ion-accordion
       *ngFor="
         let invPro of selectedInventario?.inventarioProductoList;

@@ -91,26 +91,26 @@ export class ListConvenioComponent implements OnInit {
             {
               id: 'producto',
               nombre: 'Producto',
-              width: 100,
+              width: 12,
               nested: true,
               nestedId: 'descripcion'
             },
             {
               id: 'presentacion',
               nombre: 'Presentación',
-              width: 100,
+              width: 12,
               nested: true,
               nestedId: 'cantidad'
             },
             {
               id: 'cantidad',
-              nombre: 'cantidad',
-              width: 100
+              nombre: 'Cantidad',
+              width: 12
             },
             {
               id: 'valorTotal',
               nombre: 'Total',
-              width: 100
+              width: 12
             }
           ];
           let data: GenericListDialogData = {

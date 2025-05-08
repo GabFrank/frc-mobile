@@ -69,6 +69,7 @@ export class EditInventarioComponent implements OnInit {
   opcionesMostrarList = Object.values(OpcionesMostrar);
   selectedResponsable: Usuario;
   isAddZona = false;
+  activeAccordionId: string | undefined;
 
   constructor(
     private route: ActivatedRoute,
@@ -152,6 +153,7 @@ export class EditInventarioComponent implements OnInit {
                 .subscribe((res) => {
                   if (res != null) {
                     this.buscarInventario(this.inventarioId);
+                    this.activeAccordionId = res.id.toString();
                   }
                 });
             }
