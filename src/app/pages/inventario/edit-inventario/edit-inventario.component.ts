@@ -389,6 +389,12 @@ export class EditInventarioComponent implements OnInit {
       if (role == 'actualizar') {
         this.ngOnInit();
       } else if (role == 'resumen') {
+        if (this.selectedInventario?.estado === 'ABIERTO' && !this.verificarAbiertos()) {
+          this.notificacionService.warn(
+            'Primero debes finalizar la zona, antes de finalizar el inventario.',
+          );
+          return;
+        }
         this.router.navigate(['finalizar'], { relativeTo: this.route });
       } else if (role == 'compartir') {
         let codigo = new QrData();
