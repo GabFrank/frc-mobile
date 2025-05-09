@@ -45,6 +45,15 @@ export class EditInventarioItemDialogComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (this.data?.producto?.vencimiento === true) {
+      if (!this.vencimientoControl.hasValidator(Validators.required)) {
+        this.vencimientoControl.setValidators(Validators.required);
+      }
+    } else {
+      this.vencimientoControl.clearValidators();
+      this.vencimientoControl.setValue(null);
+    }
+    this.vencimientoControl.updateValueAndValidity();
 
     if (this.data?.inventarioProductoItem?.id != null) {
       this.cargarDatos(this.data?.inventarioProductoItem)
@@ -62,7 +71,11 @@ export class EditInventarioItemDialogComponent implements OnInit {
       this.isPesable = this.selectedInventarioProductoItem.presentacion.producto.balanza;
       this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
       this.cantidadControl.setValue(invProItem?.cantidad)
-      this.vencimientoControl.setValue(invProItem?.vencimiento)
+      if (this.data?.producto?.vencimiento === true && invProItem?.vencimiento) {
+        this.vencimientoControl.setValue(invProItem?.vencimiento)
+      } else {
+        this.vencimientoControl.setValue(null)
+      }
       this.estadoControl.setValue(invProItem?.estado)
       this.cargandoService.close(loading)
     }, 1000);
@@ -72,14 +85,22 @@ export class EditInventarioItemDialogComponent implements OnInit {
     if (this.selectedInventarioProductoItem == null) {
       this.selectedInventarioProductoItem = new InventarioProductoItem()
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
-      this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
+      if (this.data?.producto?.vencimiento === true) {
+        this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
+      } else {
+        this.selectedInventarioProductoItem.vencimiento = null;
+      }
       this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
       this.selectedInventarioProductoItem.presentacion = this.data.presentacion;
       this.selectedInventarioProductoItem.estado = this.estadoControl.value;
       this.selectedInventarioProductoItem.zona = this.data.inventarioProducto.zona;
     } else {
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
-      this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
+      if (this.data?.producto?.vencimiento === true) {
+        this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
+      } else {
+        this.selectedInventarioProductoItem.vencimiento = null;
+      }
       this.selectedInventarioProductoItem.estado = this.estadoControl.value;
     }
     console.log(this.selectedInventarioProductoItem.toInput());
