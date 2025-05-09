@@ -364,8 +364,10 @@ export class EditInventarioComponent implements OnInit {
         { texto: 'Mios', role: OpcionesMostrar.MIOS }
       ])
       .then((res) => {
-        let role = res.role;
-        if (role != null) this.mostrarControl.setValue(role);
+        const role = res.role;
+        if (role === OpcionesMostrar.TODOS || role === OpcionesMostrar.MIOS) {
+          this.mostrarControl.setValue(role);
+        }
       });
   }
 
