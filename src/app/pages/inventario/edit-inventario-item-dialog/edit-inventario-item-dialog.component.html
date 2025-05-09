@@ -14,7 +14,7 @@
       </ion-item>
     </ion-col>
   </ion-row>
-  <ion-row>
+  <ion-row *ngIf="data?.producto?.vencimiento === true">
     <ion-col size="12">
       <ion-item>
         <ion-label>Vencimiento</ion-label>
