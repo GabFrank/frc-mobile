@@ -20,7 +20,7 @@
         <ion-col size="auto" *ngFor="let page of pageList; let i = index">
           <ion-button
             fill="{{ pageIndex + 1 === i + 1 ? 'solid' : 'outline' }}"
-            color="primary"
+            color="dark"
             (click)="goToPage(i + 1)"
           >
             {{ i + 1 }}

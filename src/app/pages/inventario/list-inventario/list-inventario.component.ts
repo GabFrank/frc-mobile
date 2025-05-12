@@ -7,6 +7,7 @@ import { MenuActionService } from 'src/app/services/menu-action.service';
 import { Inventario } from '../inventario.model';
 import { InventarioService } from '../inventario.service';
 import { Location } from '@angular/common';
+import { PageInfo } from 'src/app/app.component';
 
 @UntilDestroy()
 @Component({
@@ -17,6 +18,9 @@ import { Location } from '@angular/common';
 export class ListInventarioComponent implements OnInit {
 
   inventarioList: Inventario[]
+  pageIndex = 0;
+  pageSize = 10;
+  selectedPageInfo: PageInfo<Inventario>;
 
   constructor(
     private inventarioService: InventarioService,
@@ -28,19 +32,26 @@ export class ListInventarioComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.route.paramMap.pipe(untilDestroyed(this)).subscribe(async (res) => {
-      this.verificarUsuario();
-    });
+    this.verificarUsuario();
   }
 
   async onGetInventarios() {
-    (await this.inventarioService.onGetInventarioUsuario())
+    if (!this.mainService?.usuarioActual?.id) {
+      console.warn('Usuario actual no disponible para cargar inventarios.');
+      return;
+    }
+    (await this.inventarioService.onGetInventarioUsuarioPaginado(
+      this.mainService.usuarioActual.id,
+      this.pageIndex,
+      this.pageSize
+    ))
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         if (res != null) {
-          this.inventarioList = res;
+          this.selectedPageInfo = res;
+          this.inventarioList = res.getContent;
         }
-      })
+      });
   }
 
   verificarUsuario() {
@@ -103,6 +114,11 @@ export class ListInventarioComponent implements OnInit {
         })
         break;
     }
+  }
+
+  handlePagination(e: number) {
+    this.pageIndex = e - 1;
+    this.onGetInventarios();
   }
 
 }

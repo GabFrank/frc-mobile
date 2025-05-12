@@ -498,3 +498,34 @@ export const inverntarioAbiertoPorSucursalQuery = gql`
     }
   }
 `;
+
+export const inventarioPorUsuarioPaginadoQuery = gql`
+  query GetInventariosPorUsuarioPaginado($usuarioId: ID!, $page: Int!, $size: Int!) {
+    data: getInventariosPorUsuarioPaginado(usuarioId: $usuarioId, page: $page, size: $size) {
+      getContent {
+        id
+        fechaInicio
+        fechaFin
+        estado
+        sucursal {
+          id
+          nombre
+        }
+        usuario {
+          id
+          persona {
+            id
+            nombre
+          }
+        }
+      }
+      getTotalPages
+      getTotalElements
+      getNumberOfElements
+      isFirst
+      isLast
+      hasNext
+      hasPrevious
+    }
+  }
+`;
