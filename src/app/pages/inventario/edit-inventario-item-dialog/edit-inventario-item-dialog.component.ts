@@ -72,7 +72,7 @@ export class EditInventarioItemDialogComponent implements OnInit {
       this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
       this.cantidadControl.setValue(invProItem?.cantidad)
       if (this.data?.producto?.vencimiento === true && invProItem?.vencimiento) {
-        this.vencimientoControl.setValue(invProItem?.vencimiento)
+      this.vencimientoControl.setValue(invProItem?.vencimiento)
       } else {
         this.vencimientoControl.setValue(null)
       }
@@ -86,7 +86,7 @@ export class EditInventarioItemDialogComponent implements OnInit {
       this.selectedInventarioProductoItem = new InventarioProductoItem()
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
       if (this.data?.producto?.vencimiento === true) {
-        this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
+      this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
       } else {
         this.selectedInventarioProductoItem.vencimiento = null;
       }
@@ -97,7 +97,7 @@ export class EditInventarioItemDialogComponent implements OnInit {
     } else {
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
       if (this.data?.producto?.vencimiento === true) {
-        this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
+      this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
       } else {
         this.selectedInventarioProductoItem.vencimiento = null;
       }

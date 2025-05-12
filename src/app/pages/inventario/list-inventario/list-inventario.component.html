@@ -58,3 +58,12 @@
     </ion-row>
   </ion-grid>
 </ion-content>
+<ion-footer>
+  <ng-container *ngIf="inventarioList?.length > 0 && selectedPageInfo?.getTotalPages > 1">
+    <app-paginacion
+      [pageData]="selectedPageInfo"
+      [pageIndex]="pageIndex"
+      (pageChange)="handlePagination($event)"
+    ></app-paginacion>
+  </ng-container>
+</ion-footer>

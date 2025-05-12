@@ -21,6 +21,8 @@ import { GetInventarioPorUsuarioGQL } from './graphql/getInventarioPorUsuario';
 import { GetInventarioAbiertoPorSucursalGQL } from './graphql/getInventarioAbiertoPorSucursal';
 import { GetInventarioItemPorInvetarioProductoGQL } from './graphql/getInventarioProductoItemPorInventarioProducto copy';
 import { ReabrirInventarioGQL } from './graphql/reabrir-inventario copy';
+import { GetInventarioPorUsuarioPaginadoGQL } from './graphql/getInventarioPorUsuarioPaginadoGQL';
+import { PageInfo } from 'src/app/app.component';
 
 @UntilDestroy()
 @Injectable({
@@ -46,12 +48,23 @@ export class InventarioService {
     private cancelarInventrio: CancelarInventarioGQL,
     private reabrirInventrio: ReabrirInventarioGQL,
     private inventarioAbiertoPorSucursal: GetInventarioAbiertoPorSucursalGQL,
-    private getInventarioProItem: GetInventarioItemPorInvetarioProductoGQL
-
+    private getInventarioProItem: GetInventarioItemPorInvetarioProductoGQL,
+    private getInventarioPorUsuarioPaginadoGQL: GetInventarioPorUsuarioPaginadoGQL
   ) { }
 
   async onGetInventarioUsuario(): Promise<Observable<Inventario[]>> {
     return this.genericCrudService.onGetById(this.inventarioPorUsuario, this.mainService.usuarioActual.id);
+  }
+
+  async onGetInventarioUsuarioPaginado(
+    usuarioId: number,
+    page: number, 
+    size: number
+  ): Promise<Observable<PageInfo<Inventario>>> {
+    return await this.genericCrudService.onCustomGet(
+      this.getInventarioPorUsuarioPaginadoGQL,
+      { usuarioId, page, size }
+    );
   }
 
   async onGetTrasferenciasPorFecha(inicio, fin) {
