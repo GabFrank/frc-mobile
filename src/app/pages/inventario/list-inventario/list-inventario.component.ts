@@ -8,6 +8,7 @@ import { Inventario } from '../inventario.model';
 import { InventarioService } from '../inventario.service';
 import { Location } from '@angular/common';
 import { PageInfo } from 'src/app/app.component';
+import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 
 @UntilDestroy()
 @Component({
@@ -21,6 +22,7 @@ export class ListInventarioComponent implements OnInit {
   pageIndex = 0;
   pageSize = 10;
   selectedPageInfo: PageInfo<Inventario>;
+  private currentSortOrder: string | null = 'fecha';
 
   constructor(
     private inventarioService: InventarioService,
@@ -28,7 +30,8 @@ export class ListInventarioComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private _location: Location,
-    private menuActionService: MenuActionService
+    private menuActionService: MenuActionService,
+    private notificacionService: NotificacionService
   ) { }
 
   ngOnInit() {
@@ -43,13 +46,17 @@ export class ListInventarioComponent implements OnInit {
     (await this.inventarioService.onGetInventarioUsuarioPaginado(
       this.mainService.usuarioActual.id,
       this.pageIndex,
-      this.pageSize
+      this.pageSize,
+      this.currentSortOrder
     ))
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         if (res != null) {
           this.selectedPageInfo = res;
           this.inventarioList = res.getContent;
+          if (this.inventarioList.length === 0 && this.currentSortOrder !== null && this.currentSortOrder !== 'default') {
+            this.notificacionService.danger('Item no encontrado');
+          }
         }
       });
   }
@@ -69,51 +76,27 @@ export class ListInventarioComponent implements OnInit {
   }
 
   onBack() {
-    this._location.back()
+    this._location.back();
   }
 
   openFilterMenu() {
     this.menuActionService.presentActionSheet([
       { texto: 'Ordenar por fecha', role: 'fecha' },
-      { texto: 'Primero inventarios abiertas', role: 'abiertas' },
-      { texto: 'Primero concluidas', role: 'concluidas' },
+      { texto: 'Inventarios abiertos', role: 'abiertas' },
+      { texto: 'Inventarios concluidos', role: 'concluidas' },
+      { texto: 'Inventarios cancelados', role: 'cancelados' }
     ]).then(res => {
-      let role = res.role;
-      this.onFiltrar(role)
-      console.log(role)
-    })
+      const role = res.role;
+      if (role && role !== 'dismiss' && role !== 'backdrop' && role !== this.currentSortOrder) {
+        this.applyFilterAndReload(role);
+      }
+    });
   }
 
-  onFiltrar(role) {
-    switch (role) {
-      case 'fecha':
-        this.inventarioList = this.inventarioList.sort((a, b) => {
-          if (a.fechaInicio > b.fechaInicio) {
-            return -1;
-          } else {
-            return 1
-          }
-        })
-        break;
-      case 'abiertas':
-        this.inventarioList = this.inventarioList.sort((a, b) => {
-          if (a.estado > b.estado) {
-            return -1;
-          } else {
-            return 1
-          }
-        })
-        break;
-      case 'concluidas':
-        this.inventarioList = this.inventarioList.sort((a, b) => {
-          if (a.estado < b.estado) {
-            return -1;
-          } else {
-            return 1
-          }
-        })
-        break;
-    }
+  applyFilterAndReload(role: string | null) {
+    this.currentSortOrder = role;
+    this.pageIndex = 0;
+    this.onGetInventarios();
   }
 
   handlePagination(e: number) {
