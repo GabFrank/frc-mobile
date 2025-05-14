@@ -59,11 +59,12 @@ export class InventarioService {
   async onGetInventarioUsuarioPaginado(
     usuarioId: number,
     page: number, 
-    size: number
+    size: number,
+    sortOrder?: string | null
   ): Promise<Observable<PageInfo<Inventario>>> {
     return await this.genericCrudService.onCustomGet(
       this.getInventarioPorUsuarioPaginadoGQL,
-      { usuarioId, page, size }
+      { usuarioId, page, size, sortOrder }
     );
   }
 

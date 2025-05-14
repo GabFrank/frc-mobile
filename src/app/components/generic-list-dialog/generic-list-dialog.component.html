@@ -39,7 +39,6 @@
       >
     </ion-col>
   </ion-row>
-  <ion-list>
     <ng-container *ngFor="let item of itemList">
       <ion-card (click)="onItemClick(item)">
         <ion-grid>
@@ -63,7 +62,6 @@
         </ion-grid>
       </ion-card>
     </ng-container>
-  </ion-list>
   <ng-container *ngIf="this.data?.paginator">
     <pagination-controls
       (pageChange)="onPageChange($event)"

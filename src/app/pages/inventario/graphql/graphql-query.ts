@@ -500,8 +500,8 @@ export const inverntarioAbiertoPorSucursalQuery = gql`
 `;
 
 export const inventarioPorUsuarioPaginadoQuery = gql`
-  query GetInventariosPorUsuarioPaginado($usuarioId: ID!, $page: Int!, $size: Int!) {
-    data: getInventariosPorUsuarioPaginado(usuarioId: $usuarioId, page: $page, size: $size) {
+  query GetInventariosPorUsuarioPaginado($usuarioId: ID!, $page: Int!, $size: Int!, $sortOrder: String) {
+    data: getInventariosPorUsuarioPaginado(usuarioId: $usuarioId, page: $page, size: $size, sortOrder: $sortOrder) {
       getContent {
         id
         fechaInicio
