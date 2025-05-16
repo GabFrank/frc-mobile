@@ -17,6 +17,7 @@ export class PaginacionComponent implements AfterViewInit {
   @Input() pageData: PageInfo<any>; // The entire Page object
   @Input() pageIndex: number; // The entire Page object
   @Output() pageChange = new EventEmitter<number>();
+  @Output() currentPageEmitter = new EventEmitter<number>(); // Soporte para ambos eventos
 
   pageList: number[];
 
@@ -36,18 +37,21 @@ export class PaginacionComponent implements AfterViewInit {
   goToPage(page: number) {
     if (page >= 1 && page <= this.pageData?.getTotalPages) {
       this.pageChange.emit(page);
+      this.currentPageEmitter.emit(page); // Emitir en ambos eventos
     }
   }
 
   previousPage() {
     if (this.pageData?.hasPrevious) {
       this.pageChange.emit(this.pageIndex); // Page object uses 0-based index
+      this.currentPageEmitter.emit(this.pageIndex); // Emitir en ambos eventos
     }
   }
 
   nextPage() {
     if (this.pageData?.hasNext) {
       this.pageChange.emit(this.pageIndex + 2); // Adjusting for 1-based UI
+      this.currentPageEmitter.emit(this.pageIndex + 2); // Emitir en ambos eventos
     }
   }
 }

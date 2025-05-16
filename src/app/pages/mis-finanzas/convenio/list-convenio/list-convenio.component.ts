@@ -19,6 +19,7 @@ import { ClienteService } from 'src/app/graphql/personas/cliente/graphql/cliente
 import { MainService } from 'src/app/services/main.service';
 import { MenuActionService } from 'src/app/services/menu-action.service';
 import { ModalService } from 'src/app/services/modal.service';
+import { PageInfo } from 'src/app/app.component';
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -32,6 +33,11 @@ export class ListConvenioComponent implements OnInit {
   totalAbiertos = 0;
   selectedEstado = EstadoVentaCredito.ABIERTO;
   selectedCliente: Cliente;
+  
+  // Propiedades para paginación
+  pageIndex = 0;
+  pageSize = 5;
+  selectedPageInfo: PageInfo<VentaCredito>;
 
   constructor(
     private ventaCreditoService: VentaCreditoService,
@@ -52,27 +58,60 @@ export class ListConvenioComponent implements OnInit {
     ).subscribe(async (res) => {
       this.selectedCliente = res;
       if (res != null) {
-        (
-          await this.ventaCreditoService.onGetPorClienteId(
-            res.id,
-            this.selectedEstado,
-            null,
-            null
-          )
-        ).subscribe((res3: VentaCredito[]) => {
-          this.ventaCreditoList = res3;
-          // this.totalVentaCredito = res3.getTotalElements;
-          this.calcularTotal();
+        this.calcularTotalGlobal();
+        this.cargarConvenios();
+      }
+    });
+  }
+
+  async calcularTotalGlobal() {
+    (
+      await this.ventaCreditoService.onGetPorClienteId(
+        this.selectedCliente.id,
+        this.selectedEstado,
+        null,
+        null
+      )
+    ).pipe(untilDestroyed(this)).subscribe((res) => {
+      if (res != null) {
+        const todosLosConvenios = Array.isArray(res) ? res : res.getContent;
+        
+        this.totalAbiertos = 0;
+        todosLosConvenios?.forEach((vc) => {
+          this.totalAbiertos += vc.valorTotal;
         });
+        
+        if (this.selectedCliente) {
+          this.selectedCliente.saldo = this.selectedCliente.credito - this.totalAbiertos;
+        }
+      }
+    });
+  }
+
+  async cargarConvenios() {
+    if (this.pageSize < 1) this.pageSize = 10;
+    
+    (
+      await this.ventaCreditoService.onGetPorClienteId(
+        this.selectedCliente.id,
+        this.selectedEstado,
+        this.pageIndex,
+        this.pageSize
+      )
+    ).pipe(untilDestroyed(this)).subscribe((res) => {
+      if (res != null) {
+        this.selectedPageInfo = res;
+        this.ventaCreditoList = res.getContent;
       }
     });
   }
 
   calcularTotal() {
+    let totalPagina = 0;
     this.ventaCreditoList?.forEach((vc) => {
-      this.totalAbiertos += vc.valorTotal;
+      totalPagina += vc.valorTotal;
     });
-    this.selectedCliente.saldo = this.selectedCliente.credito - this.totalAbiertos;
+    return totalPagina;
   }
 
   onItemClick(ventaCredito: VentaCredito) {}
@@ -82,6 +121,11 @@ export class ListConvenioComponent implements OnInit {
   }
 
   openFilterMenu() {}
+
+  handlePagination(e: number) {
+    this.pageIndex = e - 1;
+    this.cargarConvenios();
+  }
 
   async openVentaDetalle(venta: Venta) {
     (await this.ventaService.onGetPorId(venta.id, venta.sucursalId)).subscribe(
