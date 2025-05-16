@@ -106,3 +106,12 @@
     </ion-row>
   </ion-grid>
 </ion-content>
+<ion-footer>
+  <ng-container *ngIf="ventaCreditoList?.length > 0">
+    <app-paginacion
+      [pageData]="selectedPageInfo"
+      [pageIndex]="pageIndex"
+      (pageChange)="handlePagination($event)"
+    ></app-paginacion>
+  </ng-container>
+</ion-footer>

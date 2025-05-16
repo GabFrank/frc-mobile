@@ -113,8 +113,8 @@ export const ventaCreditoPorClienteQuery = gql`
 `;
 
 export const ventaCreditoPorClientePageQuery = gql`
-  query ($id: ID!, $estado: EstadoVentaCredito) {
-    data: ventaCreditoPorClientePage(id: $id, estado: $estado) {
+  query ($id: ID!, $estado: EstadoVentaCredito, $page: Int, $size: Int) {
+    data: ventaCreditoPorClientePage(id: $id, estado: $estado, page: $page, size: $size) {
       getTotalPages
       getTotalElements
       getNumberOfElements
