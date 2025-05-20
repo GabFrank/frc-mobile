@@ -22,12 +22,6 @@ export const inventariosQuery = gql`
       inventarioProductoList {
         id
         concluido
-        producto {
-          id
-          descripcion
-          balanza
-          vencimiento
-        }
         zona {
           id
           sector {
@@ -44,6 +38,10 @@ export const inventariosQuery = gql`
             imagenPrincipal
           }
           cantidad
+          cantidadAnterior
+          fechaVerificado
+          verificado
+          revisado
           vencimiento
           creadoEn
         }
@@ -80,12 +78,6 @@ export const inventarioQuery = gql`
           persona {
             nombre
           }
-        }
-        producto {
-          id
-          descripcion
-          balanza
-          vencimiento
         }
         zona {
           id
@@ -148,12 +140,6 @@ export const inventarioPorUsuarioQuery = gql`
       inventarioProductoList {
         id
         concluido
-        producto {
-          id
-          descripcion
-          balanza
-          vencimiento
-        }
         zona {
           id
           sector {
@@ -177,6 +163,10 @@ export const inventarioPorUsuarioQuery = gql`
           }
           estado
           cantidad
+          cantidadAnterior
+          fechaVerificado
+          verificado
+          revisado
           vencimiento
           creadoEn
         }
@@ -207,12 +197,6 @@ export const saveInventario = gql`
       inventarioProductoList {
         id
         concluido
-        producto {
-          id
-          descripcion
-          balanza
-          vencimiento
-        }
         zona {
           id
           sector {
@@ -229,6 +213,10 @@ export const saveInventario = gql`
             imagenPrincipal
           }
           cantidad
+          cantidadAnterior
+          fechaVerificado
+          verificado
+          revisado
           vencimiento
           creadoEn
         }
@@ -265,12 +253,6 @@ export const inventarioPorFechaQuery = gql`
       inventarioProductoList {
         id
         concluido
-        producto {
-          id
-          descripcion
-          balanza
-          vencimiento
-        }
         zona {
           id
           sector {
@@ -287,6 +269,10 @@ export const inventarioPorFechaQuery = gql`
             imagenPrincipal
           }
           cantidad
+          cantidadAnterior
+          fechaVerificado
+          verificado
+          revisado
           vencimiento
           creadoEn
         }
@@ -300,12 +286,6 @@ export const saveInventarioProducto = gql`
     data: saveInventarioProducto(inventarioProducto: $entity) {
         id
         concluido
-        producto {
-          id
-          descripcion
-          balanza
-          vencimiento
-        }
         zona {
           id
           sector {
@@ -328,6 +308,10 @@ export const saveInventarioProducto = gql`
             imagenPrincipal
           }
           cantidad
+          cantidadAnterior
+          fechaVerificado
+          verificado
+          revisado
           vencimiento
           creadoEn
         }
@@ -364,6 +348,10 @@ export const saveInventarioProductoItem = gql`
       }
       cantidad
       cantidadFisica
+      cantidadAnterior
+      fechaVerificado
+      verificado
+      revisado
       vencimiento
       usuario {
         id
@@ -406,12 +394,6 @@ export const finalizarInventarioQuery = gql`
       inventarioProductoList {
         id
         concluido
-        producto {
-          id
-          descripcion
-          balanza
-          vencimiento
-        }
         zona {
           id
           sector {
@@ -428,6 +410,10 @@ export const finalizarInventarioQuery = gql`
             imagenPrincipal
           }
           cantidad
+          cantidadAnterior
+          fechaVerificado
+          verificado
+          revisado
           vencimiento
           creadoEn
         }
@@ -470,11 +456,7 @@ export const inverntarioAbiertoPorSucursalQuery = gql`
       observacion
       inventarioProductoList {
         id
-        concluido
-        producto {
-          id
-          descripcion
-        }
+        concluido 
         zona {
           id
           sector {
@@ -491,6 +473,10 @@ export const inverntarioAbiertoPorSucursalQuery = gql`
             imagenPrincipal
           }
           cantidad
+          cantidadAnterior
+          fechaVerificado
+          verificado
+          revisado
           vencimiento
           creadoEn
         }

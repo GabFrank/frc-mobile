@@ -65,7 +65,7 @@
     "
   >
     <ion-col size="12" style="text-align: center">
-      <ion-button class="btn-success-flat" fill="clear" (click)="onFinalizar()"
+      <ion-button class="btn-success-flat" fill="clear"
         >Finalizar Inventario</ion-button
       >
     </ion-col>
@@ -94,6 +94,18 @@
       >
     </ion-col>
   </ion-row>
+  <ion-row
+  *ngIf="
+    selectedInventario?.estado === 'CONCLUIDO' &&
+    mainService?.usuarioActual?.id === selectedInventario?.usuario?.id
+  "
+>
+  <ion-col size="12" style="text-align: center">
+    <ion-button class="btn-warn-flat" fill="clear" (click)="onRevisar()"
+      >Revisar Inventario</ion-button
+    >
+  </ion-col>
+</ion-row>
   <ion-row
     *ngIf="
       selectedInventario?.estado === 'CONCLUIDO' &&

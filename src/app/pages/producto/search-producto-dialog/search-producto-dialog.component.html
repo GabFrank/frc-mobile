@@ -75,6 +75,71 @@
       </ion-item>
 
       <ion-list slot="content">
+        <!-- Si es inventario, mostramos el ion-item-sliding -->
+        <ng-container *ngIf="isInventario; else normalPresentacion">
+          <ion-item-sliding #slidingItem *ngFor="let presentacion of producto?.presentaciones">
+            <ion-item
+              (click)="onPresentacionClick(presentacion, producto)"
+              class="dark1"
+            >
+              <ion-avatar
+                slot="start"
+                (click)="
+                  onAvatarClick(presentacion?.imagenPrincipal);
+                  $event.stopPropagation()
+                "
+              >
+                <img
+                  [src]="
+                    presentacion?.imagenPrincipal !== null
+                      ? presentacion?.imagenPrincipal
+                      : '/assets/no-image.png'
+                  "
+                />
+              </ion-avatar>
+              <ion-label>
+                <h4>
+                  Presentación: {{ presentacion?.cantidad | number: '1.0-2' }}
+                </h4>
+                <p>
+                  Cod. barra:
+                  {{ presentacion?.codigoPrincipal?.codigo | uppercase }}
+                </p>
+                <p *ngIf="mostrarPrecio">
+                  Precio:
+                  {{ presentacion?.precioPrincipal?.precio | number: '1.0-2' }} Gs.
+                </p>
+                <p *ngIf="data?.data?.sucursalId">
+                  <ng-container
+                    *ngIf="
+                      producto?.stockPorProducto === undefined;
+                      else elseTemplate
+                    "
+                  >
+                    <ion-spinner></ion-spinner>
+                  </ng-container>
+                  <ng-template #elseTemplate>
+                    Stock:
+                    {{
+                      producto?.stockPorProducto / presentacion?.cantidad
+                        | number: '1.0-2'
+                    }}
+                  </ng-template>
+                </p>
+              </ion-label>
+            </ion-item>
+            
+            <!-- Opciones al deslizar a la izquierda - para verificar -->
+            <ion-item-options side="start">
+              <ion-item-option color="success" (click)="onVerificarProducto(presentacion, producto, slidingItem)">
+                <ion-icon slot="icon-only" name="checkmark"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ng-container>
+        
+        <!-- Template para presentación normal (no inventario) -->
+        <ng-template #normalPresentacion>
         <ion-item
           *ngFor="let presentacion of producto?.presentaciones"
           (click)="onPresentacionClick(presentacion, producto)"
@@ -126,6 +191,7 @@
             </p>
           </ion-label>
         </ion-item>
+        </ng-template>
       </ion-list>
     </ion-accordion>
   </ion-accordion-group>

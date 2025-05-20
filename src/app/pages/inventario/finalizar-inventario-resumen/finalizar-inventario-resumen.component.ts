@@ -168,6 +168,10 @@ export class FinalizarInventarioResumenComponent implements OnInit {
       }
     })
   }
+  
+  onRevisar(){
+    this.router.navigate(['/inventario/list/info', this.selectedInventario?.id, 'revisar'], { relativeTo: this.route });
+  }
 
   onNuevoInventario(){
     this.modalService.openModal(NuevoInventarioComponent, {data: this.selectedInventario?.sucursal}).then(res => {

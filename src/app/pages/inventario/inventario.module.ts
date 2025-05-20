@@ -16,17 +16,32 @@ import { ListZonasComponent } from './gestion-zona-sector/list-zonas/list-zonas.
 import { AdicionarSectorComponent } from './gestion-zona-sector/adicionar-sector/adicionar-sector.component';
 import { AdicionarZonaComponent } from './gestion-zona-sector/adicionar-zona/adicionar-zona.component';
 import { ComponentsModule } from 'src/app/components/components.module';
-
+import { RevisarInventarioComponent } from './revisar-inventario/revisar-inventario.component';
+import { CalendarModule } from 'ion7-calendar';
 
 @NgModule({
-  declarations: [InventarioComponent, EditInventarioComponent, ListInventarioComponent, SelectZonaDialogComponent, EditInventarioItemDialogComponent, FinalizarInventarioResumenComponent, NuevoInventarioComponent, GestionZonaSectorComponent, ListZonasComponent, AdicionarSectorComponent, AdicionarZonaComponent],
+  declarations: [
+    InventarioComponent, 
+    EditInventarioComponent, 
+    ListInventarioComponent, 
+    SelectZonaDialogComponent, 
+    EditInventarioItemDialogComponent, 
+    FinalizarInventarioResumenComponent, 
+    NuevoInventarioComponent, 
+    GestionZonaSectorComponent, 
+    ListZonasComponent, 
+    AdicionarSectorComponent, 
+    AdicionarZonaComponent, 
+    RevisarInventarioComponent
+  ],
   imports: [
     CommonModule,
     InventarioRoutingModule,
     IonicModule,
     ReactiveFormsModule,
     FormsModule,
-    ComponentsModule
+    ComponentsModule,
+    CalendarModule
     ]
 })
 export class InventarioModule { }
