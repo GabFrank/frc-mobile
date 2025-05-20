@@ -84,6 +84,10 @@ export class InventarioProductoItem {
   presentacion: Presentacion;
   cantidad: number;
   cantidadFisica: number;
+  cantidadAnterior: number;
+  fechaVerificado: Date;
+  verificado: boolean;
+  revisado: boolean;
   vencimiento: Date;
   usuario: Usuario;
   estado: InventarioProductoEstado
@@ -97,6 +101,10 @@ export class InventarioProductoItem {
     input.presentacionId = this.presentacion?.id
     input.cantidad = this.cantidad
     input.cantidadFisica = this.cantidadFisica
+    input.cantidadAnterior = this.cantidadAnterior
+    input.fechaVerificado = this.fechaVerificado
+    input.verificado = this.verificado
+    input.revisado = this.revisado
     input.vencimiento = dateToString(this.vencimiento)
     input.estado = this.estado
     input.usuarioId = this.usuario?.id
@@ -111,6 +119,10 @@ export class InventarioProductoItemInput {
   presentacionId: any; //presentacion
   cantidad: number;
   cantidadFisica: number;
+  cantidadAnterior: number;
+  fechaVerificado: Date;
+  verificado: boolean;
+  revisado: boolean;
   vencimiento: string; //vencimiento que el sistema le va a indicar, si no existe crear vencimiento
   estado: InventarioProductoEstado
   usuarioId: number;

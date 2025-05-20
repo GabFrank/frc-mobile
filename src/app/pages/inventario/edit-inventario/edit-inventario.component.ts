@@ -242,60 +242,81 @@ export class EditInventarioComponent implements OnInit {
 
   onAddProducto(invPro, i) {
     console.log(this.selectedInventario);
-    let data = {sucursal:this.selectedInventario.sucursal,  sucursalId: +this.selectedInventario.sucursal.id, isInventario: true };
+    let data = {
+      sucursal: this.selectedInventario.sucursal,
+      sucursalId: +this.selectedInventario.sucursal.id,
+      isInventario: true,
+      inventarioId: this.selectedInventario.id,
+      inventarioProductoId: invPro.id
+    };
     this.modalService
       .openModal(SearchProductoDialogComponent, { data })
-      .then((res) => {
-        if (res?.data) {
-          let selectedPresentacion = res.data['presentacion'];
-          let selectedProducto = res.data['producto'];
-          let data: InventarioItemData = {
-            inventarioProducto: invPro,
-            producto: selectedProducto,
-            presentacion: selectedPresentacion,
-            inventarioProductoItem: null,
-            peso: res.data['peso']
-          };
-          this.modalService
-            .openModal(EditInventarioItemDialogComponent, data)
-            .then(async (res2: any) => {
-              if (res2.data != null) {
-                let invProItemAux: InventarioProductoItemInput = res2.data;
-                (
-                  await this.productoService.onGetStockPorSucursal(
-                    data.producto?.id,
-                    this.selectedInventario.sucursal.id
-                  )
-                )
-                  .pipe(untilDestroyed(this))
-                  .subscribe(async (stockResponse) => {
-                    if (stockResponse != null) {
-                      invProItemAux.cantidadFisica = stockResponse;
-                      console.log(stockResponse);
-                      (
-                        await this.inventarioService.onSaveInventarioProductoItem(
-                          invProItemAux
-                        )
-                      )
-                        .pipe(untilDestroyed(this))
-                        .subscribe((res3) => {
-                          if (res3 != null) {
-                            console.log(res3);
-                            this.selectedInventario.inventarioProductoList.forEach(
-                              (i) => {
-                                if (i.inventarioProductoItemList == null)
-                                  i.inventarioProductoItemList = [];
-                                if (i.inventarioProductoItemList.length > 4)
-                                  i.inventarioProductoItemList.pop();
-                                i.inventarioProductoItemList.unshift(res3);
-                              }
-                            );
+      .then((searchResult) => {
+        if (searchResult?.data) {
+          if (searchResult.data.id && (searchResult.data.revisado !== undefined || searchResult.data.verificado !== undefined)) {
+            const itemVerificado = searchResult.data as InventarioProductoItem;
+
+            if (!invPro.inventarioProductoItemList) {
+              invPro.inventarioProductoItemList = [];
+            }
+            invPro.inventarioProductoItemList.unshift(itemVerificado);
+            invPro.inventarioProductoItemList = [...invPro.inventarioProductoItemList];
+
+            const invProIdStr = invPro.id?.toString();
+            if (this.activeAccordionId === invProIdStr) {
+                this.activeAccordionId = undefined; 
+                setTimeout(() => {
+                    this.activeAccordionId = invProIdStr;
+                }, 0);
+            }
+
+          } else if (searchResult.data.presentacion && searchResult.data.producto) {
+            let selectedPresentacion = searchResult.data['presentacion'];
+            let selectedProducto = searchResult.data['producto'];
+            let editDialogData: InventarioItemData = {
+              inventarioProducto: invPro,
+              producto: selectedProducto,
+              presentacion: selectedPresentacion,
+              inventarioProductoItem: null,
+              peso: searchResult.data['peso']
+            };
+            this.modalService
+              .openModal(EditInventarioItemDialogComponent, editDialogData)
+              .then(async (editDialogResult: any) => {
+                if (editDialogResult.data != null) {
+                  let invProItemInput: InventarioProductoItemInput = editDialogResult.data;
+                  const loading = await this.cargandoService.open();
+                  (await this.inventarioService.onSaveInventarioProductoItem(invProItemInput))
+                    .pipe(untilDestroyed(this))
+                    .subscribe(
+                      (itemGuardado) => {
+                        this.cargandoService.close(loading);
+                        if (itemGuardado) {
+                          if (!invPro.inventarioProductoItemList) {
+                            invPro.inventarioProductoItemList = [];
                           }
-                        });
-                    }
-                  });
-              }
-            });
+                          invPro.inventarioProductoItemList.unshift(itemGuardado);
+                          invPro.inventarioProductoItemList = [...invPro.inventarioProductoItemList];
+
+                          const invProIdStr = invPro.id?.toString();
+                          if (this.activeAccordionId === invProIdStr) {
+                              this.activeAccordionId = undefined;
+                              setTimeout(() => {
+                                  this.activeAccordionId = invProIdStr;
+                              }, 0);
+                          }
+                        } else {
+                          this.notificacionService.open('No se pudo añadir el ítem.', TipoNotificacion.WARN, 3);
+                        }
+                      },
+                      (error) => {
+                        this.cargandoService.close(loading);
+                        this.notificacionService.danger('Error al añadir ítem: ' + (error?.message || 'Error desconocido'));
+                      }
+                    );
+                }
+              });
+          }
         }
       });
   }
@@ -331,6 +352,11 @@ export class EditInventarioComponent implements OnInit {
   ) {
     let selectedPresentacion = invProItem?.presentacion;
     let selectedProducto = invProItem?.presentacion?.producto;
+    
+    if (selectedProducto && selectedProducto.vencimiento === undefined && invProItem.vencimiento !== null) {
+      selectedProducto.vencimiento = true;
+    }
+    
     let data: InventarioItemData = {
       inventarioProducto: invPro,
       producto: selectedProducto,

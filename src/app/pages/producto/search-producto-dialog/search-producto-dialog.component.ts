@@ -12,18 +12,19 @@ import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/cor
 import { ProductoService } from '../producto.service';
 import { ImagePopoverComponent } from 'src/app/components/image-popover/image-popover.component';
 import { Location } from '@angular/common';
-import { IonContent, Platform } from '@ionic/angular';
+import { IonContent, Platform, IonItemSliding } from '@ionic/angular';
 import { CodigoService } from '../../codigo/codigo.service';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { StockPorSucursalDialogComponent, StockPorSucursalDialogData } from '../../operaciones/movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 import { NotificacionService } from 'src/app/services/notificacion.service';
+import { InventarioService } from '../../inventario/inventario.service';
+import { InventarioProductoEstado } from '../../inventario/inventario.model';
 
 export interface SearchProductoDialogData {
   mostrarPrecio: boolean;
   sucursalId?: number;
 }
-
 @UntilDestroy()
 @Component({
   selector: 'app-search-producto-dialog',
@@ -64,7 +65,8 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
     private plf: Platform,
     private codigoService: CodigoService,
     private photoViewer: PhotoViewer,
-    private notificacionService: NotificacionService
+    private notificacionService: NotificacionService,
+    private inventarioService: InventarioService
 
   ) {
     this.isWeb = plf.platforms().includes('mobileweb');
@@ -222,4 +224,117 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
     this.content.scrollToTop(500);
   }
 
+  async onVerificarProducto(presentacion: Presentacion, producto: Producto, slidingItem: IonItemSliding) {
+    slidingItem.close();
+
+    if (!this.isInventario || !this.data?.data?.inventarioId) {
+      this.notificacionService.warn('No se puede verificar el producto fuera del contexto de inventario');
+      return;
+    }
+
+    try {
+      const inventarioProductoId = Number(this.data.data.inventarioProductoId);
+      const presentacionId = Number(presentacion.id);
+      const usuarioId = Number(localStorage.getItem("usuarioId"));
+      
+      const stockReal = producto?.stockPorProducto ? (producto.stockPorProducto / presentacion.cantidad) : 0;
+      
+      const inventarioProductoItemInput = {
+        inventarioProductoId: inventarioProductoId,
+        presentacionId: presentacionId,
+        cantidad: stockReal,
+        cantidadFisica: stockReal,
+        cantidadAnterior: stockReal,
+        verificado: true,
+        revisado: false,
+        estado: InventarioProductoEstado.BUENO,
+        usuarioId: usuarioId,
+        fechaVerificado: null
+      };
+
+      try {
+        if (producto.id) {
+          try {
+            if (producto.vencimiento === true && stockReal > 0) {
+              const fechaDefecto = new Date();
+              fechaDefecto.setMonth(fechaDefecto.getMonth() + 6);
+              const fechaVencimientoDefecto = `${fechaDefecto.getFullYear()}-${String(fechaDefecto.getMonth() + 1).padStart(2, '0')}-${String(fechaDefecto.getDate()).padStart(2, '0')}T23:59:59`;
+              
+              inventarioProductoItemInput['vencimiento'] = fechaVencimientoDefecto;
+            } else {
+              inventarioProductoItemInput['vencimiento'] = null;
+            }
+          } catch (error) {
+            console.warn('Error al verificar vencimiento del producto:', error);
+          }
+        }
+
+        const itemsExistentesObservable = await this.inventarioService.onGetInventarioProItem(inventarioProductoId, 0);
+        
+        itemsExistentesObservable.subscribe((itemsExistentes) => {
+          
+          if (Array.isArray(itemsExistentes) && itemsExistentes.length > 0) {
+            const itemExistente = itemsExistentes.find(item => 
+              Number(item.presentacion?.id) === Number(presentacionId)
+            );
+            
+            if (itemExistente) {
+              
+              if (itemExistente.id) {
+                inventarioProductoItemInput['id'] = itemExistente.id;
+              }
+              
+              if (stockReal > 0 && itemExistente.vencimiento) {
+                let vencimientoStr;
+                if (typeof itemExistente.vencimiento === 'string') {
+                  const vencimientoString = String(itemExistente.vencimiento);
+                  if (vencimientoString.includes('T')) {
+                    vencimientoStr = vencimientoString;
+                  } else if (vencimientoString.includes(' ')) {
+                    vencimientoStr = vencimientoString.replace(' ', 'T');
+                  } else {
+                    vencimientoStr = `${vencimientoString}T23:59:59`;
+                  }
+                } else {
+                  const fechaVenc = new Date(itemExistente.vencimiento);
+                  vencimientoStr = fechaVenc.toISOString().split('.')[0]; 
+                }
+                inventarioProductoItemInput['vencimiento'] = vencimientoStr;
+              } else {
+                inventarioProductoItemInput['vencimiento'] = null;
+              }
+            } 
+          }
+          this.guardarVerificacion(inventarioProductoItemInput);
+        }, (error) => {
+          console.warn('No se pudo obtener información del item existente:', error);
+          this.guardarVerificacion(inventarioProductoItemInput);
+        });
+      } catch (error) {
+        console.warn('Error al intentar obtener item existente:', error);
+        this.guardarVerificacion(inventarioProductoItemInput);
+      }
+    } catch (error) {
+      console.error('Error al verificar producto:', error);
+      this.notificacionService.danger('Error al verificar el producto: ' + (error as any)?.message);
+    }
+  }
+
+  private async guardarVerificacion(inventarioProductoItemInput: any) {
+    console.log("Enviando datos para guardar:", JSON.stringify(inventarioProductoItemInput));
+
+    (await this.inventarioService.onSaveInventarioProductoItem(inventarioProductoItemInput))
+      .pipe(untilDestroyed(this))
+      .subscribe((res) => {
+        if (res) {
+          this.notificacionService.success('Producto verificado correctamente');
+          this.modalService.closeModal(res);
+        } else {
+          this.notificacionService.warn('No se pudo verificar el producto');
+          this.modalService.closeModal(null);
+        }
+      }, error => {
+        console.error('Error detallado:', error);
+      });
+  }
 }

@@ -22,6 +22,7 @@ export interface InventarioItemData {
 export class EditInventarioItemDialogComponent implements OnInit {
 
   isPesable = false;
+  private cantidadOriginalDelItem: number = 0;
 
   @Input()
   data: InventarioItemData;
@@ -45,7 +46,22 @@ export class EditInventarioItemDialogComponent implements OnInit {
   }
 
   ngOnInit() {
+    let tieneVencimiento = false;
+    
     if (this.data?.producto?.vencimiento === true) {
+      tieneVencimiento = true;
+    }
+    else if (typeof this.data?.producto?.vencimiento === 'string' && this.data?.producto?.vencimiento === 'true') {
+      tieneVencimiento = true;
+      if (this.data?.producto) {
+        this.data.producto.vencimiento = true;
+      }
+    } 
+    else if (this.data?.inventarioProductoItem?.vencimiento && this.data?.producto) {
+      tieneVencimiento = true;
+      this.data.producto.vencimiento = true;
+    }
+    if (tieneVencimiento) {
       if (!this.vencimientoControl.hasValidator(Validators.required)) {
         this.vencimientoControl.setValidators(Validators.required);
       }
@@ -56,11 +72,23 @@ export class EditInventarioItemDialogComponent implements OnInit {
     this.vencimientoControl.updateValueAndValidity();
 
     if (this.data?.inventarioProductoItem?.id != null) {
-      this.cargarDatos(this.data?.inventarioProductoItem)
-    } else if(this.data?.peso != null){
-      this.cantidadControl.setValue(this.data.peso)
+      this.cargarDatos(this.data.inventarioProductoItem);
+    } else {
+      if (this.data?.producto && this.data?.presentacion) {
+        if (this.data.producto.stockPorProducto != null && this.data.presentacion.cantidad > 0) {
+          const stockTeoricoPresentaciones = this.data.producto.stockPorProducto / this.data.presentacion.cantidad; 
+          this.cantidadOriginalDelItem = parseFloat(stockTeoricoPresentaciones.toFixed(3));
+        } else {
+          this.cantidadOriginalDelItem = 0;
+        }
+        
+        if (this.data?.peso != null) {
+          this.cantidadControl.setValue(this.data.peso);
+        }
+      } else {
+        this.cantidadOriginalDelItem = 0;
+      }
     }
-
   }
 
   async cargarDatos(invProItem: InventarioProductoItem) {
@@ -68,14 +96,20 @@ export class EditInventarioItemDialogComponent implements OnInit {
     setTimeout(() => {
       this.selectedInventarioProductoItem = new InventarioProductoItem;
       Object.assign(this.selectedInventarioProductoItem, invProItem)
+      this.cantidadOriginalDelItem = invProItem.cantidad;
       this.isPesable = this.selectedInventarioProductoItem.presentacion.producto.balanza;
       this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
       this.cantidadControl.setValue(invProItem?.cantidad)
-      if (this.data?.producto?.vencimiento === true && invProItem?.vencimiento) {
-      this.vencimientoControl.setValue(invProItem?.vencimiento)
+      
+      const tieneVencimiento = this.data?.producto?.vencimiento === true || 
+                             (typeof this.data?.producto?.vencimiento === 'string' && this.data?.producto?.vencimiento === 'true');
+      
+      if (tieneVencimiento && invProItem?.vencimiento) {
+        this.vencimientoControl.setValue(invProItem.vencimiento);
       } else {
-        this.vencimientoControl.setValue(null)
+        this.vencimientoControl.setValue(null);
       }
+      
       this.estadoControl.setValue(invProItem?.estado)
       this.cargandoService.close(loading)
     }, 1000);
@@ -85,6 +119,10 @@ export class EditInventarioItemDialogComponent implements OnInit {
     if (this.selectedInventarioProductoItem == null) {
       this.selectedInventarioProductoItem = new InventarioProductoItem()
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
+      this.selectedInventarioProductoItem.cantidadFisica = this.cantidadControl.value;
+      this.selectedInventarioProductoItem.cantidadAnterior = this.cantidadOriginalDelItem;
+      this.selectedInventarioProductoItem.revisado = true;
+      this.selectedInventarioProductoItem.verificado = false;
       if (this.data?.producto?.vencimiento === true) {
       this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
       } else {
@@ -95,7 +133,14 @@ export class EditInventarioItemDialogComponent implements OnInit {
       this.selectedInventarioProductoItem.estado = this.estadoControl.value;
       this.selectedInventarioProductoItem.zona = this.data.inventarioProducto.zona;
     } else {
+      this.selectedInventarioProductoItem.cantidadAnterior = this.cantidadOriginalDelItem;
+      
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
+      this.selectedInventarioProductoItem.cantidadFisica = this.cantidadControl.value;
+      
+      this.selectedInventarioProductoItem.revisado = true;
+      this.selectedInventarioProductoItem.verificado = false;
+      
       if (this.data?.producto?.vencimiento === true) {
       this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
       } else {
