@@ -5,16 +5,66 @@
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title 
-      style="
-      text-align: center; 
-      padding-left: 0; 
-      padding-right: 48px;"
-    >
-      Revisión de Inventario
-    </ion-title>
+    <ion-title style="text-align: center">Revisión de Inventario</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openFilterMenu()">
+        <ion-icon name="funnel" style="font-size: 1.5em"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
+
 <ion-content>
- 
+  <div *ngIf="!itemsParaRevisar || itemsParaRevisar.length === 0" class="noProduct">
+    <ion-icon name="file-tray-outline" style="font-size: 3em; color: #666;"></ion-icon>
+    <p>SIN PRODUCTOS PARA REVISAR</p>
+  </div>
+  
+  <ion-list *ngIf="itemsParaRevisar && itemsParaRevisar.length > 0">
+    <ion-item *ngFor="let item of itemsParaRevisar; trackBy: trackById" lines="inset">
+      <ion-thumbnail slot="start">
+        <img [src]="item?.presentacion?.producto?.imagenPrincipal 
+             || item?.presentacion?.imagenPrincipal 
+             || 'assets/no-image.png'"/>
+      </ion-thumbnail>
+      <ion-label style="width: 100%;">
+        <div class="content"> 
+          <h2 class="desc">
+            {{ item?.presentacion?.producto?.descripcion || 'Sin descripción' | titlecase }}
+          </h2>
+          <p style="margin-bottom: 0px;">
+            Presentación: {{ item?.presentacion?.cantidad || 'N/A' }}
+          </p>
+          <div class="chip-container">
+            <p style="margin: 0; flex-grow: 1;">
+              Cantidad: <strong>{{ item?.cantidad || 0 | number:'1.0-3' }}</strong>
+            </p>
+            <div style="flex-shrink: 0; text-align: right;">
+              <ion-chip 
+                [color]="getEstadoVisual(item) === 'Cantidad exacta' ? 'success' : 
+                        (getEstadoVisual(item) === 'Modificado' ? 'primary' : 'medium')" 
+                outline="false" 
+                style="margin: 0;"
+              >
+                <ion-label>{{ getEstadoVisual(item) || 'Sin estado' }}</ion-label>
+              </ion-chip>
+            </div>
+          </div>
+          <p style="margin: 0;">
+            Cantidad anterior: {{ item?.cantidadAnterior || 0 | number:'1.0-3' }} 
+          </p>
+        </div>
+      </ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>
+
+<ion-footer>
+  <ng-container *ngIf="selectedPageInfo && itemsParaRevisar?.length > 0">
+    <app-paginacion
+      [pageData]="selectedPageInfo"
+      [pageIndex]="pageIndex"
+      (pageChange)="handlePagination($event)"
+    ></app-paginacion>
+  </ng-container>
+</ion-footer>
