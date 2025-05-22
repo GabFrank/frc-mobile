@@ -22,6 +22,7 @@ import { GetInventarioAbiertoPorSucursalGQL } from './graphql/getInventarioAbier
 import { GetInventarioItemPorInvetarioProductoGQL } from './graphql/getInventarioProductoItemPorInventarioProducto copy';
 import { ReabrirInventarioGQL } from './graphql/reabrir-inventario copy';
 import { GetInventarioPorUsuarioPaginadoGQL } from './graphql/getInventarioPorUsuarioPaginadoGQL';
+import { GetInventarioItemsParaRevisarGQL } from './graphql/getInventarioItemsParaRevisar';
 import { PageInfo } from 'src/app/app.component';
 
 @UntilDestroy()
@@ -49,7 +50,8 @@ export class InventarioService {
     private reabrirInventrio: ReabrirInventarioGQL,
     private inventarioAbiertoPorSucursal: GetInventarioAbiertoPorSucursalGQL,
     private getInventarioProItem: GetInventarioItemPorInvetarioProductoGQL,
-    private getInventarioPorUsuarioPaginadoGQL: GetInventarioPorUsuarioPaginadoGQL
+    private getInventarioPorUsuarioPaginadoGQL: GetInventarioPorUsuarioPaginadoGQL,
+    private getInventarioItemsParaRevisar: GetInventarioItemsParaRevisarGQL
   ) { }
 
   async onGetInventarioUsuario(): Promise<Observable<Inventario[]>> {
@@ -66,6 +68,35 @@ export class InventarioService {
       this.getInventarioPorUsuarioPaginadoGQL,
       { usuarioId, page, size, sortOrder }
     );
+  }
+
+  async onGetInventarioItemsParaRevisar(
+    inventarioId: string,
+    filtro: string | null,
+    page: number,
+    size: number
+  ): Promise<Observable<PageInfo<InventarioProductoItem>>> {
+    let loading = await this.cargandoService.open(null, false);
+    return new Observable((obs) => {
+      this.getInventarioItemsParaRevisar
+        .fetch({ inventarioId, filtro, page, size }, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
+        .pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          this.cargandoService.close(loading);
+          if (res.errors == null) {
+            const responseData = res.data?.getInventarioItemsParaRevisar;
+            
+            if (responseData) {
+              obs.next(responseData);
+            } else {
+              obs.next(null);
+            }
+          } else {
+            this.notificacionService.danger('Ups!! Algo salió mal');
+            obs.next(null);
+          }
+        });
+    });
   }
 
   async onGetTrasferenciasPorFecha(inicio, fin) {

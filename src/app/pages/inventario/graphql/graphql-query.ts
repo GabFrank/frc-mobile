@@ -99,21 +99,26 @@ export const inventarioProItemPorInventarioProQuery = gql`
       inventarioProducto {
         id
       }
-      zona {
-        id
-      }
       presentacion {
         id
         cantidad
+        descripcion
+        imagenPrincipal
         producto {
+          id
           descripcion
           balanza
+          vencimiento
+          imagenPrincipal
         }
       }
       cantidad
       cantidadFisica
       vencimiento
       estado
+      cantidadAnterior
+      verificado
+      revisado
     }
   }
 `;
@@ -512,6 +517,48 @@ export const inventarioPorUsuarioPaginadoQuery = gql`
       isLast
       hasNext
       hasPrevious
+    }
+  }
+`;
+
+export const getInventarioItemsParaRevisarQuery = gql`
+  query getInventarioItemsParaRevisar(
+    $inventarioId: ID!
+    $filtro: String
+    $page: Int!
+    $size: Int!
+  ) {
+    getInventarioItemsParaRevisar(
+      inventarioId: $inventarioId
+      filtro: $filtro
+      page: $page
+      size: $size
+    ) {
+      getTotalPages
+      getTotalElements
+      getNumberOfElements
+      isFirst
+      isLast
+      hasNext
+      hasPrevious
+      getContent {
+        id
+        presentacion {
+          id
+          cantidad
+          producto {
+            id
+            descripcion
+            imagenPrincipal
+          }
+          imagenPrincipal
+        }
+        cantidad
+        cantidadFisica
+        cantidadAnterior
+        verificado
+        revisado
+      }
     }
   }
 `;

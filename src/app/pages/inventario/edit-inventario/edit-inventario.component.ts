@@ -1,8 +1,6 @@
 import { TipoEntidad } from './../../../domains/enums/tipo-entidad.enum';
 import { codificarQr, QrData } from './../../../generic/utils/qrUtils';
 import { QrGeneratorComponent } from './../../../components/qr-generator/qr-generator.component';
-import { ImagePopoverComponent } from 'src/app/components/image-popover/image-popover.component';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import {
   NotificacionService,
   TipoNotificacion
@@ -41,7 +39,6 @@ import { SectorService } from 'src/app/domains/sector/sector.service';
 import { Location } from '@angular/common';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
 import { ProductoService } from '../../producto/producto.service';
-import { Platform } from '@ionic/angular';
 
 export class InventarioData {
   sector: Sector;
@@ -99,6 +96,8 @@ export class EditInventarioComponent implements OnInit {
   }
 
   async buscarInventario(id) {
+    const currentAccordionId = this.activeAccordionId;
+    
     (await this.inventarioService.onGetInventario(id))
       .pipe(untilDestroyed(this))
       .subscribe((res) => {
@@ -106,6 +105,12 @@ export class EditInventarioComponent implements OnInit {
           this.selectedInventario = res;
           this.onGetSectores(this.selectedInventario.sucursal.id);
           this.ordenarZonas();
+  
+          if (currentAccordionId) {
+            setTimeout(() => {
+              this.activeAccordionId = currentAccordionId;
+            }, 1);
+          }
         }
       });
   }
@@ -153,7 +158,9 @@ export class EditInventarioComponent implements OnInit {
                 .subscribe((res) => {
                   if (res != null) {
                     this.buscarInventario(this.inventarioId);
-                    this.activeAccordionId = res.id.toString();
+                    setTimeout(() => {
+                      this.activeAccordionId = res.id.toString();
+                    }, 100);
                   }
                 });
             }
@@ -263,12 +270,10 @@ export class EditInventarioComponent implements OnInit {
             invPro.inventarioProductoItemList = [...invPro.inventarioProductoItemList];
 
             const invProIdStr = invPro.id?.toString();
-            if (this.activeAccordionId === invProIdStr) {
-                this.activeAccordionId = undefined; 
-                setTimeout(() => {
-                    this.activeAccordionId = invProIdStr;
-                }, 0);
-            }
+            this.activeAccordionId = undefined;
+            setTimeout(() => {
+              this.activeAccordionId = invProIdStr;
+            }, 100);
 
           } else if (searchResult.data.presentacion && searchResult.data.producto) {
             let selectedPresentacion = searchResult.data['presentacion'];
@@ -299,12 +304,10 @@ export class EditInventarioComponent implements OnInit {
                           invPro.inventarioProductoItemList = [...invPro.inventarioProductoItemList];
 
                           const invProIdStr = invPro.id?.toString();
-                          if (this.activeAccordionId === invProIdStr) {
-                              this.activeAccordionId = undefined;
-                              setTimeout(() => {
-                                  this.activeAccordionId = invProIdStr;
-                              }, 0);
-                          }
+                          this.activeAccordionId = undefined;
+                          setTimeout(() => {
+                            this.activeAccordionId = invProIdStr;
+                          }, 100);
                         } else {
                           this.notificacionService.open('No se pudo añadir el ítem.', TipoNotificacion.WARN, 3);
                         }
@@ -377,6 +380,12 @@ export class EditInventarioComponent implements OnInit {
                   if (i.id == invPro.id)
                     i.inventarioProductoItemList[index] = res3;
                 });
+                
+                const invProIdStr = invPro.id?.toString();
+                this.activeAccordionId = undefined;
+                setTimeout(() => {
+                  this.activeAccordionId = invProIdStr;
+                }, 100);
               }
             });
         }
