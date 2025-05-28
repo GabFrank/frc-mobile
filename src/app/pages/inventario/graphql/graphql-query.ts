@@ -562,3 +562,63 @@ export const getInventarioItemsParaRevisarQuery = gql`
     }
   }
 `;
+
+export const productosConCantidadPositivaQuery = gql`
+  query getProductosConCantidadPositiva($sucursalId: ID!, $page: Int!, $size: Int!) {
+    data: productosConCantidadPositiva(sucursalId: $sucursalId, page: $page, size: $size) {
+      getTotalPages
+      getTotalElements
+      getNumberOfElements
+      isFirst
+      isLast
+      hasNext
+      hasPrevious
+      getContent {
+        productoId
+        productoDescripcion
+        sucursalId  
+        saldoTotal
+      }
+    }
+  }
+`;
+
+export const productosConCantidadNegativaQuery = gql`
+  query getProductosConCantidadNegativa($sucursalId: ID!, $page: Int!, $size: Int!) {
+    data: productosConCantidadNegativa(sucursalId: $sucursalId, page: $page, size: $size) {
+      getTotalPages
+      getTotalElements
+      getNumberOfElements
+      isFirst
+      isLast
+      hasNext
+      hasPrevious
+      getContent {
+        productoId
+        productoDescripcion
+        sucursalId
+        saldoTotal
+      }
+    }
+  }
+`;
+
+export const productosFaltantesQuery = gql`
+  query getProductosFaltantes($sucursalId: ID!, $fechaInicio: String!, $fechaFin: String!, $page: Int!, $size: Int!) {
+    data: productosFaltantes(sucursalId: $sucursalId, fechaInicio: $fechaInicio, fechaFin: $fechaFin, page: $page, size: $size) {
+      getTotalPages
+      getTotalElements
+      getNumberOfElements
+      isFirst
+      isLast
+      hasNext
+      hasPrevious
+      getContent {
+        productoId
+        productoDescripcion
+        sucursalId
+        saldoTotal
+      }
+    }
+  }
+`;

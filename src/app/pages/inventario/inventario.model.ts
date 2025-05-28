@@ -146,3 +146,10 @@ export enum TipoInventario {
   PRODUCTO = 'PRODUCTO',
   CATEGORIA = 'CATEGORIA'
 }
+
+export class ProductoSaldoDto {
+  productoId: number;
+  productoDescripcion: string;
+  sucursalId: number;
+  saldoTotal: number;
+}

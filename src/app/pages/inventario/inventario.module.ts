@@ -18,7 +18,7 @@ import { AdicionarZonaComponent } from './gestion-zona-sector/adicionar-zona/adi
 import { ComponentsModule } from 'src/app/components/components.module';
 import { RevisarInventarioComponent } from './revisar-inventario/revisar-inventario.component';
 import { CalendarModule } from 'ion7-calendar';
-
+import { ControlInventarioComponent } from './control-inventario/control-inventario.component';
 @NgModule({
   declarations: [
     InventarioComponent, 
@@ -32,7 +32,8 @@ import { CalendarModule } from 'ion7-calendar';
     ListZonasComponent, 
     AdicionarSectorComponent, 
     AdicionarZonaComponent, 
-    RevisarInventarioComponent
+    RevisarInventarioComponent,
+    ControlInventarioComponent
   ],
   imports: [
     CommonModule,

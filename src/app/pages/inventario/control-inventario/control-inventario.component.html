@@ -1,0 +1,131 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title 
+      style="
+        text-align: center; 
+        padding-right: 48px; 
+        padding-left: 0px;"
+      >
+        Control de Inventario
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="flex">
+      <ion-list>
+        <ion-item fill="outline">
+          <ion-label position="floating">Elegir sucursal</ion-label>
+          <ion-select 
+            formControlName="sucursalSelect" 
+            interface="action-sheet" 
+            cancelText="CANCELAR"
+          >
+            <ion-select-option *ngFor="let sucursal of sucursales" 
+              [value]="sucursal.id"
+            >
+              {{sucursal.nombre}}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-list>
+
+      <ion-button 
+        class="btnCalendar" 
+        (click)="openCalendar()"
+        [hidden]="form.get('verificarFilter')?.value !== 'productosFaltantes'"
+      >
+        <ion-icon name="calendar-outline"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div 
+      *ngIf="
+        selectedRange.fechaInicio && 
+        selectedRange.fechaFin && 
+        form.get('verificarFilter')?.value === 'productosFaltantes'" 
+      style="text-align: center;"
+    >
+      <p style="margin-top: 5px; margin-bottom: 1px;">
+        <span>Fecha inicio:</span> {{ selectedRange.fechaInicio | date: 'dd/MM/yyyy' }} 
+        <span>Fecha fin:</span> {{ selectedRange.fechaFin  | date: 'dd/MM/yyyy'}}
+      </p>
+    </div>
+
+    <div class="select-center"> 
+      <ion-button type="submit" [disabled]="form.invalid"> 
+        Buscar
+      </ion-button> 
+      <div>
+        <ion-select 
+          interface="action-sheet" 
+          placeholder="TIPO FILTRO" 
+          cancelText="CANCELAR" 
+          formControlName="verificarFilter"
+        >
+          <ion-select-option value="cantidadPositiva">
+            CANTIDAD POSITIVA
+          </ion-select-option>
+          <ion-select-option value="cantidadNegativa">
+            CANTIDAD NEGATIVA
+          </ion-select-option>
+          <ion-select-option value="productosFaltantes">
+            PRODUCTOS FALTANTES
+          </ion-select-option>
+        </ion-select>
+      </div>
+    </div>
+  </form>
+
+  <div *ngIf="itemsControl.length === 0" class="noProduct">
+    <ion-icon name="file-tray-outline" style="font-size: 3em; color: #666;"></ion-icon>
+    <p>SIN PRODUCTOS PARA MOSTRAR</p>
+  </div>
+  
+  <ion-list *ngIf="itemsControl.length > 0">
+    <ion-item *ngFor="let item of itemsControl; 
+      trackBy: trackById" lines="inset"
+    >
+      <ion-thumbnail slot="start">
+        <img [src]="'assets/no-image.png'"/>
+      </ion-thumbnail>
+      <ion-label style="width: 100%;">
+        <div class="content"> 
+          <h2 class="desc">
+            {{ item.productoDescripcion || 'Sin descripción' | titlecase }}
+          </h2>
+          <p style="margin-bottom: 0px;">
+            Producto ID: {{ item.productoId }}
+          </p>
+          <div class="chip-container">
+            <p style="margin: 0; flex-grow: 1;">
+              Cantidad: <strong>{{ item.saldoTotal | number:'1.0-3' }}</strong>
+            </p>
+            <div style="flex-shrink: 0; text-align: right;">
+              <ion-chip 
+                [color]="getEstadoColor(item)" 
+                outline="false" 
+                style="margin: 0;"
+              >
+                <ion-label>{{ getEstadoVisual(item) }}</ion-label>
+              </ion-chip>
+            </div>
+          </div>
+        </div>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>
+<ion-footer *ngIf="selectedPageInfo">
+  <app-paginacion 
+    [pageData]="selectedPageInfo" 
+    [pageIndex]="pageIndex"
+    (pageChange)="handlePagination($event)"
+  ></app-paginacion>
+</ion-footer>

@@ -262,3 +262,52 @@ zxing-scanner video {
   max-width: 400px; /* Ajusta el tamaño según lo necesites */
 }
 
+.action-sheet-selected.sc-ion-action-sheet-md {
+  color: #f44336 !important;
+}
+.action-sheet-button.sc-ion-action-sheet-md {
+  color: white;
+  display: grid;
+  justify-content: center;
+}
+
+.myCalendar-class {
+  --ion-color-primary: #f44336;
+  --ion-background-color: #000000; 
+}
+
+.myCalendar-class .month-title {
+  color: #ffffff !important; 
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.myCalendar-class .days-btn p {
+  color: #ffffff !important;  
+}
+
+.myCalendar-class .days-btn.today.on-selected p {
+  color: white !important;
+}
+
+.myCalendar-class .days-btn.today p {
+  color: #f44336 !important;
+}
+
+.myCalendar-class .days-btn.today {
+  border: 1px solid #f44336 !important;
+}
+
+.myCalendar-class .days.between p {
+  color: white !important;
+}
+
+.myCalendar-class .days.endSelection p {
+  color: white !important;
+}
+
+
+.myCalendar-class .md.title-default.hydrated {
+  display: grid;
+  justify-content: center;
+} 
