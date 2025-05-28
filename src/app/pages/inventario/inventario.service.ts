@@ -4,7 +4,7 @@ import { MainService } from 'src/app/services/main.service';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { CargandoService } from './../../services/cargando.service';
-import { Inventario, InventarioProducto, InventarioProductoItem } from './inventario.model';
+import { Inventario, InventarioProducto, InventarioProductoItem, ProductoSaldoDto } from './inventario.model';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { GenericCrudService } from 'src/app/generic/generic-crud.service';
@@ -23,6 +23,9 @@ import { GetInventarioItemPorInvetarioProductoGQL } from './graphql/getInventari
 import { ReabrirInventarioGQL } from './graphql/reabrir-inventario copy';
 import { GetInventarioPorUsuarioPaginadoGQL } from './graphql/getInventarioPorUsuarioPaginadoGQL';
 import { GetInventarioItemsParaRevisarGQL } from './graphql/getInventarioItemsParaRevisar';
+import { GetProductosConCantidadPositivaGQL } from './graphql/getProductosConCantidadPositivaGQL';
+import { GetProductosConCantidadNegativaGQL } from './graphql/getProductosConCantidadNegativaGQL';
+import { GetProductosFaltantesGQL } from './graphql/getProductosFaltantesGQL';
 import { PageInfo } from 'src/app/app.component';
 
 @UntilDestroy()
@@ -51,7 +54,10 @@ export class InventarioService {
     private inventarioAbiertoPorSucursal: GetInventarioAbiertoPorSucursalGQL,
     private getInventarioProItem: GetInventarioItemPorInvetarioProductoGQL,
     private getInventarioPorUsuarioPaginadoGQL: GetInventarioPorUsuarioPaginadoGQL,
-    private getInventarioItemsParaRevisar: GetInventarioItemsParaRevisarGQL
+    private getInventarioItemsParaRevisar: GetInventarioItemsParaRevisarGQL,
+    private getProductosConCantidadPositiva: GetProductosConCantidadPositivaGQL,
+    private getProductosConCantidadNegativa: GetProductosConCantidadNegativaGQL,
+    private getProductosFaltantes: GetProductosFaltantesGQL
   ) { }
 
   async onGetInventarioUsuario(): Promise<Observable<Inventario[]>> {
@@ -222,5 +228,91 @@ export class InventarioService {
           }
         })
     })
+  }
+
+  async onGetProductosConCantidadPositiva(
+    sucursalId: number,
+    page: number,
+    size: number
+  ): Promise<Observable<PageInfo<ProductoSaldoDto>>> {
+    let loading = await this.cargandoService.open(null, false);
+    return new Observable((obs) => {
+      this.getProductosConCantidadPositiva
+        .fetch({ sucursalId, page, size }, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
+        .pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          this.cargandoService.close(loading);
+          if (res.errors == null) {
+            const responseData = res.data?.data;
+            
+            if (responseData) {
+              obs.next(responseData);
+            } else {
+              obs.next(null);
+            }
+          } else {
+            this.notificacionService.danger('Ups!! Algo salió mal');
+            obs.next(null);
+          }
+        });
+    });
+  }
+
+  async onGetProductosConCantidadNegativa(
+    sucursalId: number,
+    page: number,
+    size: number
+  ): Promise<Observable<PageInfo<ProductoSaldoDto>>> {
+    let loading = await this.cargandoService.open(null, false);
+    return new Observable((obs) => {
+      this.getProductosConCantidadNegativa
+        .fetch({ sucursalId, page, size }, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
+        .pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          this.cargandoService.close(loading);
+          if (res.errors == null) {
+            const responseData = res.data?.data;
+            
+            if (responseData) {
+              obs.next(responseData);
+            } else {
+              obs.next(null);
+            }
+          } else {
+            this.notificacionService.danger('Ups!! Algo salió mal');
+            obs.next(null);
+          }
+        });
+    });
+  }
+
+  async onGetProductosFaltantes(
+    sucursalId: number,
+    fechaInicio: string,
+    fechaFin: string,
+    page: number,
+    size: number
+  ): Promise<Observable<PageInfo<ProductoSaldoDto>>> {
+    let loading = await this.cargandoService.open(null, false);
+    return new Observable((obs) => {
+      this.getProductosFaltantes
+        .fetch({ sucursalId, fechaInicio, fechaFin, page, size }, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
+        .pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          this.cargandoService.close(loading);
+          if (res.errors == null) {
+            const responseData = res.data?.data;
+            
+            if (responseData) {
+              obs.next(responseData);
+            } else {
+              obs.next(null);
+            }
+          } else {
+            this.notificacionService.danger('Ups!! Algo salió mal');
+            obs.next(null);
+          }
+        });
+    });
   }
 }

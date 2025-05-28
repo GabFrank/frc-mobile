@@ -1,0 +1,174 @@
+ion-content {
+  --padding-top: 8px;
+}
+
+.noProduct {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+  text-align: center;
+}
+
+ion-segment {
+  margin-top: 16px;
+}
+
+ion-segment-button {
+  --color: var(--ion-color-medium);
+  --color-checked: var(--ion-color-primary);
+  --indicator-color: var(--ion-color-primary);
+}
+
+.content {
+  width: 100%;
+}
+
+.desc {
+  white-space: normal;   
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  margin-top: 5px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.chip-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0px 0;
+}
+
+ion-thumbnail {
+  --size: 80px;
+  margin-right: 16px;
+}
+
+ion-thumbnail img {
+  border-radius: 8px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+ion-datetime {
+  padding-left: 0;
+}
+
+.flex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 5px;
+}
+
+.calendar {
+  border-color: #f44336;
+  background-color: black;
+}
+
+.btnCalendar {
+  height: 50px;
+}
+
+.productoLista {
+  margin-bottom: 40px;
+}
+
+.pagination ion-button {
+  margin: 0 5px;
+}
+
+.select-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: small;
+}
+
+.noProduct {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+}
+
+.noProduct p {
+  color: #666;
+  font-size: x-large;
+}
+
+ion-select.md.in-item.hydrated {
+  font-size: medium !important;
+}
+
+ion-button {
+  margin-top: 4px;
+  margin-left: 4px;
+  display: grid;
+  justify-content: center;
+  --background: #f44336;
+}
+
+ion-item {
+  margin-top: 3px;
+  --border-color: #f44336;
+  --highlight-color-focused: #f44336;
+}
+
+
+ion-item ion-label {
+  margin-top: 0px;
+}
+
+ion-select-option {
+  --color: rgb(99, 0, 0);
+}
+
+ion-list {
+  min-width: 285px;
+  margin-right: 0px;
+  padding: 0px;
+}
+
+ion-label h3 {
+  font-weight: bold;
+}
+
+ion-label h3:hover {
+  font-weight: bold;
+  color: #f44336;
+}
+
+ion-label p {
+  color: white;
+}
+
+img {
+  width: 70px;
+  margin-right: 10px;
+  border-radius: 50%;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+span {
+  color: #f44336;
+  font-weight: bold;
+}
+
+button.days-btn.today {
+  color: #f44336 !important;
+}
+
+ion-item-sliding:hover {
+  img {
+      transform: scale(1.1);
+  }
+}
+
+ion-item.item-has-hover {
+  --border-color: #f44336 !important; 
+}
