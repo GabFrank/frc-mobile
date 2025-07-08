@@ -7,7 +7,7 @@
         (click)="onBack()"
       ></ion-icon>
     </ion-col>
-    <ion-col size="8" style="text-align: center">Recpción de notas</ion-col>
+    <ion-col size="8" style="text-align: center">Recepción de notas</ion-col>
     <ion-col size="2" style="text-align: center">
       <!-- <ion-icon
         name="funnel"
@@ -16,122 +16,170 @@
       ></ion-icon> -->
     </ion-col>
   </ion-row>
+
   <ion-grid>
+    <!-- Sucursal Card -->
     <ion-row>
-      <ion-col
-        size="12"
-        style="text-align: center; font-size: medium; color: rgb(187, 187, 187)"
-      >
-        Sucural en recepción
-      </ion-col>
-      <ion-col size="12" style="text-align: center">
-        {{ selectedSucursal?.nombre | titlecase }}
+      <ion-col size="12">
+        <ion-card style="background: #333333; border-radius: 8px; margin: 4px 0; border-left: 4px solid #f57c00;">
+          <ion-card-content style="padding: 12px;">
+            <ion-row>
+              <ion-col size="12">
+                <div style="color: #f57c00; font-weight: 500; font-size: 0.8rem; margin-bottom: 4px;">
+                  Sucursal en recepción
+                </div>
+                <div style="color: white; font-size: 1rem; font-weight: 600; margin-bottom: 2px;">
+                  {{ selectedSucursal?.nombre | titlecase }}
+                </div>
+                <div style="color: #999; font-size: 0.75rem;">
+                  ID: {{ selectedSucursal?.id }} • {{ selectedSucursal?.ciudad?.descripcion | titlecase }}
+                </div>
+              </ion-col>
+            </ion-row>
+          </ion-card-content>
+        </ion-card>
       </ion-col>
     </ion-row>
+
+    <!-- Proveedor Card -->
     <ion-row *ngIf="selectedProveedor != null">
-      <ion-col
-        size="12"
-        style="text-align: center; font-size: medium; color: rgb(187, 187, 187)"
-      >
-        Proveedor
+      <ion-col size="12">
+        <ion-card style="background: #333333; border-radius: 8px; margin: 4px 0; border-left: 4px solid #43a047;">
+          <ion-card-content style="padding: 12px;">
+            <ion-row style="align-items: center;">
+              <ion-col size="10">
+                <div style="color: #f57c00; font-weight: 500; font-size: 0.8rem; margin-bottom: 4px;">
+                  Proveedor Seleccionado
+                </div>
+                <div style="color: white; font-size: 1rem; font-weight: 600; margin-bottom: 2px;">
+                  {{ selectedProveedor?.persona?.nombre | uppercase }}
+                </div>
+                <div style="color: #43a047; font-size: 0.85rem; margin-bottom: 2px;">
+                  {{ selectedProveedor?.persona?.apodo | uppercase }}
+                </div>
+                <div style="color: #999; font-size: 0.75rem;" *ngIf="selectedProveedor?.persona?.documento">
+                  RUC: {{ selectedProveedor?.persona?.documento }}
+                </div>
+              </ion-col>
+              <ion-col size="2" style="text-align: center;">
+                <ion-button 
+                  fill="clear" 
+                  (click)="onBorrarProveedor()"
+                  style="--color: #f44336; --padding-start: 4px; --padding-end: 4px; margin: 0;">
+                  <ion-icon name="close-circle" size="small"></ion-icon>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-card-content>
+        </ion-card>
       </ion-col>
-      <ion-row style="width: 100%; align-items: center">
-        <ion-col size="2"></ion-col>
-        <ion-col size="8" style="text-align: center">{{
-          selectedProveedor?.persona?.nombre | uppercase
-        }}</ion-col>
-        <ion-col size="2">
-          <ion-icon
-            name="close-outline"
-            size="large"
-            (click)="onBorrarProveedor()"
-            style="color: #f44336 !important"
-          ></ion-icon>
-        </ion-col>
-      </ion-row>
     </ion-row>
+
+    <!-- Search/Input Section -->
     <ion-row>
       <ion-col size="12" *ngIf="selectedProveedor == null">
-        <ion-item style="align-items: center">
-          <ion-label position="floating">Proveedor</ion-label>
+        <ion-item style="--background: #252525; --border-radius: 8px; --padding-start: 12px; margin: 4px 0; --min-height: 44px; align-items: center;">
+          <ion-label position="floating" style="color: #f57c00;">Buscar Proveedor</ion-label>
           <ion-input
             #proveedorInput
             [formControl]="buscarProveedorControl"
             autocapitalize="on"
             (keydown.enter)="onSearchProveeodr()"
+            style="color: white;"
           ></ion-input>
-
-          <ion-button fill="clear" slot="end" (click)="onSearchProveeodr()">
-            <ion-icon name="search-outline" slot="end" size="large"></ion-icon>
+          <ion-button 
+            fill="solid" 
+            slot="end" 
+            (click)="onSearchProveeodr()"
+            style="--background: #43a047; --border-radius: 6px; --height: 32px; --padding-start: 8px; --padding-end: 8px; margin: 0 4px;">
+            <ion-icon name="search" slot="icon-only" style="font-size: 0.9rem;"></ion-icon>
           </ion-button>
         </ion-item>
       </ion-col>
+      
       <ion-col size="12">
-        <ion-item style="align-items: center">
-          <ion-label position="floating">Número de nota</ion-label>
+        <ion-item style="--background: #252525; --border-radius: 8px; --padding-start: 12px; margin: 4px 0; --min-height: 44px; align-items: center;">
+          <ion-label position="floating" style="color: #f57c00;">Número de nota</ion-label>
           <ion-input
             #numeroNotaInput
             [formControl]="numeroNotaControl"
             autocapitalize="on"
+            style="color: white;"
           ></ion-input>
-
-          <ion-button
-            fill="clear"
-            slot="end"
+          <ion-button 
+            fill="solid" 
+            slot="end" 
             (click)="onAddNumeroNota()"
-            [disabled]="numeroNotaControl.value == null"
-          >
-            <ion-icon name="add-outline" slot="end" size="large"></ion-icon>
+            style="--background: #43a047; --border-radius: 6px; --height: 32px; --padding-start: 8px; --padding-end: 8px; margin: 0 4px;">
+            <ion-icon name="add" slot="icon-only" style="font-size: 0.9rem;"></ion-icon>
           </ion-button>
         </ion-item>
       </ion-col>
     </ion-row>
+
+    <!-- Notes Count -->
     <ion-row *ngIf="selectedProveedor != null">
-      <ion-col size="12" style="text-align: center; font-size: small">
-        Cantidad de notas: {{ notaRecepcionList?.length || 0 }}
+      <ion-col size="12" style="text-align: center;">
+        <div style="color: #f57c00; font-size: 0.85rem; margin: 8px 0 4px 0;">
+          Cantidad de notas: {{ notaRecepcionList?.length || 0 }}
+        </div>
       </ion-col>
     </ion-row>
-    <ion-list *ngIf="notaRecepcionList?.length > 0">
-      <ion-item-group>
-        <ion-item
-          *ngFor="let nota of notaRecepcionList; let i = index"
-          (click)="onNotaRecepcionClick(nota, i)"
-        >
-          <ion-col size="12">
-            <ion-row style="align-items: center">
-              <ion-col size="5" class="title">Número</ion-col>
-              <ion-col size="5" class="title">Valor</ion-col>
-              <ion-col size="2" class="title"></ion-col>
-            </ion-row>
-            <ion-row style="align-items: center">
-              <ion-col size="5">{{ nota.numero | number : '1.0-0' }}</ion-col>
-              <ion-col size="5">{{ nota.valor | number : '1.0-2' }}</ion-col>
-              <ion-col size="2"
-                ><ion-icon
-                  name="close-outline"
-                  size="large"
-                  (click)="
-                    delelteNotaFromList(nota, i); $event.stopPropagation()
-                  "
-                  style="color: #f44336 !important"
-                ></ion-icon
-              ></ion-col>
-            </ion-row>
+
+    <!-- Notes List -->
+    <ion-row *ngIf="notaRecepcionList?.length > 0">
+      <ion-col size="12">
+        <!-- Header -->
+        <ion-row style="padding: 8px 12px; background: #252525; border-radius: 8px 8px 0 0; margin: 4px 0 0 0;">
+          <ion-col size="5" style="color: #f57c00; font-weight: 500; font-size: 0.8rem; text-align: center;">
+            Número
           </ion-col>
-        </ion-item>
-      </ion-item-group>
-    </ion-list>
+          <ion-col size="5" style="color: #f57c00; font-weight: 500; font-size: 0.8rem; text-align: center;">
+            Valor
+          </ion-col>
+          <ion-col size="2" style="color: #f57c00; font-weight: 500; font-size: 0.8rem; text-align: center;">
+            
+          </ion-col>
+        </ion-row>
+        
+        <!-- Notes Items -->
+        <div *ngFor="let nota of notaRecepcionList; let i = index">
+          <ion-row 
+            style="padding: 8px 12px; background: #333333; margin: 0; cursor: pointer; border-bottom: 1px solid #444; align-items: center;"
+            (click)="onNotaRecepcionClick(nota, i)">
+            <ion-col size="5" style="text-align: center; color: white; font-weight: 500; font-size: 0.9rem;">
+              {{ nota.numero | number : '1.0-0' }}
+            </ion-col>
+            <ion-col size="5" style="text-align: center; color: white; font-weight: 500; font-size: 0.9rem;">
+              {{ nota.valor | number : '1.0-2' }}
+            </ion-col>
+            <ion-col size="2" style="text-align: center;">
+              <ion-button 
+                fill="clear" 
+                (click)="delelteNotaFromList(nota, i); $event.stopPropagation()"
+                style="--color: #f44336; --padding-start: 4px; --padding-end: 4px; margin: 0; --height: 28px;">
+                <ion-icon name="trash" class="title"></ion-icon>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </div>
+        
+        <!-- Bottom border for list -->
+        <div style="height: 1px; background: #252525; border-radius: 0 0 8px 8px;"></div>
+      </ion-col>
+    </ion-row>
   </ion-grid>
 </ion-content>
 
 <ion-footer>
   <ion-row>
-    <ion-col size="12" class="ion-align-items-center">
+    <ion-col size="12" class="ion-align-items-center" style="padding: 12px;">
       <ion-button
         class="btn-success"
         (click)="onIniciarRecepcion()"
         expand="block"
         [disabled]="selectedProveedor == null || notaRecepcionList?.length < 1"
+        style="--border-radius: 8px; height: 44px; font-weight: 600; font-size: 0.95rem;"
       >
         Iniciar recepción
       </ion-button>

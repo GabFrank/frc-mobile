@@ -9,8 +9,10 @@ import { NotaRecepcionPorIdAndNumeroGQL } from './graphql/getNotaRecepcionPorIdA
 import { NotaRecepcionPorProveedorAndNumeroGQL } from './graphql/getNotaRecepcionPorOriveedorAndNumero';
 import { NotaRecepcionPorPedidoIdGQL } from './graphql/notaRecepcionPorPedidoId';
 import { NotaRecepcionPorNotaRecepcionAgrupadaIdGQL } from './graphql/notaRecepcionPorNotaRecepcionAgrupadaId';
+import { NotaRecepcionPorNumeroGQL } from './graphql/getNotaRecepcionPorNumero';
 import { SaveNotaRecepcionGQL } from './graphql/saveNotaRecepcion';
 import { NotaRecepcion, NotaRecepcionInput } from './nota-recepcion.model';
+import { NotasDisponiblesParaRecepcionGQL } from './graphql/getNotasDisponiblesParaRecepcion';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +27,9 @@ export class NotaRecepcionService {
     private notaRecepcionPorPedidoAndNumero: NotaRecepcionPorIdAndNumeroGQL,
     private countNotaRecepcionPorPedido: CountNotaRecepcionPorPedidoIdGQL,
     private getNotaRecepcionPorProveedorAndNumero: NotaRecepcionPorProveedorAndNumeroGQL,
-    private notaRecepcionPorNotaRecepcionAgrupadaId: NotaRecepcionPorNotaRecepcionAgrupadaIdGQL
+    private notaRecepcionPorNotaRecepcionAgrupadaId: NotaRecepcionPorNotaRecepcionAgrupadaIdGQL,
+    private getNotaRecepcionPorNumero: NotaRecepcionPorNumeroGQL,
+    private getNotasDisponiblesParaRecepcion: NotasDisponiblesParaRecepcionGQL
   ) {}
 
   async onGetNotaRecepcion(id): Promise<Observable<NotaRecepcion>> {
@@ -84,6 +88,26 @@ export class NotaRecepcionService {
     return await this.genericService.onGetById(
       this.notaRecepcionPorNotaRecepcionAgrupadaId,
       id
+    );
+  }
+
+  async onGetNotaRecepcionPorNumero(
+    numero
+  ): Promise<Observable<NotaRecepcion[]>> {
+    return await this.genericService.onCustomGet(
+      this.getNotaRecepcionPorNumero,
+      { numero }, true
+    );
+  }
+
+  async onGetNotasDisponiblesParaRecepcion(
+    numero?: number,
+    proveedorId?: number,
+    sucursalId?: number
+  ): Promise<Observable<NotaRecepcion[]>> {
+    return await this.genericService.onCustomGet(
+      this.getNotasDisponiblesParaRecepcion,
+      { numero, proveedorId, sucursalId }, true
     );
   }
 }

@@ -1,14 +1,17 @@
 <ion-content fullscreen>
-  <ion-col size="2">
-    <ion-icon
-      name="arrow-back"
-      style="font-size: 1.5em"
-      (click)="onBack()"
-    ></ion-icon>
-  </ion-col>
-  <ion-col size="12">
-    <ion-label>{{ data?.titulo | titlecase }}</ion-label>
-  </ion-col>
+  <ion-row style="padding-top: 5px">
+    <ion-col size="2">
+      <ion-icon
+        name="arrow-back"
+        style="font-size: 1.5em"
+        (click)="onBack()"
+      ></ion-icon>
+    </ion-col>
+    <ion-col size="10">
+      <ion-label>{{ data?.titulo | titlecase }}</ion-label>
+    </ion-col>
+  </ion-row>
+
   <ion-row *ngIf="data?.search">
     <ion-col size="12">
       <ion-item>
@@ -36,18 +39,42 @@
     <ng-container *ngFor="let item of itemList">
       <ion-card (click)="onItemClick(item)">
         <ion-grid>
-          <ion-row *ngFor="let info of data.tableData" wrap>
-            <ng-container *ngIf="!info.nested">
-              <ion-col [size]="info.width"
-                >{{ info.nombre }}: {{ item[info?.id] }}</ion-col
+          <ion-row>
+            <ion-col
+              *ngFor="let info of data.tableData"
+              [size]="info.width || 12"
+            >
+              <ng-container
+                *ngIf="!info.orientation || info.orientation === 'horizontal'"
               >
-            </ng-container>
-            <ng-container *ngIf="info.nested">
-              <ion-col [size]="info.width"
-                >{{ info.nombre }}:
-                {{ item[info?.id][info?.nestedId] }}</ion-col
-              >
-            </ng-container>
+                <span
+                  [style.color]="info.titleColor || '#f57c00'"
+                  [style.font-size]="info.titleFontSize"
+                  >{{ info.nombre }}:
+                </span>
+                <span
+                  [style.color]="info.valueColor"
+                  [style.font-size]="info.valueFontSize"
+                  >{{ item | cellFormat : info }}</span
+                >
+              </ng-container>
+              <ng-container *ngIf="info.orientation === 'vertical'">
+                <div>
+                  <span
+                    [style.color]="info.titleColor || '#f57c00'"
+                    [style.font-size]="info.titleFontSize"
+                    >{{ info.nombre }}:</span
+                  >
+                </div>
+                <div>
+                  <span
+                    [style.color]="info.valueColor"
+                    [style.font-size]="info.valueFontSize"
+                    >{{ item | cellFormat : info }}</span
+                  >
+                </div>
+              </ng-container>
+            </ion-col>
           </ion-row>
         </ion-grid>
       </ion-card>

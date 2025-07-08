@@ -9,12 +9,45 @@ import { PdvCaja } from 'src/app/pages/operaciones/caja/caja.model';
 import { CajaService } from 'src/app/pages/operaciones/caja/caja.service';
 import { ModalService } from 'src/app/services/modal.service';
 
+/**
+ * Interfaz que define la estructura de los datos de una columna en la tabla
+ * @property id - Identificador único del campo. Para campos anidados, usar notación de puntos (ej: 'pedido.proveedor.persona.nombre').
+ * @property nombre - Nombre/título que se mostrará en la columna
+ * @property width - Ancho de la columna (opcional, valor por defecto 12)
+ * @property nestedId - (Legacy) Ruta para acceder al campo anidado. La nueva forma es usar notación de puntos en `id`.
+ * @property pipe - Nombre del pipe a aplicar al valor (ej: 'date', 'number')
+ * @property pipeArgs - Argumentos para el pipe (ej: 'shortDate', '1.0-2')
+ * @property titleColor - Color del título de la columna
+ * @property valueColor - Color del valor en la columna
+ * @property orientation - Orientación del título y valor ('horizontal' o 'vertical')
+ * @property titleFontSize - Tamaño de fuente del título
+ * @property valueFontSize - Tamaño de fuente del valor
+ */
+
+/**
+ * Interfaz que define la configuración del diálogo genérico de lista
+ * @property titulo - Título que se mostrará en el diálogo
+ * @property tableData - Array de configuración de columnas (TableData[])
+ * @property search - Habilita/deshabilita la búsqueda
+ * @property inicialSearch - Indica si debe realizar búsqueda inicial
+ * @property inicialData - Datos iniciales a mostrar
+ * @property texto - Texto predefinido para la búsqueda
+ * @property query - Query de GraphQL para obtener datos
+ * @property paginator - Habilita/deshabilita la paginación
+ */
+
 export interface TableData {
   id: string;
   nombre: string;
   width?: number;
-  nested?: boolean;
   nestedId?: string;
+  pipe?: string;
+  pipeArgs?: string;
+  titleColor?: string;
+  valueColor?: string;
+  orientation?: 'horizontal' | 'vertical';
+  titleFontSize?: string;
+  valueFontSize?: string;
 }
 
 export interface GenericListDialogData {

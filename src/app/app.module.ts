@@ -45,8 +45,6 @@ import { ProductoModule } from './pages/producto/producto.module';
 import { TransferenciasModule } from './pages/transferencias/transferencias.module';
 import { MainService } from './services/main.service';
 import { NgxCurrencyModule } from 'ngx-currency';
-import { MarcacionModule } from './pages/marcacion/marcacion.module';
-import { EnumToStringPipe } from './generic/utils/pipes/enum-to-string';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { BarcodeScannerService } from './services/barcode-scanner.service';
 
@@ -112,7 +110,7 @@ export class HammerConfig extends HammerGestureConfig {
     AppComponent,
     LoginComponent,
     CambiarContrasenhaDialogComponent,
-    StockPorSucursalDialogComponent
+    StockPorSucursalDialogComponent,
   ],
   imports: [
     BrowserModule,

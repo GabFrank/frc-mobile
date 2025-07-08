@@ -110,15 +110,12 @@ export class RecepcionNotasComponent implements OnInit {
       {
         id: 'id',
         nombre: 'Id',
-        width: 100,
-        nested: false
+        width: 100
       },
       {
-        id: 'persona',
+        id: 'persona.nombre',
         nombre: 'Nombre',
-        width: 100,
-        nested: true,
-        nestedId: 'nombre'
+        width: 100
       }
     ];
     let data: GenericListDialogData = {
@@ -141,17 +138,20 @@ export class RecepcionNotasComponent implements OnInit {
   }
 
   async onAddNumeroNota() {
-    if (
-      this.selectedProveedor != null &&
-      this.numeroNotaControl.value != null
-    ) {
+    if (this.numeroNotaControl.value != null) {
+      // Use new method that handles complex filtering logic
       (
-        await this.notaRecepcionService.onGetNotaRecepcionPorProveedorAndNumero(
-          this.selectedProveedor.id,
-          this.numeroNotaControl.value
+        await this.notaRecepcionService.onGetNotasDisponiblesParaRecepcion(
+          this.numeroNotaControl.value,
+          this.selectedProveedor?.id,
+          this.selectedSucursal?.id
         )
       ).subscribe((res) => {
         if (res?.length == 1) {
+          // Single result found - set proveedor if not already selected and add the nota
+          if (!this.selectedProveedor) {
+            this.selectedProveedor = res[0].pedido.proveedor;
+          }
           this.modalService
             .openModal(
               NotaRecepcionInfoDialogComponent,
@@ -169,13 +169,97 @@ export class RecepcionNotasComponent implements OnInit {
                 }, 1000);
               }
             });
-        } else if (res?.length == 0) {
+        } else if (res?.length > 1) {
+          // Multiple results found - show in GenericListDialogComponent
+          this.showNotaRecepcionListDialog(res);
+        } else {
+          // No results found
+          this.notificacionService.open(
+            'No se encontraron notas con ese número',
+            TipoNotificacion.DANGER,
+            3
+          );
           setTimeout(() => {
             this.numeroNotaInput.setFocus();
           }, 1000);
         }
       });
     }
+  }
+
+  private showNotaRecepcionListDialog(notaRecepcionList: NotaRecepcion[]) {
+    let tableData: TableData[] = [
+      {
+        id: 'pedido.proveedor.persona.nombre',
+        nombre: 'Proveedor',
+        width: 12,
+        orientation: 'vertical'
+      },
+      {
+        id: 'id',
+        nombre: 'Id',
+        width: 6,
+        orientation: 'vertical'
+      },
+      {
+        id: 'numero',
+        nombre: 'Número',
+        width: 6,
+        orientation: 'vertical'
+      },
+      {
+        id: 'fecha',
+        nombre: 'Fecha',
+        width: 6,
+        pipe: 'date',
+        pipeArgs: 'shortDate',
+        orientation: 'vertical'
+      },
+      {
+        id: 'valor',
+        nombre: 'Valor',
+        width: 6,
+        pipe: 'number',
+        pipeArgs: '1.0-2',
+        valueColor: '#43a047',
+        orientation: 'vertical'
+      }
+    ];
+
+    let data: GenericListDialogData = {
+      tableData: tableData,
+      titulo: 'Seleccionar Nota de Recepción',
+      search: false,
+      inicialData: notaRecepcionList,
+      paginator: false
+    };
+
+    console.log(notaRecepcionList);
+
+    this.modalService
+      .openModal(GenericListDialogComponent, data)
+      .then((res) => {
+        if (res?.data != null) {
+          this.selectedProveedor = res.data.pedido.proveedor;
+          this.modalService
+            .openModal(
+              NotaRecepcionInfoDialogComponent,
+              {
+                notaRecepcion: res.data
+              },
+              ModalSize.MEDIUM
+            )
+            .then((dialogRes) => {
+              if (dialogRes?.data?.agregar) {
+                this.notaRecepcionList.push(res.data);
+                this.numeroNotaControl.setValue(null);
+                setTimeout(() => {
+                  this.numeroNotaInput?.setFocus();
+                }, 1000);
+              }
+            });
+        }
+      });
   }
 
   delelteNotaFromList(nota, i) {

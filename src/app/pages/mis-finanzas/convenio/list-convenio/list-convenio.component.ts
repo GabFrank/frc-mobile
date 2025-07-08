@@ -89,18 +89,14 @@ export class ListConvenioComponent implements OnInit {
         if (res != null) {
           let tableData: TableData[] = [
             {
-              id: 'producto',
+              id: 'producto.descripcion',
               nombre: 'Producto',
-              width: 100,
-              nested: true,
-              nestedId: 'descripcion'
+              width: 100
             },
             {
-              id: 'presentacion',
+              id: 'presentacion.cantidad',
               nombre: 'Presentación',
-              width: 100,
-              nested: true,
-              nestedId: 'cantidad'
+              width: 100
             },
             {
               id: 'cantidad',

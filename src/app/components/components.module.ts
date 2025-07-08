@@ -11,11 +11,13 @@ import { ImagePopoverComponent } from './image-popover/image-popover.component';
 import {NgxPaginationModule} from 'ngx-pagination';
 import { EnumToStringPipe } from '../generic/utils/pipes/enum-to-string';
 import { PaginacionComponent } from './paginacion/paginacion.component';
+import { GetNestedValuePipe } from '../generic/utils/pipes/get-nested-value.pipe';
+import { CellFormatPipe } from '../pipes/cell-format.pipe';
 
 
 
 @NgModule({
-  declarations: [QrScannerDialogComponent, QrGeneratorComponent, GenericListDialogComponent, ChangeServerIpDialogComponent, ImagePopoverComponent, EnumToStringPipe,  PaginacionComponent],
+  declarations: [QrScannerDialogComponent, QrGeneratorComponent, GenericListDialogComponent, ChangeServerIpDialogComponent, ImagePopoverComponent, EnumToStringPipe,  PaginacionComponent, GetNestedValuePipe, CellFormatPipe],
   imports: [
     CommonModule,
     IonicModule,
@@ -29,7 +31,9 @@ import { PaginacionComponent } from './paginacion/paginacion.component';
     QrGeneratorComponent,
     EnumToStringPipe,
     NgxPaginationModule,
-    PaginacionComponent
+    PaginacionComponent,
+    GetNestedValuePipe,
+    CellFormatPipe
   ]
 })
 export class ComponentsModule { }

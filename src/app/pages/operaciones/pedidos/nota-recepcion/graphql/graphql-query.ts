@@ -95,6 +95,100 @@ export const findByProveedorAndNumeroQuery = gql`
   }
 `;
 
+export const findByNumeroQuery = gql`
+  query ($numero: Int!) {
+    data: findByNumero(numero: $numero) {
+      id
+      pedido {
+        id
+        estado
+        proveedor {
+          id
+          persona {
+            nombre
+          }
+        }
+      }
+      compra {
+        id
+      }
+      documento {
+        id
+        descripcion
+        activo
+      }
+      valor
+      descuento
+      pagado
+      numero
+      fecha
+      timbrado
+      creadoEn
+      cantidadItensVerificadoRecepcionMercaderia
+      usuario {
+        id
+      }
+      notaRecepcionAgrupada {
+        id
+        usuario {
+          id
+          persona {
+            nombre
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const findNotasDisponiblesParaRecepcionQuery = gql`
+  query ($numero: Int, $proveedorId: ID, $sucursalId: ID) {
+    data: findNotasDisponiblesParaRecepcion(numero: $numero, proveedorId: $proveedorId, sucursalId: $sucursalId) {
+      id
+      pedido {
+        id
+        estado
+        proveedor {
+          id
+          persona {
+            nombre
+            apodo
+            documento
+          }
+        }
+      }
+      compra {
+        id
+      }
+      documento {
+        id
+        descripcion
+        activo
+      }
+      valor
+      descuento
+      pagado
+      numero
+      fecha
+      timbrado
+      creadoEn
+      cantidadItensVerificadoRecepcionMercaderia
+      usuario {
+        id
+      }
+      notaRecepcionAgrupada {
+        id
+        usuario {
+          id
+          persona {
+            nombre
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const notaRecepcionPorPedidoIdQuery = gql`
   query ($id: ID!) {
     data: notaRecepcionPorPedidoId(id: $id) {
