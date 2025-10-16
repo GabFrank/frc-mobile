@@ -1,4 +1,3 @@
-import { NuevoInventarioComponent } from './nuevo-inventario/nuevo-inventario.component';
 import { FinalizarInventarioResumenComponent } from './finalizar-inventario-resumen/finalizar-inventario-resumen.component';
 import { EditInventarioComponent } from './edit-inventario/edit-inventario.component';
 import { ListInventarioComponent } from './list-inventario/list-inventario.component';

@@ -9,7 +9,6 @@ import { ModalService } from './../../../services/modal.service';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { InventarioService } from './../inventario.service';
 import { Component, Input, OnInit } from '@angular/core';
-import { Location } from '@angular/common';
 import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
