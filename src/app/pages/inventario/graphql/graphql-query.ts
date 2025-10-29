@@ -22,12 +22,6 @@ export const inventariosQuery = gql`
       inventarioProductoList {
         id
         concluido
-        producto {
-          id
-          descripcion
-          balanza
-          vencimiento
-        }
         zona {
           id
           sector {
@@ -42,6 +36,12 @@ export const inventariosQuery = gql`
             id
             cantidad
             imagenPrincipal
+            producto {
+              id
+              descripcion
+              balanza
+              vencimiento
+            }
           }
           cantidad
           vencimiento
@@ -80,12 +80,6 @@ export const inventarioQuery = gql`
           persona {
             nombre
           }
-        }
-        producto {
-          id
-          descripcion
-          balanza
-          vencimiento
         }
         zona {
           id
@@ -148,12 +142,6 @@ export const inventarioPorUsuarioQuery = gql`
       inventarioProductoList {
         id
         concluido
-        producto {
-          id
-          descripcion
-          balanza
-          vencimiento
-        }
         zona {
           id
           sector {
@@ -207,12 +195,6 @@ export const saveInventario = gql`
       inventarioProductoList {
         id
         concluido
-        producto {
-          id
-          descripcion
-          balanza
-          vencimiento
-        }
         zona {
           id
           sector {
@@ -227,6 +209,12 @@ export const saveInventario = gql`
             id
             cantidad
             imagenPrincipal
+            producto {
+              id
+              descripcion
+              balanza
+              vencimiento
+            }
           }
           cantidad
           vencimiento
@@ -265,12 +253,6 @@ export const inventarioPorFechaQuery = gql`
       inventarioProductoList {
         id
         concluido
-        producto {
-          id
-          descripcion
-          balanza
-          vencimiento
-        }
         zona {
           id
           sector {
@@ -285,6 +267,12 @@ export const inventarioPorFechaQuery = gql`
             id
             cantidad
             imagenPrincipal
+            producto {
+              id
+              descripcion
+              balanza
+              vencimiento
+            }
           }
           cantidad
           vencimiento
@@ -300,12 +288,6 @@ export const saveInventarioProducto = gql`
     data: saveInventarioProducto(inventarioProducto: $entity) {
         id
         concluido
-        producto {
-          id
-          descripcion
-          balanza
-          vencimiento
-        }
         zona {
           id
           sector {
@@ -326,6 +308,12 @@ export const saveInventarioProducto = gql`
             id
             cantidad
             imagenPrincipal
+            producto {
+              id
+              descripcion
+              balanza
+              vencimiento
+            }
           }
           cantidad
           vencimiento
@@ -359,7 +347,10 @@ export const saveInventarioProductoItem = gql`
         cantidad
         imagenPrincipal
         producto {
+          id
           descripcion
+          balanza
+          vencimiento
         }
       }
       cantidad
@@ -406,12 +397,6 @@ export const finalizarInventarioQuery = gql`
       inventarioProductoList {
         id
         concluido
-        producto {
-          id
-          descripcion
-          balanza
-          vencimiento
-        }
         zona {
           id
           sector {
@@ -426,6 +411,12 @@ export const finalizarInventarioQuery = gql`
             id
             cantidad
             imagenPrincipal
+            producto {
+              id
+              descripcion
+              balanza
+              vencimiento
+            }
           }
           cantidad
           vencimiento
@@ -489,6 +480,12 @@ export const inverntarioAbiertoPorSucursalQuery = gql`
             id
             cantidad
             imagenPrincipal
+            producto {
+              id
+              descripcion
+              balanza
+              vencimiento
+            }
           }
           cantidad
           vencimiento
