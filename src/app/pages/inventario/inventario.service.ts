@@ -6,7 +6,7 @@ import { NotificacionService, TipoNotificacion } from 'src/app/services/notifica
 import { CargandoService } from './../../services/cargando.service';
 import { Inventario, InventarioProducto, InventarioProductoItem } from './inventario.model';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { GenericCrudService } from 'src/app/generic/generic-crud.service';
 import { DeleteInventarioGQL } from './graphql/deleteInventario';
 import { DeleteInventarioProductoGQL } from './graphql/deleteInventarioProducto';
@@ -27,6 +27,10 @@ import { ReabrirInventarioGQL } from './graphql/reabrir-inventario copy';
   providedIn: 'root'
 })
 export class InventarioService {
+
+  // Evento para notificar cuando se guarda un InventarioProductoItem desde el buscador
+  // Incluye el id del InventarioProducto porque la mutación no retorna ese objeto
+  public inventarioItemSaved$ = new Subject<{ item: InventarioProductoItem; inventarioProductoId: number }>();
 
   constructor(
     private genericCrudService: GenericCrudService,

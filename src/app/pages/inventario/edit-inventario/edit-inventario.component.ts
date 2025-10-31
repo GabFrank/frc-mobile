@@ -34,7 +34,7 @@ import { CargandoService } from './../../../services/cargando.service';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { untilDestroyed } from '@ngneat/until-destroy';
 import { InventarioService } from './../inventario.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Inventario } from '../inventario.model';
 import { SectorService } from 'src/app/domains/sector/sector.service';
@@ -84,11 +84,31 @@ export class EditInventarioComponent implements OnInit {
     public mainService: MainService,
     private notificacionService: NotificacionService,
     private router: Router,
-    private productoService: ProductoService
+    private productoService: ProductoService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.selectedResponsable = this.mainService.usuarioActual;
+    // Suscribirse a guardados desde el buscador para refrescar la lista en vivo
+    this.inventarioService.inventarioItemSaved$
+      .pipe(untilDestroyed(this))
+      .subscribe((payload) => {
+        if (payload == null) return;
+        const { item: nuevoItem, inventarioProductoId } = payload;
+        // Insertar el item en la zona correspondiente
+        this.selectedInventario?.inventarioProductoList?.forEach((invPro) => {
+          if (invPro?.id === inventarioProductoId) {
+            if (invPro.inventarioProductoItemList == null)
+              invPro.inventarioProductoItemList = [];
+            if (invPro.inventarioProductoItemList.length > 4)
+              invPro.inventarioProductoItemList.pop();
+            invPro.inventarioProductoItemList.unshift(nuevoItem);
+          }
+        });
+        // Forzar detección de cambios para refrescar la UI inmediatamente
+        this.cdr.detectChanges();
+      });
     this.route.paramMap.pipe(untilDestroyed(this)).subscribe((res) => {
       this.inventarioId = res.get('id');
       if (this.inventarioId != null) {
@@ -240,60 +260,93 @@ export class EditInventarioComponent implements OnInit {
 
   onAddProducto(invPro, i) {
     console.log(this.selectedInventario);
-    let data = {sucursal:this.selectedInventario.sucursal,  sucursalId: +this.selectedInventario.sucursal.id, isInventario: true };
+    let data = {sucursal:this.selectedInventario.sucursal,  sucursalId: +this.selectedInventario.sucursal.id, isInventario: true, invPro: invPro };
     this.modalService
       .openModal(SearchProductoDialogComponent, { data })
       .then((res) => {
         if (res?.data) {
-          let selectedPresentacion = res.data['presentacion'];
-          let selectedProducto = res.data['producto'];
-          let data: InventarioItemData = {
-            inventarioProducto: invPro,
-            producto: selectedProducto,
-            presentacion: selectedPresentacion,
-            inventarioProductoItem: null,
-            peso: res.data['peso']
-          };
-          this.modalService
-            .openModal(EditInventarioItemDialogComponent, data)
-            .then(async (res2: any) => {
-              if (res2.data != null) {
-                let invProItemAux: InventarioProductoItemInput = res2.data;
-                (
-                  await this.productoService.onGetStockPorSucursal(
-                    data.producto?.id,
-                    this.selectedInventario.sucursal.id
+          // Dos flujos posibles: (A) input completo desde el buscador, (B) solo presentación -> abrir diálogo clásico
+          if (res.data?.inventarioProductoId != null || res.data?.cantidad != null) {
+            const invProItemAux: InventarioProductoItemInput = res.data;
+            this.productoService.onGetStockPorSucursal(
+              res.data?.productoId,
+              this.selectedInventario.sucursal.id
+            ).then(obs => {
+              obs.pipe(untilDestroyed(this)).subscribe(async (stockResponse) => {
+                if (stockResponse != null) {
+                  // El backend no acepta productoId en el input; se usa solo para calcular stock
+                  // Aseguramos eliminarlo antes de enviar la mutación
+                  if ((invProItemAux as any)['productoId'] !== undefined) {
+                    delete (invProItemAux as any)['productoId'];
+                  }
+                  invProItemAux.cantidadFisica = stockResponse;
+                  (
+                    await this.inventarioService.onSaveInventarioProductoItem(
+                      invProItemAux
+                    )
                   )
-                )
-                  .pipe(untilDestroyed(this))
-                  .subscribe(async (stockResponse) => {
-                    if (stockResponse != null) {
-                      invProItemAux.cantidadFisica = stockResponse;
-                      console.log(stockResponse);
-                      (
-                        await this.inventarioService.onSaveInventarioProductoItem(
-                          invProItemAux
-                        )
-                      )
-                        .pipe(untilDestroyed(this))
-                        .subscribe((res3) => {
-                          if (res3 != null) {
-                            console.log(res3);
-                            this.selectedInventario.inventarioProductoList.forEach(
-                              (i) => {
-                                if (i.inventarioProductoItemList == null)
-                                  i.inventarioProductoItemList = [];
-                                if (i.inventarioProductoItemList.length > 4)
-                                  i.inventarioProductoItemList.pop();
-                                i.inventarioProductoItemList.unshift(res3);
-                              }
-                            );
-                          }
+                    .pipe(untilDestroyed(this))
+                    .subscribe((res3) => {
+                      if (res3 != null) {
+                        this.selectedInventario.inventarioProductoList.forEach((ii) => {
+                          if (ii.inventarioProductoItemList == null) ii.inventarioProductoItemList = [];
+                          if (ii.inventarioProductoItemList.length > 4) ii.inventarioProductoItemList.pop();
+                          ii.inventarioProductoItemList.unshift(res3);
                         });
-                    }
-                  });
-              }
+                      }
+                    });
+                }
+              });
             });
+          } else {
+            let selectedPresentacion = res.data['presentacion'];
+            let selectedProducto = res.data['producto'];
+            let data2: InventarioItemData = {
+              inventarioProducto: invPro,
+              producto: selectedProducto,
+              presentacion: selectedPresentacion,
+              inventarioProductoItem: null,
+              peso: res.data['peso']
+            };
+            this.modalService
+              .openModal(EditInventarioItemDialogComponent, data2)
+              .then(async (res2: any) => {
+                if (res2.data != null) {
+                  let invProItemAux: InventarioProductoItemInput = res2.data;
+                  (
+                    await this.productoService.onGetStockPorSucursal(
+                      data2.producto?.id,
+                      this.selectedInventario.sucursal.id
+                    )
+                  )
+                    .pipe(untilDestroyed(this))
+                    .subscribe(async (stockResponse) => {
+                      if (stockResponse != null) {
+                        invProItemAux.cantidadFisica = stockResponse;
+                        (
+                          await this.inventarioService.onSaveInventarioProductoItem(
+                            invProItemAux
+                          )
+                        )
+                          .pipe(untilDestroyed(this))
+                          .subscribe((res3) => {
+                            if (res3 != null) {
+                              this.selectedInventario.inventarioProductoList.forEach(
+                                (i3) => {
+                                  if (i3.inventarioProductoItemList == null)
+                                    i3.inventarioProductoItemList = [];
+                                  if (i3.inventarioProductoItemList.length > 4)
+                                    i3.inventarioProductoItemList.pop();
+                                  i3.inventarioProductoItemList.unshift(res3);
+                                }
+                              );
+                            }
+                          });
+                      }
+                    });
+                }
+              });
+          }
         }
       });
   }

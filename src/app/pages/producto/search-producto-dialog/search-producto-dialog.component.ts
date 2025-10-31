@@ -18,6 +18,9 @@ import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { StockPorSucursalDialogComponent, StockPorSucursalDialogData } from '../../operaciones/movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 import { NotificacionService } from 'src/app/services/notificacion.service';
+import { InventarioProductoEstado, InventarioProductoItemInput } from '../../inventario/inventario.model';
+import { InventarioService } from '../../inventario/inventario.service';
+import { dateToString } from 'src/app/generic/utils/dateUtils';
 
 export interface SearchProductoDialogData {
   mostrarPrecio: boolean;
@@ -53,6 +56,12 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
 
   isWeb = false;
 
+  // Estado de formularios en línea (modo inventario)
+  estadosList = Object.values(InventarioProductoEstado);
+  cantidadById: { [id: number]: number } = {};
+  vencimientoById: { [id: number]: any } = {};
+  estadoById: { [id: number]: InventarioProductoEstado } = {};
+
   constructor(
     private productoService: ProductoService,
     private popoverService: PopOverService,
@@ -64,7 +73,8 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
     private plf: Platform,
     private codigoService: CodigoService,
     private photoViewer: PhotoViewer,
-    private notificacionService: NotificacionService
+    private notificacionService: NotificacionService,
+    private inventarioService: InventarioService
 
   ) {
     this.isWeb = plf.platforms().includes('mobileweb');
@@ -189,6 +199,53 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
 
   }
 
+  // Guardar desde el formulario en línea (modo inventario)
+  async onGuardarPresentacion(presentacion: Presentacion, producto: Producto) {
+    if (!this.isInventario) { return; }
+    const cantidad = this.cantidadById[presentacion.id];
+    const venc = this.vencimientoById[presentacion.id];
+    const estado = this.estadoById[presentacion.id] || InventarioProductoEstado.BUENO;
+    if (cantidad == null || cantidad < 0 || venc == null) {
+      this.notificacionService.warn('Complete cantidad y vencimiento');
+      return;
+    }
+    const invPro = this.data?.data?.invPro;
+    const input: InventarioProductoItemInput = {
+      id: null,
+      inventarioProductoId: invPro?.id,
+      zonaId: invPro?.zona?.id,
+      presentacionId: presentacion?.id,
+      cantidad: +cantidad,
+      cantidadFisica: null,
+      vencimiento: dateToString(new Date(venc)),
+      estado: estado,
+      usuarioId: null
+    } as any;
+
+    // Obtener stock físico y guardar, sin cerrar el modal
+    (await this.productoService.onGetStockPorSucursal(producto?.id, this.selectedSucursal?.id))
+      .pipe(untilDestroyed(this))
+      .subscribe(async (stockResponse) => {
+        if (stockResponse == null) {
+          this.notificacionService.warn('No se pudo obtener el stock actual');
+          return;
+        }
+        input.cantidadFisica = stockResponse;
+        (await this.inventarioService.onSaveInventarioProductoItem(input))
+          .pipe(untilDestroyed(this))
+          .subscribe((res) => {
+            if (res != null) {
+              // Notificar al editor de inventario para refrescar la lista en vivo
+              this.inventarioService.inventarioItemSaved$.next({ item: res, inventarioProductoId: invPro?.id });
+              // Limpiar campos de esta presentación para permitir cargar otra
+              this.cantidadById[presentacion.id] = null;
+              this.vencimientoById[presentacion.id] = null;
+              this.estadoById[presentacion.id] = InventarioProductoEstado.BUENO;
+            }
+          });
+      });
+  }
+
   onBack() {
     if (this.modalService?.currentModal != null) {
       this.modalService.closeModal(null)
@@ -220,6 +277,10 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
 
   scrollToTop(){
     this.content.scrollToTop(500);
+  }
+
+  onVencChange(presentacionId: number, ev: any) {
+    this.vencimientoById[presentacionId] = ev?.detail?.value;
   }
 
 }
