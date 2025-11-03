@@ -88,7 +88,7 @@ export class InventarioProductoItem {
   usuario: Usuario;
   estado: InventarioProductoEstado
   creadoEn: Date;
-
+  copiedFromItemId?: number;
   toInput(): InventarioProductoItemInput {
     let input = new InventarioProductoItemInput;
     input.id = this.id
@@ -108,10 +108,10 @@ export class InventarioProductoItemInput {
   id: number;
   inventarioProductoId: number;
   zonaId: number;
-  presentacionId: any; //presentacion
+  presentacionId: any;
   cantidad: number;
   cantidadFisica: number;
-  vencimiento: string; //vencimiento que el sistema le va a indicar, si no existe crear vencimiento
+  vencimiento: string;
   estado: InventarioProductoEstado
   usuarioId: number;
 }

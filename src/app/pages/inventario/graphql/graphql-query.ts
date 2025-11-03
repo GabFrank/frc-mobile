@@ -120,6 +120,67 @@ export const inventarioProItemPorInventarioProQuery = gql`
   }
 `;
 
+export const inventarioItemsPorInvProYPresentacionQuery = gql`
+  query ($invProId: ID!, $presentacionId: ID!, $page: Int, $size: Int) {
+    data: inventarioItemsPorInvProYPresentacion(
+      invProId: $invProId,
+      presentacionId: $presentacionId,
+      page: $page,
+      size: $size
+    ) {
+      id
+      inventarioProducto { id }
+      presentacion {
+        id
+        cantidad
+        producto { descripcion balanza }
+      }
+      cantidad
+      cantidadFisica
+      vencimiento
+      estado
+    }
+  }
+`;
+
+export const inventarioItemsDeInventariosAnterioresQuery = gql`
+  query ($invProId: ID!, $presentacionId: ID!, $page: Int, $size: Int) {
+    data: inventarioItemsDeInventariosAnteriores(
+      invProId: $invProId,
+      presentacionId: $presentacionId,
+      page: $page,
+      size: $size
+    ) {
+      id
+      inventarioProducto { 
+        id
+        zona {
+          id
+          sector {
+            id
+          }
+        }
+      }
+      zona {
+        id
+        sector {
+          id
+        }
+      }
+      presentacion {
+        id
+        cantidad
+        producto { descripcion balanza }
+      }
+      cantidad
+      cantidadFisica
+      vencimiento
+      estado
+      creadoEn
+    }
+  }
+`;
+
 export const inventarioPorUsuarioQuery = gql`
   query ($id: ID!) {
     data: inventarioPorUsuario(id: $id) {
@@ -372,8 +433,6 @@ export const deleteInventarioProductoItemQuery = gql`
     deleteInventarioProductoItem(id: $id)
   }
 `;
-
-// finalizarInventario
 export const finalizarInventarioQuery = gql`
   mutation finalizarInventario($id: ID!) {
     data: finalizarInventario(id: $id){
@@ -426,8 +485,6 @@ export const finalizarInventarioQuery = gql`
     }
   }
 `;
-
-// cancelarInventario
 export const cancelarInventarioQuery = gql`
   mutation cancelarInventario($id: ID!) {
     cancelarInventario(id: $id)
