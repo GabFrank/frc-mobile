@@ -213,7 +213,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
         this.itemsByPresentacionId[presentacionId] = items;
         this.displayedItemsByPresentacionId[presentacionId] = [...items];
       }, (error) => {
-        console.error('Error al cargar items de inventarios anteriores:', error);
+        console.error('Error al cargar items de inventarios', error);
       });
   }
   private removeItemFromDisplay(presentacionId: number, itemId: number) {
@@ -256,7 +256,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
           payload.presentacionId = item.presentacion.id;
         }
 
-        console.log('Guardando nuevo item en inventario actual:', payload);
+        console.log('Guardando nuevo item en inventario', payload);
         (await this.inventarioService.onSaveInventarioProductoItem(payload))
           .pipe(untilDestroyed(this))
           .subscribe(async (savedItem) => {
@@ -268,7 +268,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
               });
               this.removeItemFromDisplay(presentacionId, item.id);
 
-              this.notificacionService.open('Vencimiento agregado al inventario actual', TipoNotificacion.SUCCESS, 2);
+              this.notificacionService.open('Vencimiento agregado al inventario', TipoNotificacion.SUCCESS, 2);
             }
           }, (error) => {
             console.error('Error al guardar item:', error);
@@ -279,7 +279,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
   }
 
   async onEliminarItem(item: InventarioProductoItem, presentacionId: number, invProId: number) {
-    this.dialogService.open('Confirmar', '¿Desea quitar este vencimiento del inventario actual?')
+    this.dialogService.open('Confirmar', '¿Desea quitar este vencimiento del inventario')
       .then(async (res) => {
         if (res.role === 'aceptar') {
           this.removeItemFromDisplay(presentacionId, item.id);
@@ -287,10 +287,10 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
             (await this.inventarioService.onDeleteInventarioProductoItem(item.id))
               .pipe(untilDestroyed(this))
               .subscribe(() => {
-                this.notificacionService.open('Vencimiento quitado del inventario actual', TipoNotificacion.SUCCESS, 2);
+                this.notificacionService.open('Vencimiento quitado del inventario', TipoNotificacion.SUCCESS, 2);
               });
           } else {
-            this.notificacionService.open('Solo se quitó del inventario actual (histórico intacto)', TipoNotificacion.SUCCESS, 2);
+            this.notificacionService.open('se limpio correctamente', TipoNotificacion.SUCCESS, 2);
           }
         }
       });
