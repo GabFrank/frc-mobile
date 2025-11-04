@@ -96,7 +96,25 @@ export class EditInventarioItemDialogComponent implements OnInit {
     setTimeout(() => {
       this.selectedInventarioProductoItem = new InventarioProductoItem;
       Object.assign(this.selectedInventarioProductoItem, invProItem)
-      this.cantidadOriginalDelItem = invProItem.cantidad;
+      
+      // Si el item ya tiene cantidadAnterior, usarla (stock original del sistema)
+      // Si no tiene cantidadAnterior pero tiene cantidadFisica, usarla (deberían ser iguales)
+      // Si no tiene ninguno, calcular desde stockPorProducto del producto
+      if (invProItem.cantidadAnterior != null) {
+        this.cantidadOriginalDelItem = invProItem.cantidadAnterior;
+      } else if (invProItem.cantidadFisica != null) {
+        this.cantidadOriginalDelItem = invProItem.cantidadFisica;
+      } else if (this.data?.producto && this.data?.presentacion) {
+        if (this.data.producto.stockPorProducto != null && this.data.presentacion.cantidad > 0) {
+          const stockTeoricoPresentaciones = this.data.producto.stockPorProducto / this.data.presentacion.cantidad; 
+          this.cantidadOriginalDelItem = parseFloat(stockTeoricoPresentaciones.toFixed(3));
+        } else {
+          this.cantidadOriginalDelItem = 0;
+        }
+      } else {
+        this.cantidadOriginalDelItem = 0;
+      }
+      
       this.isPesable = this.selectedInventarioProductoItem.presentacion.producto.balanza;
       this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
       this.cantidadControl.setValue(invProItem?.cantidad)
@@ -118,8 +136,10 @@ export class EditInventarioItemDialogComponent implements OnInit {
   onAceptar() {
     if (this.selectedInventarioProductoItem == null) {
       this.selectedInventarioProductoItem = new InventarioProductoItem()
+      // cantidad = valor ingresado por el usuario
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
-      this.selectedInventarioProductoItem.cantidadFisica = this.cantidadControl.value;
+      // cantidadFisica y cantidadAnterior = stock original del sistema (mismo valor)
+      this.selectedInventarioProductoItem.cantidadFisica = this.cantidadOriginalDelItem;
       this.selectedInventarioProductoItem.cantidadAnterior = this.cantidadOriginalDelItem;
       this.selectedInventarioProductoItem.revisado = true;
       this.selectedInventarioProductoItem.verificado = false;
@@ -133,10 +153,12 @@ export class EditInventarioItemDialogComponent implements OnInit {
       this.selectedInventarioProductoItem.estado = this.estadoControl.value;
       this.selectedInventarioProductoItem.zona = this.data.inventarioProducto.zona;
     } else {
+      // cantidadAnterior = stock original del sistema
       this.selectedInventarioProductoItem.cantidadAnterior = this.cantidadOriginalDelItem;
-      
+      // cantidad = valor ingresado por el usuario
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
-      this.selectedInventarioProductoItem.cantidadFisica = this.cantidadControl.value;
+      // cantidadFisica = stock original del sistema (igual a cantidadAnterior)
+      this.selectedInventarioProductoItem.cantidadFisica = this.cantidadOriginalDelItem;
       
       this.selectedInventarioProductoItem.revisado = true;
       this.selectedInventarioProductoItem.verificado = false;
