@@ -11,7 +11,7 @@ import { PopOverService } from './../../../services/pop-over.service';
 import { IngresarCodigoPopComponent } from './../ingresar-codigo-pop/ingresar-codigo-pop.component';
 import { TransferenciaService } from './../transferencia.service';
 
-declare let window: any; // Don't forget this part!
+declare let window: any;
 
 
 @UntilDestroy()

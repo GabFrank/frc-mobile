@@ -1,8 +1,6 @@
 import { TipoEntidad } from './../../../domains/enums/tipo-entidad.enum';
 import { codificarQr, QrData } from './../../../generic/utils/qrUtils';
 import { QrGeneratorComponent } from './../../../components/qr-generator/qr-generator.component';
-import { ImagePopoverComponent } from 'src/app/components/image-popover/image-popover.component';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import {
   NotificacionService,
   TipoNotificacion
@@ -41,7 +39,6 @@ import { SectorService } from 'src/app/domains/sector/sector.service';
 import { Location } from '@angular/common';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
 import { ProductoService } from '../../producto/producto.service';
-import { Platform } from '@ionic/angular';
 
 export class InventarioData {
   sector: Sector;

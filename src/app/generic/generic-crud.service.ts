@@ -335,7 +335,9 @@ export class GenericCrudService {
         this.dialogoService
           .open(
             'Atención!!',
-            (titulo || 'Realemente desea eliminar este item:') + data + '?',
+            (data != null && data !== ''
+              ? `${titulo || 'Realmente desea eliminar este item:'} ${data}?`
+              : `${titulo || 'Realmente desea eliminar este item'}?`),
             true
           )
           .then((res1) => {
