@@ -1,0 +1,159 @@
+<ion-content>
+  <ion-card>
+    <ion-row>
+      <ion-col size="2">
+        <ion-icon name="arrow-back" style="font-size: 1.5em" (click)="onBack()"></ion-icon>
+      </ion-col>
+      <ion-col size="8" style="text-align: center">Detalles de Transferencia</ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="3">
+        <div class="title" fxFlex="50">Id</div>
+        <div class="item" fxFlex="50">
+          {{ selectedTransferencia?.id }}
+        </div>
+      </ion-col>
+      <ion-col size="5">
+        <div class="title" fxFlex="50">Responsable</div>
+        <div class="item" fxFlex="50">
+          {{ responsableNombreText | titlecase }}
+        </div>
+      </ion-col>
+      <ion-col size="4">
+        <div class="title" fxFlex="50">Estado</div>
+        <div class="item" fxFlex="50">
+          {{ selectedTransferencia?.estado }}
+        </div>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="3">
+        <div class="title" fxFlex="50">Creado En</div>
+        <div class="item" fxFlex="50">
+          {{ selectedTransferencia?.creadoEn | date: 'short' }}
+        </div>
+      </ion-col>
+      <ion-col size="5">
+        <div class="title" fxFlex="50">Suc. Origen</div>
+        <div class="item" fxFlex="50">
+          {{ selectedTransferencia?.sucursalOrigen?.id }} - {{ selectedTransferencia?.sucursalOrigen?.nombre | titlecase
+          }}
+        </div>
+      </ion-col>
+      <ion-col size="4">
+        <div class="title" fxFlex="50">Suc. Destino</div>
+        <div class="item" fxFlex="50">
+          {{ selectedTransferencia?.sucursalDestino?.id }} - {{ selectedTransferencia?.sucursalDestino?.nombre |
+          titlecase }}
+        </div>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="4">
+        <div class="title" fxFlex="50">Tipo</div>
+        <div class="item" fxFlex="50">
+          {{ selectedTransferencia?.tipo }}
+        </div>
+      </ion-col>
+      <ion-col size="4">
+        <div class="title" fxFlex="50">Etapa actual</div>
+        <div class="item" fxFlex="50">
+          {{ selectedTransferencia?.etapa }}
+        </div>
+      </ion-col>
+      <ion-col size="4" style="text-align: center">
+        <ion-button class="btn-success-flat" fill="clear" (click)="onMenuClick()">MENU</ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-card>
+
+  <ion-row>
+    <ion-col size="2"> </ion-col>
+    <ion-col size="8" style="text-align: center">Productos</ion-col>
+    <ion-col size="2" style="text-align: center">
+      <ion-icon name="funnel" style="font-size: 1.5em" (click)="openFilterMenu()"></ion-icon>
+    </ion-col>
+  </ion-row>
+
+  <ion-list>
+    <ion-item *ngFor="
+        let transferenciaItem of selectedTransferencia?.transferenciaItemList;
+        let i = index
+      " class="dark2" [hidden]="
+        !(
+          mostrarControl.value === 'TODOS' ||
+          (mostrarControl.value === 'MIOS' &&
+            transferenciaItem?.usuario?.id === mainService?.usuarioActual?.id)
+        )
+      ">
+      <ion-label>
+        <ion-row>
+          <ion-col size="10">
+            <h3>
+              {{
+              transferenciaItem?.presentacionPreTransferencia?.producto?.descripcion
+              | titlecase
+              }}
+            </h3>
+            <h5>
+              Presentación:
+              {{ transferenciaItem?.presentacionPreTransferencia?.cantidad | number: '1.0-2' }}
+            </h5>
+          </ion-col>
+          <ion-col size="2" class="ion-text-end">
+            {{ transferenciaItem.cantidadPreTransferencia | number: '1.0-3' }}
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="8">
+            <p class="title">Vencimiento:</p>
+            <p>
+              {{ transferenciaItem.vencimientoPreTransferencia | date: 'shortDate' }}
+            </p>
+          </ion-col>
+          <ion-col size="2">
+            <ion-icon class="btn-success-flat" (click)="onEditProducto(transferenciaItem, i)" name="create-outline"
+              size="large" *ngIf="
+                selectedTransferencia?.estado === 'ABIERTA'
+              ">
+            </ion-icon>
+          </ion-col>
+          <ion-col size="2">
+            <ion-icon class="btn-danger-flat" (click)="onDeleteProducto(transferenciaItem, i)" name="trash-outline"
+              size="large" *ngIf="
+                selectedTransferencia?.estado === 'ABIERTA'
+              ">
+            </ion-icon>
+          </ion-col>
+        </ion-row>
+      </ion-label>
+    </ion-item>
+
+    <ion-row class="dark2">
+      <ion-col size="12" class="center">
+        <ion-button class="btn-success-flat" fill="clear" (click)="onAddProducto()" expand="block" *ngIf="
+            selectedTransferencia?.estado === 'ABIERTA'
+          ">
+          + Producto
+        </ion-button>
+      </ion-col>
+    </ion-row>
+
+    <ion-row class="dark2">
+      <ion-col class="center">
+        <ion-button class="btn-success-flat" fill="clear" (click)="onCargarMenos()" expand="block"
+          *ngIf="selectedTransferencia?.transferenciaItemList?.length > 0"
+          [disabled]="selectedTransferencia?.transferenciaItemList?.length < 6">
+          Menos
+        </ion-button>
+      </ion-col>
+      <ion-col class="center">
+        <ion-button class="btn-success-flat" fill="clear" (click)="onCargarMas()" expand="block"
+          *ngIf="selectedTransferencia?.transferenciaItemList?.length > 0"
+          [disabled]="selectedTransferencia?.transferenciaItemList?.length < 4">
+          Cargar más
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-list>
+</ion-content>

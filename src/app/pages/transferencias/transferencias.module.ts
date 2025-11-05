@@ -5,15 +5,26 @@ import { InfoTransferenciaComponent } from './info-transferencia/info-transferen
 import { IngresarCodigoPopComponent } from './ingresar-codigo-pop/ingresar-codigo-pop.component';
 import { ListTransferenciasComponent } from './list-transferencias/list-transferencias.component';
 import { ModificarItemDialogComponent } from './modificar-item-dialog/modificar-item-dialog.component';
+import { NuevaTransferenciaComponent } from './nueva-transferencia/nueva-transferencia.component';
 import { TransferenciaComponent } from './transferencia/transferencia.component';
+import { TransaferenciaListProductosComponent } from './transaferencia-list-productos/transaferencia-list-productos.component';
+import { EditTransferenciaProductoComponent } from './edit-transferencia-producto/edit-transferenci-producto.component';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { TransferenciasRoutingModule } from './transferencias-routing.module';
 
-
 @NgModule({
-  declarations: [ListTransferenciasComponent, TransferenciaComponent, InfoTransferenciaComponent, IngresarCodigoPopComponent, ModificarItemDialogComponent],
+  declarations: [
+    ListTransferenciasComponent, 
+    TransferenciaComponent, 
+    InfoTransferenciaComponent, 
+    IngresarCodigoPopComponent, 
+    ModificarItemDialogComponent, 
+    NuevaTransferenciaComponent,
+    TransaferenciaListProductosComponent,
+    EditTransferenciaProductoComponent
+  ],
   imports: [
     CommonModule,
     IonicModule,
@@ -23,6 +34,5 @@ import { TransferenciasRoutingModule } from './transferencias-routing.module';
     TransferenciasRoutingModule
   ],
   exports: [ListTransferenciasComponent, TransferenciaComponent],
-
 })
 export class TransferenciasModule { }
