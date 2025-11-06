@@ -192,12 +192,33 @@ export class EditTransferenciaProductoComponent implements OnInit {
     let menu: ActionMenuData[] = [
       { texto: 'Actualizar datos', role: 'actualizar' }
     ];
+    
+    // Agregar opción Finalizar solo si el estado es ABIERTA
+    if (this.selectedTransferencia?.estado === TransferenciaEstado.ABIERTA) {
+      menu.push({ texto: 'Finalizar', role: 'finalizar' });
+    }
+    
     this.menuActionService.presentActionSheet(menu).then((res) => {
       let role = res.role;
       if (role == 'actualizar') {
         this.onRefresh();
+      } else if (role == 'finalizar') {
+        this.onFinalizar();
       }
     });
+  }
+
+  onFinalizar() {
+    if (this.selectedTransferencia?.estado === TransferenciaEstado.ABIERTA) {
+      this.transferenciaService.onFinalizar(this.selectedTransferencia)
+        .pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          if (res) {
+            this.selectedTransferencia.estado = TransferenciaEstado.EN_ORIGEN;
+            this.buscarTransferencia(this.transferenciaId);
+          }
+        });
+    }
   }
 
   async onCargarMas() {

@@ -1,7 +1,7 @@
 import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { Platform } from '@ionic/angular';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -81,6 +81,7 @@ export class InfoTransferenciaComponent implements OnInit {
   constructor(
     private transferenciaService: TransferenciaService,
     private route: ActivatedRoute,
+    private router: Router,
     private _location: Location,
     private mainService: MainService,
     private menuActionService: MenuActionService,
@@ -759,6 +760,12 @@ export class InfoTransferenciaComponent implements OnInit {
       codificarQr(codigo),
       PopoverSize.XS
     );
+  }
+
+  onEdit() {
+    if (this.selectedTransferencia?.id) {
+      this.router.navigate(['transferencias', 'edit', this.selectedTransferencia.id]);
+    }
   }
 
   onBuscarClick() {
