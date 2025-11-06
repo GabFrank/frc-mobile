@@ -15,7 +15,6 @@ import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { Producto } from 'src/app/domains/productos/producto.model';
 import { Presentacion } from 'src/app/domains/productos/presentacion.model';
 import { ProductoService } from '../../producto/producto.service';
-import { CargandoService } from 'src/app/services/cargando.service';
 import { MainService } from 'src/app/services/main.service';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 import { TransferenciaItemInput } from '../transferencia.model';
@@ -54,7 +53,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
   isSearchingDestinoList: boolean[] = [];
   mostrarItemsLocales: boolean = false;
   private lastAddClickAtById: { [id: number]: number } = {};
-  private currentLoading: HTMLIonLoadingElement;
   private isDialogOpen: boolean = false;
   private lastDeleteClickAt: number = 0;
   private readonly DELETE_DEBOUNCE_MS = 500;
@@ -70,7 +68,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     private photoViewer: PhotoViewer,
     private notificacionService: NotificacionService,
     private transferenciaService: TransferenciaService,
-    private cargandoService: CargandoService,
     private mainService: MainService,
     private router: Router
   ) {
@@ -126,16 +123,7 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     }
   }
 
-  private async cerrarLoading() {
-    if (this.currentLoading) {
-      try {
-        await this.currentLoading.dismiss();
-        this.currentLoading = null;
-      } catch (error) {
-        console.log('Error cerrando loading (puede ignorarse):', error);
-      }
-    }
-  }
+  // Loading es gestionado por GenericCrudService en las llamadas al backend
 
   private calcularStockDisponible(producto: Producto, presentacion: Presentacion): number {
     if (!producto || producto.stockPorProducto == null || !presentacion || !presentacion.cantidad) {
@@ -413,6 +401,18 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     this.vencimientoById[presentacionId] = event.target.value;
   }
 
+  onAccordionChangeProducto(event: any, producto: Producto) {
+    console.log('onAccordionChangeProducto - Cambio en acordeón de producto:', { event, producto });
+  }
+
+  onAccordionChangePresentacion(event: any, producto: Producto) {
+    console.log('onAccordionChangePresentacion - Cambio en acordeón de presentación:', { event, producto });
+  }
+
+  onAccordionTogglePresentacion(event: any, presentacionId: number, producto: Producto) {
+    console.log('onAccordionTogglePresentacion - Toggle en acordeón de presentación:', { event, presentacionId, producto });
+  }
+
   limpiarFormulario(presentacionId: number) {
     console.log('limpiarFormulario - Limpiando formulario para presentación:', presentacionId);
     this.cantidadById[presentacionId] = null;
@@ -546,8 +546,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     }
 
     try {
-      this.currentLoading = await this.cargandoService.open('Guardando producto...');
-
       console.log('💾 Preparando item para guardar en transferencia:', this.transferenciaId);
 
       const itemInput: TransferenciaItemInput = {
@@ -590,7 +588,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
       itemObservable.pipe(untilDestroyed(this)).subscribe({
         next: (result) => {
           console.log('✅ Respuesta exitosa del servicio:', result);
-          this.cerrarLoading();
 
           if (result) {
             this.notificacionService.open('Producto guardado en la transferencia', TipoNotificacion.SUCCESS, 2);
@@ -604,7 +601,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
         error: (error) => {
           console.error('❌ Error guardando item:', error);
           console.error('Detalles del error:', JSON.stringify(error, null, 2));
-          this.cerrarLoading();
 
           let mensajeError = 'Error al guardar el producto';
           if (error?.message) {
@@ -618,23 +614,9 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     } catch (error) {
       console.error('❌ Error general al guardar:', error);
       console.error('Stack trace:', error);
-      this.cerrarLoading();
       this.notificacionService.open('Error inesperado al guardar el producto', TipoNotificacion.DANGER, 2);
     }
   }
-
-  onAccordionChangeProducto(event: any, producto: Producto) {
-    console.log('onAccordionChangeProducto - Cambio en acordeón de producto:', { event, producto });
-  }
-
-  onAccordionChangePresentacion(event: any, producto: Producto) {
-    console.log('onAccordionChangePresentacion - Cambio en acordeón de presentación:', { event, producto });
-  }
-
-  onAccordionTogglePresentacion(event: any, presentacionId: number, producto: Producto) {
-    console.log('onAccordionTogglePresentacion - Toggle en acordeón de presentación:', { event, presentacionId, producto });
-  }
-
   onScroll(event: any) {
     const scrollTop = event.detail.scrollTop;
     this.isVisible = scrollTop > 300;

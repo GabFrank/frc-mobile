@@ -9,7 +9,6 @@ import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.s
 import { MainService } from 'src/app/services/main.service';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { TransferenciaService } from '../transferencia.service';
-import { CargandoService } from 'src/app/services/cargando.service';
 import { TransferenciaEstado, TipoTransferencia, EtapaTransferencia } from '../transferencia.model';
 
 @UntilDestroy()
@@ -44,8 +43,7 @@ export class NuevaTransferenciaComponent implements OnInit {
     private notificacionService: NotificacionService,
     public mainService: MainService,
     private router: Router,
-    private transferenciaService: TransferenciaService,
-    private cargandoService: CargandoService
+    private transferenciaService: TransferenciaService
   ) { }
 
   async ngOnInit() {
@@ -140,7 +138,6 @@ export class NuevaTransferenciaComponent implements OnInit {
   private async crearTransferencia() {
     if (this.isCreating) return;
     this.isCreating = true;
-    const loading = await this.cargandoService.open('Creando transferencia...');
     try {
       const transferenciaInput = {
         sucursalOrigenId: this.selectedOrigen!.id,
@@ -154,7 +151,6 @@ export class NuevaTransferenciaComponent implements OnInit {
 
       observable.pipe(untilDestroyed(this)).subscribe({
         next: (nuevaTransferencia) => {
-          this.cargandoService.close(loading);
           this.isCreating = false;
 
           if (nuevaTransferencia?.id) {
@@ -173,7 +169,6 @@ export class NuevaTransferenciaComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error creando transferencia:', error);
-          this.cargandoService.close(loading);
           this.isCreating = false;
           this.notificacionService.open('Error al crear la transferencia', TipoNotificacion.DANGER, 2);
         }
@@ -181,7 +176,6 @@ export class NuevaTransferenciaComponent implements OnInit {
 
     } catch (error) {
       console.error('Error en creación de transferencia:', error);
-      this.cargandoService.close(loading);
       this.isCreating = false;
       this.notificacionService.open('Error al crear la transferencia', TipoNotificacion.DANGER, 2);
     }
