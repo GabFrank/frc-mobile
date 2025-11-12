@@ -1,0 +1,83 @@
+<div class="pagination-container" *ngIf="paginatedResponse">
+  <!-- Información de elementos -->
+  <div class="pagination-info">
+    <span class="info-text">
+      Mostrando {{startElement}} - {{endElement}} de {{totalElements}} elementos
+    </span>
+  </div>
+
+  <!-- Controles de paginación -->
+  <div class="pagination-controls">
+    <!-- Botón Primera Página -->
+    <ion-button 
+      fill="clear" 
+      size="small" 
+      [disabled]="!hasPrevious"
+      (click)="onPageChange(0)"
+      class="pagination-btn">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+      <ion-icon name="chevron-back-outline"></ion-icon>
+    </ion-button>
+
+    <!-- Botón Página Anterior -->
+    <ion-button 
+      fill="clear" 
+      size="small" 
+      [disabled]="!hasPrevious"
+      (click)="onPageChange(currentPage - 1)"
+      class="pagination-btn">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+    </ion-button>
+
+    <!-- Números de Página -->
+    <div class="page-numbers">
+      <ion-button 
+        *ngFor="let page of pageNumbers"
+        fill="clear" 
+        size="small"
+        [color]="page === currentPage ? 'primary' : 'medium'"
+        [class.active]="page === currentPage"
+        (click)="onPageChange(page)"
+        class="page-number-btn">
+        {{page + 1}}
+      </ion-button>
+    </div>
+
+    <!-- Botón Página Siguiente -->
+    <ion-button 
+      fill="clear" 
+      size="small" 
+      [disabled]="!hasNext"
+      (click)="onPageChange(currentPage + 1)"
+      class="pagination-btn">
+      <ion-icon name="chevron-forward-outline"></ion-icon>
+    </ion-button>
+
+    <!-- Botón Última Página -->
+    <ion-button 
+      fill="clear" 
+      size="small" 
+      [disabled]="!hasNext"
+      (click)="onPageChange(totalPages - 1)"
+      class="pagination-btn">
+      <ion-icon name="chevron-forward-outline"></ion-icon>
+      <ion-icon name="chevron-forward-outline"></ion-icon>
+    </ion-button>
+  </div>
+
+  <!-- Selector de tamaño de página -->
+  <div class="page-size-selector" *ngIf="showPageSizeSelector">
+    <ion-label>Elementos por página:</ion-label>
+    <ion-select 
+      [value]="currentPageSize"
+      (ionChange)="onPageSizeChange($event)"
+      interface="popover"
+      class="page-size-select">
+      <ion-select-option 
+        *ngFor="let size of pageSizeOptions" 
+        [value]="size">
+        {{size}}
+      </ion-select-option>
+    </ion-select>
+  </div>
+</div> 

@@ -57,12 +57,21 @@
     </ion-col>
   </ion-row>
 
-  <ion-row [hidden]="selectedUsuario === null" style="text-align: center">
+  <ion-row class="usuario-logueado" [hidden]="selectedUsuario === null" style="text-align: center">
     <ion-col size="12">
       {{ msg | uppercase }}
       <p>
         {{ selectedUsuario?.persona?.nombre | uppercase }}
       </p>
+      <ion-button
+        type="button"
+        color="success"
+        expand="block"
+        (click)="onAceptarBienvenida()"
+        style="margin-top: 15px;"
+      >
+        Aceptar
+      </ion-button>
     </ion-col>
   </ion-row>
 

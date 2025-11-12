@@ -4,6 +4,8 @@ import { NotificacionService } from 'src/app/services/notificacion.service';
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { SucursalesGQL } from "./graphql/sucursalesQuery";
+import { SucursalesAllGQL } from "./graphql/sucursalesAllQuery";
+import { SucursalesByNombreConFiltrosGQL, SucursalesFiltrosInput } from "./graphql/sucursalesByNombreConFiltrosQuery";
 import { Sucursal } from "./sucursal.model";
 
 import { UntilDestroy, untilDestroyed } from "@ngneat/until-destroy";
@@ -25,6 +27,8 @@ export class SucursalService {
 
   constructor(
     public getAllSucursales: SucursalesGQL,
+    public getAllSucursalesNoPaged: SucursalesAllGQL,
+    public getSucursalesByFiltros: SucursalesByNombreConFiltrosGQL,
     private NotificacionService: NotificacionService,
     private getSucursalActual: SucursalActualGQL,
     private getSucursal: SucursalByIdGQL,
@@ -34,6 +38,14 @@ export class SucursalService {
 
   async onGetAllSucursales(): Promise<Observable<Sucursal[]>> {
     return await this.genericCrudService.onGetAll(this.getAllSucursales);
+  }
+
+  async onGetAllSucursalesNoPaged(): Promise<Observable<Sucursal[]>> {
+    return await this.genericCrudService.onGetAll(this.getAllSucursalesNoPaged);
+  }
+
+  async onGetSucursalesByFiltros(filtros: SucursalesFiltrosInput): Promise<Observable<Sucursal[]>> {
+    return await this.genericCrudService.onCustomGet(this.getSucursalesByFiltros, filtros);
   }
 
   async onGetSucursal(id): Promise<Observable<Sucursal>> {

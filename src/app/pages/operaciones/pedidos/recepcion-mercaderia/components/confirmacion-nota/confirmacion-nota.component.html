@@ -1,0 +1,124 @@
+<ion-content>
+  <ion-card style="background: #333333; border-radius: 8px; margin: 10px; border-left: 4px solid #f57c00;">
+    <ion-card-content style="padding: 12px;">
+      <ion-row>
+        <ion-col size="12">
+          <h2 class="titulo-center" style="color: #f57c00; font-weight: 600; margin: 0;">
+            Confirmar Nota de Recepción
+          </h2>
+          <p style="color: white; text-align: center; margin: 10px 0; font-size: 0.9rem;">
+            Revisa los detalles antes de confirmar
+          </p>
+        </ion-col>
+      </ion-row>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Información de la Nota -->
+  <ion-card style="background: #252525; border-radius: 8px; margin: 10px;">
+    <ion-card-content style="padding: 12px;">
+      <ion-row>
+        <ion-col size="6">
+          <div style="text-align: center;">
+            <p style="color: #f57c00; font-size: 0.8rem; margin: 5px 0; font-weight: 500;">Número</p>
+            <p style="color: white; font-size: 1.2rem; margin: 5px 0; font-weight: 600;">{{nota?.numero || 'N/A'}}</p>
+          </div>
+        </ion-col>
+        <ion-col size="6">
+          <div style="text-align: center;">
+            <p style="color: #f57c00; font-size: 0.8rem; margin: 5px 0; font-weight: 500;">Fecha</p>
+                            <p style="color: white; font-size: 1rem; margin: 5px 0; font-weight: 500;">{{fechaFormateada}}</p>
+          </div>
+        </ion-col>
+      </ion-row>
+      
+      <ion-row>
+        <ion-col size="12">
+          <div style="text-align: center; margin-top: 15px;">
+            <p style="color: #f57c00; font-size: 0.8rem; margin: 5px 0; font-weight: 500;">Estado</p>
+            <ion-badge 
+              [style.background-color]="getEstadoColor(nota?.estado)"
+              style="font-size: 0.9rem; padding: 8px 16px;">
+              {{nota?.estado || 'N/A'}}
+            </ion-badge>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Información del Proveedor -->
+  <ion-card style="background: #252525; border-radius: 8px; margin: 10px;">
+    <ion-card-content style="padding: 12px;">
+      <ion-row>
+        <ion-col size="12">
+          <div style="text-align: center;">
+            <p style="color: #f57c00; font-size: 0.8rem; margin: 5px 0; font-weight: 500;">Proveedor</p>
+            <p style="color: white; font-size: 1.1rem; margin: 5px 0; font-weight: 600;">{{(proveedor?.persona?.nombre | uppercase) || 'N/A'}}</p>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Información de la Sucursal -->
+  <ion-card style="background: #252525; border-radius: 8px; margin: 10px;">
+    <ion-card-content style="padding: 12px;">
+      <ion-row>
+        <ion-col size="12">
+          <div style="text-align: center;">
+            <p style="color: #f57c00; font-size: 0.8rem; margin: 5px 0; font-weight: 500;">Sucursal de Recepción</p>
+            <p style="color: white; font-size: 1.1rem; margin: 5px 0; font-weight: 600;">{{sucursal?.nombre || 'N/A'}}</p>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Información Adicional -->
+  <ion-card style="background: #252525; border-radius: 8px; margin: 10px;">
+    <ion-card-content style="padding: 12px;">
+      <ion-row>
+        <ion-col size="6">
+          <div style="text-align: center;">
+            <p style="color: #f57c00; font-size: 0.8rem; margin: 5px 0; font-weight: 500;">Moneda</p>
+            <p style="color: white; font-size: 1rem; margin: 5px 0; font-weight: 500;">{{nota?.moneda?.nombre || 'N/A'}}</p>
+          </div>
+        </ion-col>
+        <ion-col size="6">
+          <div style="text-align: center;">
+            <p style="color: #f57c00; font-size: 0.8rem; margin: 5px 0; font-weight: 500;">Cotización</p>
+            <p style="color: white; font-size: 1rem; margin: 5px 0; font-weight: 500;">{{nota?.cotizacion || 'N/A'}}</p>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Botones de Acción -->
+  <ion-footer style="background: #252525; padding: 20px;">
+    <ion-row>
+      <ion-col size="6">
+        <ion-button 
+          (click)="onCancelar()" 
+          expand="block" 
+          shape="round"
+          fill="clear"
+          style="color: #f44336;">
+          <ion-icon name="close" slot="start"></ion-icon>
+          Cancelar
+        </ion-button>
+      </ion-col>
+      <ion-col size="6">
+        <ion-button 
+          (click)="onConfirmar()" 
+          expand="block" 
+          shape="round"
+          class="btn-success">
+          <ion-icon name="checkmark" slot="start"></ion-icon>
+          Confirmar
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-footer>
+</ion-content> 

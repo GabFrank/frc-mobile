@@ -8,7 +8,46 @@ export const sucursalesQuery = gql
       localizacion
       ciudad{
         id
+        descripcion
       }
+      activo
+      deposito
+      creadoEn
+      usuario{
+        id
+      }
+    }
+  }`;
+
+export const sucursalesAllQuery = gql
+  `{
+    data: sucursales(page: 0, size: 1000) {
+      id
+      nombre
+      localizacion
+      ciudad{
+        id
+      }
+      activo
+      creadoEn
+      usuario{
+        id
+      }
+    }
+  }`;
+
+export const sucursalesByNombreConFiltrosQuery = gql
+  `query($nombre: String, $deposito: Boolean, $activo: Boolean, $page: Int, $size: Int){
+    data: findByNombreConFiltros(nombre: $nombre, deposito: $deposito, activo: $activo, page: $page, size: $size) {
+      id
+      nombre
+      localizacion
+      ciudad{
+        id
+        descripcion
+      }
+      activo
+      deposito
       creadoEn
       usuario{
         id

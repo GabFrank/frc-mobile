@@ -18,11 +18,12 @@
     <ion-col size="12">
       <ion-item>
         <ion-label>Vencimiento</ion-label>
-        <ion-input
-          type="date"
+        <ion-datetime 
+          presentation="date" 
+          [preferWheel]="true"
           [formControl]="vencimientoControl"
-          value="{{ vencimientoControl.value | date: 'yyyy-MM-dd' }}"
-        ></ion-input>
+          displayFormat="DD/MM/YYYY">
+        </ion-datetime>
       </ion-item>
     </ion-col>
   </ion-row>

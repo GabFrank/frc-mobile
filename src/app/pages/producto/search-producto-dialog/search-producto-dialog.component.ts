@@ -12,7 +12,7 @@ import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/cor
 import { ProductoService } from '../producto.service';
 import { ImagePopoverComponent } from 'src/app/components/image-popover/image-popover.component';
 import { Location } from '@angular/common';
-import { IonContent, Platform } from '@ionic/angular';
+import { IonContent, Platform, ModalController } from '@ionic/angular';
 import { CodigoService } from '../../codigo/codigo.service';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { StockPorSucursalDialogComponent, StockPorSucursalDialogData } from '../../operaciones/movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component';
@@ -22,6 +22,9 @@ import { NotificacionService } from 'src/app/services/notificacion.service';
 export interface SearchProductoDialogData {
   mostrarPrecio: boolean;
   sucursalId?: number;
+  recepcionId?: number;
+  isInventario?: boolean;
+  sucursal?: Sucursal;
 }
 
 @UntilDestroy()
@@ -36,7 +39,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
   @ViewChild('content', {static: false}) content: IonContent;
 
   @Input()
-  data;
+  data: SearchProductoDialogData;
 
   buscarControl = new UntypedFormControl('', [Validators.required, Validators.minLength(1)])
   productosList: Producto[]
@@ -64,7 +67,8 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
     private plf: Platform,
     private codigoService: CodigoService,
     private photoViewer: PhotoViewer,
-    private notificacionService: NotificacionService
+    private notificacionService: NotificacionService,
+    private modalController: ModalController
 
   ) {
     this.isWeb = plf.platforms().includes('mobileweb');
@@ -74,13 +78,13 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
   }
 
   ngOnInit() {
-    if (this.data?.data?.mostrarPrecio != null) {
-      this.mostrarPrecio = this.data.data.mostrarPrecio;
+    if (this.data?.mostrarPrecio != null) {
+      this.mostrarPrecio = this.data.mostrarPrecio;
     }
 
-    if(this.data?.data?.isInventario == true){
+    if(this.data?.isInventario == true){
       this.isInventario = true;
-      this.selectedSucursal = this.data?.data?.sucursal;
+      this.selectedSucursal = this.data?.sucursal;
       console.log('es inventario', this.selectedSucursal);
 
     }
@@ -164,9 +168,9 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
         this.productosList[index].presentaciones = res.presentaciones;
       });
     }
-    if (this.data?.data?.sucursalId != null && producto?.stockPorProducto == null) {
+    if (this.data?.sucursalId != null && producto?.stockPorProducto == null) {
       this.isSearchingList[index] = true;
-      (await this.productoService.onGetStockPorSucursal(producto.id, this.data?.data?.sucursalId)).pipe(untilDestroyed(this)).subscribe(res => {
+      (await this.productoService.onGetStockPorSucursal(producto.id, this.data?.sucursalId)).pipe(untilDestroyed(this)).subscribe(res => {
         this.isSearchingList[index] = false;
         console.log(res);
         if (res != null) {
@@ -178,22 +182,26 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
     }
   }
 
-  onPresentacionClick(presentacion: Presentacion, producto: Producto, peso?: number) {
-    // this.dialogService.open('Atención', `Seleccionaste el producto ${producto.descripcion} con la presentacion de ${presentacion.cantidad} unidades.`)
-    //   .then(res => {
-    //     if (res.role == 'aceptar') {
-
-    //     }
-    //   })
-    this.modalService.closeModal({ presentacion: presentacion, producto: producto, peso: peso })
-
+  onPresentacionClick(presentacion: Presentacion | null, producto: Producto, peso?: number) {
+    // Para recepción de mercadería, retornar solo el producto
+    if (this.data?.recepcionId) {
+      // FASE 6: Cerrar inmediatamente el diálogo de búsqueda al seleccionar producto
+      this.modalController.dismiss(producto);
+    } else {
+      // Para otros casos, usar el modalService
+      this.modalService.closeModal({ presentacion: presentacion, producto: producto, peso: peso });
+    }
   }
 
   onBack() {
-    if (this.modalService?.currentModal != null) {
-      this.modalService.closeModal(null)
+    if (this.data?.recepcionId) {
+      // Si es para recepción, cerrar con dismiss
+      this.modalController.dismiss(null);
+    } else if (this.modalService?.currentModal != null) {
+      // Para otros casos, usar modalService
+      this.modalService.closeModal(null);
     } else {
-      this._location.back()
+      this._location.back();
     }
   }
 

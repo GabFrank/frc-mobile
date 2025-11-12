@@ -1,0 +1,115 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# FRC App Component Rules
+
+## frc-app/modern-component-design: Modern Component Design Standard
+
+This rule defines the modern, compact, and visually consistent design pattern for FRC app components.
+
+### **🎨 Color Palette & Usage**
+- **Primary Orange** (`#f57c00`): Labels, titles, headers, counts, floating labels
+- **Success Green** (`#43a047`): Success actions, positive elements, selected item borders  
+- **Danger Red** (`#f44336`): Delete/remove actions, error states
+- **Card Background** (`#333333`): Main content cards, highlighted list items
+- **Input Background** (`#252525`): Input fields, secondary elements, list headers
+- **Text Colors**: White for main content, `#999` for secondary/meta information
+- **Border Colors**: `#444` for subtle separations between list items
+
+### **🃏 Card Design Pattern**
+All information cards should follow this structure:
+```html
+<ion-card style="background: #333333; border-radius: 8px; margin: 4px 0; border-left: 4px solid [THEME_COLOR];">
+  <ion-card-content style="padding: 12px;">
+    <!-- Content with proper typography hierarchy -->
+  </ion-card-content>
+</ion-card>
+```
+- **Border-left colors**: Orange `#f57c00` for primary/static info, Green `#43a047` for selected/active items
+- **Compact spacing**: 4px margins, 8px border radius, 12px internal padding
+
+### **📝 Input Fields Standard**
+All input fields should use this consistent pattern:
+```html
+<ion-item style="--background: #252525; --border-radius: 8px; --padding-start: 12px; margin: 4px 0; --min-height: 44px; align-items: center;">
+  <ion-label position="floating" style="color: #f57c00;">Label Text</ion-label>
+  <ion-input style="color: white;" [formControl]="control"></ion-input>
+  <ion-button fill="solid" slot="end" style="--background: #43a047; --border-radius: 6px; --height: 32px; --padding-start: 8px; --padding-end: 8px; margin: 0 4px;">
+    <ion-icon name="icon-name" slot="icon-only" style="font-size: 0.9rem;"></ion-icon>
+  </ion-button>
+</ion-item>
+```
+
+### **🔘 Button Design Patterns**
+- **Action Buttons**: `--background: #43a047`, `--height: 32px`
+- **Delete/Remove Buttons**: `fill="clear"` with `color="danger"` for icons
+- **Primary CTA Buttons**: 
+- **Icon Buttons**: `--height: 28px` for compact layouts
+
+### **📋 List/Table Design Pattern**
+Replace traditional ion-list with this table-like structure:
+```html
+<!-- Header Row -->
+<ion-row style="padding: 8px 12px; background: #252525; border-radius: 8px 8px 0 0; margin: 4px 0 0 0;">
+  <ion-col size="X" style="color: #f57c00; font-weight: 500; font-size: 0.8rem; text-align: center;">
+    Header Text
+  </ion-col>
+</ion-row>
+
+<!-- Data Rows -->
+<div *ngFor="let item of items; let i = index">
+  <ion-row style="padding: 8px 12px; background: #333333; margin: 0; cursor: pointer; border-bottom: 1px solid #444; align-items: center;" (click)="onItemClick(item, i)">
+    <ion-col size="X" style="text-align: center; color: white; font-weight: 500; font-size: 0.9rem;">
+      {{ item.property }}
+    </ion-col>
+  </ion-row>
+</div>
+
+<!-- Bottom Border -->
+<div style="height: 1px; background: #252525; border-radius: 0 0 8px 8px;"></div>
+```
+
+### **📱 Typography Hierarchy**
+- **Section Titles**: `font-size: 1rem`, `font-weight: 600`, `color: white`
+- **Field Labels**: `font-size: 0.8rem`, `font-weight: 500`, `color: #f57c00`
+- **Main Content**: `font-size: 0.9rem`, `font-weight: 500`, `color: white`
+- **Positive Info**: `font-size: 0.85rem`, `color: #43a047` (like nicknames, status)
+- **Meta Information**: `font-size: 0.75rem`, `color: #999` (IDs, dates, secondary info)
+- **Count/Stats**: `font-size: 0.85rem`, `color: #f57c00`
+
+### **📏 Spacing & Sizing System**
+- **Component Margins**: `4px` between elements (margin: 4px 0)
+- **Card Padding**: `12px` internal padding  
+- **List Padding**: `8px 12px` for list items
+- **Border Radius**: `8px` for cards and containers, `6px` for buttons
+- **Component Heights**: 
+  - Input items: `44px`
+  - Action buttons: `32px` 
+  - Icon buttons: `28px`
+  - Primary CTA: `44px`
+
+### **🎯 Icon Guidelines**
+- **Delete/Remove Actions**: Use `color="danger"` attribute
+- **Compact Layouts**: Use `size="small"` or `font-size: 0.8rem`
+- **Action Buttons**: Use `slot="icon-only"` with `font-size: 0.9rem`
+- **Common Icons**: `search`, `add`, `trash`, `close-circle`
+
+### **⚡ Performance Rules**
+- Never use functions or getters directly in templates
+- Use `align-items: center` for proper vertical alignment
+- Keep consistent `text-align: center` for data columns
+- Use `cursor: pointer` for clickable rows
+- Add `$event.stopPropagation()` for nested click handlers
+
+### **🎯 Implementation Guidelines**
+1. Always start with cards for information display
+2. Use consistent spacing (4px/8px/12px system)
+3. Apply proper color coding for different element types
+4. Maintain typography hierarchy throughout
+5. Keep button sizes consistent within context
+6. Use table-like structure for lists instead of ion-list
+7. Apply proper border styling for visual separation
+
+This design standard ensures components are modern, space-efficient, and visually consistent across the FRC application. 

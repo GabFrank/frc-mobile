@@ -22,6 +22,12 @@ export class MenuActionService {
         text: e.texto,
         role: e.role
       }
+      
+      // Agregar clase CSS personalizada si existe
+      if (e.class) {
+        btn.cssClass = e.class;
+      }
+      
       if(e.enabled!=false){
         actionButtons.push(btn)
       }

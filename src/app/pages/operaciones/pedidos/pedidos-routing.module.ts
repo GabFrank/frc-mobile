@@ -1,36 +1,36 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { PedidosComponent } from './pedidos.component';
-import { RecepcionNotasComponent } from './nota-recepcion/recepcion-notas/recepcion-notas.component';
-import { HistoricoNotaRecepcionComponent } from './nota-recepcion/historico-nota-recepcion/historico-nota-recepcion.component';
-import { RecepcionProductoComponent } from './nota-recepcion/recepcion-producto/recepcion-producto.component';
-import { SolicitarPagoNotaRecepcionComponent } from './nota-recepcion/solicitar-pago-nota-recepcion/solicitar-pago-nota-recepcion.component';
+import { Routes, RouterModule } from '@angular/router';
+import { RecepcionSeleccionPage } from './recepcion-mercaderia/recepcion-seleccion/recepcion-seleccion.page';
+import { RecepcionMercaderiaPage } from './recepcion-mercaderia/recepcion-mercaderia.page';
+import { RecepcionAgrupadaPage } from './recepcion-mercaderia/recepcion-agrupada/recepcion-agrupada.page';
+import { ConstanciaRecepcionPage } from './recepcion-mercaderia/constancia-recepcion/constancia-recepcion.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: PedidosComponent
+    redirectTo: 'recepcion-seleccion',
+    pathMatch: 'full'
   },
   {
-    path: 'recibir-nota-recepcion',
-    component: RecepcionNotasComponent
+    path: 'recepcion-seleccion',
+    component: RecepcionSeleccionPage
   },
   {
-    path: 'historico-nota-recepcion',
-    component: HistoricoNotaRecepcionComponent
+    path: 'recepcion-mercaderia',
+    component: RecepcionMercaderiaPage
   },
   {
-    path: 'recepcion-producto/:id',
-    component: RecepcionProductoComponent
+    path: 'recepcion-agrupada',
+    component: RecepcionAgrupadaPage
   },
   {
-    path: 'solicitar-pago-nota-recepcion/:id',
-    component: SolicitarPagoNotaRecepcionComponent
+    path: 'constancia-recepcion',
+    component: ConstanciaRecepcionPage
   }
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class PedidosRoutingModule { }
+export class PedidosPageRoutingModule {}

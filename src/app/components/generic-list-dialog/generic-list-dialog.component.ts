@@ -59,6 +59,7 @@ export interface GenericListDialogData {
   texto?: string;
   query?: Query;
   paginator?: boolean;
+  queryParams?: any; // Parámetros adicionales para el query
 }
 
 @UntilDestroy({ checkProperties: true })
@@ -109,15 +110,19 @@ export class GenericListDialogComponent implements OnInit {
   async onSearch() {
     let text = this.buscarControl.value;
     if (text != null) text = text.toUpperCase();
-    if (this.queryData != null && text != null) {
-      this.queryData.texto = text;
+    
+    // Inicializar queryData con parámetros adicionales si existen
+    if (this.data?.queryParams) {
+      this.queryData = { ...this.data.queryParams, texto: text || '' };
     } else {
-      this.queryData = { texto: text };
+      this.queryData = { texto: text || '' };
     }
+    
     if (this.data?.paginator == true) {
       this.queryData.page = this.pageIndex;
       this.queryData.size = this.pageSize;
     }
+    
     (await this.genericCrudService.onCustomGet(this.data.query, this.queryData))
       .pipe(untilDestroyed(this))
       .subscribe((res) => {

@@ -1,0 +1,263 @@
+ion-card {
+  margin: 10px;
+  border-radius: 8px;
+}
+
+ion-card-content {
+  padding: 12px;
+}
+
+ion-item {
+  --background: #333333;
+  --border-radius: 8px;
+  --color: white;
+  margin: 10px 0;
+}
+
+ion-input, ion-select, ion-textarea {
+  --color: white;
+  --placeholder-color: #999;
+}
+
+ion-label {
+  --color: #f57c00;
+}
+
+ion-checkbox {
+  --checkmark-color: #43a047;
+  --background-checked: #43a047;
+  --border-color-checked: #43a047;
+}
+
+ion-button {
+  margin: 5px 0;
+}
+
+ion-footer {
+  background: #252525;
+  padding: 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+ion-header {
+  --background: #333333;
+}
+
+ion-toolbar {
+  --background: #333333;
+}
+
+ion-content {
+  --background: #1a1a1a;
+  --padding-bottom: 200px; /* Espacio para el footer fijo */
+}
+
+ion-icon {
+  margin-right: 8px;
+}
+
+// Estilos para las tarjetas de variación
+.variacion-card {
+  margin-bottom: 20px;
+  
+  ion-card-header {
+    position: relative;
+    padding: 16px;
+    
+    ion-card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+  
+  ion-card-content {
+    padding: 16px;
+  }
+}
+
+ion-select {
+  text-align: center;
+}
+
+// Botón de eliminar variación
+.remove-button {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --border-radius: 50%;
+  min-width: 32px;
+  height: 32px;
+}
+
+// Sección de adicionar variación
+.add-variacion-section {
+  text-align: center;
+  margin: 30px 0;
+  
+  ion-button {
+    --padding-start: 24px;
+    --padding-end: 24px;
+    --border-radius: 25px;
+    font-weight: 500;
+    
+    ion-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+// Sección de observaciones
+.observaciones-section {
+  margin: 20px 0;
+  
+  ion-textarea {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+    min-height: 80px;
+  }
+}
+
+// Resumen de cantidades en el footer
+.resumen-cantidades {  
+  ion-row {
+    ion-col {
+      div {
+        p:first-child {
+          color: #f57c00;
+          font-size: 0.7rem;
+          margin: 2px 0;
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        
+        p:nth-child(2) {
+          color: white;
+          font-size: 1rem;
+          font-weight: 600;
+          margin: 2px 0;
+        }
+      }
+    }
+  }
+}
+
+// Información del producto
+.producto-info {
+  ion-row {
+    ion-col:first-child {
+      div {
+        img {
+          border: 2px solid #f57c00;
+          border-radius: 8px;
+          object-fit: cover;
+        }
+      }
+    }
+    
+    ion-col:last-child {
+      div {
+        h3 {
+          color: white;
+          margin: 0 0 8px 0;
+          font-weight: 600;
+          font-size: 1rem;
+          line-height: 1.2;
+        }
+        
+        p {
+          color: #43a047;
+          margin: 0;
+          font-size: 0.9rem;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+}
+
+// Footer fijo
+ion-footer {
+  ion-toolbar {
+    --background: #252525;
+    --border-width: 0;
+    --padding-top: 0;
+    --padding-bottom: 0;
+    
+    ion-button {
+      --border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      height: 48px;
+      margin: 0 10px 10px 10px;
+      
+      ion-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .variacion-card {
+    ion-card-header {
+      padding: 12px;
+      
+      ion-card-title {
+        font-size: 1rem;
+      }
+    }
+    
+    ion-card-content {
+      padding: 12px;
+    }
+  }
+  
+  .add-variacion-section {
+    margin: 20px 0;
+    
+    ion-button {
+      --padding-start: 16px;
+      --padding-end: 16px;
+      font-size: 0.9rem;
+    }
+  }
+  
+  .resumen-cantidades {
+    padding: 8px 0;
+    
+    ion-row {
+      ion-col {
+        div {
+          p:first-child {
+            font-size: 0.6rem;
+          }
+          
+          p:nth-child(2) {
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+  }
+  
+  ion-footer {
+    ion-toolbar {
+      ion-button {
+        height: 44px;
+        font-size: 0.9rem;
+        margin: 0 8px 8px 8px;
+      }
+    }
+  }
+}

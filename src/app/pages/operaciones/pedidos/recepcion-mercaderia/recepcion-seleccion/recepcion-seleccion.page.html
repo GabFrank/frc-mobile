@@ -1,0 +1,137 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Selección de Recepción</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div style="padding: 20px;">
+    
+    <!-- Estado de ubicación -->
+    <ion-card style="background: #333333; border-radius: 8px; margin: 10px; border-left: 4px solid #f57c00;">
+      <ion-card-content style="padding: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <ion-icon 
+            [name]="ubicacionValidada ? 'checkmark-circle' : 'location-outline'" 
+            [color]="ubicacionValidada ? 'success' : 'warning'"
+            style="font-size: 24px;">
+          </ion-icon>
+          <div>
+            <h3 style="color: white; margin: 0; font-size: 1rem; font-weight: 600;">
+              {{ ubicacionValidada ? 'Ubicación Validada' : 'Ubicación Pendiente' }}
+            </h3>
+            <p style="color: #999; margin: 5px 0 0 0; font-size: 0.85rem;">
+              {{ ubicacionValidada ? (sucursalValidada?.nombre || 'Sucursal válida') : 'Debes validar tu ubicación para continuar' }}
+            </p>
+          </div>
+        </div>
+        
+        <ion-button 
+          *ngIf="!ubicacionValidada"
+          (click)="onValidarUbicacion()"
+          fill="clear"
+          style="margin-top: 10px; --color: #f57c00;">
+          Validar Ubicación
+        </ion-button>
+        
+        <ion-button 
+          *ngIf="ubicacionValidada"
+          (click)="onValidarUbicacion()"
+          fill="clear"
+          style="margin-top: 10px; --color: #43a047;">
+          Cambiar Ubicación
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Opciones principales -->
+    <div *ngIf="ubicacionValidada" style="margin-top: 20px;">
+      
+      <!-- Crear nueva recepción -->
+      <ion-button 
+        (click)="onCrearNuevaRecepcion()"
+        expand="block"
+        fill="solid"
+        style="--background: #43a047; --color: white; --border-radius: 8px; margin: 10px; height: 60px; --box-shadow: 0 2px 8px rgba(67, 160, 71, 0.3);">
+        <div style="display: flex; align-items: center; gap: 15px; width: 100%; justify-content: center;">
+          <ion-icon name="add-circle-outline" style="font-size: 28px; color: white;"></ion-icon>
+          <h3 style="color: white; margin: 0; font-size: 0.9rem; font-weight: 600;">
+            Crear Nueva Recepción
+          </h3>
+        </div>
+      </ion-button>
+
+      <!-- Ver historial -->
+      <ion-button 
+        (click)="onVerHistorialRecepciones()"
+        expand="block"
+        fill="solid"
+        style="--background: #f57c00; --color: white; --border-radius: 8px; margin: 10px; height: 60px; --box-shadow: 0 2px 8px rgba(245, 124, 0, 0.3);">
+        <div style="display: flex; align-items: center; gap: 15px; width: 100%; justify-content: center;">
+          <ion-icon name="list-outline" style="font-size: 28px; color: white;"></ion-icon>
+          <h3 style="color: white; margin: 0; font-size: 0.9rem; font-weight: 600;">
+            Ver Historial Completo
+          </h3>
+        </div>
+      </ion-button>
+
+      <!-- Lista de recepciones vigentes -->
+      <div *ngIf="tieneRecepcionesVigentes && recepcionesVigentes.length > 0" style="margin-top: 20px">
+        <h3 style="color: white; text-align: center; margin-bottom: 15px;">Recepciones Disponibles</h3>
+        <ion-list style="background: transparent; padding: 0;">
+          <ion-item *ngFor="let recepcion of recepcionesVigentes" (click)="continuarRecepcionVigente(recepcion)" button>
+            <ion-label>
+              <h3 style="color: white; font-weight: 600; margin: 0;">
+                Recepción #{{ recepcion.id }}
+              </h3>
+              <p style="color: #999; margin: 5px 0; font-size: 0.85rem;">
+                {{ recepcion.proveedor?.persona?.nombre || 'Proveedor no especificado' }}
+              </p>
+              <p style="color: #43a047; margin: 5px 0; font-size: 0.8rem;">
+                {{ recepcion.fecha | date:'short' }} • {{ recepcion.estado }}
+              </p>
+            </ion-label>
+            <ion-badge 
+              slot="end" 
+              [color]="recepcion.estado === 'EN_PROCESO' ? 'warning' : 'success'"
+              style="font-size: 0.75rem;">
+              {{ recepcion.estado }}
+            </ion-badge>
+          </ion-item>
+        </ion-list>
+      </div>
+
+      <!-- Estado de carga -->
+      <div *ngIf="cargando" style="text-align: center; margin: 20px 0;">
+        <ion-spinner name="crescent" style="color: #f57c00;"></ion-spinner>
+        <p style="color: #999; margin: 10px 0; font-size: 0.9rem;">
+          Verificando recepciones vigentes...
+        </p>
+      </div>
+
+      <!-- Sin recepciones vigentes -->
+      <div *ngIf="!cargando && ubicacionValidada && !tieneRecepcionesVigentes" style="text-align: center; margin: 20px 0;">
+        <ion-icon name="checkmark-circle-outline" style="font-size: 48px; color: #43a047;"></ion-icon>
+        <p style="color: #999; margin: 10px 0; font-size: 0.9rem;">
+          No hay recepciones vigentes en esta sucursal
+        </p>
+        <p style="color: #666; margin: 5px 0; font-size: 0.8rem;">
+          Puedes crear una nueva recepción
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Mensaje cuando no hay ubicación validada -->
+    <div *ngIf="!ubicacionValidada && !cargando" style="text-align: center; margin: 40px 20px;">
+      <ion-icon name="location-outline" style="font-size: 64px; color: #f57c00;"></ion-icon>
+      <h3 style="color: white; margin: 20px 0 10px 0; font-size: 1.2rem; font-weight: 600;">
+        Ubicación Requerida
+      </h3>
+      <p style="color: #999; margin: 0; font-size: 0.95rem; line-height: 1.4;">
+        Para continuar, primero debes validar tu ubicación en la sucursal donde realizarás la recepción de mercadería.
+      </p>
+    </div>
+
+  </div>
+</ion-content>

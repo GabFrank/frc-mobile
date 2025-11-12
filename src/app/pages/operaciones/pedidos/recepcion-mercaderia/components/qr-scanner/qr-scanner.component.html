@@ -1,0 +1,117 @@
+<ion-content>
+  <ion-card style="background: #333333; border-radius: 8px; margin: 10px; border-left: 4px solid #f57c00;">
+    <ion-card-content style="padding: 12px;">
+      <ion-row>
+        <ion-col size="12">
+          <h2 class="titulo-center" style="color: #f57c00; font-weight: 600; margin: 0;">
+            {{title}}
+          </h2>
+          <p style="color: white; text-align: center; margin: 10px 0; font-size: 0.9rem;">
+            {{ isWeb ? 'Ingresa el código manualmente' : 'Escanea el código QR o ingresa manualmente' }}
+          </p>
+        </ion-col>
+      </ion-row>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Toggle Mode Buttons -->
+  <ion-card style="background: #252525; border-radius: 8px; margin: 10px;">
+    <ion-card-content style="padding: 12px;">
+      <ion-row>
+        <ion-col size="6">
+          <ion-button 
+            (click)="onCambiarACamara()" 
+            expand="block" 
+            shape="round"
+            [color]="!showManualInput ? 'primary' : 'medium'"
+            [disabled]="isWeb">
+            <ion-icon name="camera" slot="start"></ion-icon>
+            Cámara
+          </ion-button>
+        </ion-col>
+        <ion-col size="6">
+          <ion-button 
+            (click)="onCambiarAModoManual()" 
+            expand="block" 
+            shape="round"
+            [color]="showManualInput ? 'primary' : 'medium'">
+            <ion-icon name="create" slot="start"></ion-icon>
+            Manual
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Manual Input Mode -->
+  <ion-card *ngIf="showManualInput" style="background: #252525; border-radius: 8px; margin: 10px;">
+    <ion-card-content style="padding: 12px;">
+      <ion-row>
+        <ion-col size="12">
+          <p style="color: #f57c00; font-size: 0.9rem; margin: 10px 0; font-weight: 500; text-align: center;">
+            {{placeholder}}
+          </p>
+          <ion-item style="background: #333333; border-radius: 8px; margin: 10px 0;">
+            <ion-label position="stacked" style="color: #f57c00;">Código</ion-label>
+            <ion-input 
+              [formControl]="codigoForm.get('codigo')"
+              type="text"
+              placeholder="Ingresa el código aquí"
+              style="color: white; text-align: center;">
+            </ion-input>
+          </ion-item>
+          <ion-button 
+            (click)="onIngresarCodigoManual()" 
+            expand="block" 
+            shape="round"
+            [disabled]="codigoForm.get('codigo').invalid"
+            style="margin-top: 15px;">
+            <ion-icon name="checkmark" slot="start"></ion-icon>
+            Confirmar Código
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Camera Mode -->
+  <ion-card *ngIf="!showManualInput && !isWeb" style="background: #252525; border-radius: 8px; margin: 10px;">
+    <ion-card-content style="padding: 12px;">
+      <ion-row>
+        <ion-col size="12">
+          <div style="text-align: center;">
+            <ion-icon name="camera" style="font-size: 3em; color: #f57c00; margin: 20px 0;"></ion-icon>
+            <p style="color: white; margin: 10px 0; font-size: 1rem;">
+              Presiona el botón para abrir la cámara
+            </p>
+            <ion-button 
+              (click)="onScanQR()" 
+              expand="block" 
+              shape="round"
+              style="margin-top: 15px;">
+              <ion-icon name="camera" slot="start"></ion-icon>
+              Abrir Cámara
+            </ion-button>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Action Buttons -->
+  <ion-footer style="background: #252525; padding: 20px;">
+    <ion-row>
+      <ion-col size="12">
+        <ion-button 
+          (click)="onCancelar()" 
+          expand="block" 
+          shape="round"
+          fill="clear"
+          style="color: #f44336;">
+          <ion-icon name="close" slot="start"></ion-icon>
+          Cancelar
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-footer>
+</ion-content> 

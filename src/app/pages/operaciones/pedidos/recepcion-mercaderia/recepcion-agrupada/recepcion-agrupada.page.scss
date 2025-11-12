@@ -1,0 +1,261 @@
+ion-card {
+  margin: 10px;
+  border-radius: 8px;
+}
+
+ion-card-content {
+  padding: 12px;
+}
+
+ion-button {
+  margin: 5px 0;
+}
+
+ion-footer {
+  background: none;
+  padding: 0px !important;
+}
+
+ion-icon {
+  margin-right: 8px;
+}
+
+ion-item {
+  --background: #333333;
+  --border-radius: 8px;
+  --color: white;
+  margin: 5px 0;
+  
+  &.product-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      --background: #3a3a3a;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+ion-thumbnail {
+  --size: 60px;
+  --border-radius: 8px;
+  background: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+ion-thumbnail img {
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+ion-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+ion-toolbar {
+  --background: #252525;
+}
+
+ion-header {
+  --background: #252525;
+}
+
+ion-content {
+  --background: #1a1a1a;
+} 
+
+// Estilos para paneles expandibles
+.expandable-header {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+  }
+  
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.expandable-content {
+  overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+.expandable-icon {
+  transition: transform 0.2s ease;
+  
+  &.expanded {
+    transform: rotate(180deg);
+  }
+}
+
+// Estilos para las cards del sumario
+.summary-card {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+// Estilos para el menú de acción
+.action-menu {
+  --background: #333333;
+  --color: white;
+  
+  ion-button {
+    --background: #444444;
+    --color: white;
+    
+    &:hover {
+      --background: #555555;
+    }
+  }
+  
+  // Botón eliminar en rojo
+  .btn-eliminar {
+    --color: #f44336 !important;
+    
+    &:hover {
+      --color: #d32f2f !important;
+    }
+  }
+}
+
+// Estilos para botones de alerta
+.alert-button-danger {
+  --color: #f44336;
+}
+
+.alert-button-cancel {
+  --color: #666;
+}
+
+// Estilos para el grid de estadísticas
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.stats-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+// Estilos para los badges de estado
+.status-badge {
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+// Estilos para la información de recepción
+.recepcion-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  
+  .label {
+    color: #f57c00;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  
+  .value {
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+}
+
+// Estilos para el placeholder de carga
+.loading-placeholder {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  
+  ion-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    opacity: 0.7;
+  }
+}
+
+// Estilos para los botones de acción
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+// Estilos para el filtro de búsqueda
+.search-filter {
+  background: #333333;
+  border-radius: 8px;
+  margin: 10px 0;
+  
+  ion-label {
+    color: #f57c00;
+    font-weight: 500;
+  }
+  
+  ion-input {
+    color: white;
+    text-align: center;
+    text-transform: uppercase;
+  }
+}
+
+// Estilos para la paginación
+.pagination-info {
+  text-align: center;
+  margin-top: 10px;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+// Estilos para la lista de productos
+.product-list {
+  .product-item {
+    background: #333333;
+    border-radius: 8px;
+    margin: 5px 0;
+    border-left: 4px solid #43a047;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: #3a3a3a;
+      transform: translateX(2px);
+    }
+  }
+}
+
+// Estilos para el footer
+.footer-toolbar {
+  ion-button {
+    --border-radius: 8px;
+    font-weight: 600;
+  }
+} 

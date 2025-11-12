@@ -1,0 +1,100 @@
+.pagination-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: #252525;
+  border-radius: 8px;
+  margin: 10px;
+}
+
+.pagination-info {
+  text-align: center;
+}
+
+.info-text {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pagination-btn {
+  --color: #f57c00;
+  --color-disabled: #666;
+  --background: transparent;
+  --border-radius: 8px;
+  min-width: 40px;
+  height: 40px;
+}
+
+.pagination-btn:hover:not([disabled]) {
+  --background: #333;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 5px;
+}
+
+.page-number-btn {
+  --color: #999;
+  --background: transparent;
+  --border-radius: 8px;
+  min-width: 40px;
+  height: 40px;
+  font-weight: 500;
+}
+
+.page-number-btn.active {
+  --color: #f57c00;
+  --background: #333;
+  font-weight: 600;
+}
+
+.page-number-btn:hover:not(.active) {
+  --background: #333;
+  --color: white;
+}
+
+.page-size-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-size-selector ion-label {
+  color: #f57c00;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.page-size-select {
+  --color: white;
+  --background: #333;
+  --border-radius: 8px;
+  min-width: 80px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pagination-controls {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .page-numbers {
+    order: -1;
+  }
+  
+  .page-size-selector {
+    order: 1;
+  }
+} 

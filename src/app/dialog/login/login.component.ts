@@ -82,6 +82,10 @@ export class LoginComponent implements OnInit {
     }, 2000);
   }
 
+  onAceptarBienvenida() {
+    this.modalService.closeModal(null);
+  }
+
   onSolicitarNuevoUsuario() {
     this.modalService.closeModal(null)
     setTimeout(() => {

@@ -120,6 +120,7 @@ export class AppComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.pushNotificacionService.initPush();
 
+    // Show login modal initially, but it will be handled by the login service
     this.showLoginPop();
 
     this.statusSub = connectionStatusSub

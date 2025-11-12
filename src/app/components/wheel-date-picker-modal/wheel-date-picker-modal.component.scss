@@ -1,0 +1,68 @@
+// Estilos para popover centrado
+:host {
+  .wheel-date-picker-popover {
+    --height: auto;
+    --border-radius: 16px;
+    --box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    --backdrop-opacity: 0.8;
+  }
+}
+
+.popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ion-color-light);
+}
+
+.popover-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.close-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --color: var(--ion-color-medium);
+}
+
+// Estilos para los botones (estilo mat-dialog)
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 0 8px 0;
+  width: 100%;
+}
+
+.cancel-button {
+  --border-radius: 8px;
+  --padding-start: 24px;
+  --padding-end: 24px;
+}
+
+.confirm-button {
+  --border-radius: 8px;
+  --padding-start: 24px;
+  --padding-end: 24px;
+}
+
+// Estilo del date picker
+ion-datetime {
+  --background: var(--ion-color-light);
+  --background-rgb: var(--ion-color-light-rgb);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin: 20px 0;
+}
+
+// Mejorar el contenedor del date picker
+.date-picker-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

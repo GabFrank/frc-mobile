@@ -58,10 +58,11 @@
         <ion-item>
           <ion-label>Vencimiento</ion-label>
           <ion-datetime
-            displayFormat="DD MM YYYY"
+            displayFormat="DD/MM/YYYY"
             [formControl]="vencimientoControl"
             presentation="date"
-          ></ion-datetime>
+            [preferWheel]="true">
+          </ion-datetime>
         </ion-item>
       </ion-list>
     </ion-row>

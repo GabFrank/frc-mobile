@@ -1,0 +1,123 @@
+ion-card {
+  margin: 10px;
+  border-radius: 8px;
+}
+
+ion-card-content {
+  padding: 15px;
+}
+
+ion-item {
+  --background: #333333;
+  --border-radius: 8px;
+  --color: white;
+  margin: 8px 0;
+}
+
+ion-button {
+  margin: 5px 0;
+}
+
+ion-footer {
+  background: #252525;
+  padding: 20px;
+}
+
+ion-header {
+  --background: #333333;
+}
+
+ion-toolbar {
+  --background: #333333;
+}
+
+ion-content {
+  --background: #1a1a1a;
+}
+
+ion-icon {
+  margin-right: 8px;
+}
+
+ion-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.grid-item {
+  text-align: center;
+  padding: 15px;
+  background: #333333;
+  border-radius: 8px;
+}
+
+.grid-item ion-icon {
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+
+.grid-item p {
+  margin: 5px 0;
+}
+
+.grid-item .label {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.grid-item .value {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.constancia-header {
+  text-align: center;
+}
+
+.constancia-header h2 {
+  margin: 15px 0;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.constancia-header .numero {
+  margin: 10px 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.constancia-header .fecha {
+  margin: 5px 0;
+  font-size: 0.9rem;
+}
+
+.resumen-final {
+  text-align: center;
+}
+
+.resumen-final h3 {
+  margin: 15px 0;
+  font-weight: 600;
+}
+
+.resumen-final p {
+  margin: 10px 0;
+}
+
+.resumen-final .success-text {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.resumen-final .info-text {
+  font-size: 0.9rem;
+} 

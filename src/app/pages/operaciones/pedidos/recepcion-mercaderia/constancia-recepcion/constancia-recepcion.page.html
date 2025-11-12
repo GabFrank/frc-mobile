@@ -1,0 +1,198 @@
+<ion-header>
+  <ion-toolbar style="--background: #333333;">
+    <ion-buttons slot="start">
+      <ion-button (click)="onVolver()" fill="clear" style="color: white;">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title style="color: white;">Constancia de Recepción</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onCompartir()" fill="clear" style="color: white;">
+        <ion-icon name="share-social"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="ion-padding">
+    <!-- Loading State -->
+    <div *ngIf="isLoading" style="text-align: center; padding: 40px;">
+      <ion-spinner name="lines" style="width: 50px; height: 50px; color: #f57c00;"></ion-spinner>
+      <p style="color: white; margin-top: 20px;">Generando constancia...</p>
+    </div>
+
+    <!-- Constancia de Recepción -->
+    <div *ngIf="!isLoading && constancia">
+      <!-- Header de la Constancia -->
+      <ion-card style="background: #333333; border-radius: 8px; margin: 10px; border-left: 4px solid #43a047;">
+        <ion-card-content style="padding: 20px;">
+          <ion-row>
+            <ion-col size="12">
+              <div style="text-align: center;">
+                <ion-icon name="checkmark-circle" style="font-size: 3em; color: #43a047; margin-bottom: 15px;"></ion-icon>
+                <h2 style="color: white; margin: 15px 0; font-weight: 600; font-size: 1.5rem;">
+                  CONSTANCIA DE RECEPCIÓN
+                </h2>
+                <p style="color: #43a047; margin: 10px 0; font-size: 1.1rem; font-weight: 500;">
+                  N° {{constancia.numero}}
+                </p>
+                <p style="color: #999; margin: 5px 0; font-size: 0.9rem;">
+                  {{fechaFormateada}}
+                </p>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Información de la Recepción -->
+      <ion-card style="background: #252525; border-radius: 8px; margin: 10px;">
+        <ion-card-content style="padding: 15px;">
+          <ion-row>
+            <ion-col size="12">
+              <h3 style="color: #f57c00; margin: 15px 0; font-weight: 600; text-align: center;">
+                📋 Detalles de la Recepción
+              </h3>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
+                <div style="text-align: center; padding: 15px; background: #333333; border-radius: 8px;">
+                  <ion-icon name="business" style="font-size: 2em; color: #f57c00; margin-bottom: 10px;"></ion-icon>
+                  <p style="color: #f57c00; font-size: 0.9rem; margin: 5px 0; font-weight: 500;">Sucursal</p>
+                  <p style="color: white; font-size: 1rem; margin: 5px 0; font-weight: 600;">{{sucursal?.nombre}}</p>
+                </div>
+                
+                <div style="text-align: center; padding: 15px; background: #333333; border-radius: 8px;">
+                  <ion-icon name="document-text" style="font-size: 2em; color: #f57c00; margin-bottom: 10px;"></ion-icon>
+                  <p style="color: #f57c00; font-size: 0.9rem; margin: 5px 0; font-weight: 500;">Notas</p>
+                  <p style="color: white; font-size: 1rem; margin: 5px 0; font-weight: 600;">{{totalNotas}}</p>
+                </div>
+                
+                <div style="text-align: center; padding: 15px; background: #333333; border-radius: 8px;">
+                  <ion-icon name="cube" style="font-size: 2em; color: #f57c00; margin-bottom: 10px;"></ion-icon>
+                  <p style="color: #f57c00; font-size: 0.9rem; margin: 5px 0; font-weight: 500;">Productos</p>
+                  <p style="color: white; font-size: 1rem; margin: 5px 0; font-weight: 600;">{{totalProductos}}</p>
+                </div>
+                
+                <div style="text-align: center; padding: 15px; background: #333333; border-radius: 8px;">
+                  <ion-icon name="checkmark-done" style="font-size: 2em; color: #43a047; margin-bottom: 10px;"></ion-icon>
+                  <p style="color: #43a047; font-size: 0.9rem; margin: 5px 0; font-weight: 500;">Estado</p>
+                  <p style="color: white; font-size: 1rem; margin: 5px 0; font-weight: 600;">{{constancia.estado}}</p>
+                </div>
+              </div>
+              
+              <!-- Fecha de Finalización -->
+              <div style="text-align: center; margin: 20px 0; padding: 15px; background: #333333; border-radius: 8px;">
+                <ion-icon name="time" style="font-size: 2em; color: #f57c00; margin-bottom: 10px;"></ion-icon>
+                <p style="color: #f57c00; font-size: 0.9rem; margin: 5px 0; font-weight: 500;">Finalizada el</p>
+                <p style="color: white; font-size: 1rem; margin: 5px 0; font-weight: 600;">{{getFechaFormateada(fechaFinalizacion)}}</p>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Lista de Notas -->
+      <ion-card style="background: #252525; border-radius: 8px; margin: 10px;">
+        <ion-card-content style="padding: 15px;">
+          <ion-row>
+            <ion-col size="12">
+              <h3 style="color: #f57c00; margin: 15px 0; font-weight: 600; text-align: center;">
+                📝 Notas de Recepción Incluidas
+              </h3>
+              
+              <ion-list>
+                <ion-item *ngFor="let nota of notas; let i = index" style="background: #333333; border-radius: 8px; margin: 8px 0;">
+                  <ion-label>
+                    <h2 style="color: white; font-weight: 600; font-size: 1rem;">
+                      Nota #{{i + 1}} - ID: {{nota.id}}
+                    </h2>
+                    <p style="color: #999; font-size: 0.9rem;">Fecha: {{nota.fecha | date}}</p>
+                    <p style="color: #43a047; font-size: 0.8rem;">Estado: {{nota.estado}}</p>
+                    <p style="color: #f57c00; font-size: 0.8rem; font-weight: 500;">
+                      Productos: {{constancia?.totalProductos || 0}}
+                    </p>
+                  </ion-label>
+                  <ion-icon 
+                    name="checkmark-circle" 
+                    slot="end" 
+                    style="color: #43a047; font-size: 1.2em;">
+                  </ion-icon>
+                </ion-item>
+              </ion-list>
+            </ion-col>
+          </ion-row>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Resumen Final -->
+      <ion-card style="background: #333333; border-radius: 8px; margin: 10px; border-left: 4px solid #43a047;">
+        <ion-card-content style="padding: 20px;">
+          <ion-row>
+            <ion-col size="12">
+              <div style="text-align: center;">
+                <ion-icon name="trophy" style="font-size: 2em; color: #43a047; margin-bottom: 15px;"></ion-icon>
+                <h3 style="color: white; margin: 15px 0; font-weight: 600;">
+                  ¡Recepción Completada Exitosamente!
+                </h3>
+                <p style="color: #43a047; margin: 10px 0; font-size: 1rem; font-weight: 500;">
+                  Se han procesado {{totalNotas}} nota(s) de recepción
+                </p>
+                <p style="color: #999; margin: 5px 0; font-size: 0.9rem;">
+                  Esta constancia confirma la recepción de mercadería en {{sucursal?.nombre}}
+                </p>
+              </div>
+            </ion-col>
+          </ion-row>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar style="--background: #252525;">
+    <ion-row>
+      <ion-col size="3">
+        <ion-button 
+          expand="block" 
+          fill="clear" 
+          color="medium"
+          (click)="onVolver()">
+          <ion-icon name="home" slot="start"></ion-icon>
+          Inicio
+        </ion-button>
+      </ion-col>
+      <ion-col size="3">
+        <ion-button 
+          expand="block" 
+          fill="clear" 
+          color="primary"
+          (click)="onDescargarPDF()">
+          <ion-icon name="download" slot="start"></ion-icon>
+          PDF
+        </ion-button>
+      </ion-col>
+      <ion-col size="3">
+        <ion-button 
+          expand="block" 
+          fill="clear" 
+          color="success"
+          (click)="onImprimir()">
+          <ion-icon name="print" slot="start"></ion-icon>
+          Imprimir
+        </ion-button>
+      </ion-col>
+      <ion-col size="3">
+        <ion-button 
+          expand="block" 
+          fill="solid" 
+          color="success"
+          (click)="onNuevaRecepcion()">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Nueva
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-toolbar>
+</ion-footer> 

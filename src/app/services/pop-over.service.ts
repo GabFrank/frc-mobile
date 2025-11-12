@@ -21,9 +21,7 @@ export class PopOverService {
       component: component,
       cssClass: size,
       translucent: true,
-      componentProps: {
-        data
-      }
+      componentProps: data || {}
     });
     await popover.present();
     this.currentPopover = popover;

@@ -1,0 +1,53 @@
+.titulo-center {
+  text-align: center;
+  font-weight: 600;
+}
+
+ion-card {
+  margin: 10px;
+  border-radius: 8px;
+}
+
+ion-card-content {
+  padding: 12px;
+}
+
+ion-button {
+  margin: 5px 0;
+}
+
+ion-footer {
+  background: #252525;
+  padding: 20px;
+}
+
+ion-icon {
+  margin-right: 8px;
+}
+
+ion-item {
+  --background: #333333;
+  --border-radius: 8px;
+  --color: white;
+}
+
+ion-input {
+  --color: white;
+  --placeholder-color: #999;
+}
+
+ion-label {
+  --color: #f57c00;
+}
+
+ion-row {
+  margin: 0;
+}
+
+ion-col {
+  padding: 5px;
+}
+
+p {
+  margin: 5px 0;
+} 

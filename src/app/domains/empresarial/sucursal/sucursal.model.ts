@@ -6,8 +6,9 @@ export class Sucursal {
   nombre: string;
   localizacion: string;
   ciudad: Ciudad;
-  deposito: boolean
-  depositoPredeterminado: Boolean
+  deposito: boolean;
+  depositoPredeterminado: Boolean;
+  activo: boolean;
   creadoEn: Date;
   usuario: Usuario;
 

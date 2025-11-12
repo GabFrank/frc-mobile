@@ -13,11 +13,12 @@ import { EnumToStringPipe } from '../generic/utils/pipes/enum-to-string';
 import { PaginacionComponent } from './paginacion/paginacion.component';
 import { GetNestedValuePipe } from '../generic/utils/pipes/get-nested-value.pipe';
 import { CellFormatPipe } from '../pipes/cell-format.pipe';
+import { WheelDatePickerModalComponent } from './wheel-date-picker-modal/wheel-date-picker-modal.component';
 
 
 
 @NgModule({
-  declarations: [QrScannerDialogComponent, QrGeneratorComponent, GenericListDialogComponent, ChangeServerIpDialogComponent, ImagePopoverComponent, EnumToStringPipe,  PaginacionComponent, GetNestedValuePipe, CellFormatPipe],
+  declarations: [QrScannerDialogComponent, QrGeneratorComponent, GenericListDialogComponent, ChangeServerIpDialogComponent, ImagePopoverComponent, EnumToStringPipe,  PaginacionComponent, GetNestedValuePipe, CellFormatPipe, WheelDatePickerModalComponent],
   imports: [
     CommonModule,
     IonicModule,
@@ -29,11 +30,13 @@ import { CellFormatPipe } from '../pipes/cell-format.pipe';
   exports: [
     QrScannerDialogComponent,
     QrGeneratorComponent,
+    GenericListDialogComponent,
     EnumToStringPipe,
     NgxPaginationModule,
     PaginacionComponent,
     GetNestedValuePipe,
-    CellFormatPipe
+    CellFormatPipe,
+    WheelDatePickerModalComponent
   ]
 })
 export class ComponentsModule { }

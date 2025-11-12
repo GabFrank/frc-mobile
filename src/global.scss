@@ -262,3 +262,6 @@ zxing-scanner video {
   max-width: 400px; /* Ajusta el tamaño según lo necesites */
 }
 
+ion-popover {
+	--width: calc(100vw - 20px);
+}

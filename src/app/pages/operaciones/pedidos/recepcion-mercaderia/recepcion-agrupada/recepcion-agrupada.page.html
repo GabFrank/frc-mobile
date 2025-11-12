@@ -1,0 +1,355 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onVolver()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-row> <span>Recepción Agrupada por Producto</span></ion-row>
+    <ion-buttons slot="end">
+      <ion-button (click)="onEscanearCodigo()">
+        <ion-icon name="qr-code"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="ion-padding">
+    <!-- Información de Recepción - Panel Expandible -->
+    <ion-card style="background: #333333; border-radius: 8px; margin: 10px; border-left: 4px solid #43a047;">
+      <ion-card-content style="padding: 12px;">
+        <div class="expandable-header" style="display: flex; align-items: center; justify-content: space-between; padding: 8px; border-radius: 6px;" 
+             (click)="toggleRecepcionInfo()">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <ion-icon name="business-outline" style="color: white; font-size: 1.2rem;"></ion-icon>
+            <div>
+              <div style="color: white; font-weight: 600; font-size: 0.9rem;">
+                Recepción en Progreso N° {{ recepcionId }}
+              </div>
+              <div style="color: #999; font-size: 0.8rem;">
+                                 {{ recepcionMercaderia?.sucursalRecepcion?.nombre || 'Cargando...' }}
+              </div>
+            </div>
+          </div>
+          <ion-icon [name]="recepcionInfoExpanded ? 'chevron-up' : 'chevron-down'" 
+                    [class.expanded]="recepcionInfoExpanded"
+                    class="expandable-icon"
+                    style="color: #f57c00; font-size: 1.2rem;"></ion-icon>
+        </div>
+        
+        <!-- Contenido Expandible -->
+        <div *ngIf="recepcionInfoExpanded" class="expandable-content" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #f57c00; font-size: 0.8rem; font-weight: 500;">Sucursal:</span>
+              <span style="color: white; font-size: 0.9rem;">{{ recepcionMercaderia?.sucursalRecepcion?.nombre || 'N/A' }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #f57c00; font-size: 0.8rem; font-weight: 500;">Proveedor:</span>
+              <span style="color: white; font-size: 0.9rem;">{{ recepcionMercaderia?.proveedor?.persona?.nombre || 'N/A' }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #f57c00; font-size: 0.8rem; font-weight: 500;">Estado:</span>
+              <span style="color: #43a047; font-size: 0.9rem; font-weight: 600;">{{ recepcionMercaderia?.estado || 'N/A' }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #f57c00; font-size: 0.8rem; font-weight: 500;">Fecha:</span>
+              <span style="color: #43a047; font-size: 0.9rem;">{{ recepcionMercaderia?.fecha | date:'dd/MM/yyyy' || 'N/A' }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #f57c00; font-size: 0.8rem; font-weight: 500;">Creado por:</span>
+              <span style="color: white; font-size: 0.9rem;">{{ recepcionMercaderia?.usuario?.persona?.nombre || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Sumario de Recepción - Panel Expandible -->
+    <ion-card *ngIf="sumarioRecepcion" style="background: #333333; border-radius: 8px; margin: 10px; border-left: 4px solid #f57c00;">
+      <ion-card-content style="padding: 12px;">
+        <div class="expandable-header" style="display: flex; align-items: center; justify-content: space-between; padding: 8px; border-radius: 6px;" 
+             (click)="toggleSumarioInfo()">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <ion-icon name="stats-chart-outline" style="color: white; font-size: 1.2rem;"></ion-icon>
+            <div>
+              <div style="color: white; font-weight: 600; font-size: 0.9rem;">
+                Resumen de Recepción
+              </div>
+              <div style="color: #43a047; font-size: 0.8rem; font-weight: 600;">
+                {{ sumarioRecepcion.itemsPendientes }} items pendientes
+              </div>
+            </div>
+          </div>
+          <ion-icon [name]="sumarioInfoExpanded ? 'chevron-up' : 'chevron-down'" 
+                    [class.expanded]="sumarioInfoExpanded"
+                    class="expandable-icon"
+                    style="color: #f57c00; font-size: 1.2rem;"></ion-icon>
+        </div>
+        
+        <!-- Contenido Expandible -->
+        <div *ngIf="sumarioInfoExpanded" class="expandable-content" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #444;">
+          <!-- Cards de Estadísticas -->
+          <div class="stats-grid">
+            <ion-card style="background: #252525; border-radius: 6px; margin: 0; border-left: 3px solid #f57c00;">
+              <ion-card-content style="padding: 8px; text-align: center;">
+                <div style="color: #f57c00; font-size: 0.7rem; font-weight: 500;">Total Items</div>
+                <div style="color: white; font-size: 1.2rem; font-weight: 600;">{{ sumarioRecepcion.totalItems }}</div>
+              </ion-card-content>
+            </ion-card>
+            
+            <ion-card style="background: #252525; border-radius: 6px; margin: 0; border-left: 3px solid #43a047;">
+              <ion-card-content style="padding: 8px; text-align: center;">
+                <div style="color: #43a047; font-size: 0.7rem; font-weight: 500;">Verificados</div>
+                <div style="color: white; font-size: 1.2rem; font-weight: 600;">{{ sumarioRecepcion.itemsVerificados }}</div>
+              </ion-card-content>
+            </ion-card>
+            
+            <ion-card style="background: #252525; border-radius: 6px; margin: 0; border-left: 3px solid #f57c00;">
+              <ion-card-content style="padding: 8px; text-align: center;">
+                <div style="color: #f57c00; font-size: 0.7rem; font-weight: 500;">Pendientes</div>
+                <div style="color: white; font-size: 1.2rem; font-weight: 600;">{{ sumarioRecepcion.itemsPendientes }}</div>
+              </ion-card-content>
+            </ion-card>
+            
+            <ion-card style="background: #252525; border-radius: 6px; margin: 0; border-left: 3px solid #f44336;">
+              <ion-card-content style="padding: 8px; text-align: center;">
+                <div style="color: #f44336; font-size: 0.7rem; font-weight: 500;">Rechazados</div>
+                <div style="color: white; font-size: 1.2rem; font-weight: 600;">{{ sumarioRecepcion.itemsRechazados }}</div>
+              </ion-card-content>
+            </ion-card>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Nueva Sección: Verificar Nuevo Item -->
+    <ion-card
+      style="
+        background: #333333;
+        border-radius: 8px;
+        margin: 10px;
+        border-left: 4px solid #f57c00;
+      "
+    >
+      <ion-card-content style="padding: 12px">
+        <ion-row>
+          <ion-col size="12">
+            <div style="text-align: center">
+              <h3 style="color: white; margin: 10px 0; font-weight: 600">
+                Verificar Nuevo Item
+              </h3>
+              
+              <!-- Botones de acción -->
+              <ion-row>
+                <ion-col size="6">
+                  <ion-button
+                    (click)="onBusquedaManual()"
+                    fill="solid"
+                    style="--background: #f57c00; width: 100%; font-size: smaller"
+                  >
+                    <ion-icon name="search" slot="start"></ion-icon>
+                    Búsqueda Manual
+                  </ion-button>
+                </ion-col>
+                <ion-col size="6">
+                  <ion-button
+                    (click)="onEscanearCodigo()"
+                    fill="outline"
+                    style="--color: #43a047; --border-color: #43a047; width: 100%; font-size: smaller"
+                  >
+                    <ion-icon name="qr-code" slot="start"></ion-icon>
+                    Escanear
+                  </ion-button>
+                </ion-col>
+              </ion-row>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Búsqueda Proactiva - Para Historial -->
+    <ion-row>
+      <ion-col size="12">
+        <ion-item style="background: #252525; border-radius: 8px; margin: 0;">
+          <ion-label position="stacked" style="color: #f57c00"
+            >Buscar en Historial por nombre, ID o código</ion-label
+          >
+          <ion-input
+            [formControl]="searchForm.get('searchText')"
+            style="color: white; text-align: center; text-transform: uppercase;"
+            placeholder="Buscar en historial..."
+          >
+          </ion-input>
+        </ion-item>
+        
+        <!-- Botones de filtro -->
+        <ion-row style="margin-top: 10px">
+          <ion-col size="6">
+            <ion-button
+              (click)="abrirFiltroEstado()"
+              fill="outline"
+              size="small"
+              style="--color: #f57c00; --border-color: #f57c00; width: 100%"
+            >
+              <ion-icon name="filter" slot="start"></ion-icon>
+              Filtrar
+            </ion-button>
+          </ion-col>
+          <ion-col size="6">
+            <ion-button
+              (click)="limpiarFiltro()"
+              fill="outline"
+              size="small"
+              style="--color: #666; --border-color: #666; width: 100%"
+            >
+              <ion-icon name="close-circle" slot="start"></ion-icon>
+              Limpiar
+            </ion-button>
+          </ion-col>
+        </ion-row>
+        
+        <!-- Información de paginación -->
+        <div *ngIf="totalElements > 0" class="pagination-info">
+          Mostrando {{productosAgrupados.length}} de {{totalElements}} items
+          <span *ngIf="filtroTexto"> (filtrados por: "{{filtroTexto}}")</span>
+          <span *ngIf="filtroEstado.length === 1"> (estado: {{nombreEstadoFiltro}})</span>
+          <span *ngIf="filtroEstado.length > 1"> (estados: múltiples)</span>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" style="text-align: center; padding: 40px">
+      <ion-spinner
+        name="lines"
+        style="width: 50px; height: 50px; color: #f57c00"
+      ></ion-spinner>
+      <p style="color: white; margin-top: 20px">Cargando historial...</p>
+    </div>
+
+    <!-- Lista de Productos - HISTORIAL -->
+    <div *ngIf="!isLoading && productosAgrupados.length > 0">
+      <h4 style="color: white; text-align: center; margin: 20px 0; font-weight: 600">
+        📋 Historial de Productos
+      </h4>
+      <ion-list class="product-list">
+        <ion-item
+          *ngFor="let producto of productosAgrupados"
+          class="product-item"
+          button
+          (click)="onItemClick(producto)"
+        >
+          <ion-thumbnail slot="start" *ngIf="producto.producto.imagen">
+            <img [src]="producto.producto.imagen" alt="Producto" />
+          </ion-thumbnail>
+          <ion-thumbnail slot="start" *ngIf="!producto.producto.imagen">
+            <ion-icon
+              name="cube-outline"
+              style="font-size: 2em; color: #666"
+            ></ion-icon>
+          </ion-thumbnail>
+
+          <ion-label>
+            <!-- Row 1: ID - Descripción -->
+            <h4 style="color: white; font-weight: 600; margin-bottom: 8px;">
+              {{producto.producto.id}} - {{producto.producto.nombre}}
+            </h4>
+            
+            <!-- Row 2: Cantidad recibida y check icon -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <p style="color: #43a047; font-size: 0.9rem; font-weight: 500; margin: 0;">
+                Cantidad: {{producto.cantidadRecibidaTotal}}
+              </p>
+              <ion-icon
+                name="checkmark-circle"
+                style="color: #43a047; font-size: 1.2em; margin-left: 8px;"
+              ></ion-icon>
+            </div>
+            
+            <!-- Row 2.5: Cantidad rechazada (solo si hay rechazos) -->
+            <div *ngIf="producto.cantidadRechazadaTotal > 0" style="margin-bottom: 6px;">
+              <p style="color: #f44336; font-size: 0.85rem; font-weight: 500; margin: 0;">
+                Rechazado: {{producto.cantidadRechazadaTotal}}
+              </p>
+            </div>
+            
+            <!-- Row 3: Estado -->
+            <p style="color: #f57c00; font-size: 0.8rem; font-weight: 500; margin: 0;">
+              Estado: {{producto.estadoVerificacionTexto}}
+            </p>
+          </ion-label>
+
+          <!-- Slot end vacío para mantener el layout -->
+          <div slot="end"></div>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <!-- Mensaje cuando no hay productos -->
+    <div
+      *ngIf="!isLoading && productosAgrupados.length === 0 && filtroTexto"
+      style="text-align: center; padding: 40px; padding-top: 0px"
+    >
+      <p style="color: white; font-size: 1.1rem; font-weight: 600">
+        No se encontraron productos
+      </p>
+      <p style="color: #999; font-size: 0.9rem">
+        Intenta con otro término de búsqueda
+      </p>
+    </div>
+
+    <!-- Mensaje cuando no hay productos en absoluto -->
+    <div
+      *ngIf="!isLoading && productosAgrupados.length === 0 && !filtroTexto"
+      style="text-align: center; padding: 40px; padding-top: 0px"
+    >
+      <h3
+        style="
+          color: white;
+          margin: 20px 0 10px 0;
+          font-size: 1.2rem;
+          font-weight: 600;
+        "
+      >
+        No hay productos verificados aún
+      </h3>
+      <p style="color: #999; margin: 0; font-size: 0.95rem; line-height: 1.4">
+        Comienza verificando productos usando los botones de búsqueda arriba.<br />
+        Una vez verifiques productos, aparecerán en el historial.
+      </p>
+    </div>
+  </div>
+
+  <!-- Componente de Paginación -->
+  <app-paginacion
+    *ngIf="paginatedResponse && paginatedResponse.totalPages > 1"
+    [paginatedResponse]="paginatedResponse"
+    [currentPageSize]="pageSize"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)"
+  >
+  </app-paginacion>
+</ion-content>
+
+  <!-- Botones de Acción -->
+  <ion-footer>
+    <ion-toolbar class="footer-toolbar">
+      <ion-row>
+        <ion-col size="12">
+                <ion-button
+        expand="block"
+        fill="solid"
+        color="success"
+        [disabled]="false"
+        (click)="onFinalizarRecepcion()"
+      >
+        <ion-icon name="checkmark-done" slot="start"></ion-icon>
+        Finalizar Recepción
+      </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-toolbar>
+  </ion-footer>

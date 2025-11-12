@@ -1,0 +1,38 @@
+<div class="popover-content">
+  <div class="popover-header">
+    <h3>Seleccionar Fecha</h3>
+    <ion-button fill="clear" (click)="dismiss()" class="close-button">
+      <ion-icon name="close"></ion-icon>
+    </ion-button>
+  </div>
+  
+  <div class="date-picker-container">
+    <ion-datetime 
+      presentation="date" 
+      [preferWheel]="true"
+      [value]="selectedDate?.toISOString()"
+      (ionChange)="onDateChange($event)"
+      [min]="minDate"
+      [max]="maxDate"
+      displayFormat="DD/MM/YYYY">
+    </ion-datetime>
+  </div>
+  
+  <div class="button-container">
+    <ion-button 
+      fill="outline" 
+      color="medium" 
+      (click)="dismiss()"
+      class="cancel-button">
+      Cancelar
+    </ion-button>
+    <ion-button 
+      fill="solid" 
+      color="primary" 
+      (click)="confirmDate()"
+      [disabled]="!selectedDate"
+      class="confirm-button">
+      Aceptar
+    </ion-button>
+  </div>
+</div>

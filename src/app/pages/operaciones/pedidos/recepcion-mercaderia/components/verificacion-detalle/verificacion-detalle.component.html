@@ -1,0 +1,238 @@
+<ion-content>
+  <!-- Header con información del producto y resumen -->
+  <!-- FASE 6: Implementación de Recepción a Ciegas y Validación por Discrepancia -->
+  <ion-header>
+    <ion-toolbar style="--background: #333333;">
+      <ion-buttons slot="start">
+        <ion-button (click)="onCancelar()" fill="clear" style="color: white;">
+          <ion-icon name="arrow-back"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <ion-title style="color: white;">
+        {{readOnly ? 'Detalles de Verificación' : 'Verificación Detallada'}}
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="ion-padding">
+    <!-- Información del Producto -->
+    <ion-card style="background: #333333; border-radius: 8px; margin: 10px; border-left: 4px solid #f57c00;">
+      <ion-card-content style="padding: 12px;">
+        <ion-row style="align-items: center;">
+          <ion-col size="3">
+            <div style="text-align: center;">
+              <img 
+                [src]="item.notaRecepcionItem.producto.imagenPrincipal || '/assets/no-image.png'" 
+                [alt]="productoDescripcion"
+                style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #f57c00;"
+                (error)="$event.target.src='/assets/no-image.png'"
+              />
+            </div>
+          </ion-col>
+          <ion-col size="9">
+            <div>
+              <h3 style="color: white; margin: 0 0 8px 0; font-weight: 600; font-size: 1rem; line-height: 1.2;">
+                {{productoDescripcion}}
+              </h3>
+              <p style="color: #43a047; margin: 0; font-size: 0.9rem; font-weight: 500;">
+                {{productoCodigo}}
+              </p>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-card-content>
+    </ion-card>
+
+
+
+    <!-- Formulario de Variaciones -->
+    <form [formGroup]="verificacionForm">
+      <!-- Lista de Variaciones -->
+      <div formArrayName="variaciones">
+        <div 
+          *ngFor="let variacion of variacionesArray.controls; let i = index" 
+          [formGroupName]="i"
+          class="variacion-card"
+        >
+          <ion-card style="background: #252525; border-radius: 8px; margin: 10px;">
+            <ion-card-header>
+              <ion-card-title style="color: #f57c00;">Variación {{i + 1}}</ion-card-title>
+              <ion-button 
+                *ngIf="i > 0 && !readOnly"
+                fill="clear" 
+                color="danger"
+                (click)="removeVariacion(i)"
+                style="position: absolute; top: 8px; right: 8px;"
+              >
+                <ion-icon name="close"></ion-icon>
+              </ion-button>
+            </ion-card-header>
+            
+            <ion-card-content style="padding: 12px;">
+              <!-- Presentación -->
+              <ion-item style="background: #333333; border-radius: 8px; margin: 10px 0;">
+                <ion-label position="stacked" style="color: #f57c00;">Presentación</ion-label>
+                <ion-select 
+                  formControlName="presentacion" 
+                  style="color: white;"
+                  [disabled]="isLoadingPresentaciones"
+                  (selectionChange)="onPresentacionChange(i)">
+                  <ion-select-option 
+                    *ngFor="let presentacion of presentaciones" 
+                    [value]="presentacion"
+                  >
+                    {{presentacion.cantidad | number:'1.0-2'}}
+                  </ion-select-option>
+                </ion-select>
+                <ion-spinner 
+                  *ngIf="isLoadingPresentaciones" 
+                  name="dots" 
+                  slot="end"
+                  style="color: #f57c00;"
+                ></ion-spinner>
+              </ion-item>
+
+              <!-- Cantidad -->
+              <ion-item style="background: #333333; border-radius: 8px; margin: 10px 0;">
+                <ion-label position="stacked" style="color: #f57c00;">Cantidad</ion-label>
+                <ion-input 
+                  formControlName="cantidad"
+                  type="number"
+                  (click)="$event.target.select()"
+                  min="0.01"
+                  step="0.01"
+                  style="color: white; text-align: center;">
+                </ion-input>
+              </ion-item>
+
+              <!-- Vencimiento (solo si el producto lo requiere) -->
+              <ion-item *ngIf="item.notaRecepcionItem.producto.vencimiento">
+                <ion-label position="stacked">Vencimiento</ion-label>
+                <ion-input 
+                  [value]="variacion.get('vencimiento')?.value | date:'dd/MM/yyyy'"
+                  placeholder="Seleccionar fecha"
+                  readonly
+                  (click)="openDatePicker(variacion.get('vencimiento'), $event, 'Seleccionar Vencimiento')"
+                  style="cursor: pointer;">
+                </ion-input>
+              </ion-item>
+
+              <ion-item *ngIf="item.notaRecepcionItem.producto.lote">
+                <ion-label position="stacked">Lote</ion-label>
+                <ion-input 
+                  type="text" 
+                  formControlName="lote"
+                  placeholder="Ingrese el lote">
+                </ion-input>
+              </ion-item>
+
+              <!-- Toggle de Rechazo -->
+              <ion-item style="background: #333333; border-radius: 8px; margin: 10px 0;">
+                <ion-label style="color: white;">Rechazar esta variación</ion-label>
+                <ion-toggle 
+                  formControlName="rechazado" 
+                  color="danger"
+                  slot="end">
+                </ion-toggle>
+              </ion-item>
+
+              <!-- Motivo de Rechazo (solo si está rechazada) -->
+              <ion-item 
+                *ngIf="variacion.get('rechazado')?.value" 
+                       style="background: #333333; border-radius: 8px; margin: 10px 0;">
+                <ion-label position="stacked" style="color: #f57c00;">Motivo de Rechazo</ion-label>
+                <ion-select formControlName="motivoRechazo" style="color: white;">
+                  <ion-select-option 
+                    *ngFor="let motivo of motivosRechazo; let i = index" 
+                    [value]="motivo"
+                  >
+                    {{motivosRechazoFormateados[i]}}
+                  </ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </div>
+
+      <!-- Botón Adicionar Variación (solo en modo edición) -->
+      <div *ngIf="!readOnly" class="add-variacion-section" style="text-align: center; margin: 20px 0;">
+        <ion-button 
+          fill="outline" 
+          color="primary"
+          (click)="addVariacion()"
+          style="--color: #f57c00; --border-color: #f57c00;"
+        >
+          <ion-icon name="add" slot="start"></ion-icon>
+          Adicionar Variación
+        </ion-button>
+      </div>
+
+              <!-- Observaciones -->
+      <ion-card style="background: #252525; border-radius: 8px; margin: 10px;">
+        <ion-card-content style="padding: 12px;">
+              <ion-item style="background: #333333; border-radius: 8px; margin: 10px 0;">
+            <ion-label position="stacked" style="color: #f57c00;">Observaciones (opcional)</ion-label>
+                <ion-textarea 
+                  formControlName="observaciones"
+              placeholder="Observaciones adicionales sobre la recepción..."
+                  rows="3"
+                  style="color: white;">
+                </ion-textarea>
+              </ion-item>
+        </ion-card-content>
+      </ion-card>
+    </form>
+  </div>
+
+  <!-- Footer fijo con resumen y botón Verificar -->
+  <ion-footer>
+    <ion-toolbar style="--background: #252525;">
+      <!-- Resumen de Cantidades - FASE 6: Recepción a Ciegas -->
+      <div class="resumen-cantidades">
+        <ion-row style="text-align: center; margin-bottom: 10px;">
+          <!-- FASE 6: Ocultar Cantidad Esperada y Diferencia para recepción a ciegas -->
+          <ion-col size="6">
+            <div>
+              <p style="color: #43a047; font-size: 0.7rem; margin: 2px 0;">Recibida</p>
+              <p style="color: white; font-size: 1rem; font-weight: 600; margin: 2px 0;">{{cantidadRecibidaTotal}}</p>
+            </div>
+          </ion-col>
+          
+          <ion-col size="6">
+            <div>
+              <p style="color: #f44336; font-size: 0.7rem; margin: 2px 0;">Rechazada</p>
+              <p style="color: white; font-size: 1rem; font-weight: 600; margin: 2px 0;">{{cantidadRechazadaTotal}}</p>
+            </div>
+          </ion-col>
+        </ion-row>
+      </div>
+      
+      <!-- Botón Verificar o Cerrar según el modo -->
+      <ion-button 
+        *ngIf="!readOnly"
+        expand="block" 
+        fill="solid" 
+        color="success" 
+        (click)="onVerificar()"
+        [disabled]="verificacionForm.invalid"
+        style="--background: #43a047; margin: 0 10px 10px 10px;"
+      >
+        <ion-icon name="checkmark" slot="start"></ion-icon>
+        Verificar
+      </ion-button>
+      
+      <ion-button 
+        *ngIf="readOnly"
+        expand="block" 
+        fill="solid" 
+        color="primary" 
+        (click)="onCancelar()"
+        style="--background: #666; margin: 0 10px 10px 10px;"
+      >
+        <ion-icon name="close" slot="start"></ion-icon>
+        Cerrar
+      </ion-button>
+    </ion-toolbar>
+  </ion-footer>
+</ion-content> 
