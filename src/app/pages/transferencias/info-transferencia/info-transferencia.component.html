@@ -1,22 +1,16 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="onBack()">
-        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-title style="text-align: center">Detalles de Transferencia</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="onShare()">
-        <ion-icon
-        name="share-social-outline"
-        style="font-size: 1.5em"
-      ></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
 <ion-content>
+  <ion-row class="ion-align-items-center">
+    <ion-col size="2">
+      <ion-icon name="arrow-back" style="font-size: 2em" (click)="onBack()"></ion-icon>
+    </ion-col>
+    <ion-col size="6" style="text-align: center">Detalles de transferencia</ion-col>
+    <ion-col size="2" style="text-align: center">
+      <ion-icon name="create-outline" style="font-size: 2em" (click)="onEdit()"></ion-icon>
+    </ion-col>
+    <ion-col size="2" style="text-align: center">
+      <ion-icon name="share-social-outline" style="font-size: 2em" (click)="onShare()"></ion-icon>
+    </ion-col>
+  </ion-row>
   <ion-card *ngIf="selectedTransferencia !== null" style="margin-top: 10px">
     <ion-grid>
       <ion-row>
@@ -52,58 +46,31 @@
       <ion-row>
         <!-- <ion-col size="2"></ion-col> -->
         <ion-col size="12" class="ion-align-items-center">
-          <ion-button
-            *ngIf="
+          <ion-button *ngIf="
               isPreTransferenciaOrigen &&
               selectedTransferencia?.usuarioPreparacion === null
-            "
-            class="btn-success"
-            (click)="onAvanzarEtapa('PREPARACION_MERCADERIA')"
-            expand="block"
-          >
+            " class="btn-success" (click)="onAvanzarEtapa('PREPARACION_MERCADERIA')" expand="block">
             Preparar productos
           </ion-button>
-          <ion-button
-            *ngIf="isPreparacionMercaderia && puedeEditar"
-            class="btn-success"
-            (click)="onAvanzarEtapa('PREPARACION_MERCADERIA_CONCLUIDA')"
-            expand="block"
-            [disabled]="!isAllConfirmedPreparacion"
-          >
+          <ion-button *ngIf="isPreparacionMercaderia && puedeEditar" class="btn-success"
+            (click)="onAvanzarEtapa('PREPARACION_MERCADERIA_CONCLUIDA')" expand="block"
+            [disabled]="!isAllConfirmedPreparacion">
             Concluir
           </ion-button>
-          <ion-button
-            *ngIf="isPreparacionMercaderiaConcluida"
-            class="btn-success"
-            (click)="onAvanzarEtapa('TRANSPORTE_VERIFICACION')"
-            expand="block"
-          >
+          <ion-button *ngIf="isPreparacionMercaderiaConcluida" class="btn-success"
+            (click)="onAvanzarEtapa('TRANSPORTE_VERIFICACION')" expand="block">
             Verificar para transporte
           </ion-button>
-          <ion-button
-            *ngIf="isTransporteVerificacion && puedeEditar"
-            class="btn-success"
-            (click)="onAvanzarEtapa('TRANSPORTE_EN_CAMINO')"
-            expand="block"
-            [disabled]="!isAllConfirmedTransporte"
-          >
+          <ion-button *ngIf="isTransporteVerificacion && puedeEditar" class="btn-success"
+            (click)="onAvanzarEtapa('TRANSPORTE_EN_CAMINO')" expand="block" [disabled]="!isAllConfirmedTransporte">
             Concluir
           </ion-button>
-          <ion-button
-            *ngIf="isTransporteEnCamino || isTransporteEnDestino"
-            class="btn-success"
-            (click)="onAvanzarEtapa('RECEPCION_EN_VERIFICACION')"
-            expand="block"
-          >
+          <ion-button *ngIf="isTransporteEnCamino || isTransporteEnDestino" class="btn-success"
+            (click)="onAvanzarEtapa('RECEPCION_EN_VERIFICACION')" expand="block">
             Iniciar recepción
           </ion-button>
-          <ion-button
-            *ngIf="isRecepcionEnVerificacion && puedeEditar"
-            class="btn-success"
-            (click)="onAvanzarEtapa('RECEPCION_CONCLUIDA')"
-            expand="block"
-            [disabled]="!isAllConfirmedRecepcion"
-          >
+          <ion-button *ngIf="isRecepcionEnVerificacion && puedeEditar" class="btn-success"
+            (click)="onAvanzarEtapa('RECEPCION_CONCLUIDA')" expand="block" [disabled]="!isAllConfirmedRecepcion">
             Concluir
           </ion-button>
         </ion-col>
@@ -114,19 +81,10 @@
     <ion-col size="12">
       <ion-item>
         <ion-label position="floating">Nombre o Código de Barra</ion-label>
-        <ion-input
-          #buscarInput
-          [formControl]="buscarControl"
-          autocapitalize="on"
-          (keyup.enter)="onBuscarClick()"
-          (focusin)="onBuscarFocus()"
-        ></ion-input>
-        <ion-icon
-          style="font-size: 2em; padding-top: 5px"
-          name="camera-outline"
-          slot="end"
-          (click)="onCameraClick()"
-        ></ion-icon>
+        <ion-input #buscarInput [formControl]="buscarControl" autocapitalize="on" (keyup.enter)="onBuscarClick()"
+          (focusin)="onBuscarFocus()"></ion-input>
+        <ion-icon style="font-size: 2em; padding-top: 5px" name="camera-outline" slot="end"
+          (click)="onCameraClick()"></ion-icon>
         <!-- <ion-icon
           style="font-size: 2em; padding-top: 5px"
           name="filter-outline"
@@ -138,47 +96,35 @@
   </ion-row>
   <ion-row>
     <ion-col class="center">
-      <ion-button
-        class="btn-warn-flat"
-        fill="clear"
-        (click)="onCargarMenos()"
-        expand="block"
-        *ngIf="selectedPageInfo?.hasPrevious"
-      >
+      <ion-button class="btn-warn-flat" fill="clear" (click)="onCargarMenos()" expand="block"
+        *ngIf="selectedPageInfo?.hasPrevious">
         MENOS
       </ion-button>
     </ion-col>
   </ion-row>
-  <ion-list
-    *ngIf="
+  <ion-list *ngIf="
       selectedTransferencia?.etapa === 'PRE_TRANSFERENCIA_ORIGEN' ||
       selectedTransferencia?.etapa === 'PREPARACION_MERCADERIA'
-    "
-  >
-    <ion-item
-      *ngFor="let item of filteredTransferenciaItemList; let i3 = index"
-      (press)="puedeEditar ? onItemPress(item) : null"
-    >
-      <ion-avatar
-        slot="start"
-        (click)="
+    ">
+    <ion-item *ngFor="let item of filteredTransferenciaItemList; let i3 = index"
+      (press)="puedeEditar ? onItemPress(item) : null">
+      <ion-avatar slot="start" (click)="
           onAvatarClick(item?.presentacionPreTransferencia?.imagenPrincipal)
-        "
-      >
+        ">
         <img [src]="item?.presentacionPreTransferencia?.imagenPrincipal" />
       </ion-avatar>
       <ion-label>
         <h2>
           {{
-            i3 +
-              1 +
-              selectedPageInfo?.getPageable?.getPageSize *
-                selectedPageInfo?.getPageable?.getPageNumber
+          i3 +
+          1 +
+          selectedPageInfo?.getPageable?.getPageSize *
+          selectedPageInfo?.getPageable?.getPageNumber
           }}
           -
           {{
-            item?.presentacionPreTransferencia?.producto?.descripcion
-              | titlecase
+          item?.presentacionPreTransferencia?.producto?.descripcion
+          | titlecase
           }}
         </h2>
         <ion-row>
@@ -186,10 +132,11 @@
             <h3>
               Presentacion:
               <!-- <ion-content *ngIf="item?.presentacionPreparacion?.cantidad === null"> -->
-              <span *ngIf="item.presentacionPreTransferencia.cantidad !== item.presentacionPreparacion?.cantidad" [class.tachado]="item?.presentacionPreparacion !== null">
+              <span *ngIf="item.presentacionPreTransferencia.cantidad !== item.presentacionPreparacion?.cantidad"
+                [class.tachado]="item?.presentacionPreparacion !== null">
                 {{
-                  item?.presentacionPreTransferencia?.cantidad
-                    | number : '1.0-2'
+                item?.presentacionPreTransferencia?.cantidad
+                | number : '1.0-2'
                 }}
               </span>
 
@@ -197,7 +144,8 @@
             </h3>
             <h3>
               Cantidad:
-              <span *ngIf="item.cantidadPreTransferencia !== item.cantidadPreparacion" [class.tachado]="item.cantidadPreparacion !== null">
+              <span *ngIf="item.cantidadPreTransferencia !== item.cantidadPreparacion"
+                [class.tachado]="item.cantidadPreparacion !== null">
                 {{ item.cantidadPreTransferencia | number : '1.0-2' }}
               </span>
 
@@ -205,14 +153,15 @@
             </h3>
             <h3>
               Vencimiento:
-              <span *ngIf="item.vencimientoPreparacion !== item.vencimientoPreTransferencia" [class.tachado]="item?.vencimientoPreparacion !== null">
+              <span *ngIf="item.vencimientoPreparacion !== item.vencimientoPreTransferencia"
+                [class.tachado]="item?.vencimientoPreparacion !== null">
                 {{ item?.vencimientoPreTransferencia| date : 'shortDate' }}
               </span>
               {{ item?.vencimientoPreparacion | date : 'shortDate' }}
               {{
-                item?.motivoModificacionPreparacion === 'VENCIMIENTO_INCORRECTO'
-                  ? ' - ' + (item?.vencimientoPreparacion | date : 'shortDate')
-                  : null
+              item?.motivoModificacionPreparacion === 'VENCIMIENTO_INCORRECTO'
+              ? ' - ' + (item?.vencimientoPreparacion | date : 'shortDate')
+              : null
               }}
             </h3>
             <h3 *ngIf="item.motivoModificacionPreparacion !== null">
@@ -223,60 +172,46 @@
             </h3>
           </ion-col>
           <ion-col size="2">
-            <ion-icon
-              (click)="puedeEditar ? onItemPress(item) : null"
-              [name]="
+            <ion-icon (click)="puedeEditar ? onItemPress(item) : null" [name]="
                 item.motivoRechazoPreparacion === null
                   ? 'checkmark-circle'
                   : 'close'
-              "
-              style="font-size: 2em"
-              [class.sin-cambios]="
+              " style="font-size: 2em" [class.sin-cambios]="
                 item.cantidadPreparacion !== null &&
                 item.motivoModificacionPreparacion === null &&
                 item.motivoRechazoPreparacion === null &&
                 !isPreparacionEnCamino
-              "
-              [class.con-cambios]="
+              " [class.con-cambios]="
                 item.motivoModificacionPreparacion !== null &&
                 !isPreparacionEnCamino
-              "
-              [class.rechazado]="
+              " [class.rechazado]="
                 item.motivoRechazoPreparacion !== null && !isPreparacionEnCamino
-              "
-            ></ion-icon>
+              "></ion-icon>
           </ion-col>
         </ion-row>
       </ion-label>
     </ion-item>
   </ion-list>
 
-  <ion-list
-    *ngIf="
+  <ion-list *ngIf="
       isPreparacionMercaderiaConcluida ||
       isTransporteVerificacion ||
       isTransporteEnCamino
-    "
-  >
-    <ion-item
-      *ngFor="let item of filteredTransferenciaItemList; let i1 = index"
-      (press)="puedeEditar ? onItemPress(item) : null"
-    >
-      <ion-avatar
-        slot="start"
-        (click)="
+    ">
+    <ion-item *ngFor="let item of filteredTransferenciaItemList; let i1 = index"
+      (press)="puedeEditar ? onItemPress(item) : null">
+      <ion-avatar slot="start" (click)="
           onAvatarClick(item?.presentacionPreTransferencia?.imagenPrincipal)
-        "
-      >
+        ">
         <img [src]="item?.presentacionPreTransferencia?.imagenPrincipal" />
       </ion-avatar>
       <ion-label>
         <h2>
           {{
-            i1 +
-              1 +
-              selectedPageInfo?.getPageable?.getPageSize *
-                selectedPageInfo?.getPageable?.getPageNumber
+          i1 +
+          1 +
+          selectedPageInfo?.getPageable?.getPageSize *
+          selectedPageInfo?.getPageable?.getPageNumber
           }}
           -
           {{ item?.presentacionPreparacion?.producto?.descripcion | titlecase }}
@@ -285,25 +220,29 @@
           <ion-col size="10">
             <h3>
               Presentacion:
-              <span *ngIf=" item?.presentacionPreparacion?.cantidad !==  item?.presentacionTransporte?.cantidad" [class.tachado]="item?.presentacionTransporte !== null">
+              <span *ngIf=" item?.presentacionPreparacion?.cantidad !==  item?.presentacionTransporte?.cantidad"
+                [class.tachado]="item?.presentacionTransporte !== null">
                 {{
-                  item?.presentacionPreparacion?.cantidad
-                    | number : '1.0-2'
+                item?.presentacionPreparacion?.cantidad
+                | number : '1.0-2'
                 }}
               </span>
               {{ item?.presentacionTransporte?.cantidad | number : '1.0-2' }}
             </h3>
             <h3>Cantidad:
-              <span *ngIf=" item?.cantidadTransporte !==  item?.cantidadPreparacion" [class.tachado]="item?.cantidadTransporte!== null">
+              <span *ngIf=" item?.cantidadTransporte !==  item?.cantidadPreparacion"
+                [class.tachado]="item?.cantidadTransporte!== null">
                 {{
-                  item?.cantidadPreparacion
-                    | number : '1.0-2'
+                item?.cantidadPreparacion
+                | number : '1.0-2'
                 }}
               </span>
-              {{ item.cantidadTransporte | number : '1.0-2' }}</h3>
+              {{ item.cantidadTransporte | number : '1.0-2' }}
+            </h3>
             <h3>
               Vencimiento:
-              <span *ngIf="item.vencimientoTransporte !== item.vencimientoPreparacion" [class.tachado]="item?.vencimientoTransporte !== null">
+              <span *ngIf="item.vencimientoTransporte !== item.vencimientoPreparacion"
+                [class.tachado]="item?.vencimientoTransporte !== null">
                 {{ item?.vencimientoPreparacion | date : 'shortDate' }}
               </span>
               {{ item.vencimientoTransporte | date : 'shortDate' }}
@@ -311,59 +250,45 @@
 
           </ion-col>
           <ion-col size="2">
-            <ion-icon
-              (click)="puedeEditar ? onItemPress(item) : null"
-              [name]="
+            <ion-icon (click)="puedeEditar ? onItemPress(item) : null" [name]="
                 item.motivoRechazoTransporte === null
                   ? 'checkmark-circle'
                   : 'close'
-              "
-              style="font-size: 2em"
-              [class.sin-cambios]="
+              " style="font-size: 2em" [class.sin-cambios]="
                 item.cantidadTransporte !== null &&
                 item.motivoModificacionTransporte === null &&
                 item.motivoRechazoTransporte === null &&
                 !isTransporteEnCamino
-              "
-              [class.con-cambios]="
+              " [class.con-cambios]="
                 item.motivoModificacionTransporte !== null &&
                 !isTransporteEnCamino
-              "
-              [class.rechazado]="
+              " [class.rechazado]="
                 item.motivoRechazoTransporte !== null && !isTransporteEnCamino
-              "
-            ></ion-icon>
+              "></ion-icon>
           </ion-col>
         </ion-row>
       </ion-label>
     </ion-item>
   </ion-list>
 
-  <ion-list
-    *ngIf="
+  <ion-list *ngIf="
       selectedTransferencia?.etapa === 'RECEPCION_EN_VERIFICACION' ||
       selectedTransferencia?.etapa === 'RECEPCION_CONCLUIDA'
-    "
-  >
-    <ion-item
-      *ngFor="let item of filteredTransferenciaItemList; let i2 = index"
-      (press)="puedeEditar ? onItemPress(item) : null"
-    >
-      <ion-avatar
-        slot="start"
-        (click)="
+    ">
+    <ion-item *ngFor="let item of filteredTransferenciaItemList; let i2 = index"
+      (press)="puedeEditar ? onItemPress(item) : null">
+      <ion-avatar slot="start" (click)="
           onAvatarClick(item?.presentacionPreTransferencia?.imagenPrincipal)
-        "
-      >
+        ">
         <img [src]="item?.presentacionTransporte?.imagenPrincipal" />
       </ion-avatar>
       <ion-label>
         <h2>
           {{
-            i2 +
-              1 +
-              selectedPageInfo?.getPageable?.getPageSize *
-                selectedPageInfo?.getPageable?.getPageNumber
+          i2 +
+          1 +
+          selectedPageInfo?.getPageable?.getPageSize *
+          selectedPageInfo?.getPageable?.getPageNumber
           }}
           -
           {{ item?.presentacionTransporte?.producto?.descripcion | titlecase }}
@@ -372,26 +297,30 @@
           <ion-col size="10">
             <h3>
               Presentacion:
-              <span *ngIf=" item?.presentacionRecepcion?.cantidad !==  item?.presentacionTransporte?.cantidad" [class.tachado]="item?.presentacionRecepcion !== null">
+              <span *ngIf=" item?.presentacionRecepcion?.cantidad !==  item?.presentacionTransporte?.cantidad"
+                [class.tachado]="item?.presentacionRecepcion !== null">
                 {{
-                  item?.presentacionTransporte?.cantidad
-                    | number : '1.0-2'
+                item?.presentacionTransporte?.cantidad
+                | number : '1.0-2'
                 }}
               </span>
               {{ item?.presentacionRecepcion?.cantidad | number : '1.0-2' }}
             </h3>
             <h3>
               Cantidad:
-              <span *ngIf=" item?.cantidadTransporte !==  item?.cantidadRecepcion" [class.tachado]="item?.cantidadRecepcion!== null">
+              <span *ngIf=" item?.cantidadTransporte !==  item?.cantidadRecepcion"
+                [class.tachado]="item?.cantidadRecepcion!== null">
                 {{
-                  item?.cantidadTransporte
-                    | number : '1.0-2'
+                item?.cantidadTransporte
+                | number : '1.0-2'
                 }}
               </span>
-              {{ item.cantidadRecepcion | number : '1.0-2' }}</h3>
+              {{ item.cantidadRecepcion | number : '1.0-2' }}
+            </h3>
             <h3>
               Vencimiento:
-              <span *ngIf="item.vencimientoTransporte !== item.vencimientoRecepcion" [class.tachado]="item?.vencimientoRecepcion !== null">
+              <span *ngIf="item.vencimientoTransporte !== item.vencimientoRecepcion"
+                [class.tachado]="item?.vencimientoRecepcion !== null">
                 {{ item?.vencimientoTransporte | date : 'shortDate' }}
               </span>
               {{ item.vencimientoRecepcion | date : 'shortDate' }}
@@ -404,28 +333,21 @@
             </h3>
           </ion-col>
           <ion-col size="2">
-            <ion-icon
-              (click)="puedeEditar ? onItemPress(item) : null"
-              [name]="
+            <ion-icon (click)="puedeEditar ? onItemPress(item) : null" [name]="
                 item.motivoRechazoRecepcion === null
                   ? 'checkmark-circle'
                   : 'close'
-              "
-              style="font-size: 2em"
-              [class.sin-cambios]="
+              " style="font-size: 2em" [class.sin-cambios]="
                 item.cantidadRecepcion !== null &&
                 item.motivoModificacionRecepcion === null &&
                 item.motivoRechazoRecepcion === null &&
                 !isRecepcionEnCamino
-              "
-              [class.con-cambios]="
+              " [class.con-cambios]="
                 item.motivoModificacionRecepcion !== null &&
                 !isRecepcionEnCamino
-              "
-              [class.rechazado]="
+              " [class.rechazado]="
                 item.motivoRechazoRecepcion !== null && !isRecepcionEnCamino
-              "
-            ></ion-icon>
+              "></ion-icon>
           </ion-col>
         </ion-row>
       </ion-label>
@@ -433,13 +355,8 @@
   </ion-list>
   <ion-row>
     <ion-col class="center">
-      <ion-button
-        class="btn-success-flat"
-        fill="clear"
-        (click)="onCargarMas()"
-        expand="block"
-        *ngIf="selectedPageInfo?.hasNext"
-      >
+      <ion-button class="btn-success-flat" fill="clear" (click)="onCargarMas()" expand="block"
+        *ngIf="selectedPageInfo?.hasNext">
         MÁS
       </ion-button>
     </ion-col>

@@ -1,0 +1,35 @@
+ion-input {
+    text-transform: uppercase !important;
+  }
+  
+  ion-fab ion-fab-button {
+    --background: #f44336 !important;
+    --border-radius: 35% !important;
+  }
+  
+  ion-button {
+    margin-bottom: 0px;
+    margin-top: 2px;
+    top: 2px
+  }
+  .desc {
+    white-space: normal;   
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    font-size: 14px;      
+    max-width: 100%;       
+  }
+  
+  
+  .fade-in{
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  
+  .fade-out{
+    opacity: 0;
+    transform: translateY(0);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+  }

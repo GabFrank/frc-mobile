@@ -10,16 +10,17 @@ import { Producto } from 'src/app/domains/productos/producto.model';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ProductoService } from '../producto.service';
-import { ImagePopoverComponent } from 'src/app/components/image-popover/image-popover.component';
 import { Location } from '@angular/common';
 import { IonContent, Platform, IonItemSliding } from '@ionic/angular';
 import { CodigoService } from '../../codigo/codigo.service';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { StockPorSucursalDialogComponent, StockPorSucursalDialogData } from '../../operaciones/movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
-import { NotificacionService } from 'src/app/services/notificacion.service';
+import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
+import { InventarioProductoEstado, InventarioProductoItem, InventarioProductoItemInput } from '../../inventario/inventario.model';
 import { InventarioService } from '../../inventario/inventario.service';
-import { InventarioProductoEstado } from '../../inventario/inventario.model';
+import { dateToString } from 'src/app/generic/utils/dateUtils';
+import { EditInventarioItemDialogComponent, InventarioItemData } from '../../inventario/edit-inventario-item-dialog/edit-inventario-item-dialog.component';
 
 export interface SearchProductoDialogData {
   mostrarPrecio: boolean;
@@ -32,9 +33,9 @@ export interface SearchProductoDialogData {
   styleUrls: ['./search-producto-dialog.component.scss'],
   providers: [BarcodeScanner, PhotoViewer]
 })
-export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
+export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
 
-  @ViewChild('content', {static: false}) content: IonContent;
+  @ViewChild('content', { static: false }) content: IonContent;
 
   @Input()
   data;
@@ -51,8 +52,14 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
   isVisible: boolean = false;
   selectedSucursal: Sucursal;
 
-
   isWeb = false;
+
+  estadosList = Object.values(InventarioProductoEstado);
+  cantidadById: { [id: number]: number } = {};
+  vencimientoById: { [id: number]: any } = {};
+  estadoById: { [id: number]: InventarioProductoEstado } = {};
+  itemsByPresentacionId: { [id: number]: InventarioProductoItem[] } = {};
+  displayedItemsByPresentacionId: { [id: number]: InventarioProductoItem[] } = {};
 
   constructor(
     private productoService: ProductoService,
@@ -71,6 +78,10 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
   ) {
     this.isWeb = plf.platforms().includes('mobileweb');
   }
+  trackByProductoId = (_: number, p: Producto) => p?.id;
+  trackByPresentacionId = (_: number, pr: any) => pr?.id;
+  trackByInventarioItemId = (_: number, it: InventarioProductoItem) => it?.id;
+
   ngAfterViewInit(): void {
     this.content.scrollEvents = true;
   }
@@ -80,19 +91,16 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
       this.mostrarPrecio = this.data.data.mostrarPrecio;
     }
 
-    if(this.data?.data?.isInventario == true){
+    if (this.data?.data?.isInventario == true) {
       this.isInventario = true;
       this.selectedSucursal = this.data?.data?.sucursal;
       console.log('es inventario', this.selectedSucursal);
-
     }
 
     this.isWeb ? null : this.onCameraClick()
 
-    console.log(this.data);
-
+    this.displayedItemsByPresentacionId = {};
   }
-  
 
   onBuscarClick() {
     this.onSearchProducto(this.buscarControl.value, null)
@@ -119,7 +127,6 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
       this.onSearchTimer = setTimeout(async () => {
         if (isPesable) {
           (await this.codigoService.onGetCodigoPorCodigo(codigo)).pipe(untilDestroyed(this)).subscribe(codigoRes => {
-            console.log(codigoRes);
             if (codigoRes.length == 1) {
               this.onPresentacionClick(codigoRes[0]?.presentacion, codigoRes[0]?.presentacion?.producto, peso);
             }
@@ -128,16 +135,14 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
           (await this.productoService.onSearch(text, offset)).pipe(untilDestroyed(this)).subscribe((res) => {
             if (offset == null) {
               this.productosList = res;
-              if(this.productosList.length === 0){
+              if (this.productosList.length === 0) {
                 this.notificacionService.warn('Producto no encontrado');
               }
-              // this.isSearchingList = new Array(this.isSearchingList.length)
               this.showCargarMas = true
             } else {
               if (res?.length > 0) this.showCargarMas = true
               const arr = [...this.productosList.concat(res)];
               this.productosList = arr;
-              // this.isSearchingList = new Array(this.isSearchingList.length)
             }
             this.isSearching = false;
           });
@@ -148,9 +153,6 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
   }
 
   onAvatarClick(image) {
-    // this.popoverService.open(ImagePopoverComponent, {
-    //   image
-    // }, PopoverSize.MD)
     this.photoViewer.show(image, '')
   }
 
@@ -162,7 +164,6 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
   async onProductoClick(producto: Producto, index) {
     if (producto?.presentaciones == null) {
       (await this.productoService.getProducto(producto.id)).pipe(untilDestroyed(this)).subscribe((res) => {
-        console.log(res);
         this.productosList[index].presentaciones = res.presentaciones;
       });
     }
@@ -170,7 +171,6 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
       this.isSearchingList[index] = true;
       (await this.productoService.onGetStockPorSucursal(producto.id, this.data?.data?.sucursalId)).pipe(untilDestroyed(this)).subscribe(res => {
         this.isSearchingList[index] = false;
-        console.log(res);
         if (res != null) {
           setTimeout(() => {
             this.productosList[index].stockPorProducto = res;
@@ -181,14 +181,173 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
   }
 
   onPresentacionClick(presentacion: Presentacion, producto: Producto, peso?: number) {
-    // this.dialogService.open('Atención', `Seleccionaste el producto ${producto.descripcion} con la presentacion de ${presentacion.cantidad} unidades.`)
-    //   .then(res => {
-    //     if (res.role == 'aceptar') {
-
-    //     }
-    //   })
     this.modalService.closeModal({ presentacion: presentacion, producto: producto, peso: peso })
+  }
 
+  async onAccordionChangeProducto(event: any, producto: Producto) {
+  }
+
+  async onAccordionChangePresentacion(event: any, producto: Producto) {
+    const valueRaw = event?.detail?.value;
+    if (valueRaw == null) return;
+    const presentacionId = typeof valueRaw === 'number' ? valueRaw : parseInt(valueRaw, 10);
+    if (!Number.isFinite(presentacionId)) return;
+    await this.cargarItemsInventariosAnteriores(presentacionId);
+  }
+
+  async onAccordionTogglePresentacion(event: any, presentacionId: number, producto: Producto) {
+    if (event.detail.open && presentacionId) {
+      await this.cargarItemsInventariosAnteriores(presentacionId);
+    }
+  }
+
+  private async cargarItemsInventariosAnteriores(presentacionId: number) {
+    const invPro = this.data?.data?.invPro;
+    if (!this.isInventario || !presentacionId || !invPro?.id) return;
+
+    (await this.inventarioService.onGetItemsDeInventariosAnteriores(invPro.id, presentacionId, 0, 20))
+      .pipe(untilDestroyed(this))
+      .subscribe((res) => {
+        const items = res || [];
+        this.itemsByPresentacionId[presentacionId] = items;
+        this.displayedItemsByPresentacionId[presentacionId] = [...items];
+      }, (error) => {
+        console.error('Error al cargar items de inventarios', error);
+      });
+  }
+  private removeItemFromDisplay(presentacionId: number, itemId: number) {
+    if (this.displayedItemsByPresentacionId[presentacionId]) {
+      this.displayedItemsByPresentacionId[presentacionId] =
+        this.displayedItemsByPresentacionId[presentacionId].filter(it => it.id !== itemId);
+    }
+  }
+  private addItemToDisplay(presentacionId: number, newItem: InventarioProductoItem) {
+    if (!this.displayedItemsByPresentacionId[presentacionId]) {
+      this.displayedItemsByPresentacionId[presentacionId] = [];
+    }
+    const exists = this.displayedItemsByPresentacionId[presentacionId]
+      .some(item => item.id === newItem.id);
+
+    if (!exists) {
+      this.displayedItemsByPresentacionId[presentacionId].unshift(newItem);
+    }
+  }
+
+  async onEditarItem(item: InventarioProductoItem, invProId: number) {
+    const data: InventarioItemData = {
+      inventarioProducto: { id: invProId } as any,
+      inventarioProductoItem: item,
+      presentacion: item.presentacion,
+      producto: item.presentacion?.producto,
+      fromPreviousInventory: true
+    };
+
+    this.modalService.openModal(EditInventarioItemDialogComponent, data).then(async (result: any) => {
+      const role = result?.role;
+      const payload: any = result?.data ?? null;
+      if (!payload || role === 'cancel' || role === 'backdrop') {
+        return;
+      }
+      {
+        payload.id = null;
+        payload.inventarioProductoId = invProId;
+        if (!payload.presentacionId && item.presentacion?.id) {
+          payload.presentacionId = item.presentacion.id;
+        }
+
+        console.log('Guardando nuevo item en inventario', payload);
+        (await this.inventarioService.onSaveInventarioProductoItem(payload))
+          .pipe(untilDestroyed(this))
+          .subscribe(async (savedItem) => {
+            if (savedItem) {
+              const presentacionId = item.presentacion?.id;
+              this.inventarioService.inventarioItemSaved$.next({
+                item: savedItem,
+                inventarioProductoId: invProId
+              });
+              this.removeItemFromDisplay(presentacionId, item.id);
+
+              this.notificacionService.open('Vencimiento agregado al inventario', TipoNotificacion.SUCCESS, 2);
+            }
+          }, (error) => {
+            console.error('Error al guardar item:', error);
+            this.notificacionService.open('Error al guardar el vencimiento', TipoNotificacion.DANGER, 2);
+          });
+      }
+    });
+  }
+
+  async onEliminarItem(item: InventarioProductoItem, presentacionId: number, invProId: number) {
+    this.dialogService.open('Confirmar', '¿Desea quitar este vencimiento del inventario')
+      .then(async (res) => {
+        if (res.role === 'aceptar') {
+          this.removeItemFromDisplay(presentacionId, item.id);
+          if (item.inventarioProducto?.id === invProId && item.id) {
+            (await this.inventarioService.onDeleteInventarioProductoItem(item.id))
+              .pipe(untilDestroyed(this))
+              .subscribe(() => {
+                this.notificacionService.open('Vencimiento quitado del inventario', TipoNotificacion.SUCCESS, 2);
+              });
+          } else {
+            this.notificacionService.open('se limpio correctamente', TipoNotificacion.SUCCESS, 2);
+          }
+        }
+      });
+  }
+
+  async onGuardarPresentacion(presentacion: Presentacion, producto: Producto) {
+    if (!this.isInventario) { return; }
+    const cantidad = this.cantidadById[presentacion.id];
+    const venc = this.vencimientoById[presentacion.id];
+    const estado = this.estadoById[presentacion.id] || InventarioProductoEstado.BUENO;
+    if (cantidad == null || cantidad < 0 || venc == null) {
+      this.notificacionService.warn('Complete la cantidad y el vencimiento');
+      return;
+    }
+    const invPro = this.data?.data?.invPro;
+    const vencStr = typeof venc === 'string'
+      ? (venc.includes('/') ? this.convertToIsoDate(venc) : venc)
+      : dateToString(new Date(venc));
+    const input: InventarioProductoItemInput = {
+      id: null,
+      inventarioProductoId: invPro?.id,
+      zonaId: invPro?.zona?.id,
+      presentacionId: presentacion?.id,
+      cantidad: +cantidad,
+      cantidadFisica: null,
+      vencimiento: vencStr,
+      estado: estado,
+      usuarioId: null
+    } as any;
+
+    (await this.productoService.onGetStockPorSucursal(producto?.id, this.selectedSucursal?.id))
+      .pipe(untilDestroyed(this))
+      .subscribe(async (stockResponse) => {
+        if (stockResponse == null) {
+          this.notificacionService.warn('No se pudo obtener el stock actual');
+          return;
+        }
+        input.cantidadFisica = stockResponse;
+        (await this.inventarioService.onSaveInventarioProductoItem(input))
+          .pipe(untilDestroyed(this))
+          .subscribe((res) => {
+            if (res != null) {
+              this.inventarioService.inventarioItemSaved$.next({ item: res, inventarioProductoId: invPro?.id });
+              this.cantidadById[presentacion.id] = null;
+              this.vencimientoById[presentacion.id] = null;
+              this.estadoById[presentacion.id] = InventarioProductoEstado.BUENO;
+            }
+          });
+      });
+  }
+
+  private convertToIsoDate(value: string): string {
+    const parts = value.split('/');
+    if (parts.length === 3) {
+      const [dd, mm, yyyy] = parts;
+      return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+    }
+    return value;
   }
 
   onBack() {
@@ -215,126 +374,16 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit{
     })
   }
 
-  onScroll(event: any){
+  onScroll(event: any) {
     const scrollTop = event.detail.scrollTop;
     this.isVisible = scrollTop > 10;
   }
 
-  scrollToTop(){
+  scrollToTop() {
     this.content.scrollToTop(500);
   }
 
-  async onVerificarProducto(presentacion: Presentacion, producto: Producto, slidingItem: IonItemSliding) {
-    slidingItem.close();
-
-    if (!this.isInventario || !this.data?.data?.inventarioId) {
-      this.notificacionService.warn('No se puede verificar el producto fuera del contexto de inventario');
-      return;
-    }
-
-    try {
-      const inventarioProductoId = Number(this.data.data.inventarioProductoId);
-      const presentacionId = Number(presentacion.id);
-      const usuarioId = Number(localStorage.getItem("usuarioId"));
-      
-      const stockReal = producto?.stockPorProducto ? (producto.stockPorProducto / presentacion.cantidad) : 0;
-      
-      const inventarioProductoItemInput = {
-        inventarioProductoId: inventarioProductoId,
-        presentacionId: presentacionId,
-        cantidad: stockReal,
-        cantidadFisica: stockReal,
-        cantidadAnterior: stockReal,
-        verificado: true,
-        revisado: false,
-        estado: InventarioProductoEstado.BUENO,
-        usuarioId: usuarioId,
-        fechaVerificado: null
-      };
-
-      try {
-        if (producto.id) {
-          try {
-            if (producto.vencimiento === true && stockReal > 0) {
-              const fechaDefecto = new Date();
-              fechaDefecto.setMonth(fechaDefecto.getMonth() + 6);
-              const fechaVencimientoDefecto = `${fechaDefecto.getFullYear()}-${String(fechaDefecto.getMonth() + 1).padStart(2, '0')}-${String(fechaDefecto.getDate()).padStart(2, '0')}T23:59:59`;
-              
-              inventarioProductoItemInput['vencimiento'] = fechaVencimientoDefecto;
-            } else {
-              inventarioProductoItemInput['vencimiento'] = null;
-            }
-          } catch (error) {
-            console.warn('Error al verificar vencimiento del producto:', error);
-          }
-        }
-
-        const itemsExistentesObservable = await this.inventarioService.onGetInventarioProItem(inventarioProductoId, 0);
-        
-        itemsExistentesObservable.subscribe((itemsExistentes) => {
-          
-          if (Array.isArray(itemsExistentes) && itemsExistentes.length > 0) {
-            const itemExistente = itemsExistentes.find(item => 
-              Number(item.presentacion?.id) === Number(presentacionId)
-            );
-            
-            if (itemExistente) {
-              
-              if (itemExistente.id) {
-                inventarioProductoItemInput['id'] = itemExistente.id;
-              }
-              
-              if (stockReal > 0 && itemExistente.vencimiento) {
-                let vencimientoStr;
-                if (typeof itemExistente.vencimiento === 'string') {
-                  const vencimientoString = String(itemExistente.vencimiento);
-                  if (vencimientoString.includes('T')) {
-                    vencimientoStr = vencimientoString;
-                  } else if (vencimientoString.includes(' ')) {
-                    vencimientoStr = vencimientoString.replace(' ', 'T');
-                  } else {
-                    vencimientoStr = `${vencimientoString}T23:59:59`;
-                  }
-                } else {
-                  const fechaVenc = new Date(itemExistente.vencimiento);
-                  vencimientoStr = fechaVenc.toISOString().split('.')[0]; 
-                }
-                inventarioProductoItemInput['vencimiento'] = vencimientoStr;
-              } else {
-                inventarioProductoItemInput['vencimiento'] = null;
-              }
-            } 
-          }
-          this.guardarVerificacion(inventarioProductoItemInput);
-        }, (error) => {
-          console.warn('No se pudo obtener información del item existente:', error);
-          this.guardarVerificacion(inventarioProductoItemInput);
-        });
-      } catch (error) {
-        console.warn('Error al intentar obtener item existente:', error);
-        this.guardarVerificacion(inventarioProductoItemInput);
-      }
-    } catch (error) {
-      console.error('Error al verificar producto:', error);
-      this.notificacionService.danger('Error al verificar el producto: ' + (error as any)?.message);
-    }
-  }
-
-  private async guardarVerificacion(inventarioProductoItemInput: any) {
-    console.log("Enviando datos para guardar:", JSON.stringify(inventarioProductoItemInput));
-
-    (await this.inventarioService.onSaveInventarioProductoItem(inventarioProductoItemInput))
-      .pipe(untilDestroyed(this))
-      .subscribe((res) => {
-        if (res) {
-          this.notificacionService.success('Producto verificado correctamente');
-          this.modalService.closeModal(res);
-        } else {
-          this.notificacionService.warn('No se pudo verificar el producto');
-          this.modalService.closeModal(null);
-        }
-      }, error => {
-        console.error('Error detallado:', error);
-      });
+  onVencChange(presentacionId: number, ev: any) {
+    this.vencimientoById[presentacionId] = ev?.detail?.value;
   }
 }

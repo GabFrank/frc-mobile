@@ -1,5 +1,4 @@
 import { GetTransferenciasPorUsuarioGQL } from './graphql/getTransferenciasPorUsuario';
-import { transferenciasPorUsuarioQuery } from './graphql/graphql-query';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { GenericCrudService } from './../../generic/generic-crud.service';
@@ -18,7 +17,6 @@ import { SaveTransferenciaItemGQL } from './graphql/saveTransferenciaItem';
 import { Transferencia, TransferenciaItem, TransferenciaEstado, EtapaTransferencia } from './transferencia.model';
 import { GetTransferenciaItensPorTransferenciaIdGQL } from './graphql/getTransferenciaItensPorTransferenciaId';
 import { PageInfo } from 'src/app/app.component';
-import { TransferListItem } from 'worker_threads';
 import { GetTransferenciaItensWithFilterGQL } from './graphql/getTransferenciaItensWithFilter';
 
 @UntilDestroy()
