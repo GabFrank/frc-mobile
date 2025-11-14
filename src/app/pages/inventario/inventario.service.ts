@@ -164,7 +164,35 @@ export class InventarioService {
   }
 
   async onSaveInventarioProductoItem(input): Promise<Observable<InventarioProductoItem>> {
-    return await this.genericCrudService.onSave(this.saveInventarioProductoItem, input);
+    // Manejo específico para duplicado en inventario (bloqueado por backend) en el frontend
+    let loading = await this.cargandoService.open(null, false)
+    if (input.usuarioId == null) {
+      input.usuarioId = +localStorage.getItem('usuarioId');
+    }
+    return new Observable((obs) => {
+      this.saveInventarioProductoItem
+        .mutate(
+          { entity: input },
+          { fetchPolicy: 'no-cache', errorPolicy: 'all' }
+        )
+        .pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          this.cargandoService.close(loading)
+          if (res.errors == null) {
+            obs.next(res.data['data'])
+            this.notificacionService.open('Guardado con éxito', TipoNotificacion.SUCCESS, 2)
+          } else {
+            console.log(res.errors)
+            obs.next(null)
+            const msg = res.errors[0]?.message || ''
+            if (msg.includes('ya fue registrado en este inventario')) {
+              this.notificacionService.open('Este producto ya fue registrado en este inventario', TipoNotificacion.WARN, 3)
+            } else {
+              this.notificacionService.open('Ups!! Algo salió mal', TipoNotificacion.DANGER, 2)
+            }
+          }
+        })
+    })
   }
 
   async onDeleteInventarioProductoItem(id, item?): Promise<Observable<boolean>> {
