@@ -1,0 +1,141 @@
+:host {
+  --ion-background-color: #0f0f0f;
+}
+
+ion-content {
+  --background: #0f0f0f;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 80px;
+}
+
+/* Header */
+.header-row {
+  align-items: center;
+  padding: 1rem 0.5rem;
+  background: #0f0f0f;
+  border-bottom: 1px solid #222;
+}
+
+.title-col {
+  text-align: center;
+}
+
+.page-title {
+  color: #ffffff;
+  font-size: 1.15rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Contenido principal sin tarjeta */
+.content-wrapper {
+  padding: 1rem;
+}
+
+.section-title {
+  color: #ffffff;
+  font-size: 1.1rem;
+  margin: 0 0 1.5rem 0;
+  font-weight: 600;
+}
+
+/* Acordeón simplificado */
+.simple-accordion {
+  background: transparent;
+  
+  ion-accordion {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #161616;
+  }
+}
+
+.accordion-header {
+  --background: #161616; /* armoniza con dark1 */
+  --border-color: #222;
+  min-height: 60px;
+  
+  h2 {
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+  }
+  
+  p {
+    color: var(--ion-color-medium); /* subtítulo acorde al tema */
+    font-size: 0.85rem;
+    margin: 0;
+  }
+}
+
+.accordion-content {
+  background: #191919;
+  border-top: 1px solid #222;
+  
+  ion-list {
+    background: transparent;
+    padding: 0;
+  }
+  
+  ion-item {
+    --background: transparent;
+    --border-color: #222;
+    --min-height: 56px;
+    
+    &.selected {
+      --background: rgba(var(--ion-color-success-rgb), 0.1);
+    }
+    
+    h3 {
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin: 0 0 4px 0;
+    }
+    
+    p {
+      color: var(--ion-color-medium);
+      font-size: 0.8rem;
+      margin: 0;
+    }
+  }
+}
+
+/* Footer con botón principal (usa clases globales btn-success) */
+.simple-footer {
+  background: #0f0f0f;
+  padding: 1rem;
+  border-top: 1px solid #222;
+  
+  ion-button {
+    margin: 0;
+    --border-radius: 12px;
+  }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .content-wrapper {
+    padding: 0.75rem;
+  }
+  
+  .simple-footer {
+    padding: 0.75rem;
+  }
+  
+  .accordion-header {
+    min-height: 56px;
+    
+    h2 {
+      font-size: 0.9rem;
+    }
+    
+    p {
+      font-size: 0.8rem;
+    }
+  }
+}

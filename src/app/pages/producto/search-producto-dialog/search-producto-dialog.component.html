@@ -24,37 +24,23 @@
     <ion-col size="12">
       <ion-item>
         <ion-label position="floating">Nombre o Código de Barra</ion-label>
-        <ion-input
-          #buscarInput
-          [formControl]="buscarControl"
-          autocapitalize="on"
-          (keyup.enter)="onBuscarClick()"
-        ></ion-input>
-        <ion-icon
-          style="font-size: 2em; padding-top: 5px"
-          name="camera-outline"
-          slot="end"
-          (click)="onCameraClick()"
-        ></ion-icon>
+        <ion-input #buscarInput [formControl]="buscarControl" autocapitalize="on"
+          (keyup.enter)="onBuscarClick()"></ion-input>
+        <ion-icon style="font-size: 2em; padding-top: 5px" name="camera-outline" slot="end"
+          (click)="onCameraClick()"></ion-icon>
       </ion-item>
     </ion-col>
   </ion-row>
+
   <ion-row *ngIf="buscarControl.valid">
     <ion-col size="12" style="text-align: center">
-      <ion-button
-        class="btn-success-flat"
-        fill="clear"
-        (click)="onBuscarClick()"
-        >Buscar</ion-button
-      >
+      <ion-button class="btn-success-flat" fill="clear" (click)="onBuscarClick()">Buscar</ion-button>
     </ion-col>
   </ion-row>
-  <ion-accordion-group>
-    <ion-accordion
-      *ngFor="let producto of productosList; let i = index"
-      [value]="producto.id"
-      (click)="onProductoClick(producto, i)"
-    >
+
+  <ion-accordion-group (ionChange)="onAccordionChangeProducto($event, producto)">
+    <ion-accordion *ngFor="let producto of productosList; let i = index; trackBy: trackByProductoId"
+      [value]="producto.id" (click)="onProductoClick(producto, i)">
       <ion-item slot="header">
         <ion-label>
           <ion-row>
@@ -62,11 +48,7 @@
               <h3 class="desc">{{ producto?.descripcion | titlecase }}</h3>
             </ion-col>
             <ion-col size="4" (click)="onVerStock(producto); $event.stopPropagation()" *ngIf="!isInventario">
-              <ion-text
-                text-end
-                style="font-size: 90%"
-                class="btn-success-flat"
-              >
+              <ion-text text-end style="font-size: 90%" class="btn-success-flat">
                 Ver Stock
               </ion-text>
             </ion-col>
@@ -75,145 +57,142 @@
       </ion-item>
 
       <ion-list slot="content">
-        <!-- Si es inventario, mostramos el ion-item-sliding -->
-        <ng-container *ngIf="isInventario; else normalPresentacion">
-          <ion-item-sliding #slidingItem *ngFor="let presentacion of producto?.presentaciones">
-            <ion-item
-              (click)="onPresentacionClick(presentacion, producto)"
-              class="dark1"
-            >
-              <ion-avatar
-                slot="start"
-                (click)="
-                  onAvatarClick(presentacion?.imagenPrincipal);
-                  $event.stopPropagation()
-                "
-              >
-                <img
-                  [src]="
-                    presentacion?.imagenPrincipal !== null
-                      ? presentacion?.imagenPrincipal
-                      : '/assets/no-image.png'
-                  "
-                />
-              </ion-avatar>
-              <ion-label>
-                <h4>
-                  Presentación: {{ presentacion?.cantidad | number: '1.0-2' }}
-                </h4>
-                <p>
-                  Cod. barra:
-                  {{ presentacion?.codigoPrincipal?.codigo | uppercase }}
-                </p>
-                <p *ngIf="mostrarPrecio">
-                  Precio:
-                  {{ presentacion?.precioPrincipal?.precio | number: '1.0-2' }} Gs.
-                </p>
-                <p *ngIf="data?.data?.sucursalId">
-                  <ng-container
-                    *ngIf="
-                      producto?.stockPorProducto === undefined;
-                      else elseTemplate
-                    "
-                  >
-                    <ion-spinner></ion-spinner>
-                  </ng-container>
-                  <ng-template #elseTemplate>
-                    Stock:
-                    {{
-                      producto?.stockPorProducto / presentacion?.cantidad
-                        | number: '1.0-2'
-                    }}
-                  </ng-template>
-                </p>
-              </ion-label>
-            </ion-item>
-            
-            <!-- Opciones al deslizar a la izquierda - para verificar -->
-            <ion-item-options side="start">
-              <ion-item-option color="success" (click)="onVerificarProducto(presentacion, producto, slidingItem)">
-                <ion-icon slot="icon-only" name="checkmark"></ion-icon>
-              </ion-item-option>
-            </ion-item-options>
-          </ion-item-sliding>
-        </ng-container>
-        
-        <!-- Template para presentación normal (no inventario) -->
-        <ng-template #normalPresentacion>
-        <ion-item
-          *ngFor="let presentacion of producto?.presentaciones"
-          (click)="onPresentacionClick(presentacion, producto)"
-          class="dark1"
-        >
-          <ion-avatar
-            slot="start"
-            (click)="
-              onAvatarClick(presentacion?.imagenPrincipal);
-              $event.stopPropagation()
-            "
-          >
-            <img
-              [src]="
-                presentacion?.imagenPrincipal !== null
-                  ? presentacion?.imagenPrincipal
-                  : '/assets/no-image.png'
-              "
-            />
-          </ion-avatar>
-          <ion-label>
-            <h4>
-              Presentación: {{ presentacion?.cantidad | number: '1.0-2' }}
-            </h4>
-            <p>
-              Cod. barra:
-              {{ presentacion?.codigoPrincipal?.codigo | uppercase }}
-            </p>
-            <p *ngIf="mostrarPrecio">
-              Precio:
-              {{ presentacion?.precioPrincipal?.precio | number: '1.0-2' }} Gs.
-            </p>
-            <p *ngIf="data?.data?.sucursalId">
-              <ng-container
-                *ngIf="
-                  producto?.stockPorProducto === undefined;
-                  else elseTemplate
-                "
-              >
-                <ion-spinner></ion-spinner>
-              </ng-container>
-              <ng-template #elseTemplate>
-                Stock:
-                {{
+        <ng-container *ngIf="!isInventario; else inventarioTpl">
+          <ion-item *ngFor="let presentacion of producto?.presentaciones; trackBy: trackByPresentacionId"
+            (click)="onPresentacionClick(presentacion, producto)" class="dark1">
+            <ion-avatar slot="start" (click)="
+                onAvatarClick(presentacion?.imagenPrincipal);
+                $event.stopPropagation()
+              ">
+              <img [src]="
+                  presentacion?.imagenPrincipal !== null
+                    ? presentacion?.imagenPrincipal
+                    : '/assets/no-image.png'
+                " />
+            </ion-avatar>
+            <ion-label>
+              <h4>
+                Presentación: {{ presentacion?.cantidad | number: '1.0-2' }}
+              </h4>
+              <p>
+                Cod. barra:
+                {{ presentacion?.codigoPrincipal?.codigo | uppercase }}
+              </p>
+              <p *ngIf="mostrarPrecio">
+                Precio:
+                {{ presentacion?.precioPrincipal?.precio | number: '1.0-2' }} Gs.
+              </p>
+              <p *ngIf="data?.data?.sucursalId">
+                <ng-container *ngIf="
+                    producto?.stockPorProducto === undefined;
+                    else elseTemplate
+                  ">
+                  <ion-spinner></ion-spinner>
+                </ng-container>
+                <ng-template #elseTemplate>
+                  Stock:
+                  {{
                   producto?.stockPorProducto / presentacion?.cantidad
-                    | number: '1.0-2'
-                }}
-              </ng-template>
-            </p>
-          </ion-label>
-        </ion-item>
+                  | number: '1.0-2'
+                  }}
+                </ng-template>
+              </p>
+            </ion-label>
+          </ion-item>
+        </ng-container>
+        <ng-template #inventarioTpl>
+          <ion-accordion-group (ionChange)="onAccordionChangePresentacion($event, producto)">
+            <ion-accordion *ngFor="let presentacion of producto?.presentaciones; trackBy: trackByPresentacionId"
+              [value]="presentacion.id"
+              (ionAccordionToggle)="onAccordionTogglePresentacion($event, presentacion.id, producto)">
+              <ion-item slot="header" class="dark1">
+                <ion-avatar slot="start" (click)="
+                    onAvatarClick(presentacion?.imagenPrincipal);
+                    $event.stopPropagation()
+                  ">
+                  <img [src]="
+                      presentacion?.imagenPrincipal !== null
+                        ? presentacion?.imagenPrincipal
+                        : '/assets/no-image.png'
+                    " />
+                </ion-avatar>
+                <ion-label>
+                  <h4>
+                    Presentación: {{ presentacion?.cantidad | number: '1.0-2' }}
+                  </h4>
+                  <p>
+                    Cod. barra:
+                    {{ presentacion?.codigoPrincipal?.codigo | uppercase }}
+                  </p>
+                </ion-label>
+              </ion-item>
+
+              <div slot="content" class="dark2" style="padding: 8px 12px;">
+                <ion-item>
+                  <ion-label position="floating">Cantidad</ion-label>
+                  <ion-input type="number" [(ngModel)]="cantidadById[presentacion.id]"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                  <ion-label position="stacked">Vencimiento</ion-label>
+                  <ion-input type="date" placeholder="Choose a date" [(ngModel)]="vencimientoById[presentacion.id]"
+                    (ionChange)="onVencChange(presentacion.id, $event)"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                  <ion-label>Estado</ion-label>
+                  <ion-select interface="popover" [(ngModel)]="estadoById[presentacion.id]">
+                    <ion-select-option *ngFor="let e of estadosList" [value]="e">{{e}}</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ion-list *ngIf="displayedItemsByPresentacionId[presentacion.id]?.length > 0">
+                  <ion-item>
+                    <ion-label>
+                      <p class="title">Vencimientos</p>
+                    </ion-label>
+                  </ion-item>
+                  <ion-item
+                    *ngFor="let it of displayedItemsByPresentacionId[presentacion.id]; trackBy: trackByInventarioItemId">
+                    <ion-label>
+                      <p>{{ it.vencimiento | date: 'shortDate' }} - Cant.: {{ it.cantidad | number:'1.0-3' }} - {{
+                        it.estado }}</p>
+                      <p *ngIf="it.copiedFromItemId" style="font-size: 0.8em; color: #666;">
+                        (Copiado desde inventario anterior)
+                      </p>
+                    </ion-label>
+                    <ion-icon name="create-outline" class="btn-success-flat" slot="end" style="margin-right: 8px;"
+                      (click)="onEditarItem(it, data?.data?.invPro?.id)"></ion-icon>
+                    <ion-icon name="trash-outline" class="btn-danger-flat" slot="end"
+                      (click)="onEliminarItem(it, presentacion.id, data?.data?.invPro?.id)"></ion-icon>
+                  </ion-item>
+                </ion-list>
+                <ion-row style="margin-top: 8px;">
+                  <ion-col>
+                    <ion-button class="btn-danger" expand="block"
+                      (click)="cantidadById[presentacion.id] = null; vencimientoById[presentacion.id] = null; estadoById[presentacion.id] = InventarioProductoEstado.BUENO">Cancelar</ion-button>
+                  </ion-col>
+                  <ion-col>
+                    <ion-button class="btn-success" expand="block"
+                      (click)="onGuardarPresentacion(presentacion, producto)">Aceptar</ion-button>
+                  </ion-col>
+                </ion-row>
+              </div>
+            </ion-accordion>
+          </ion-accordion-group>
         </ng-template>
       </ion-list>
     </ion-accordion>
   </ion-accordion-group>
+
   <ion-row *ngIf="productosList?.length > 0 && showCargarMas">
     <ion-col size="12" style="text-align: center">
-      <ion-button
-        class="btn-success-flat"
-        fill="clear"
-        (click)="onMasProductos()"
-        >Cargar más</ion-button
-      >
+      <ion-button class="btn-success-flat" fill="clear" (click)="onMasProductos()">Cargar más</ion-button>
     </ion-col>
   </ion-row>
 
-  <!-- <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-    <ion-fab-button class="btn-success" (click)="onMasProductos()">
-      <ion-icon name="add"></ion-icon>
+  <ion-fab [ngClass]="{'fade-in': isVisible, 'fade-out': !isVisible}" vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="scrollToTop()">
+      <ion-icon name="arrow-up-outline"></ion-icon>
     </ion-fab-button>
-  </ion-fab> -->
-    <ion-fab [ngClass]="{'fade-in': isVisible, 'fade-out': !isVisible}" vertical="bottom" horizontal="end" slot="fixed">
-      <ion-fab-button (click)="scrollToTop()">
-        <ion-icon name="arrow-up-outline"></ion-icon>
-      </ion-fab-button>
-    </ion-fab>
+  </ion-fab>
 </ion-content>

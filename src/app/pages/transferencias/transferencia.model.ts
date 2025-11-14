@@ -8,16 +8,16 @@ export enum TransferenciaEstado {
   EN_ORIGEN = 'EN_ORIGEN', //la transferencia ha sido creada pero aun esta en el deposito de origen
   EN_TRANSITO = 'EN_TRANSITO', //la transferencia esta en camino
   EN_DESTINO = 'EN_DESTINO', //la transferencia ha llegado al destino y esta en verificacion
-  FALTA_REVISION_EN_ORIGEN = 'FALTA_REVISION_EN_ORIGEN', //la transferencia ha sido creada y esta en el deposito de origen pero exige una revision
-  FALTA_REVISION_EN_DESTINO = 'FALTA_REVISION_EN_DESTINO', //la transferencia ha sido creada y esta en el deposito de destino pero exige una revision
+  FALTA_REVISION_EN_ORIGEN = 'FALTA_REVISION_EN_ORIGEN',
+  FALTA_REVISION_EN_DESTINO = 'FALTA_REVISION_EN_DESTINO',
   CONLCUIDA = 'CONLCUIDA',
   CANCELADA = 'CANCELADA'
 }
 
 export enum TipoTransferencia {
-  MANUAL = 'MANUAL', //hecho por un usuario
-  AUTOMATICA = 'AUTOMATICA', //hecha por el sistema
-  MIXTA = 'MIXTA' //hecha por el sistema pero modificada por un usuario
+  MANUAL = 'MANUAL',
+  AUTOMATICA = 'AUTOMATICA',
+  MIXTA = 'MIXTA'
 }
 
 export enum TransferenciaItemMotivoRechazo {

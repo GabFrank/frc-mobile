@@ -21,7 +21,30 @@ export class GenericCrudService {
     private notificacionService: NotificacionService,
     private cargandoService: CargandoService,
     private apollo: Apollo
-  ) {}
+  ) { }
+
+  async onGetCustom(
+    gql: Query,
+    data: any
+  ): Promise<Observable<any>> {
+    return new Observable((obs) => {
+      gql
+        .fetch(data, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
+        .pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          if (res.errors == null) {
+            obs.next(res.data['data']);
+          } else {
+            console.log(res.errors);
+            this.notificacionService.open(
+              'Ups!! Algo salió mal',
+              TipoNotificacion.DANGER,
+              2
+            );
+          }
+        });
+    });
+  }
 
   async onCustomGet(
     gql: Query,
@@ -312,7 +335,9 @@ export class GenericCrudService {
         this.dialogoService
           .open(
             'Atención!!',
-            (titulo || 'Realemente desea eliminar este item:') + data + '?',
+            (data != null && data !== ''
+              ? `${titulo || 'Realmente desea eliminar este item:'} ${data}?`
+              : `${titulo || 'Realmente desea eliminar este item'}?`),
             true
           )
           .then((res1) => {
@@ -439,7 +464,6 @@ export class GenericCrudService {
         });
     });
   }
-
   async onCustomSave(gql: Mutation, data): Promise<Observable<any>> {
     let loading = await this.cargandoService.open(null, false);
     return new Observable((obs) => {

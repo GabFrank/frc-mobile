@@ -1,0 +1,79 @@
+<ion-content>
+  <ion-row class="header-row">
+    <ion-col size="2">
+      <ion-button fill="clear" (click)="onBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-col>
+    <ion-col size="8" class="title-col">
+      <h1 class="page-title">Nueva transferencia</h1>
+    </ion-col>
+  </ion-row>
+
+  <div class="content-wrapper">
+    <h2 class="section-title">Selección de Sucursales</h2>
+
+    <ion-accordion-group #group class="simple-accordion">
+      <ion-accordion value="origen">
+        <ion-item slot="header" class="accordion-header dark1">
+          <ion-icon name="swap-horizontal" slot="start"></ion-icon>
+          <ion-label>
+            <h2>Sucursal Origen</h2>
+            <p>{{ origenDisplayText }}</p>
+          </ion-label>
+          <ion-icon *ngIf="selectedOrigen" name="checkmark-circle" slot="end" color="success"></ion-icon>
+        </ion-item>
+
+        <div class="accordion-content" slot="content">
+          <ion-list>
+            <ion-item *ngFor="let suc of allSucursales" [button]="true" [class.selected]="suc.id === selectedOrigen?.id"
+              (click)="selectOrigen(suc)">
+              <ion-icon name="location" slot="start" [color]="suc.id === selectedOrigen?.id ? 'success' : 'medium'">
+              </ion-icon>
+              <ion-label>
+                <h3>{{ suc.nombre }}</h3>
+                <p>ID: {{ suc.id }}</p>
+              </ion-label>
+              <ion-icon *ngIf="suc.id === selectedOrigen?.id" name="checkmark-circle" slot="end"
+                color="success"></ion-icon>
+            </ion-item>
+          </ion-list>
+        </div>
+      </ion-accordion>
+
+      <ion-accordion value="destino" [disabled]="!selectedOrigen">
+        <ion-item slot="header" class="accordion-header dark1">
+          <ion-icon name="location" slot="start"></ion-icon>
+          <ion-label>
+            <h2>Sucursal Destino</h2>
+            <p>{{ destinoDisplayText }}</p>
+          </ion-label>
+          <ion-icon *ngIf="selectedDestino" name="checkmark-circle" slot="end" color="success"></ion-icon>
+        </ion-item>
+
+        <div class="accordion-content" slot="content">
+          <ion-list>
+            <ion-item *ngFor="let suc of sucursalesDestinoDisponibles" [button]="true"
+              [class.selected]="suc.id === selectedDestino?.id" (click)="selectDestino(suc)">
+              <ion-icon name="location" slot="start" [color]="suc.id === selectedDestino?.id ? 'success' : 'medium'">
+              </ion-icon>
+              <ion-label>
+                <h3>{{ suc.nombre }}</h3>
+                <p>ID: {{ suc.id }}</p>
+              </ion-label>
+              <ion-icon *ngIf="suc.id === selectedDestino?.id" name="checkmark-circle" slot="end"
+                color="success"></ion-icon>
+            </ion-item>
+          </ion-list>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+  </div>
+  <ion-footer class="simple-footer">
+    <ion-button expand="block" size="large" class="btn-success" [disabled]="!isFormValid"
+      (click)="onContinuarAGestionProductos()">
+      Continuar
+      <ion-icon name="arrow-forward" slot="end"></ion-icon>
+    </ion-button>
+  </ion-footer>
+</ion-content>

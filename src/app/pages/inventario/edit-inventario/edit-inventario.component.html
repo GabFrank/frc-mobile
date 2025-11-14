@@ -17,6 +17,12 @@
 </ion-header>
 <ion-content>
   <ion-card>
+    <ion-row>
+      <ion-col size="2">
+        <ion-icon name="arrow-back" style="font-size: 1.5em" (click)="onBack()"></ion-icon>
+      </ion-col>
+      <ion-col size="8" style="text-align: center">Detalles de inventario</ion-col>
+    </ion-row>
     <!-- primera linea -->
     <ion-row>
       <ion-col size="3">
@@ -68,12 +74,7 @@
         </div>
       </ion-col>
       <ion-col size="4" style="text-align: center">
-        <ion-button
-          class="btn-success-flat"
-          fill="clear"
-          (click)="onMenuClick()"
-          >MENU</ion-button
-        >
+        <ion-button class="btn-success-flat" fill="clear" (click)="onMenuClick()">MENU</ion-button>
       </ion-col>
     </ion-row>
     <!-- <ion-row>
@@ -89,34 +90,22 @@
     <ion-col size="2"> </ion-col>
     <ion-col size="8" style="text-align: center"><ion-title>Zonas</ion-title></ion-col>
     <ion-col size="2" style="text-align: center">
-      <ion-icon
-        name="funnel"
-        style="font-size: 1.5em"
-        (click)="openFilterMenu()"
-      ></ion-icon>
+      <ion-icon name="funnel" style="font-size: 1.5em" (click)="openFilterMenu()"></ion-icon>
     </ion-col>
   </ion-row>
 
-  <ion-accordion-group [value]="activeAccordionId" (valueChange)="activeAccordionId = $event">
-    <ion-accordion
-      *ngFor="
+  <ion-accordion-group>
+    <ion-accordion *ngFor="
         let invPro of selectedInventario?.inventarioProductoList;
         let i = index
-      "
-      [value]="invPro.id"
-      (click)="onGetProductosItemList(invPro, i)"
-    >
-      <ion-item
-        slot="header"
-        [class.estado-abierto]="invPro?.concluido === false"
-        [hidden]="
+      " [value]="invPro.id" (click)="onGetProductosItemList(invPro, i)">
+      <ion-item slot="header" [class.estado-abierto]="invPro?.concluido === false" [hidden]="
           !(
             (mostrarControl.value === 'MIOS' &&
               invPro?.usuario?.id === mainService?.usuarioActual?.id) ||
             mostrarControl.value === 'TODOS'
           )
-        "
-      >
+        ">
         <ion-label>
           Zona: {{ invPro?.zona?.descripcion | titlecase }}
           <p class="white">
@@ -127,11 +116,11 @@
           </p>
           <p class="white">
             {{
-              invPro?.concluido === true
-                ? 'Concluido'
-                : invPro?.concluido === false
-                ? 'En proceso'
-                : null
+            invPro?.concluido === true
+            ? 'Concluido'
+            : invPro?.concluido === false
+            ? 'En proceso'
+            : null
             }}
           </p>
         </ion-label>
@@ -140,35 +129,27 @@
       <ion-list slot="content">
         <ion-row class="dark2">
           <ion-col size="12" class="center">
-            <ion-button
-              class="btn-success-flat"
-              fill="clear"
-              (click)="onAddProducto(invPro, i2)"
-              expand="block"
-              *ngIf="
+            <ion-button class="btn-success-flat" fill="clear" (click)="onAddProducto(invPro, i2)" expand="block" *ngIf="
                 invPro?.concluido !== true &&
                 mainService?.usuarioActual?.id === invPro?.usuario?.id &&
                 selectedInventario?.estado === 'ABIERTO'
-              "
-            >
+              ">
               + Producto
             </ion-button>
           </ion-col>
         </ion-row>
-        <ng-container
-          *ngFor="
+        <ng-container *ngFor="
             let invProItem of invPro?.inventarioProductoItemList;
             let i2 = index
-          "
-        >
+          ">
           <ion-item class="dark2">
             <ion-label>
               <ion-row>
                 <ion-col size="10">
                   <h3>
                     {{
-                      invProItem?.presentacion?.producto?.descripcion
-                        | titlecase
+                    invProItem?.presentacion?.producto?.descripcion
+                    | titlecase
                     }}
                   </h3>
                   <h5>
@@ -177,8 +158,7 @@
                   </h5>
                 </ion-col>
                 <ion-col size="2" class="ion-text-end">
-                  {{ invProItem.cantidad | number: '1.0-3' }}</ion-col
-                >
+                  {{ invProItem.cantidad | number: '1.0-3' }}</ion-col>
               </ion-row>
               <ion-row>
                 <ion-col size="4">
@@ -192,30 +172,20 @@
                   <p>{{ invProItem.estado }}</p>
                 </ion-col>
                 <ion-col size="2">
-                  <ion-icon
-                    class="btn-success-flat"
-                    (click)="onEditProducto(invProItem, i2, invPro)"
-                    name="create-outline"
-                    size="large"
-                    *ngIf="
+                  <ion-icon class="btn-success-flat" (click)="onEditProducto(invProItem, i2, invPro)"
+                    name="create-outline" size="large" *ngIf="
                       invPro?.concluido !== true &&
                       selectedInventario?.estado === 'ABIERTO'
-                    "
-                  >
+                    ">
                   </ion-icon>
                 </ion-col>
                 <ion-icon slot="start" name="add"></ion-icon>
                 <ion-col size="2">
-                  <ion-icon
-                    class="btn-danger-flat"
-                    (click)="onDeleteProducto(invProItem, i2, invPro)"
-                    name="trash-outline"
-                    size="large"
-                    *ngIf="
+                  <ion-icon class="btn-danger-flat" (click)="onDeleteProducto(invProItem, i2, invPro)"
+                    name="trash-outline" size="large" *ngIf="
                       invPro?.concluido !== true &&
                       selectedInventario?.estado === 'ABIERTO'
-                    "
-                  >
+                    ">
                   </ion-icon>
                 </ion-col>
               </ion-row>
@@ -225,26 +195,16 @@
 
         <ion-row class="dark2">
           <ion-col class="center">
-            <ion-button
-              class="btn-success-flat"
-              fill="clear"
-              (click)="onCargarMenos(invPro, i)"
-              expand="block"
+            <ion-button class="btn-success-flat" fill="clear" (click)="onCargarMenos(invPro, i)" expand="block"
               *ngIf="invPro?.inventarioProductoItemList?.length > 0"
-              [disabled]="invPro?.inventarioProductoItemList?.length < 6"
-            >
+              [disabled]="invPro?.inventarioProductoItemList?.length < 6">
               Menos
             </ion-button>
           </ion-col>
           <ion-col class="center">
-            <ion-button
-              class="btn-success-flat"
-              fill="clear"
-              (click)="onCargarMas(invPro, i)"
-              expand="block"
+            <ion-button class="btn-success-flat" fill="clear" (click)="onCargarMas(invPro, i)" expand="block"
               *ngIf="invPro?.inventarioProductoItemList?.length > 0"
-              [disabled]="invPro?.inventarioProductoItemList?.length < 4"
-            >
+              [disabled]="invPro?.inventarioProductoItemList?.length < 4">
               Cargar más
             </ion-button>
           </ion-col>
@@ -252,22 +212,15 @@
 
         <ion-row class="dark2">
           <ion-col size="12" class="center">
-            <ion-button
-              class="btn-success-flat"
-              fill="clear"
-              (click)="
+            <ion-button class="btn-success-flat" fill="clear" (click)="
                 invPro?.concluido === true
                   ? onReabrirZona(invPro, i)
                   : onFinalizarZona(invPro, i)
-              "
-              expand="block"
-              [disabled]="
+              " expand="block" [disabled]="
                 mainService?.usuarioActual?.id !== invPro?.usuario?.id
-              "
-              *ngIf="selectedInventario?.estado === 'ABIERTO'"
-            >
+              " *ngIf="selectedInventario?.estado === 'ABIERTO'">
               {{
-                invPro?.concluido === true ? 'Reabrir Zona' : 'Finalizar Zona'
+              invPro?.concluido === true ? 'Reabrir Zona' : 'Finalizar Zona'
               }}
             </ion-button>
           </ion-col>
@@ -276,13 +229,8 @@
     </ion-accordion>
     <ion-row>
       <ion-col size="12" style="text-align: center">
-        <ion-button
-          *ngIf="selectedInventario?.estado === 'ABIERTO' && verificarAbiertos()"
-          class="btn-success-flat"
-          fill="clear"
-          (click)="onAddZona()"
-          >+ Zona</ion-button
-        >
+        <ion-button *ngIf="selectedInventario?.estado === 'ABIERTO'" class="btn-success-flat" fill="clear"
+          (click)="onAddZona()">+ Zona</ion-button>
       </ion-col>
     </ion-row>
   </ion-accordion-group>

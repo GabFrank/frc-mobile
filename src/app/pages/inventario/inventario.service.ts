@@ -6,7 +6,7 @@ import { NotificacionService, TipoNotificacion } from 'src/app/services/notifica
 import { CargandoService } from './../../services/cargando.service';
 import { Inventario, InventarioProducto, InventarioProductoItem, ProductoSaldoDto } from './inventario.model';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { GenericCrudService } from 'src/app/generic/generic-crud.service';
 import { DeleteInventarioGQL } from './graphql/deleteInventario';
 import { DeleteInventarioProductoGQL } from './graphql/deleteInventarioProducto';
@@ -20,6 +20,8 @@ import { untilDestroyed } from '@ngneat/until-destroy';
 import { GetInventarioPorUsuarioGQL } from './graphql/getInventarioPorUsuario';
 import { GetInventarioAbiertoPorSucursalGQL } from './graphql/getInventarioAbiertoPorSucursal';
 import { GetInventarioItemPorInvetarioProductoGQL } from './graphql/getInventarioProductoItemPorInventarioProducto copy';
+import { GetInventarioItemsPorInvProYPresentacionGQL } from './graphql/getInventarioItemsPorInvProYPresentacion';
+import { GetInventarioItemsDeInventariosAnterioresGQL } from './graphql/getInventarioItemsDeInventariosAnteriores';
 import { ReabrirInventarioGQL } from './graphql/reabrir-inventario copy';
 import { GetInventarioPorUsuarioPaginadoGQL } from './graphql/getInventarioPorUsuarioPaginadoGQL';
 import { GetInventarioItemsParaRevisarGQL } from './graphql/getInventarioItemsParaRevisar';
@@ -33,6 +35,7 @@ import { PageInfo } from 'src/app/app.component';
   providedIn: 'root'
 })
 export class InventarioService {
+  public inventarioItemSaved$ = new Subject<{ item: InventarioProductoItem; inventarioProductoId: number }>();
 
   constructor(
     private genericCrudService: GenericCrudService,
@@ -57,7 +60,10 @@ export class InventarioService {
     private getInventarioItemsParaRevisar: GetInventarioItemsParaRevisarGQL,
     private getProductosConCantidadPositiva: GetProductosConCantidadPositivaGQL,
     private getProductosConCantidadNegativa: GetProductosConCantidadNegativaGQL,
-    private getProductosFaltantes: GetProductosFaltantesGQL
+    private getProductosFaltantes: GetProductosFaltantesGQL,
+    private getInventarioItemsPorInvProYPresentacion: GetInventarioItemsPorInvProYPresentacionGQL,
+    private getInventarioItemsDeInventariosAnteriores: GetInventarioItemsDeInventariosAnterioresGQL
+
   ) { }
 
   async onGetInventarioUsuario(): Promise<Observable<Inventario[]>> {
@@ -119,6 +125,24 @@ export class InventarioService {
 
   async onGetInventarioProItem(id, page): Promise<Observable<InventarioProductoItem[]>> {
     return this.genericCrudService.onGetById(this.getInventarioProItem, id, page, 5);
+  }
+
+  async onGetItemsPorInvProYPresentacion(invProId: number, presentacionId: number, page = 0, size = 10): Promise<Observable<InventarioProductoItem[]>> {
+    return this.genericCrudService.onGetCustom(this.getInventarioItemsPorInvProYPresentacion, {
+      invProId,
+      presentacionId,
+      page,
+      size
+    });
+  }
+
+  async onGetItemsDeInventariosAnteriores(invProId: number, presentacionId: number, page = 0, size = 10): Promise<Observable<InventarioProductoItem[]>> {
+    return this.genericCrudService.onGetCustom(this.getInventarioItemsDeInventariosAnteriores, {
+      invProId,
+      presentacionId,
+      page,
+      size
+    });
   }
 
   async onSaveInventario(input): Promise<Observable<Inventario>> {
@@ -193,13 +217,31 @@ export class InventarioService {
           }
         })
     })
+    const cleanInput: any = {};
+    if (input.id !== undefined && input.id !== null) cleanInput.id = typeof input.id === 'string' ? parseInt(input.id) : input.id;
+    if (input.inventarioProductoId !== undefined) cleanInput.inventarioProductoId = typeof input.inventarioProductoId === 'string' ? parseInt(input.inventarioProductoId) : input.inventarioProductoId;
+    if (input.zonaId !== undefined && input.zonaId !== null) cleanInput.zonaId = typeof input.zonaId === 'string' ? parseInt(input.zonaId) : input.zonaId;
+    if (input.sectorId !== undefined && input.sectorId !== null) cleanInput.sectorId = typeof input.sectorId === 'string' ? parseInt(input.sectorId) : input.sectorId;
+    if (input.presentacionId !== undefined) cleanInput.presentacionId = typeof input.presentacionId === 'string' ? parseInt(input.presentacionId) : input.presentacionId;
+    if (input.cantidad !== undefined) cleanInput.cantidad = typeof input.cantidad === 'string' ? parseFloat(input.cantidad) : input.cantidad;
+    if (input.cantidadFisica !== undefined && input.cantidadFisica !== null) cleanInput.cantidadFisica = typeof input.cantidadFisica === 'string' ? parseFloat(input.cantidadFisica) : input.cantidadFisica;
+    if (input.cantidadAnterior !== undefined && input.cantidadAnterior !== null) cleanInput.cantidadAnterior = typeof input.cantidadAnterior === 'string' ? parseFloat(input.cantidadAnterior) : input.cantidadAnterior;
+    if (input.fechaVerificado !== undefined && input.fechaVerificado !== null) cleanInput.fechaVerificado = input.fechaVerificado;
+    if (input.verificado !== undefined && input.verificado !== null) cleanInput.verificado = input.verificado;
+    if (input.revisado !== undefined && input.revisado !== null) cleanInput.revisado = input.revisado;
+    if (input.vencimiento !== undefined) cleanInput.vencimiento = input.vencimiento;
+    if (input.estado !== undefined) cleanInput.estado = input.estado;
+    if (input.usuarioId !== undefined && input.usuarioId !== null) cleanInput.usuarioId = typeof input.usuarioId === 'string' ? parseInt(input.usuarioId) : input.usuarioId;
+
+    console.log('Input limpio para guardar:', cleanInput);
+    return await this.genericCrudService.onSave(this.saveInventarioProductoItem, cleanInput);
   }
 
   async onDeleteInventarioProductoItem(id, item?): Promise<Observable<boolean>> {
     return await this.genericCrudService.onDelete(this.deleteInventarioProductoItem, id, item)
   }
 
-  onFinalizarInventario(id): Observable<Inventario>{
+  onFinalizarInventario(id): Observable<Inventario> {
     return new Observable(obs => {
       this.finalizarInventario.mutate(
         {
@@ -208,10 +250,10 @@ export class InventarioService {
         { errorPolicy: "all" }
       ).pipe(untilDestroyed(this))
         .subscribe(res => {
-          if (res?.errors?.length > 0) { //si hay error
+          if (res?.errors?.length > 0) {
             this.notificacionService.openAlgoSalioMal()
-          } else { //si no
-            obs.next(res.data['data']) // data
+          } else {
+            obs.next(res.data['data'])
             this.notificacionService.openGuardadoConExito()
           }
         })

@@ -1,0 +1,147 @@
+<ion-content #content fullscreen (ionScroll)="onScroll($event)">
+  <ion-row>
+    <ion-col size="2">
+      <ion-icon name="arrow-back" style="font-size: 1.5em; margin-top: 5px;" (click)="onBack()"></ion-icon>
+    </ion-col>
+    <ion-col size="10">
+      <ion-item>
+        <ion-label position="floating">Nombre o Código de Barra</ion-label>
+        <ion-input #buscarInput [formControl]="buscarControl" autocapitalize="on"
+          (keyup.enter)="onBuscarClick()"></ion-input>
+        <ion-icon style="font-size: 2em; padding-top: 5px" name="camera-outline" slot="end"
+          (click)="onCameraClick()"></ion-icon>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-row *ngIf="buscarControl.valid">
+    <ion-col size="12" style="text-align: center">
+      <ion-button class="btn-success-flat" fill="clear" (click)="onBuscarClick()">Buscar</ion-button>
+    </ion-col>
+  </ion-row>
+
+  <ion-accordion-group (ionChange)="onAccordionChangeProducto($event, producto)">
+    <ion-accordion *ngFor="let producto of productosList; let i = index; trackBy: trackByProductoId"
+      [value]="producto.id" (click)="onProductoClick(producto, i)">
+      <ion-item slot="header">
+        <ion-label>
+          <ion-row>
+            <ion-col size="8">
+              <h3 class="desc">{{ producto?.descripcion | titlecase }}</h3>
+            </ion-col>
+          </ion-row>
+        </ion-label>
+      </ion-item>
+
+      <ion-list slot="content">
+        <ion-accordion-group (ionChange)="onAccordionChangePresentacion($event, producto)">
+          <ion-accordion *ngFor="let presentacion of producto?.presentaciones; trackBy: trackByPresentacionId"
+            [value]="presentacion.id"
+            (ionAccordionToggle)="onAccordionTogglePresentacion($event, presentacion.id, producto)">
+            <ion-item slot="header" class="dark1">
+              <ion-avatar slot="start" (click)="
+                  onAvatarClick(presentacion?.imagenPrincipal);
+                  $event.stopPropagation()
+                ">
+                <img [src]="
+                    presentacion?.imagenPrincipal !== null
+                      ? presentacion?.imagenPrincipal
+                      : '/assets/no-image.png'
+                  " />
+              </ion-avatar>
+              <ion-label>
+                <h4>
+                  Presentación: {{ presentacion?.cantidad | number: '1.0-2' }}
+                </h4>
+                <p>
+                  Cod. barra:
+                  {{ presentacion?.codigoPrincipal?.codigo | uppercase }}
+                </p>
+                <p *ngIf="mostrarPrecio">
+                  Precio:
+                  {{ presentacion?.precioPrincipal?.precio | number: '1.0-2' }} Gs.
+                </p>
+                <p *ngIf="sucursalOrigen?.id">
+                  <ng-container *ngIf="producto?.stockPorProducto === undefined; else origenOk">
+                    <ion-spinner></ion-spinner>
+                  </ng-container>
+                  <ng-template #origenOk>
+                    Stock origen: {{ stockDisponibleById[presentacion.id] | number: '1.0-2' }}
+                  </ng-template>
+                </p>
+                <p *ngIf="sucursalDestino?.id">
+                  <ng-container *ngIf="producto?.stockPorProductoDestino === undefined; else destinoOk">
+                    <ion-spinner></ion-spinner>
+                  </ng-container>
+                  <ng-template #destinoOk>
+                    Stock destino: {{ stockDisponibleDestinoById[presentacion.id] | number: '1.0-2' }}
+                  </ng-template>
+                </p>
+              </ion-label>
+            </ion-item>
+
+            <div slot="content" class="dark2" style="padding: 8px 12px;">
+              <ion-item>
+                <ion-label position="floating">Cantidad</ion-label>
+                <ion-input type="number" [(ngModel)]="cantidadById[presentacion.id]"
+                  (ionChange)="validarCantidad(presentacion, producto)"></ion-input>
+              </ion-item>
+
+              <ion-item>
+                <ion-label position="stacked">Vencimiento</ion-label>
+                <ion-input type="date" placeholder="Seleccionar fecha" [(ngModel)]="vencimientoById[presentacion.id]"
+                  (ionChange)="onVencChange(presentacion.id, $event)"></ion-input>
+              </ion-item>
+              <ion-list *ngIf="mostrarItemsLocales && displayedItemsByPresentacionId[presentacion.id]?.length > 0">
+                <ion-item>
+                  <ion-label>
+                    <p class="title">Productos en transferencia</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item
+                  *ngFor="let it of displayedItemsByPresentacionId[presentacion.id]; trackBy: trackByTransferenciaItemId">
+                  <ion-label>
+                    <p><strong>Cantidad:</strong> {{ it.cantidadPreTransferencia | number:'1.0-3' }}</p>
+                    <p *ngIf="it.vencimientoPreTransferencia">
+                      <strong>Vencimiento:</strong> {{ it.vencimientoPreTransferencia | date: 'shortDate' }}
+                    </p>
+                    <p *ngIf="it.observacionPreTransferencia">
+                      <strong>Observación:</strong> {{ it.observacionPreTransferencia }}
+                    </p>
+                  </ion-label>
+                  <ion-icon name="create-outline" class="btn-warning-flat" slot="end" style="margin-right: 8px;"
+                    (click)="onEditarItemTransferencia(it, $event)"></ion-icon>
+                  <ion-icon name="trash-outline" class="btn-danger-flat" slot="end"
+                    (click)="onEliminarItemTransferencia(it, presentacion.id, $event)"></ion-icon>
+                </ion-item>
+              </ion-list>
+
+              <ion-row style="margin-top: 8px;">
+                <ion-col>
+                  <ion-button class="btn-danger" expand="block"
+                    (click)="limpiarFormulario(presentacion.id)">Cancelar</ion-button>
+                </ion-col>
+                <ion-col>
+                  <ion-button class="btn-success" expand="block" [disabled]="!cantidadById[presentacion.id]"
+                    (click)="onGuardarEnTransferencia(presentacion, producto)">Agregar Producto</ion-button>
+                </ion-col>
+              </ion-row>
+            </div>
+          </ion-accordion>
+        </ion-accordion-group>
+      </ion-list>
+    </ion-accordion>
+  </ion-accordion-group>
+
+  <ion-row *ngIf="productosList?.length > 0 && showCargarMas">
+    <ion-col size="12" style="text-align: center">
+      <ion-button class="btn-success-flat" fill="clear" (click)="onMasProductos()">Cargar más</ion-button>
+    </ion-col>
+  </ion-row>
+
+  <ion-fab [ngClass]="{'fade-in': isVisible, 'fade-out': !isVisible}" vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="scrollToTop()">
+      <ion-icon name="arrow-up-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

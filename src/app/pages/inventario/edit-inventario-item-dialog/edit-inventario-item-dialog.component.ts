@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { formatDate } from '@angular/common';
 import { Presentacion } from 'src/app/domains/productos/presentacion.model';
 import { Producto } from 'src/app/domains/productos/producto.model';
 import { CargandoService } from './../../../services/cargando.service';
@@ -12,6 +13,7 @@ export interface InventarioItemData {
   presentacion?: Presentacion;
   producto?: Producto;
   peso?: number;
+  fromPreviousInventory?: boolean;
 }
 
 @Component({
@@ -23,6 +25,8 @@ export class EditInventarioItemDialogComponent implements OnInit {
 
   isPesable = false;
   private cantidadOriginalDelItem: number = 0;
+  isEditingFromPreviousInventory = false;
+  originalItemId: number;
 
   @Input()
   data: InventarioItemData;
@@ -89,6 +93,13 @@ export class EditInventarioItemDialogComponent implements OnInit {
         this.cantidadOriginalDelItem = 0;
       }
     }
+    if (this.data?.inventarioProductoItem?.id != null) {
+      this.cargarDatos(this.data?.inventarioProductoItem)
+    } else if (this.data?.peso != null) {
+      this.cantidadControl.setValue(this.data.peso)
+    }
+    this.isEditingFromPreviousInventory = this.data?.fromPreviousInventory || false;
+    this.originalItemId = this.data?.inventarioProductoItem?.id;
   }
 
   async cargarDatos(invProItem: InventarioProductoItem) {
@@ -128,12 +139,25 @@ export class EditInventarioItemDialogComponent implements OnInit {
         this.vencimientoControl.setValue(null);
       }
       
+
+      let fechaFormato: string = null;
+      if (invProItem?.vencimiento) {
+        const fecha = invProItem.vencimiento instanceof Date
+          ? invProItem.vencimiento
+          : new Date(invProItem.vencimiento);
+        fechaFormato = formatDate(fecha, 'yyyy-MM-dd', 'en-US');
+      }
+      this.vencimientoControl.setValue(fechaFormato)
+
       this.estadoControl.setValue(invProItem?.estado)
       this.cargandoService.close(loading)
     }, 1000);
   }
 
   onAceptar() {
+    const fechaValue = this.vencimientoControl.value;
+    const fechaDate = fechaValue ? new Date(fechaValue + 'T00:00:00') : null;
+
     if (this.selectedInventarioProductoItem == null) {
       this.selectedInventarioProductoItem = new InventarioProductoItem()
       // cantidad = valor ingresado por el usuario
@@ -148,10 +172,16 @@ export class EditInventarioItemDialogComponent implements OnInit {
       } else {
         this.selectedInventarioProductoItem.vencimiento = null;
       }
+    }
+    if (this.isEditingFromPreviousInventory) {
+      this.selectedInventarioProductoItem.id = null;
+      this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
+      this.selectedInventarioProductoItem.vencimiento = fechaDate;
       this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
       this.selectedInventarioProductoItem.presentacion = this.data.presentacion;
       this.selectedInventarioProductoItem.estado = this.estadoControl.value;
-      this.selectedInventarioProductoItem.zona = this.data.inventarioProducto.zona;
+      this.selectedInventarioProductoItem.zona = this.data.inventarioProducto?.zona;
+      this.selectedInventarioProductoItem.copiedFromItemId = this.originalItemId;
     } else {
       // cantidadAnterior = stock original del sistema
       this.selectedInventarioProductoItem.cantidadAnterior = this.cantidadOriginalDelItem;
@@ -168,14 +198,21 @@ export class EditInventarioItemDialogComponent implements OnInit {
       } else {
         this.selectedInventarioProductoItem.vencimiento = null;
       }
+      this.selectedInventarioProductoItem.vencimiento = fechaDate;
       this.selectedInventarioProductoItem.estado = this.estadoControl.value;
     }
-    console.log(this.selectedInventarioProductoItem.toInput());
-    this.modalService.closeModal(this.selectedInventarioProductoItem.toInput())
+
+    console.log('Guardando item:', this.selectedInventarioProductoItem.toInput());
+    const result = {
+      ...this.selectedInventarioProductoItem.toInput(),
+      isFromPreviousInventory: this.isEditingFromPreviousInventory,
+      originalItemId: this.originalItemId
+    };
+
+    this.modalService.closeModal(result);
   }
 
   onCancel() {
     this.modalService.closeModal(null)
   }
-
 }
