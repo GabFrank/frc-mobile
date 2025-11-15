@@ -15,6 +15,8 @@ import { ModalService } from 'src/app/services/modal.service';
 import { MenuActionService, ActionMenuData } from 'src/app/services/menu-action.service';
 import { ProductoService } from '../../producto/producto.service';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
+import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
+import { GenericListDialogComponent, TableData, GenericListDialogData } from 'src/app/components/generic-list-dialog/generic-list-dialog.component';
 
 enum OpcionesMostrar {
   TODOS = 'TODOS',
@@ -36,6 +38,7 @@ export class EditTransferenciaProductoComponent implements OnInit {
   sucursalDestino: Sucursal;
   responsableNombreText: string = '';
   private isNavigatingToGestion: boolean = false;
+  private isChangingSucursales: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -50,13 +53,14 @@ export class EditTransferenciaProductoComponent implements OnInit {
     private notificacionService: NotificacionService,
     private router: Router,
     private productoService: ProductoService,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+    private sucursalService: SucursalService
+  ) { }
 
   ngOnInit() {
     const navigation = this.router.getCurrentNavigation();
     let productoData = null;
-    
+
     if (navigation?.extras?.state) {
       const state = navigation.extras.state as any;
       this.sucursalOrigen = state.sucursalOrigen;
@@ -118,7 +122,7 @@ export class EditTransferenciaProductoComponent implements OnInit {
           if (page === 0) {
             this.selectedTransferencia.transferenciaItemList = res.getContent;
           } else {
-            this.selectedTransferencia.transferenciaItemList = 
+            this.selectedTransferencia.transferenciaItemList =
               this.selectedTransferencia.transferenciaItemList.concat(res.getContent);
           }
           console.log('Items después de procesar:', this.selectedTransferencia.transferenciaItemList);
@@ -183,25 +187,31 @@ export class EditTransferenciaProductoComponent implements OnInit {
     this.buscarTransferencia(this.transferenciaId);
   }
 
-  onBack() { 
-    const destino = ['transferencias']; 
-    this.router.navigate(destino); 
+  onBack() {
+    const destino = ['transferencias'];
+    this.router.navigate(destino);
   }
 
   onMenuClick() {
     let menu: ActionMenuData[] = [
       { texto: 'Actualizar datos', role: 'actualizar' }
     ];
-    
-    // Agregar opción Finalizar solo si el estado es ABIERTA
+    if (
+      this.selectedTransferencia?.estado === TransferenciaEstado.ABIERTA &&
+      this.selectedTransferencia?.etapa === EtapaTransferencia.PRE_TRANSFERENCIA_CREACION
+    ) {
+      menu.push({ texto: 'Cambiar sucursales', role: 'cambiar-sucursales' });
+    }
     if (this.selectedTransferencia?.estado === TransferenciaEstado.ABIERTA) {
       menu.push({ texto: 'Finalizar', role: 'finalizar' });
     }
-    
+
     this.menuActionService.presentActionSheet(menu).then((res) => {
       let role = res.role;
       if (role == 'actualizar') {
         this.onRefresh();
+      } else if (role === 'cambiar-sucursales') {
+        this.onCambiarSucursales();
       } else if (role == 'finalizar') {
         this.onFinalizar();
       }
@@ -234,13 +244,6 @@ export class EditTransferenciaProductoComponent implements OnInit {
     if (sobra > 0) {
       this.selectedTransferencia.transferenciaItemList.splice(length - sobra, sobra - 1);
     }
-  }
-
-  get responsableNombre(): string {
-    if (this.selectedTransferencia?.usuarioPreTransferencia?.persona) {
-      return this.selectedTransferencia.usuarioPreTransferencia.persona.nombre;
-    }
-    return '';
   }
 
   private async crearTransferencia(productoData?: any) {
@@ -347,5 +350,115 @@ export class EditTransferenciaProductoComponent implements OnInit {
         }
       });
   }
-}
 
+  private async onCambiarSucursales() {
+    if (this.isChangingSucursales) {
+      return;
+    }
+    if (
+      !this.selectedTransferencia ||
+      this.selectedTransferencia.estado !== TransferenciaEstado.ABIERTA ||
+      this.selectedTransferencia.etapa !== EtapaTransferencia.PRE_TRANSFERENCIA_CREACION
+    ) {
+      this.notificacionService.open(
+        'Solo se puede cambiar sucursales en la etapa de creación',
+        TipoNotificacion.WARN,
+        2
+      );
+      return;
+    }
+
+    this.isChangingSucursales = true;
+
+    try {
+      (await this.sucursalService.onGetAllSucursales())
+        .pipe(untilDestroyed(this))
+        .subscribe(async (sucursales) => {
+          this.isChangingSucursales = false;
+
+          const allSucursales = (sucursales || []).filter((s) => s.id != 0);
+          if (allSucursales.length === 0) {
+            this.notificacionService.open('No hay sucursales disponibles', TipoNotificacion.DANGER, 2);
+            return;
+          }
+
+          const tableData: TableData[] = [
+            { id: 'id', nombre: 'Id', width: 20 },
+            { id: 'nombre', nombre: 'Nombre', width: 80 }
+          ];
+
+          const origenData: GenericListDialogData = {
+            tableData,
+            titulo: 'Seleccione sucursal origen',
+            search: true,
+            inicialData: allSucursales
+          };
+
+          const origenResult = await this.modalService.openModal(GenericListDialogComponent, origenData);
+          const nuevaSucursalOrigen: Sucursal | null = origenResult?.data || null;
+          if (!nuevaSucursalOrigen) {
+            return;
+          }
+
+          const sucursalesDestino = allSucursales.filter((s) => s.id !== nuevaSucursalOrigen.id);
+          if (sucursalesDestino.length === 0) {
+            this.notificacionService.open('No hay sucursales destino disponibles', TipoNotificacion.DANGER, 2);
+            return;
+          }
+
+          const destinoData: GenericListDialogData = {
+            tableData,
+            titulo: 'Seleccione sucursal destino',
+            search: true,
+            inicialData: sucursalesDestino
+          };
+
+          const destinoResult = await this.modalService.openModal(GenericListDialogComponent, destinoData);
+          const nuevaSucursalDestino: Sucursal | null = destinoResult?.data || null;
+          if (!nuevaSucursalDestino) {
+            return;
+          }
+
+          if (nuevaSucursalDestino.id === nuevaSucursalOrigen.id) {
+            this.notificacionService.open(
+              'La sucursal destino no puede ser igual a la origen',
+              TipoNotificacion.WARN,
+              2
+            );
+            return;
+          }
+
+          const input = {
+            id: this.selectedTransferencia.id,
+            sucursalOrigenId: nuevaSucursalOrigen.id,
+            sucursalDestinoId: nuevaSucursalDestino.id,
+            estado: this.selectedTransferencia.estado,
+            tipo: this.selectedTransferencia.tipo,
+            etapa: this.selectedTransferencia.etapa
+          };
+
+          (await this.transferenciaService.onSaveTransferencia(input))
+            .pipe(untilDestroyed(this))
+            .subscribe((resActualizada) => {
+              if (resActualizada) {
+                this.selectedTransferencia = {
+                  ...this.selectedTransferencia,
+                  sucursalOrigen: nuevaSucursalOrigen,
+                  sucursalDestino: nuevaSucursalDestino
+                } as Transferencia;
+                this.sucursalOrigen = nuevaSucursalOrigen;
+                this.sucursalDestino = nuevaSucursalDestino;
+
+                this.buscarTransferencia(this.transferenciaId);
+
+                this.notificacionService.open('Sucursales actualizadas', TipoNotificacion.SUCCESS, 2);
+              }
+            });
+        });
+    } catch (error) {
+      this.isChangingSucursales = false;
+      console.error('Error al cambiar sucursales:', error);
+      this.notificacionService.open('Error al cambiar sucursales', TipoNotificacion.DANGER, 2);
+    }
+  }
+}
