@@ -226,6 +226,9 @@ export class EditTransferenciaProductoComponent implements OnInit {
           if (res) {
             this.selectedTransferencia.estado = TransferenciaEstado.EN_ORIGEN;
             this.buscarTransferencia(this.transferenciaId);
+            if (this.transferenciaId) {
+              this.router.navigate(['transferencias', 'list', 'info', this.transferenciaId]);
+            }
           }
         });
     }
