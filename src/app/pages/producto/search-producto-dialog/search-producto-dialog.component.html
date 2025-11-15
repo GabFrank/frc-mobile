@@ -38,7 +38,7 @@
     </ion-col>
   </ion-row>
 
-  <ion-accordion-group (ionChange)="onAccordionChangeProducto($event, producto)">
+  <ion-accordion-group #productosAccordion (ionChange)="onAccordionChangeProducto($event, producto)">
     <ion-accordion *ngFor="let producto of productosList; let i = index; trackBy: trackByProductoId"
       [value]="producto.id" (click)="onProductoClick(producto, i)">
       <ion-item slot="header">

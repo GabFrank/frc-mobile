@@ -11,7 +11,7 @@ import { UntypedFormControl, Validators } from '@angular/forms';
 import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ProductoService } from '../producto.service';
 import { Location } from '@angular/common';
-import { IonContent, Platform, IonItemSliding } from '@ionic/angular';
+import { IonAccordionGroup, IonContent, Platform, IonItemSliding } from '@ionic/angular';
 import { CodigoService } from '../../codigo/codigo.service';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { StockPorSucursalDialogComponent, StockPorSucursalDialogData } from '../../operaciones/movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component';
@@ -36,6 +36,7 @@ export interface SearchProductoDialogData {
 export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
 
   @ViewChild('content', { static: false }) content: IonContent;
+  @ViewChild('productosAccordion', { static: false }) productosAccordion: IonAccordionGroup;
 
   @Input()
   data;
@@ -336,6 +337,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
               this.cantidadById[presentacion.id] = null;
               this.vencimientoById[presentacion.id] = null;
               this.estadoById[presentacion.id] = InventarioProductoEstado.BUENO;
+              this.resetBusquedaYAccordion();
             }
           });
       });
@@ -385,5 +387,13 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
 
   onVencChange(presentacionId: number, ev: any) {
     this.vencimientoById[presentacionId] = ev?.detail?.value;
+  }
+
+  private resetBusquedaYAccordion(): void {
+    this.buscarControl.setValue('');
+    this.productosList = [];
+    if (this.productosAccordion) {
+      this.productosAccordion.value = undefined as any;
+    }
   }
 }
