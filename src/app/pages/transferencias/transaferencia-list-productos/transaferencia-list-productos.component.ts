@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { untilDestroyed } from '@ngneat/until-destroy';
-import { IonContent, Platform } from '@ionic/angular';
+import { IonAccordionGroup, IonContent, Platform } from '@ionic/angular';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { DialogoService } from 'src/app/services/dialogo.service';
@@ -30,6 +30,7 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
 
   @ViewChild('content', { static: false }) content: IonContent;
   @ViewChild('buscarInput') buscarInput: any;
+  @ViewChild('productosAccordion', { static: false }) productosAccordion: IonAccordionGroup;
 
   buscarControl = new UntypedFormControl('', [Validators.required, Validators.minLength(1)]);
   productosList: Producto[] = [];
@@ -592,7 +593,8 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
           if (result) {
             this.notificacionService.open('Producto guardado en la transferencia', TipoNotificacion.SUCCESS, 2);
             this.limpiarFormulario(presentacion.id);
-            console.log('✅ Item agregado exitosamente y formulario limpiado');
+            this.resetBusquedaYAccordion();
+            console.log('✅ Item agregado exitosamente, formulario limpiado y búsqueda reseteada');
           } else {
             console.error('❌ El servicio retornó null o false');
             this.notificacionService.open('Error: No se pudo guardar el producto', TipoNotificacion.DANGER, 2);
@@ -617,6 +619,7 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
       this.notificacionService.open('Error inesperado al guardar el producto', TipoNotificacion.DANGER, 2);
     }
   }
+
   onScroll(event: any) {
     const scrollTop = event.detail.scrollTop;
     this.isVisible = scrollTop > 300;
@@ -624,5 +627,13 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
 
   scrollToTop() {
     this.content.scrollToTop(500);
+  }
+
+  private resetBusquedaYAccordion(): void {
+    this.buscarControl.setValue('');
+    this.productosList = [];
+    if (this.productosAccordion) {
+      this.productosAccordion.value = undefined as any;
+    }
   }
 }
