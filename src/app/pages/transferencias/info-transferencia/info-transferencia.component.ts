@@ -126,21 +126,22 @@ export class InfoTransferenciaComponent implements OnInit {
           if (res != null) {
             this.selectedTransferencia = res;
             this.selectedTransferencia.transferenciaItemList = [];
-            await this.getTransferenciaItemList();
+            await this.getTransferenciaItemList(false);
             this.verificarEtapa();
           }
         });
     }
   }
 
-  async getTransferenciaItemList(): Promise<Boolean> {
+  async getTransferenciaItemList(showLoading: boolean = true): Promise<Boolean> {
     return new Promise(async (resolve, rejects) => {
       (
         await this.transferenciaService.onGetTransferenciaItensWithFilters(
           this.selectedTransferencia.id,
           this.buscarControl.value,
           this.page,
-          this.size
+          this.size,
+          showLoading
         )
       )
         .pipe(untilDestroyed(this))
@@ -164,7 +165,8 @@ export class InfoTransferenciaComponent implements OnInit {
         this.selectedTransferencia.id,
         this.buscarControl.value,
         this.page,
-        this.size
+        this.size,
+        false
       )
     ).subscribe((res) => {
       this.selectedPageInfo = res;
@@ -183,7 +185,7 @@ export class InfoTransferenciaComponent implements OnInit {
 
   async verificarEtapa() {
     this.setAllEtapasFalse();
-    let isItemLoaded = await this.getTransferenciaItemList();
+    let isItemLoaded = await this.getTransferenciaItemList(false);
     if (isItemLoaded) {
       this.onVerificarConfirmados();
       // this.onFilterTransferenciaItem();

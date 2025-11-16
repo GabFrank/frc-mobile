@@ -72,7 +72,10 @@ export class ListInventarioComponent implements OnInit {
   }
 
   onItemClick(item: Inventario) {
-    this.router.navigate(['info', item.id], { relativeTo: this.route });
+    this.router.navigate(['info', item.id], { 
+      relativeTo: this.route,
+      queryParams: { mostrarNotificacion: 'true' }
+    });
   }
 
   onBack() {

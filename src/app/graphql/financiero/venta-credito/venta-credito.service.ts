@@ -23,14 +23,14 @@ export class VentaCreditoService {
 
   async onGetPorClienteId(id, estado, page, size): Promise<Observable<any>> {
     if(page == null && size == null ){
-      return this.genericService.onCustomGet(this.ventaCreditoPorCliente, { id, estado});
+      return this.genericService.onCustomGet(this.ventaCreditoPorCliente, { id, estado}, null, false);
     } else {
-    return this.genericService.onCustomGet(this.ventaCreditoPorClientePage, { id, estado, page, size });
+    return this.genericService.onCustomGet(this.ventaCreditoPorClientePage, { id, estado, page, size }, null, false );
     }
   }
 
   async countPorClienteIdAndEstado(id, estado): Promise<Observable<number>> {
-    return this.genericService.onCustomGet(this.countByClienteAndEstado, { id, estado });
+    return this.genericService.onCustomGet(this.countByClienteAndEstado, { id, estado }, null, false);
   }
 
   async onVentaCreditoQrAuth(id: number, timestamp:string, sucursalId?, secretKey?): Promise<Observable<number>> {

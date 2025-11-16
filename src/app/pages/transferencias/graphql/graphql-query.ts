@@ -457,6 +457,66 @@ export const transferenciasPorUsuarioQuery = gql`
   }
 `;
 
+export const transferenciasWithFiltersQuery = gql`
+  query ($sucursalOrigenId: Int, $sucursalDestinoId: Int, $estado: TransferenciaEstado, $tipo: TipoTransferencia, $etapa: EtapaTransferencia, $isOrigen: Boolean, $isDestino: Boolean, $creadoDesde: String, $creadoHasta: String, $page: Int, $size: Int) {
+    data: transferenciasWithFilters(sucursalOrigenId: $sucursalOrigenId, sucursalDestinoId: $sucursalDestinoId, estado: $estado, tipo: $tipo, etapa: $etapa, isOrigen: $isOrigen, isDestino: $isDestino, creadoDesde: $creadoDesde, creadoHasta: $creadoHasta, page: $page, size: $size) {
+      getTotalPages
+      getTotalElements
+      getNumberOfElements
+      isFirst
+      isLast
+      hasNext
+      hasPrevious
+      getPageable {
+        getPageNumber
+        getPageSize
+      }
+      getContent {
+        id
+        sucursalOrigen {
+          id
+          nombre
+        }
+        sucursalDestino {
+          id
+          nombre
+        }
+        isOrigen
+        isDestino
+        tipo
+        estado
+        etapa
+        observacion
+        creadoEn
+        usuarioPreTransferencia {
+          id
+          persona {
+            nombre
+          }
+        }
+        usuarioPreparacion {
+          id
+          persona {
+            nombre
+          }
+        }
+        usuarioTransporte {
+          id
+          persona {
+            nombre
+          }
+        }
+        usuarioRecepcion {
+          id
+          persona {
+            nombre
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const transferenciaItemPorTransferenciaIdQuery = gql`
   query ($id: ID!, $page: Int, $size: Int) {
     data: transferenciaItensPorTransferenciaId(

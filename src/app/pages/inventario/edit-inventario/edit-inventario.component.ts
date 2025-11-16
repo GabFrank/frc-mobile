@@ -39,6 +39,8 @@ import { SectorService } from 'src/app/domains/sector/sector.service';
 import { Location } from '@angular/common';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
 import { ProductoService } from '../../producto/producto.service';
+import { TransferenciaService } from '../../transferencias/transferencia.service';
+import { EtapaTransferencia } from '../../transferencias/transferencia.model';
 
 export class InventarioData {
   sector: Sector;
@@ -67,6 +69,7 @@ export class EditInventarioComponent implements OnInit {
   selectedResponsable: Usuario;
   isAddZona = false;
   activeAccordionId: string | undefined;
+  cantidadTransferenciasActivas: number = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -82,7 +85,8 @@ export class EditInventarioComponent implements OnInit {
     public mainService: MainService,
     private notificacionService: NotificacionService,
     private router: Router,
-    private productoService: ProductoService
+    private productoService: ProductoService,
+    private transferenciaService: TransferenciaService
   ) {}
 
   ngOnInit() {
@@ -98,25 +102,48 @@ export class EditInventarioComponent implements OnInit {
   async buscarInventario(id) {
     const currentAccordionId = this.activeAccordionId;
     
-    (await this.inventarioService.onGetInventario(id))
+    const mostrarNotificacion = this.route.snapshot.queryParams['mostrarNotificacion'] === 'true';
+  
+    const loading = await this.cargandoService.open(null, false);
+    
+    (await this.inventarioService.onGetInventario(id, false))
       .pipe(untilDestroyed(this))
       .subscribe((res) => {
         if (res != null) {
           this.selectedInventario = res;
-          this.onGetSectores(this.selectedInventario.sucursal.id);
           this.ordenarZonas();
+          
+         
+          setTimeout(() => {
+            this.cargandoService.close(loading);
+          }, 300);
+         
+          this.onGetSectores(this.selectedInventario.sucursal.id, false);
+          this.cargarCantidadTransferenciasActivas(false);
   
           if (currentAccordionId) {
             setTimeout(() => {
               this.activeAccordionId = currentAccordionId;
             }, 1);
           }
+          
+          
+          if (mostrarNotificacion) {
+            this.verificarTransferenciasPendientes();
+            this.router.navigate([], {
+              relativeTo: this.route,
+              queryParams: {},
+              replaceUrl: true
+            });
+          }
+        } else {
+          this.cargandoService.close(loading);
         }
       });
   }
 
-  async onGetSectores(id) {
-    (await this.sectorSerice.onGetSectores(id))
+  async onGetSectores(id, showLoading: boolean = true) {
+    (await this.sectorSerice.onGetSectores(id, showLoading))
       .pipe(untilDestroyed(this))
       .subscribe((res) => {
         console.log(res);
@@ -415,11 +442,16 @@ export class EditInventarioComponent implements OnInit {
   }
 
   onMenuClick() {
+    const textoTransferencias = this.cantidadTransferenciasActivas > 0 
+      ? `Transferencias activas (${this.cantidadTransferenciasActivas})`
+      : 'Transferencias activas';
+    
     let menu: ActionMenuData[] = [
       { texto: this.selectedInventario?.estado == 'ABIERTO' ? 'Finalizar' : 'Resumen', role: 'resumen' },
       { texto: 'Actualizar datos', role: 'actualizar' },
       { texto: 'Compartir', role: 'compartir' },
-      { texto: 'Zonas y sectores', role: 'zonas' }
+      { texto: 'Zonas y sectores', role: 'zonas' },
+      { texto: textoTransferencias, role : 'transferencias'}
     ];
     this.menuActionService.presentActionSheet(menu).then((res) => {
       let role = res.role;
@@ -445,8 +477,51 @@ export class EditInventarioComponent implements OnInit {
         );
       } else if(role == 'zonas'){
         this.router.navigate(['gestion-zona-sector', this.selectedInventario.sucursal.id], { relativeTo: this.route });
+      } else if(role == 'transferencias'){
+        this.router.navigate(['/transferencias/list/filtradas', this.selectedInventario.sucursal.id, EtapaTransferencia.TRANSPORTE_EN_CAMINO]);
       }
     });
+  }
+
+  async verificarTransferenciasPendientes() {
+    if (!this.selectedInventario?.sucursal?.id) {
+      return;
+    }
+
+    (await this.transferenciaService.onGetTransferenciasWithFilters({
+      sucursalDestinoId: +this.selectedInventario.sucursal.id,
+      etapa: EtapaTransferencia.TRANSPORTE_EN_CAMINO,
+      page: 0,
+      size: 1
+    }, false))
+      .pipe(untilDestroyed(this))
+      .subscribe((res) => {
+        if (res != null && res.getContent && res.getContent.length > 0) {
+         this.notificacionService.open('Hay transferencias pendientes a ser concluidas', TipoNotificacion.WARN, 6);
+        }
+      });
+  }
+
+  async cargarCantidadTransferenciasActivas(showLoading: boolean = true) {
+    if (!this.selectedInventario?.sucursal?.id) {
+      this.cantidadTransferenciasActivas = 0;
+      return;
+    }
+
+    (await this.transferenciaService.onGetTransferenciasWithFilters({
+      sucursalDestinoId: +this.selectedInventario.sucursal.id,
+      etapa: EtapaTransferencia.TRANSPORTE_EN_CAMINO,
+      page: 0,
+      size: 1
+    }, showLoading))
+      .pipe(untilDestroyed(this))
+      .subscribe((res) => {
+        if (res != null && res.getTotalElements !== undefined) {
+          this.cantidadTransferenciasActivas = res.getTotalElements || 0;
+        } else {
+          this.cantidadTransferenciasActivas = 0;
+        }
+      });
   }
 
   async onGetProductosItemList(invPro: InventarioProducto, index) {

@@ -14,6 +14,10 @@ const routes: Routes = [
     component: ListTransferenciasComponent,
   },
   {
+    path: 'list/filtradas/:sucursalId/:etapa',
+    component: ListTransferenciasComponent,
+  },
+  {
     path: 'list/info/:id',
     component: InfoTransferenciaComponent
   }

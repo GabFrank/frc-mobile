@@ -113,8 +113,8 @@ export class InventarioService {
     return this.genericCrudService.onGetById(this.inventarioAbiertoPorSucursal, id);
   }
 
-  async onGetInventario(id): Promise<Observable<Inventario>> {
-    return this.genericCrudService.onGetById(this.getInventario, id);
+  async onGetInventario(id, showLoading: boolean = true): Promise<Observable<Inventario>> {
+    return this.genericCrudService.onGetById(this.getInventario, id, undefined, undefined, undefined, showLoading);
   }
 
   async onGetInventarioProItem(id, page): Promise<Observable<InventarioProductoItem[]>> {
