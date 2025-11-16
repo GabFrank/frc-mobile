@@ -3,7 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MainService } from './../../../services/main.service';
 import { TransferenciaService } from './../transferencia.service';
-import { Transferencia } from './../transferencia.model';
+import { Transferencia, EtapaTransferencia } from './../transferencia.model';
 import { Component, OnInit } from '@angular/core';
 import { Location } from '@angular/common';
 
@@ -16,6 +16,8 @@ import { Location } from '@angular/common';
 export class ListTransferenciasComponent implements OnInit {
 
   transferenciaList: Transferencia[]
+  modoInventario: boolean = false
+  titulo: string = 'Lista de Transferencias'
 
   constructor(
     private transferenciaService: TransferenciaService,
@@ -27,7 +29,19 @@ export class ListTransferenciasComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.verificarUsuario()
+    this.route.paramMap.pipe(untilDestroyed(this)).subscribe(params => {
+      const sucursalId = params.get('sucursalId');
+      const etapa = params.get('etapa');
+      
+      if (sucursalId && etapa) {
+        this.modoInventario = true;
+        this.titulo = 'Transferencias Activas';
+        console.log('Filtros - SucursalId:', sucursalId, 'Etapa:', etapa);
+        this.onGetTransferenciasWithFilters(+sucursalId, etapa as EtapaTransferencia);
+      } else {
+        this.verificarUsuario();
+      }
+    });
   }
 
   async onGetTransferencias() {
@@ -36,6 +50,27 @@ export class ListTransferenciasComponent implements OnInit {
       .subscribe(res => {
         if (res != null) {
           this.transferenciaList = res;
+        }
+      })
+  }
+
+  async onGetTransferenciasWithFilters(sucursalId: number, etapa: EtapaTransferencia) {
+    console.log('Buscando transferencias con filtros:', { sucursalDestinoId: sucursalId, etapa: etapa });
+    (await this.transferenciaService.onGetTransferenciasWithFilters({
+      sucursalDestinoId: sucursalId,
+      etapa: etapa,
+      page: 0,
+      size: 20
+    }))
+      .pipe(untilDestroyed(this))
+      .subscribe(res => {
+        console.log('Resultado de transferencias:', res);
+        if (res != null && res.getContent) {
+          this.transferenciaList = res.getContent;
+          console.log('Transferencias encontradas:', this.transferenciaList.length);
+        } else {
+          console.log('No se encontraron transferencias o respuesta es null');
+          this.transferenciaList = [];
         }
       })
   }
@@ -51,7 +86,13 @@ export class ListTransferenciasComponent implements OnInit {
   }
 
   onItemClick(item: Transferencia) {
-    this.router.navigate(['info', item.id], { relativeTo: this.route });
+    if (this.modoInventario) {
+      // Si estamos en modo inventario, usar ruta absoluta
+      this.router.navigate(['/transferencias/list/info', item.id]);
+    } else {
+      // Si no, usar ruta relativa como antes
+      this.router.navigate(['info', item.id], { relativeTo: this.route });
+    }
   }
 
   onBack() {

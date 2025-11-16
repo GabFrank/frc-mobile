@@ -96,7 +96,7 @@ export class ListConvenioComponent implements OnInit {
         this.selectedCliente.id,
         this.selectedEstado,
         this.pageIndex,
-        this.pageSize
+        this.pageSize,
       )
     ).pipe(untilDestroyed(this)).subscribe((res) => {
       if (res != null) {

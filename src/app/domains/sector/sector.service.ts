@@ -25,8 +25,8 @@ export class SectorService {
     return await this.genericCrud.onGetById(this.getSector, id);
   }
 
-  async onGetSectores(sucursalId: number): Promise<Observable<Sector[]>>{
-    return await this.genericCrud.onGetById(this.getSectores, sucursalId);
+  async onGetSectores(sucursalId: number, showLoading: boolean = true): Promise<Observable<Sector[]>>{
+    return await this.genericCrud.onGetById(this.getSectores, sucursalId, undefined, undefined, undefined, showLoading);
   }
 
   async onSaveSector(input): Promise<Observable<Sector>>{
