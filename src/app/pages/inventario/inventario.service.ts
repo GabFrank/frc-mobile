@@ -302,13 +302,14 @@ export class InventarioService {
 
   async onGetProductosConCantidadPositiva(
     sucursalId: number,
+    productoId: number,
     page: number,
     size: number
   ): Promise<Observable<PageInfo<ProductoSaldoDto>>> {
     let loading = await this.cargandoService.open(null, false);
     return new Observable((obs) => {
       this.getProductosConCantidadPositiva
-        .fetch({ sucursalId, page, size }, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
+        .fetch({ sucursalId, productoId, page, size }, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
         .pipe(untilDestroyed(this))
         .subscribe((res) => {
           this.cargandoService.close(loading);
@@ -330,13 +331,14 @@ export class InventarioService {
 
   async onGetProductosConCantidadNegativa(
     sucursalId: number,
+    productoId: number,
     page: number,
     size: number
   ): Promise<Observable<PageInfo<ProductoSaldoDto>>> {
     let loading = await this.cargandoService.open(null, false);
     return new Observable((obs) => {
       this.getProductosConCantidadNegativa
-        .fetch({ sucursalId, page, size }, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
+        .fetch({ sucursalId, productoId, page, size }, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
         .pipe(untilDestroyed(this))
         .subscribe((res) => {
           this.cargandoService.close(loading);
@@ -358,6 +360,7 @@ export class InventarioService {
 
   async onGetProductosFaltantes(
     sucursalId: number,
+    productoId: number,
     fechaInicio: string,
     fechaFin: string,
     page: number,
@@ -366,7 +369,7 @@ export class InventarioService {
     let loading = await this.cargandoService.open(null, false);
     return new Observable((obs) => {
       this.getProductosFaltantes
-        .fetch({ sucursalId, fechaInicio, fechaFin, page, size }, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
+        .fetch({ sucursalId, productoId, fechaInicio, fechaFin, page, size }, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
         .pipe(untilDestroyed(this))
         .subscribe((res) => {
           this.cargandoService.close(loading);

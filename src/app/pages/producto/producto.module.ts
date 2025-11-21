@@ -14,6 +14,7 @@ import { ConsultarPrecioDashboardComponent } from './consultar-precio-dashboard/
 import { MostrarPrecioComponent } from './mostrar-precio/mostrar-precio.component';
 import { PrecioConfigComponent } from './precio-config/precio-config.component';
 import { ProductoVerificacionDialogComponent } from './producto-verificacion-dialog/producto-verificacion-dialog.component';
+import { AjustarStockDialogComponent } from './ajustar-stock-dialog/ajustar-stock-dialog.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { ProductoVerificacionDialogComponent } from './producto-verificacion-dia
     ConsultarPrecioDashboardComponent, 
     MostrarPrecioComponent,
     PrecioConfigComponent, 
-    ProductoVerificacionDialogComponent
+    ProductoVerificacionDialogComponent,
+    AjustarStockDialogComponent
   ],
   imports: [
     CommonModule,

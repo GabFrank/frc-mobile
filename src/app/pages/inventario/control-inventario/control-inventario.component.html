@@ -7,12 +7,21 @@
     </ion-buttons>
     <ion-title 
       style="
+        justify-content: center;
         text-align: center; 
-        padding-right: 48px; 
+        padding-right: 0px; 
         padding-left: 0px;"
       >
         Control de Inventario
     </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openFilterMenu()">
+        <ion-icon
+        name="funnel"
+        style="font-size: 1.5em"
+      ></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -32,29 +41,39 @@
             >
               {{sucursal.nombre}}
             </ion-select-option>
+
           </ion-select>
         </ion-item>
+        <ion-item fill="outline" style="margin-top: 10px">
+          <ion-label position="floating">Producto</ion-label>
+          <ion-input 
+            readonly 
+            (click)="openBuscadorProducto()"
+            [value]="productoSeleccionado?.descripcion || ''">
+          </ion-input>
+            <ion-icon 
+              name="close" 
+              slot="end" 
+              *ngIf="productoSeleccionado" 
+              (click)="onClearProducto()">
+            </ion-icon>
+        </ion-item>
       </ion-list>
-
-      <ion-button 
-        class="btnCalendar" 
-        (click)="openCalendar()"
-        [hidden]="form.get('verificarFilter')?.value !== 'productosFaltantes'"
-      >
-        <ion-icon name="calendar-outline"></ion-icon>
-      </ion-button>
     </div>
 
     <div 
       *ngIf="
         selectedRange.fechaInicio && 
         selectedRange.fechaFin && 
-        form.get('verificarFilter')?.value === 'productosFaltantes'" 
+        filtroSeleccionado === 'productosFaltantes'
+      " 
       style="text-align: center;"
     >
       <p style="margin-top: 5px; margin-bottom: 1px;">
-        <span>Fecha inicio:</span> {{ selectedRange.fechaInicio | date: 'dd/MM/yyyy' }} 
-        <span>Fecha fin:</span> {{ selectedRange.fechaFin  | date: 'dd/MM/yyyy'}}
+        <span>Fecha inicio:</span> 
+        {{ selectedRange.fechaInicio | date: 'dd/MM/yyyy' }} 
+        <span>Fecha fin:</span> 
+        {{ selectedRange.fechaFin  | date: 'dd/MM/yyyy'}}
       </p>
     </div>
 
@@ -62,64 +81,63 @@
       <ion-button type="submit" [disabled]="form.invalid"> 
         Buscar
       </ion-button> 
-      <div>
-        <ion-select 
-          interface="action-sheet" 
-          placeholder="TIPO FILTRO" 
-          cancelText="CANCELAR" 
-          formControlName="verificarFilter"
-        >
-          <ion-select-option value="cantidadPositiva">
-            CANTIDAD POSITIVA
-          </ion-select-option>
-          <ion-select-option value="cantidadNegativa">
-            CANTIDAD NEGATIVA
-          </ion-select-option>
-          <ion-select-option value="productosFaltantes">
-            PRODUCTOS FALTANTES
-          </ion-select-option>
-        </ion-select>
-      </div>
+      <ion-button type="submit"
+      (click)="openCalendar()"
+      [hidden]="filtroSeleccionado !== 'productosFaltantes'">
+      <ion-icon name="calendar-outline"></ion-icon>
+    </ion-button>
     </div>
   </form>
 
   <div *ngIf="itemsControl.length === 0" class="noProduct">
-    <ion-icon name="file-tray-outline" style="font-size: 3em; color: #666;"></ion-icon>
+    <ion-icon 
+      name="file-tray-outline" 
+      style="font-size: 3em; color: #666;">
+    </ion-icon>
     <p>SIN PRODUCTOS PARA MOSTRAR</p>
   </div>
   
   <ion-list *ngIf="itemsControl.length > 0">
-    <ion-item *ngFor="let item of itemsControl; 
-      trackBy: trackById" lines="inset"
+    <ion-item-sliding 
+      #slidingRef 
+      *ngFor="let item of itemsControl; 
+      trackBy: trackById"
     >
-      <ion-thumbnail slot="start">
-        <img [src]="'assets/no-image.png'"/>
-      </ion-thumbnail>
-      <ion-label style="width: 100%;">
-        <div class="content"> 
-          <h2 class="desc">
-            {{ item.productoDescripcion || 'Sin descripción' | titlecase }}
-          </h2>
-          <p style="margin-bottom: 0px;">
-            Producto ID: {{ item.productoId }}
-          </p>
-          <div class="chip-container">
-            <p style="margin: 0; flex-grow: 1;">
-              Cantidad: <strong>{{ item.saldoTotal | number:'1.0-3' }}</strong>
+      <ion-item-options side="start">
+        <ion-item-option color="success" (click)="onAjuste(item, slidingRef)">
+          <ion-icon slot="icon-only" name="pencil"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+      <ion-item style="margin-top: 0;" lines="inset">
+        <ion-thumbnail slot="start">
+          <img [src]="item.imagenPrincipal || 'assets/no-image.png'"/>
+        </ion-thumbnail>
+        <ion-label style="width: 100%;">
+          <div class="content"> 
+            <h2 class="desc">
+              {{ item.productoDescripcion || 'Sin descripción' | titlecase }}
+            </h2>
+            <p style="margin-bottom: 0px;">
+              Producto ID: {{ item.productoId }}
             </p>
-            <div style="flex-shrink: 0; text-align: right;">
-              <ion-chip 
-                [color]="getEstadoColor(item)" 
-                outline="false" 
-                style="margin: 0;"
-              >
-                <ion-label>{{ getEstadoVisual(item) }}</ion-label>
-              </ion-chip>
+            <div class="chip-container">
+              <p style="margin: 0; flex-grow: 1;">
+                Cantidad: <strong>{{ item.saldoTotal | number:'1.0-3' }}</strong>
+              </p>
+              <div style="flex-shrink: 0; text-align: right;">
+                <ion-chip 
+                  [color]="getEstadoColor(item)" 
+                  outline="false" 
+                  style="margin: 0;"
+                >
+                  <ion-label>{{ getEstadoVisual(item) }}</ion-label>
+                </ion-chip>
+              </div>
             </div>
           </div>
-        </div>
-      </ion-label>
-    </ion-item>
+        </ion-label>
+      </ion-item>
+    </ion-item-sliding>
   </ion-list>
 </ion-content>
 <ion-footer *ngIf="selectedPageInfo">

@@ -660,8 +660,8 @@ export const getInventarioItemsParaRevisarQuery = gql`
 `;
 
 export const productosConCantidadPositivaQuery = gql`
-  query getProductosConCantidadPositiva($sucursalId: ID!, $page: Int!, $size: Int!) {
-    data: productosConCantidadPositiva(sucursalId: $sucursalId, page: $page, size: $size) {
+  query getProductosConCantidadPositiva($sucursalId: ID!, $productoId: ID, $page: Int!, $size: Int!) {
+    data: productosConCantidadPositiva(sucursalId: $sucursalId, productoId: $productoId, page: $page, size: $size) {
       getTotalPages
       getTotalElements
       getNumberOfElements
@@ -674,14 +674,15 @@ export const productosConCantidadPositivaQuery = gql`
         productoDescripcion
         sucursalId  
         saldoTotal
+        imagenPrincipal
       }
     }
   }
 `;
 
 export const productosConCantidadNegativaQuery = gql`
-  query getProductosConCantidadNegativa($sucursalId: ID!, $page: Int!, $size: Int!) {
-    data: productosConCantidadNegativa(sucursalId: $sucursalId, page: $page, size: $size) {
+  query getProductosConCantidadNegativa($sucursalId: ID!, $productoId: ID, $page: Int!, $size: Int!) {
+    data: productosConCantidadNegativa(sucursalId: $sucursalId, productoId: $productoId, page: $page, size: $size) {
       getTotalPages
       getTotalElements
       getNumberOfElements
@@ -694,14 +695,15 @@ export const productosConCantidadNegativaQuery = gql`
         productoDescripcion
         sucursalId
         saldoTotal
+        imagenPrincipal
       }
     }
   }
 `;
 
 export const productosFaltantesQuery = gql`
-  query getProductosFaltantes($sucursalId: ID!, $fechaInicio: String!, $fechaFin: String!, $page: Int!, $size: Int!) {
-    data: productosFaltantes(sucursalId: $sucursalId, fechaInicio: $fechaInicio, fechaFin: $fechaFin, page: $page, size: $size) {
+  query getProductosFaltantes($sucursalId: ID!, $productoId: ID, $fechaInicio: String!, $fechaFin: String!, $page: Int!, $size: Int!) {
+    data: productosFaltantes(sucursalId: $sucursalId, productoId: $productoId, fechaInicio: $fechaInicio, fechaFin: $fechaFin, page: $page, size: $size) {
       getTotalPages
       getTotalElements
       getNumberOfElements
@@ -714,6 +716,7 @@ export const productosFaltantesQuery = gql`
         productoDescripcion
         sucursalId
         saldoTotal
+        imagenPrincipal
       }
     }
   }

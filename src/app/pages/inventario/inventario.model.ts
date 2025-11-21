@@ -152,4 +152,5 @@ export class ProductoSaldoDto {
   productoDescripcion: string;
   sucursalId: number;
   saldoTotal: number;
+  imagenPrincipal?: string;
 }
