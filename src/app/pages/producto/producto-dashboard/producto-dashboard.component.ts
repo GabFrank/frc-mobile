@@ -25,7 +25,8 @@ export class ProductoDashboardComponent implements OnInit {
   onBuscarProducto(){
     this.modalService.openModal(SearchProductoDialogComponent, {
       data: {
-        mostrarPrecio: true
+        mostrarPrecio: true,
+        abrirCamara: false
       }
     }).then(res => {
       if(res!=null){
