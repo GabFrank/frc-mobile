@@ -11,7 +11,7 @@ import { UntypedFormControl, Validators } from '@angular/forms';
 import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ProductoService } from '../producto.service';
 import { Location } from '@angular/common';
-import { IonAccordionGroup, IonContent, Platform, IonItemSliding } from '@ionic/angular';
+import { IonAccordionGroup, IonContent, Platform, IonItemSliding, IonInput } from '@ionic/angular';
 import { CodigoService } from '../../codigo/codigo.service';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { StockPorSucursalDialogComponent, StockPorSucursalDialogData } from '../../operaciones/movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component';
@@ -37,6 +37,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
 
   @ViewChild('content', { static: false }) content: IonContent;
   @ViewChild('productosAccordion', { static: false }) productosAccordion: IonAccordionGroup;
+  @ViewChild('inputElement', { static: false }) inputEl!: IonInput;
 
   @Input()
   data;
@@ -85,9 +86,12 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.content.scrollEvents = true;
+    this.setFocusOnInput();
   }
 
   ngOnInit() {
+    this.setFocusOnInput();
+
     if (this.data?.data?.mostrarPrecio != null) {
       this.mostrarPrecio = this.data.data.mostrarPrecio;
     }
@@ -98,7 +102,9 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
       console.log('es inventario', this.selectedSucursal);
     }
 
-    this.isWeb ? null : this.onCameraClick()
+    if (this.data?.abrirCamara !== false) {
+      this.isWeb ? null : this.onCameraClick();
+    }
 
     this.displayedItemsByPresentacionId = {};
   }
@@ -396,4 +402,13 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
       this.productosAccordion.value = undefined as any;
     }
   }
+  
+  setFocusOnInput() {
+    if (this.inputEl) {
+      setTimeout(() => {
+        this.inputEl.setFocus();
+      }, 100);
+    }
+  }
+
 }

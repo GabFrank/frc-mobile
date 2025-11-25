@@ -24,7 +24,7 @@
     <ion-col size="12">
       <ion-item>
         <ion-label position="floating">Nombre o Código de Barra</ion-label>
-        <ion-input #buscarInput [formControl]="buscarControl" autocapitalize="on"
+        <ion-input #inputElement [formControl]="buscarControl" autocapitalize="on"
           (keyup.enter)="onBuscarClick()"></ion-input>
         <ion-icon style="font-size: 2em; padding-top: 5px" name="camera-outline" slot="end"
           (click)="onCameraClick()"></ion-icon>

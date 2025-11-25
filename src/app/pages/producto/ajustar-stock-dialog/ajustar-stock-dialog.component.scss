@@ -1,0 +1,58 @@
+
+.dialog-container {
+  --padding-top: 16px;
+  --padding-end: 16px;
+  --padding-start: 16px;
+  --padding-bottom: 24px;
+}
+
+.info-container {
+  margin: 0 0 12px;
+}
+
+.descripcion-producto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.stock-row ion-item {
+  --background: rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+}
+
+.readonly-item {
+  ion-input {
+    opacity: 0.9;
+  }
+}
+
+.stock-input,
+.diferencia-input {
+  text-align: center;
+  font-weight: 600;
+}
+
+.diferencia-input {
+  letter-spacing: 0.5px;
+}
+
+.info-note {
+  margin-top: 12px;
+  --background: transparent;
+  ion-label {
+    font-size: 0.9rem;
+  }
+}
+
+.acciones-container ion-button {
+  margin-top: 12px;
+}
+
+@media (min-width: 768px) {
+  .dialog-container {
+    --padding-top: 24px;
+    --padding-bottom: 32px;
+  }
+}
