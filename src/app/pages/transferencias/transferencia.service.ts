@@ -18,6 +18,7 @@ import { Transferencia, TransferenciaItem, TransferenciaEstado, EtapaTransferenc
 import { GetTransferenciaItensPorTransferenciaIdGQL } from './graphql/getTransferenciaItensPorTransferenciaId';
 import { PageInfo } from 'src/app/app.component';
 import { GetTransferenciaItensWithFilterGQL } from './graphql/getTransferenciaItensWithFilter';
+import { GetTransferenciasWithFiltersGQL } from './graphql/getTransferenciasWithFilters';
 
 @UntilDestroy()
 @Injectable({
@@ -40,7 +41,8 @@ export class TransferenciaService {
     private notificacionService: NotificacionService,
     private transferenciasPorUsuario: GetTransferenciasPorUsuarioGQL,
     private transferenciaItemPorTransferenciaId: GetTransferenciaItensPorTransferenciaIdGQL,
-    private transferenciaItemPorTransferenciaIdWithFilter: GetTransferenciaItensWithFilterGQL
+    private transferenciaItemPorTransferenciaIdWithFilter: GetTransferenciaItensWithFilterGQL,
+    private transferenciasWithFilters: GetTransferenciasWithFiltersGQL
   ) { }
 
   async onGetTrasferenciasPorFecha(inicio, fin) {
@@ -64,8 +66,8 @@ export class TransferenciaService {
     return await this.genericCrudService.onGetById(this.transferenciaItemPorTransferenciaId, id, page, size);
   }
 
-  async onGetTransferenciaItensWithFilters(id, name?, page?, size?): Promise<Observable<PageInfo<TransferenciaItem>>> {
-    return await this.genericCrudService.onCustomGet(this.transferenciaItemPorTransferenciaIdWithFilter, {id, name, page, size});
+  async onGetTransferenciaItensWithFilters(id, name?, page?, size?, showLoading: boolean = true): Promise<Observable<PageInfo<TransferenciaItem>>> {
+    return await this.genericCrudService.onCustomGet(this.transferenciaItemPorTransferenciaIdWithFilter, {id, name, page, size}, undefined, showLoading);
   }
 
   async onSaveTransferenciaItem(input): Promise<Observable<TransferenciaItem>> {
@@ -78,6 +80,22 @@ export class TransferenciaService {
 
   async onGetTrasnferenciasPorUsuario(id): Promise<Observable<Transferencia[]>> {
     return await this.genericCrudService.onGetById(this.transferenciasPorUsuario, id)
+  }
+
+  async onGetTransferenciasWithFilters(filters: {
+    sucursalOrigenId?: number,
+    sucursalDestinoId?: number,
+    estado?: TransferenciaEstado,
+    tipo?: any,
+    etapa?: EtapaTransferencia,
+    isOrigen?: boolean,
+    isDestino?: boolean,
+    creadoDesde?: string,
+    creadoHasta?: string,
+    page?: number,
+    size?: number
+  }, showLoading: boolean = true): Promise<Observable<PageInfo<Transferencia>>> {
+    return await this.genericCrudService.onCustomGet(this.transferenciasWithFilters, filters, undefined, showLoading);
   }
 
   onFinalizar(transferencia: Transferencia): Observable<boolean> {
