@@ -18,7 +18,11 @@ const routes: Routes = [
   },
   {
     path: 'nueva',
-    component: NuevaTransferenciaComponent
+    component: NuevaTransferenciaComponent,
+  },
+  {
+    path: 'list/filtradas/:sucursalId/:etapa',
+    component: ListTransferenciasComponent,
   },
   {
     path: 'list/info/:id',

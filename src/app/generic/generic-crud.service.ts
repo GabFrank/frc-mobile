@@ -49,16 +49,22 @@ export class GenericCrudService {
   async onCustomGet(
     gql: Query,
     data: any,
-    errorOnEmpty?
+    errorOnEmpty?,
+    showLoading: boolean = true
   ): Promise<Observable<any>> {
-    let loading = await this.cargandoService.open(null, false);
+    let loading: any = null;
+    if (showLoading) {
+      loading = await this.cargandoService.open(null, false);
+    }
     return new Observable((obs) => {
       gql
         .fetch(data, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
         .pipe(untilDestroyed(this))
         .subscribe((res) => {
           this.isLoading = false;
-          this.cargandoService.close(loading);
+          if (loading) {
+            this.cargandoService.close(loading);
+          }
           if (res.errors == null) {
             obs.next(res.data['data']);
             if (res.data['data'] != null) {
@@ -133,10 +139,14 @@ export class GenericCrudService {
     id: number,
     page?,
     size?,
-    sucId?
+    sucId?,
+    showLoading: boolean = true
   ): Promise<Observable<T>> {
     this.isLoading = true;
-    let loading = await this.cargandoService.open('Buscando...', false);
+    let loading: any = null;
+    if (showLoading) {
+      loading = await this.cargandoService.open('Buscando...', false);
+    }
     return new Observable((obs) => {
       gql
         .fetch(
@@ -146,7 +156,9 @@ export class GenericCrudService {
         .pipe(untilDestroyed(this))
         .subscribe((res) => {
           this.isLoading = false;
-          this.cargandoService.close(loading);
+          if (loading) {
+            this.cargandoService.close(loading);
+          }
           if (res.errors == null) {
             obs.next(res.data['data']);
             if (res.data['data'] == null) {
@@ -168,16 +180,21 @@ export class GenericCrudService {
     });
   }
 
-  async onGet<T>(gql: any, data: any): Promise<Observable<T>> {
+  async onGet<T>(gql: any, data: any, showLoading: boolean = true): Promise<Observable<T>> {
     this.isLoading = true;
-    let loading = await this.cargandoService.open('Buscando...', false);
+    let loading: any = null;
+    if (showLoading) {
+      loading = await this.cargandoService.open('Buscando...', false);
+    }
     return new Observable((obs) => {
       gql
         .fetch(data, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
         .pipe(untilDestroyed(this))
         .subscribe((res) => {
           this.isLoading = false;
-          this.cargandoService.close(loading);
+          if (loading) {
+            this.cargandoService.close(loading);
+          }
           if (res.errors == null) {
             obs.next(res.data['data']);
             if (res.data['data'] == null) {

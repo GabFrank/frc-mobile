@@ -172,9 +172,46 @@ ion-loading.my-loading-class {
     box-shadow: none;
     color: white;
     max-width: fit-content;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-direction: column !important;
+    min-width: 80px;
+    min-height: 80px;
   }
   .loading-content {
     color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-direction: column !important;
+    text-align: center !important;
+    width: 100%;
+  }
+  .loading-spinner {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto !important;
+    width: 100%;
+  }
+  ion-spinner {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto !important;
+  }
+  // Asegurar que el spinner esté centrado cuando no hay mensaje
+  .loading-wrapper > ion-spinner {
+    margin: 0 auto !important;
+  }
+  // Sobrescribir el margen izquierdo que Ionic aplica cuando hay texto
+  .loading-spinner.sc-ion-loading-md + .loading-content.sc-ion-loading-md {
+    margin-left: 0 !important;
+  }
+  // También para otras variantes de Ionic
+  .loading-spinner + .loading-content {
+    margin-left: 0 !important;
   }
 }
 
