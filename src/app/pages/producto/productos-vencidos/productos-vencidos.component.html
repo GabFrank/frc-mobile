@@ -81,6 +81,9 @@
       <ion-button type="button" (click)="onBuscar()">
         Buscar
       </ion-button>
+      <ion-button type="button" (click)="onRetirar()" [disabled]="selectedSucursales.length !== 1">
+        Retirar
+      </ion-button>
       <ion-button type="button" (click)="openCalendar()">
         <ion-icon name="calendar-outline"></ion-icon>
       </ion-button>

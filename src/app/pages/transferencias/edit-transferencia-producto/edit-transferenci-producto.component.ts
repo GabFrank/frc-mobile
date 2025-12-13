@@ -4,6 +4,8 @@ import { Location } from '@angular/common';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { untilDestroyed } from '@ngneat/until-destroy';
 import { UntypedFormControl } from '@angular/forms';
+import { forkJoin, of, from } from 'rxjs';
+import { catchError, switchMap, tap, take } from 'rxjs/operators';
 
 import { Transferencia, TransferenciaItem, TransferenciaItemInput, TransferenciaEstado, TipoTransferencia, EtapaTransferencia } from '../transferencia.model';
 import { TransferenciaService } from '../transferencia.service';
@@ -60,18 +62,21 @@ export class EditTransferenciaProductoComponent implements OnInit {
   ngOnInit() {
     const navigation = this.router.getCurrentNavigation();
     let productoData = null;
+    let productosVencidos = null;
 
     if (navigation?.extras?.state) {
       const state = navigation.extras.state as any;
       this.sucursalOrigen = state.sucursalOrigen;
       this.sucursalDestino = state.sucursalDestino;
       productoData = state.productoData;
+      productosVencidos = state.productosVencidos;
     } else {
       const historyState = (window.history as any).state;
       if (historyState && historyState.sucursalOrigen) {
         this.sucursalOrigen = historyState.sucursalOrigen;
         this.sucursalDestino = historyState.sucursalDestino;
         productoData = historyState.productoData;
+        productosVencidos = historyState.productosVencidos;
       }
     }
 
@@ -79,11 +84,16 @@ export class EditTransferenciaProductoComponent implements OnInit {
       const idParam = res.get('id');
       if (idParam && idParam !== 'new') {
         this.transferenciaId = +idParam;
-        this.buscarTransferencia(this.transferenciaId);
-        if (productoData) {
-          setTimeout(async () => {
-            await this.agregarProductoDesdeData(productoData);
-          }, 500);
+        // Guardar productosVencidos para usarlos después de cargar la transferencia
+        if (productosVencidos && productosVencidos.length > 0) {
+          this.buscarTransferencia(this.transferenciaId, productosVencidos);
+        } else {
+          this.buscarTransferencia(this.transferenciaId);
+          if (productoData) {
+            setTimeout(async () => {
+              await this.agregarProductoDesdeData(productoData);
+            }, 500);
+          }
         }
       } else {
         if (!this.sucursalOrigen || !this.sucursalDestino) {
@@ -95,17 +105,31 @@ export class EditTransferenciaProductoComponent implements OnInit {
     });
   }
 
-  async buscarTransferencia(id: number) {
+  async buscarTransferencia(id: number, productosVencidos?: any[]) {
     (await this.transferenciaService.onGetTransferencia(id))
       .pipe(untilDestroyed(this))
-      .subscribe((res) => {
-        if (res != null) {
-          this.selectedTransferencia = res;
-          if (this.selectedTransferencia.transferenciaItemList == null) {
-            this.selectedTransferencia.transferenciaItemList = [];
+      .subscribe({
+        next: (res) => {
+          if (res != null) {
+            this.selectedTransferencia = res;
+            if (this.selectedTransferencia.transferenciaItemList == null) {
+              this.selectedTransferencia.transferenciaItemList = [];
+            }
+            this.responsableNombreText = this.selectedTransferencia?.usuarioPreTransferencia?.persona?.nombre || '';
+            this.onGetTransferenciaItems(this.transferenciaId);
+            
+            // Si hay productos vencidos, agregarlos después de cargar la transferencia
+            if (productosVencidos && productosVencidos.length > 0) {
+              // Esperar un poco más para asegurar que la transferencia esté completamente cargada
+              setTimeout(async () => {
+                await this.agregarProductosVencidos(productosVencidos);
+              }, 1500);
+            }
           }
-          this.responsableNombreText = this.selectedTransferencia?.usuarioPreTransferencia?.persona?.nombre || '';
-          this.onGetTransferenciaItems(this.transferenciaId);
+        },
+        error: (error) => {
+          console.error('Error cargando transferencia:', error);
+          this.notificacionService.open('Error al cargar la transferencia', TipoNotificacion.DANGER, 2);
         }
       });
   }
@@ -354,6 +378,152 @@ export class EditTransferenciaProductoComponent implements OnInit {
       });
   }
 
+  private async agregarProductosVencidos(productosVencidos: any[]) {
+    if (!productosVencidos || productosVencidos.length === 0) {
+      console.log('No hay productos vencidos para agregar');
+      return;
+    }
+
+    if (!this.transferenciaId) {
+      console.error('No hay transferenciaId para agregar productos');
+      this.notificacionService.open('Error: No se pudo identificar la transferencia', TipoNotificacion.DANGER, 2);
+      return;
+    }
+
+    console.log('Agregando productos vencidos:', productosVencidos.length, 'productos');
+    console.log('Transferencia ID:', this.transferenciaId);
+
+    const loading = await this.cargandoService.open('Agregando productos vencidos...');
+    
+    // Timeout de seguridad para cerrar el loading si algo falla
+    const loadingTimeout = setTimeout(() => {
+      console.warn('Timeout: cerrando loading después de 30 segundos');
+      this.cargandoService.close(loading);
+      this.notificacionService.open('Tiempo de espera agotado al agregar productos', TipoNotificacion.WARN, 3);
+    }, 30000);
+
+    try {
+      // Filtrar productos que tengan presentación y cantidad válidas
+      const productosValidos = productosVencidos.filter(item => {
+        const tienePresentacion = item.presentacion && item.presentacion.id;
+        const tieneCantidad = item.cantidad && item.cantidad > 0;
+        if (!tienePresentacion || !tieneCantidad) {
+          console.warn('Producto inválido omitido:', item);
+        }
+        return tienePresentacion && tieneCantidad;
+      });
+
+      if (productosValidos.length === 0) {
+        clearTimeout(loadingTimeout);
+        this.cargandoService.close(loading);
+        this.notificacionService.open('No hay productos válidos para agregar', TipoNotificacion.WARN, 2);
+        return;
+      }
+
+      const transferenciaItemInputs: TransferenciaItemInput[] = productosValidos.map(item => {
+        let vencimientoStr = null;
+        if (item.vencimiento) {
+          const fecha = new Date(item.vencimiento);
+          if (!isNaN(fecha.getTime())) {
+            vencimientoStr = fecha.toISOString().split('T')[0];
+          }
+        }
+
+        return {
+          id: null,
+          transferenciaId: this.transferenciaId,
+          presentacionPreTransferenciaId: item.presentacion.id,
+          presentacionPreparacionId: null,
+          presentacionTransporteId: null,
+          presentacionRecepcionId: null,
+          cantidadPreTransferencia: item.cantidad,
+          cantidadPreparacion: 0,
+          cantidadTransporte: 0,
+          cantidadRecepcion: 0,
+          observacionPreTransferencia: null,
+          observacionPreparacion: null,
+          observacionTransporte: null,
+          observacionRecepcion: null,
+          vencimientoPreTransferencia: vencimientoStr,
+          vencimientoPreparacion: null,
+          vencimientoTransporte: null,
+          vencimientoRecepcion: null,
+          motivoModificacionPreTransferencia: null,
+          motivoModificacionPreparacion: null,
+          motivoModificacionTransporte: null,
+          motivoModificacionRecepcion: null,
+          motivoRechazoPreTransferencia: null,
+          motivoRechazoPreparacion: null,
+          motivoRechazoTransporte: null,
+          motivoRechazoRecepcion: null,
+          activo: true,
+          poseeVencimiento: !!item.vencimiento,
+          usuarioId: this.mainService.usuarioActual?.id,
+          creadoEn: null
+        } as TransferenciaItemInput;
+      });
+      const observables = transferenciaItemInputs.map((input, index) => {
+        return from(this.transferenciaService.onSaveTransferenciaItem(input)).pipe(
+          switchMap(obs => {
+            return obs.pipe(
+              take(1),
+              tap(value => {
+              }),
+              catchError(error => {
+                return of(null);
+              })
+            );
+          }),
+          catchError(error => {
+            console.error(`Error agregando producto ${index + 1}:`, error);
+            return of(null);
+          })
+        );
+      });
+
+      forkJoin(observables)
+        .pipe(untilDestroyed(this))
+        .subscribe({
+          next: (results) => {
+            clearTimeout(loadingTimeout);
+            this.cargandoService.close(loading);
+            const exitosos = results.filter(r => r != null).length;
+            const fallidos = results.length - exitosos;
+            
+            if (exitosos > 0) {
+              this.notificacionService.open(
+                `${exitosos} producto${exitosos !== 1 ? 's' : ''} agregado${exitosos !== 1 ? 's' : ''} a la transferencia${fallidos > 0 ? ` (${fallidos} fallido${fallidos !== 1 ? 's' : ''})` : ''}`,
+                fallidos > 0 ? TipoNotificacion.WARN : TipoNotificacion.SUCCESS,
+                3
+              );
+            } else {
+              this.notificacionService.open('No se pudo agregar ningún producto', TipoNotificacion.DANGER, 3);
+            }
+            setTimeout(() => {
+              this.onGetTransferenciaItems(this.transferenciaId);
+            }, 500);
+          },
+          error: (error) => {
+            console.error('Error en forkJoin:', error);
+            console.error('Stack trace:', error.stack);
+            clearTimeout(loadingTimeout);
+            this.cargandoService.close(loading);
+            this.notificacionService.open('Error al agregar productos', TipoNotificacion.DANGER, 3);
+            setTimeout(() => {
+              this.onGetTransferenciaItems(this.transferenciaId);
+            }, 500);
+          },
+          complete: () => {
+          }
+        });
+    } catch (error) {
+      console.error('Error en agregarProductosVencidos:', error);
+      clearTimeout(loadingTimeout);
+      this.cargandoService.close(loading);
+      this.notificacionService.open('Error al agregar productos vencidos', TipoNotificacion.DANGER, 2);
+    }
+  }
+
   private async onCambiarSucursales() {
     if (this.isChangingSucursales) {
       return;
@@ -460,7 +630,6 @@ export class EditTransferenciaProductoComponent implements OnInit {
         });
     } catch (error) {
       this.isChangingSucursales = false;
-      console.error('Error al cambiar sucursales:', error);
       this.notificacionService.open('Error al cambiar sucursales', TipoNotificacion.DANGER, 2);
     }
   }

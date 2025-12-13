@@ -31,6 +31,7 @@ export class NuevaTransferenciaComponent implements OnInit {
   isFormValid = false;
   private isCreating: boolean = false;
   private isNavigating: boolean = false;
+  private productosVencidos: any[] = [];
 
   form = new UntypedFormGroup({
     sucursalOrigen: new UntypedFormControl(null, Validators.required),
@@ -60,12 +61,25 @@ export class NuevaTransferenciaComponent implements OnInit {
           this.inicializarSucursalOrigen();
         });
     } catch (error) {
-      console.error('Error al cargar sucursales:', error);
       this.notificacionService.open('Error al cargar sucursales', TipoNotificacion.DANGER, 2);
     }
   }
 
   private inicializarSucursalOrigen() {
+    const navigation = this.router.getCurrentNavigation();
+    const state = navigation?.extras?.state || history.state;
+    if (state?.sucursalOrigen) {
+      const sucursalOrigen = state.sucursalOrigen;
+      const sucursalEncontrada = this.allSucursales.find(s => s.id === sucursalOrigen.id);
+      if (sucursalEncontrada) {
+        this.selectOrigen(sucursalEncontrada, false);
+        if (state?.productosVencidos) {
+          this.productosVencidos = state.productosVencidos;
+        }
+        return;
+      }
+    }
+    
     if (this.mainService?.sucursalActual) {
       this.selectOrigen(this.mainService.sucursalActual, false);
     }
@@ -155,27 +169,35 @@ export class NuevaTransferenciaComponent implements OnInit {
 
           if (nuevaTransferencia?.id) {
             this.isNavigating = true;
-            this.router.navigate(['transferencias', 'gestion-productos'], {
-              state: {
-                sucursalOrigen: this.selectedOrigen,
-                sucursalDestino: this.selectedDestino,
-                transferenciaId: nuevaTransferencia.id
-              }
-            });
+            if (this.productosVencidos && this.productosVencidos.length > 0) {
+              this.router.navigate(['transferencias', 'edit', nuevaTransferencia.id], {
+                state: {
+                  sucursalOrigen: this.selectedOrigen,
+                  sucursalDestino: this.selectedDestino,
+                  productosVencidos: this.productosVencidos
+                }
+              });
+            } else {
+              this.router.navigate(['transferencias', 'gestion-productos'], {
+                state: {
+                  sucursalOrigen: this.selectedOrigen,
+                  sucursalDestino: this.selectedDestino,
+                  transferenciaId: nuevaTransferencia.id
+                }
+              });
+            }
             setTimeout(() => { this.isNavigating = false; }, 300);
           } else {
             this.notificacionService.open('Error al crear la transferencia', TipoNotificacion.DANGER, 2);
           }
         },
         error: (error) => {
-          console.error('Error creando transferencia:', error);
           this.isCreating = false;
           this.notificacionService.open('Error al crear la transferencia', TipoNotificacion.DANGER, 2);
         }
       });
 
     } catch (error) {
-      console.error('Error en creación de transferencia:', error);
       this.isCreating = false;
       this.notificacionService.open('Error al crear la transferencia', TipoNotificacion.DANGER, 2);
     }
