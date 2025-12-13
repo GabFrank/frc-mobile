@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, NgZone, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
+import { Router } from '@angular/router';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BehaviorSubject } from 'rxjs';
@@ -16,7 +17,7 @@ import { ZonaService } from 'src/app/domains/zona/zona.service';
 import { Producto } from 'src/app/domains/productos/producto.model';
 import { SearchProductoDialogComponent } from '../search-producto-dialog/search-producto-dialog.component';
 import { ModalService } from 'src/app/services/modal.service';
-import { NotificacionService } from 'src/app/services/notificacion.service';
+import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { InventarioProductoItem } from '../../inventario/inventario.model';
 import { ProductosVencidosGQL } from '../graphql/productosVencidos';
 import { PageInfo } from 'src/app/app.component';
@@ -88,6 +89,7 @@ export class ProductosVencidosComponent implements OnInit {
 
   constructor(
     private _location: Location,
+    private router: Router,
     private fb: UntypedFormBuilder,
     private sucursalService: SucursalService,
     private sectorService: SectorService,
@@ -646,6 +648,38 @@ export class ProductosVencidosComponent implements OnInit {
     this.updateFilters();
   }
 
+  onRetirar() {
+    // Verificar que haya una sucursal específica seleccionada (no "TODAS")
+    if (this.selectedSucursales.length !== 1) {
+      this.notificacionService.open('Debe seleccionar una sucursal específica para retirar productos', TipoNotificacion.WARN, 2);
+      return;
+    }
+
+    // Verificar que haya productos vencidos para retirar
+    if (this.itemsList.length === 0) {
+      this.notificacionService.open('No hay productos vencidos para retirar', TipoNotificacion.WARN, 2);
+      return;
+    }
+
+    const sucursalOrigen = this.selectedSucursales[0];
+    
+    // Preparar los productos vencidos para pasar a la transferencia
+    const productosVencidos = this.itemsList.map(item => ({
+      presentacion: item.presentacion,
+      cantidad: item.cantidad,
+      vencimiento: item.vencimiento,
+      inventarioProductoItem: item
+    }));
+    
+    // Navegar a la pantalla de nueva transferencia con la sucursal de origen y productos vencidos
+    this.router.navigate(['transferencias', 'nueva'], {
+      state: {
+        sucursalOrigen: sucursalOrigen,
+        productosVencidos: productosVencidos
+      }
+    });
+  }
+
   onResetFiltro() {
     const end = new Date();
     const start = new Date();
@@ -733,9 +767,6 @@ export class ProductosVencidosComponent implements OnInit {
         if (!item.vencimiento) return false;
         const fechaVencimiento = new Date(item.vencimiento);
         fechaVencimiento.setHours(0, 0, 0, 0);
-        
-        // Solo incluir productos que ya vencieron o vencen hoy (fecha <= hoy)
-        // El backend ya filtra por el rango de fechas, así que solo verificamos que estén vencidos
         return fechaVencimiento <= hoy;
       });
     }
@@ -779,9 +810,6 @@ export class ProductosVencidosComponent implements OnInit {
     const sucursalIdList = this.selectedSucursales.length > 0
       ? this.selectedSucursales.map(s => s.id)
       : null;
-
-    // Si "solo realmente vencidos" está activo, usar la fecha de hoy como fecha fin
-    // para traer todos los productos vencidos desde la fecha inicio hasta hoy
     let endDate = this.selectedRange?.fechaFin || null;
     if (this.soloRealmenteVencidos && this.selectedRange?.fechaInicio) {
       const hoy = new Date();
