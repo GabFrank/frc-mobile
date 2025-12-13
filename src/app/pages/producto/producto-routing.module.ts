@@ -7,6 +7,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { ConsultarPrecioDashboardComponent } from './consultar-precio-dashboard/consultar-precio-dashboard.component';
 import { MostrarPrecioComponent } from './mostrar-precio/mostrar-precio.component';
 import { PrecioConfigComponent } from './precio-config/precio-config.component';
+import { ProductosVencidosComponent } from './productos-vencidos/productos-vencidos.component';
 
 const routes: Routes = [
   {
@@ -18,7 +19,7 @@ const routes: Routes = [
     component: SearchProductoDialogComponent,
   },
   {
-    path: 'edit/:id', // producto/edit/1
+    path: 'edit/:id',
     component: EditProductoComponent,
   },
   {
@@ -32,6 +33,10 @@ const routes: Routes = [
   {
     path: 'precio-config',
     component: PrecioConfigComponent
+  },
+  {
+    path: 'productos-vencidos',
+    component: ProductosVencidosComponent
   }
 ];
 

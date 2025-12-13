@@ -37,4 +37,8 @@ export class ProductoDashboardComponent implements OnInit {
     })
   }
 
+  onProductosVencidos(){
+    this.router.navigate(['productos-vencidos'], { relativeTo: this.route });
+  }
+
 }

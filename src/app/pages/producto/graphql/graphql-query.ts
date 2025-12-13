@@ -384,6 +384,86 @@ export const productoUltimasComprasQuery = gql`
   }
 `;
 
+export const productosVencidosQuery = gql`
+  query ProductosVencidos(
+    $startDate: String
+    $endDate: String
+    $sucursalIdList: [Int]
+    $sectorIdList: [Int]
+    $zonaIdList: [Int]
+    $usuarioIdList: [ID]
+    $productoIdList: [ID]
+    $soloRealmenteVencidos: Boolean
+    $page: Int
+    $size: Int
+  ) {
+    productosVencidos(
+      startDate: $startDate
+      endDate: $endDate
+      sucursalIdList: $sucursalIdList
+      sectorIdList: $sectorIdList
+      zonaIdList: $zonaIdList
+      usuarioIdList: $usuarioIdList
+      productoIdList: $productoIdList
+      soloRealmenteVencidos: $soloRealmenteVencidos
+      page: $page
+      size: $size
+    ) {
+      getTotalPages
+      getTotalElements
+      getNumberOfElements
+      isFirst
+      isLast
+      hasNext
+      hasPrevious
+      getPageable {
+        getPageNumber
+        getPageSize
+      }
+      getContent {
+        id
+        inventarioProducto {
+          id
+          inventario {
+            id
+            sucursal {
+              id
+              nombre
+            }
+          }
+        }
+        zona {
+          id
+          descripcion
+        }
+        sector {
+          id
+          descripcion
+        }
+        presentacion {
+          id
+          cantidad
+          imagenPrincipal
+          producto {
+            id
+            descripcion
+            codigoPrincipal
+          }
+        }
+        cantidad
+        cantidadFisica
+        vencimiento
+        estado
+        creadoEn
+        usuario {
+          id
+          nickname
+        }
+      }
+    }
+  }
+`;
+
 export const saveProducto = gql`
   mutation saveProducto($entity: ProductoInput!) {
     data: saveProducto(producto: $entity) {
