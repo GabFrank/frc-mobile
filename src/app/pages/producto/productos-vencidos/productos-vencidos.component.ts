@@ -723,7 +723,23 @@ export class ProductosVencidosComponent implements OnInit {
     }
 
     const pageData = result.data.productosVencidos;
-    const productosVencidos = pageData.getContent || [];
+    let productosVencidos = pageData.getContent || [];
+    
+    if (this.soloRealmenteVencidos) {
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      
+      productosVencidos = productosVencidos.filter((item: InventarioProductoItem) => {
+        if (!item.vencimiento) return false;
+        const fechaVencimiento = new Date(item.vencimiento);
+        fechaVencimiento.setHours(0, 0, 0, 0);
+        
+        // Solo incluir productos que ya vencieron o vencen hoy (fecha <= hoy)
+        // El backend ya filtra por el rango de fechas, así que solo verificamos que estén vencidos
+        return fechaVencimiento <= hoy;
+      });
+    }
+    
     const enriched: InventarioProductoItemView[] = productosVencidos.map((item: InventarioProductoItem) => {
       const dias = item?.vencimiento ? this.calculateDiasDiferencia(item.vencimiento) : null;
       const vencimientoColor = this.resolveVencimientoColor(dias);
@@ -745,8 +761,13 @@ export class ProductosVencidosComponent implements OnInit {
       this.itemsList = [...this.itemsList, ...newItems];
     }
 
-    this.selectedPageInfo = pageData;
-    this.hasMorePages = pageData.hasNext || false;
+    if (this.soloRealmenteVencidos && productosVencidos.length !== pageData.getContent?.length) {
+      this.selectedPageInfo = pageData;
+      this.hasMorePages = pageData.hasNext || false;
+    } else {
+      this.selectedPageInfo = pageData;
+      this.hasMorePages = pageData.hasNext || false;
+    }
   }
 
   private setEmptyData(): void {
@@ -759,9 +780,18 @@ export class ProductosVencidosComponent implements OnInit {
       ? this.selectedSucursales.map(s => s.id)
       : null;
 
+    // Si "solo realmente vencidos" está activo, usar la fecha de hoy como fecha fin
+    // para traer todos los productos vencidos desde la fecha inicio hasta hoy
+    let endDate = this.selectedRange?.fechaFin || null;
+    if (this.soloRealmenteVencidos && this.selectedRange?.fechaInicio) {
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      endDate = hoy.toISOString().split('T')[0];
+    }
+
     const filters: ProductosVencidosFilters = {
       startDate: this.selectedRange?.fechaInicio || null,
-      endDate: this.selectedRange?.fechaFin || null,
+      endDate: endDate,
       sucursalIdList: sucursalIdList,
       sectorIdList: this.selectedSector ? [this.selectedSector.id] : null,
       zonaIdList: this.selectedZona ? [this.selectedZona.id] : null,
