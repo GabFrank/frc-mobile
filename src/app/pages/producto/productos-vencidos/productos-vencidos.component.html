@@ -5,21 +5,16 @@
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title 
-      style="
+    <ion-title style="
         justify-content: center;
         text-align: center; 
         padding-right: 0px; 
-        padding-left: 0px;"
-      >
-        Productos Vencidos
+        padding-left: 0px;">
+      Productos Vencidos
     </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="onResetFiltro()">
-        <ion-icon
-        name="refresh-outline"
-        style="font-size: 1.5em"
-      ></ion-icon>
+        <ion-icon name="refresh-outline" style="font-size: 1.5em"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -31,22 +26,13 @@
       <ion-list>
         <ion-item fill="outline">
           <ion-label position="floating">Elegir sucursal</ion-label>
-          <ion-select 
-            formControlName="sucursalSelect" 
-            interface="popover" 
-            cancelText="CANCELAR"
-            [multiple]="true"
+          <ion-select formControlName="sucursalSelect" interface="popover" cancelText="CANCELAR" [multiple]="true"
             [interfaceOptions]="{ header: 'Seleccionar sucursales' }"
-          >
-            <ion-select-option 
-              [value]="-1"
-              (click)="onSeleccionarTodasSucursales(); $event.stopPropagation()"
-            >
+            (ionChange)="onSucursalChange($event.detail.value)">
+            <ion-select-option [value]="-1">
               <strong>TODAS</strong>
             </ion-select-option>
-            <ion-select-option *ngFor="let sucursal of sucursalList" 
-              [value]="sucursal.id"
-            >
+            <ion-select-option *ngFor="let sucursal of sucursalList" [value]="sucursal.id">
               {{sucursal.nombre}}
             </ion-select-option>
           </ion-select>
@@ -54,14 +40,8 @@
 
         <ion-item fill="outline" style="margin-top: 10px" *ngIf="sectorList.length > 0">
           <ion-label position="floating">Elegir sector</ion-label>
-          <ion-select 
-            formControlName="sectorSelect" 
-            interface="action-sheet" 
-            cancelText="CANCELAR"
-          >
-            <ion-select-option *ngFor="let sector of sectorList" 
-              [value]="sector.id"
-            >
+          <ion-select formControlName="sectorSelect" interface="action-sheet" cancelText="CANCELAR">
+            <ion-select-option *ngFor="let sector of sectorList" [value]="sector.id">
               {{sector.descripcion}}
             </ion-select-option>
           </ion-select>
@@ -69,15 +49,9 @@
 
         <ion-item fill="outline" style="margin-top: 10px" *ngIf="zonaList.length > 0">
           <ion-label position="floating">Elegir zona</ion-label>
-          <ion-select 
-            formControlName="zonaSelect" 
-            interface="action-sheet" 
-            cancelText="CANCELAR"
-            (ionChange)="onZonaChange($event.detail.value)"
-          >
-            <ion-select-option *ngFor="let zona of zonaList" 
-              [value]="zona.id"
-            >
+          <ion-select formControlName="zonaSelect" interface="action-sheet" cancelText="CANCELAR"
+            (ionChange)="onZonaChange($event.detail.value)">
+            <ion-select-option *ngFor="let zona of zonaList" [value]="zona.id">
               {{zona.descripcion}}
             </ion-select-option>
           </ion-select>
@@ -85,38 +59,28 @@
 
         <ion-item fill="outline" style="margin-top: 10px">
           <ion-label position="floating">Producto</ion-label>
-          <ion-input 
-            readonly 
-            formControlName="productoInput"
-            (click)="openBuscadorProducto()"
+          <ion-input readonly formControlName="productoInput" (click)="openBuscadorProducto()"
             [value]="selectedProducto?.descripcion || ''">
           </ion-input>
-          <ion-icon 
-            name="close" 
-            slot="end" 
-            *ngIf="selectedProducto" 
-            (click)="onClearProducto()">
+          <ion-icon name="close" slot="end" *ngIf="selectedProducto" (click)="onClearProducto()">
           </ion-icon>
         </ion-item>
       </ion-list>
     </div>
 
-    <div 
-      *ngIf="selectedRange.fechaInicio && selectedRange.fechaFin" 
-      style="text-align: center; padding: 10px;"
-    >
+    <div *ngIf="selectedRange.fechaInicio && selectedRange.fechaFin" style="text-align: center; padding: 10px;">
       <p style="margin-top: 5px; margin-bottom: 1px;">
-        <span>Fecha inicio:</span> 
-        {{ selectedRange.fechaInicio | date: 'dd/MM/yyyy' }} 
-        <span style="margin-left: 10px;">Fecha fin:</span> 
-        {{ selectedRange.fechaFin  | date: 'dd/MM/yyyy'}}
+        <span>Fecha inicio:</span>
+        {{ selectedRange.fechaInicio | date: 'dd/MM/yyyy' }}
+        <span style="margin-left: 10px;">Fecha fin:</span>
+        {{ selectedRange.fechaFin | date: 'dd/MM/yyyy'}}
       </p>
     </div>
 
-    <div class="select-center"> 
-      <ion-button type="button" (click)="onBuscar()"> 
+    <div class="select-center">
+      <ion-button type="button" (click)="onBuscar()">
         Buscar
-      </ion-button> 
+      </ion-button>
       <ion-button type="button" (click)="openCalendar()">
         <ion-icon name="calendar-outline"></ion-icon>
       </ion-button>
@@ -124,9 +88,7 @@
 
     <ion-item lines="none" style="margin-top: 10px;">
       <ion-label>Solo realmente vencidos</ion-label>
-      <ion-toggle 
-        [checked]="soloRealmenteVencidos" 
-        (ionChange)="toggleSoloRealmenteVencidos()">
+      <ion-toggle [checked]="soloRealmenteVencidos" (ionChange)="toggleSoloRealmenteVencidos()">
       </ion-toggle>
     </ion-item>
   </form>
@@ -137,24 +99,19 @@
   </div>
 
   <div *ngIf="!isLoading && itemsList.length === 0" class="noProduct">
-    <ion-icon 
-      name="file-tray-outline" 
-      style="font-size: 3em; color: #666;">
+    <ion-icon name="file-tray-outline" style="font-size: 3em; color: #666;">
     </ion-icon>
     <p>SIN PRODUCTOS PARA MOSTRAR</p>
   </div>
-  
+
   <ion-list *ngIf="!isLoading && itemsList.length > 0">
-    <ion-item 
-      *ngFor="let item of itemsList; trackBy: trackById"
-      lines="inset"
-      style="margin-top: 0;"
-    >
+    <ion-item *ngFor="let item of itemsList; trackBy: trackById" lines="inset" style="margin-top: 0;">
       <ion-thumbnail slot="start">
-        <img [src]="item?.presentacion?.imagenPrincipal || item?.presentacion?.producto?.imagenPrincipal || 'assets/no-image.png'"/>
+        <img
+          [src]="item?.presentacion?.imagenPrincipal || item?.presentacion?.producto?.imagenPrincipal || 'assets/no-image.png'" />
       </ion-thumbnail>
       <ion-label style="width: 100%;">
-        <div class="content"> 
+        <div class="content">
           <h2 class="desc">
             {{ item?.presentacion?.producto?.descripcion || 'Sin descripción' | uppercase }}
           </h2>
@@ -165,13 +122,13 @@
             <strong>Cantidad:</strong> {{ item?.cantidad | number:'1.0-2' }}
           </p>
           <p style="margin-bottom: 5px;" *ngIf="item?.vencimiento">
-            <strong>Vencimiento:</strong> 
+            <strong>Vencimiento:</strong>
             <span [style.color]="item?.vencimientoColor">
               {{ item?.vencimiento | date:'dd/MM/yyyy' }}
             </span>
           </p>
           <p style="margin-bottom: 5px;">
-            <strong>Estado:</strong> 
+            <strong>Estado:</strong>
             <span [ngClass]="item?.diasVencimientoClase">
               {{ item?.diasVencimientoTexto }}
             </span>
@@ -189,14 +146,8 @@
       </ion-label>
     </ion-item>
 
-    <ion-infinite-scroll 
-      threshold="100px" 
-      (ionInfinite)="loadMore($event)"
-      [disabled]="!hasMorePages || isLoadingMore"
-    >
-      <ion-infinite-scroll-content
-        loadingSpinner="bubbles"
-        loadingText="Cargando más productos...">
+    <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMore($event)" [disabled]="!hasMorePages || isLoadingMore">
+      <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Cargando más productos...">
       </ion-infinite-scroll-content>
     </ion-infinite-scroll>
   </ion-list>
