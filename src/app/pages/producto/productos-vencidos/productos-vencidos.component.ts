@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -20,7 +20,6 @@ import { NotificacionService } from 'src/app/services/notificacion.service';
 import { InventarioProductoItem } from '../../inventario/inventario.model';
 import { ProductosVencidosGQL } from '../graphql/productosVencidos';
 import { PageInfo } from 'src/app/app.component';
-import { dateToString } from 'src/app/generic/utils/dateUtils';
 
 export interface ProductosVencidosFilters {
   startDate?: string;
@@ -52,31 +51,34 @@ export class ProductosVencidosComponent implements OnInit {
   selectedPageInfo: PageInfo<InventarioProductoItem> | null = null;
   pageIndex: number = 0;
   pageSize: number = 15;
-  
+
   sucursalList: Sucursal[] = [];
   sectorList: Sector[] = [];
   zonaList: Zona[] = [];
-  
+
   selectedSucursales: Sucursal[] = [];
   selectedSector: Sector | null = null;
   selectedZona: Zona | null = null;
   selectedProducto: Producto | null = null;
-  
+
   selectedRange: { fechaInicio: string | null, fechaFin: string | null } = { fechaInicio: null, fechaFin: null };
   soloRealmenteVencidos: boolean = false;
-  
+  private todasSucursalesSeleccionadas: boolean = false;
+  private processingIonChange: boolean = false;
+
   isLoading: boolean = false;
   isLoadingMore: boolean = false;
   hasMorePages: boolean = true;
-  
+
   private readonly vencimientoColorCache = new Map<string, string>();
   private readonly diasDiferenciaCache = new Map<string, number>();
-  
+
   private filtersSubject = new BehaviorSubject<ProductosVencidosFilters>({
     page: 0,
     size: 15
   });
-  
+  private forceRefresh = false;
+
   private readonly COLORS = {
     SUCCESS: "#4caf50",
     WARNING: "#ff9800",
@@ -93,7 +95,9 @@ export class ProductosVencidosComponent implements OnInit {
     private modalService: ModalService,
     private modalCtrl: ModalController,
     private notificacionService: NotificacionService,
-    private productosVencidosGQL: ProductosVencidosGQL
+    private productosVencidosGQL: ProductosVencidosGQL,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {
     this.form = this.fb.group({
       sucursalSelect: [[]],
@@ -106,13 +110,14 @@ export class ProductosVencidosComponent implements OnInit {
   ngOnInit() {
     this.loadInitialData();
     this.initializeSubscriptions();
-    
     this.form.get('sucursalSelect')?.valueChanges
       .pipe(untilDestroyed(this))
       .subscribe((sucursalIds: number[]) => {
-        this.onSucursalChange(sucursalIds);
+        if (!this.processingIonChange) {
+          this.processSucursalChange(sucursalIds);
+        }
       });
-      
+
     this.form.get('sectorSelect')?.valueChanges
       .pipe(untilDestroyed(this))
       .subscribe((sectorId: number) => {
@@ -124,17 +129,18 @@ export class ProductosVencidosComponent implements OnInit {
     this.filtersSubject.asObservable().pipe(
       debounceTime(300),
       distinctUntilChanged((prev, curr) => {
-        // Si cambió la página, no resetear (es para cargar más)
-        if (prev.page !== curr.page && curr.page > 0) {
-          return false; // Permitir cargar más
+        if (this.forceRefresh) {
+          this.forceRefresh = false;
+          return false;
         }
-        // Si cambió cualquier otro filtro, resetear
+        if (prev.page !== curr.page && curr.page > 0) {
+          return false;
+        }
         const prevCopy = { ...prev, page: 0 };
         const currCopy = { ...curr, page: 0 };
         return JSON.stringify(prevCopy) === JSON.stringify(currCopy);
       }),
       switchMap((filters) => {
-        // Si es página 0, resetear la lista
         if (filters.page === 0) {
           this.itemsList = [];
           this.hasMorePages = true;
@@ -149,18 +155,20 @@ export class ProductosVencidosComponent implements OnInit {
     const end = new Date();
     const start = new Date();
     start.setDate(end.getDate() - 7);
-    
-    // Formatear fechas sin horas para el rango
+
     const startStr = start.toISOString().split('T')[0];
     const endStr = end.toISOString().split('T')[0];
-    
+
     this.selectedRange = {
       fechaInicio: startStr,
       fechaFin: endStr
     };
-    
+
     this.pageIndex = 0;
     this.pageSize = 15;
+
+    this.updateFilters();
+
     this.loadSucursales();
   }
 
@@ -176,32 +184,246 @@ export class ProductosVencidosComponent implements OnInit {
     }
   }
 
-  onSucursalChange(sucursalIds: number[]): void {
-    // Si se seleccionó "TODAS" (-1), seleccionar todas las sucursales
-    if (sucursalIds?.includes(-1)) {
-      const todasLasSucursales = this.sucursalList.map(s => s.id);
-      // Usar setTimeout para evitar el ciclo infinito de cambios
-      setTimeout(() => {
-        this.form.get('sucursalSelect')?.setValue(todasLasSucursales, { emitEvent: false });
-        this.selectedSucursales = [...this.sucursalList];
-        this.selectedSector = null;
-        this.selectedZona = null;
-        this.sectorList = [];
-        this.zonaList = [];
-        this.form.get('sectorSelect')?.setValue(null);
-        this.form.get('zonaSelect')?.setValue(null);
-        this.pageIndex = 0;
-        this.itemsList = [];
-        this.hasMorePages = true;
-        this.updateFilters();
-      }, 0);
+  private forcePopoverUpdate(selectedValues: number[]): void {
+    const popover = document.querySelector('ion-popover');
+    if (!popover) {
+      setTimeout(() => this.forcePopoverUpdate(selectedValues), 50);
       return;
     }
-    
-    // Filtrar el valor especial -1 (TODAS) si existe
+
+    const findAllCheckboxes = (root: Element | ShadowRoot): any[] => {
+      const checkboxes: any[] = [];
+
+      const normalCheckboxes = root.querySelectorAll('ion-checkbox');
+      checkboxes.push(...Array.from(normalCheckboxes));
+
+      root.querySelectorAll('*').forEach((el: any) => {
+        if (el.shadowRoot) {
+          checkboxes.push(...findAllCheckboxes(el.shadowRoot));
+        }
+      });
+
+      return checkboxes;
+    };
+
+    const allCheckboxes = findAllCheckboxes(popover);
+
+    const allOptions = popover.querySelectorAll('ion-select-option');
+
+    const valueToOption = new Map<number, Element>();
+    allOptions.forEach((option: any) => {
+      let value: number | null = null;
+
+      const ngReflectValue = option.getAttribute('ng-reflect-value');
+      if (ngReflectValue) {
+        const parsed = parseInt(ngReflectValue, 10);
+        if (!isNaN(parsed)) value = parsed;
+      }
+
+      if (value === null) {
+        const valueAttr = option.getAttribute('value');
+        if (valueAttr) {
+          const parsed = parseInt(valueAttr, 10);
+          if (!isNaN(parsed)) value = parsed;
+        }
+      }
+
+      if (value !== null) {
+        valueToOption.set(value, option);
+      }
+    });
+
+    allCheckboxes.forEach((checkbox: any) => {
+      let option = checkbox.closest('ion-select-option');
+
+      if (!option) {
+        const optionValue = checkbox.getAttribute('ng-reflect-value') || checkbox.value;
+        if (optionValue) {
+          const parsed = parseInt(optionValue, 10);
+          if (!isNaN(parsed)) {
+            option = valueToOption.get(parsed) || null;
+          }
+        }
+      }
+
+      if (option) {
+        let value: number | null = null;
+        const ngReflectValue = option.getAttribute('ng-reflect-value');
+        if (ngReflectValue) {
+          const parsed = parseInt(ngReflectValue, 10);
+          if (!isNaN(parsed)) value = parsed;
+        }
+
+        if (value === null) {
+          const valueAttr = option.getAttribute('value');
+          if (valueAttr) {
+            const parsed = parseInt(valueAttr, 10);
+            if (!isNaN(parsed)) value = parsed;
+          }
+        }
+
+        if (value !== null) {
+          const shouldBeChecked = selectedValues.includes(value);
+
+          if (checkbox.checked !== shouldBeChecked) {
+            checkbox.checked = shouldBeChecked;
+
+            checkbox.setAttribute('checked', shouldBeChecked ? 'true' : null);
+
+            if (checkbox.__checked !== undefined) {
+              checkbox.__checked = shouldBeChecked;
+            }
+            if (checkbox._checked !== undefined) {
+              checkbox._checked = shouldBeChecked;
+            }
+
+            if (typeof checkbox.setChecked === 'function') {
+              checkbox.setChecked(shouldBeChecked);
+            }
+
+            const changeEvent = new CustomEvent('ionChange', {
+              detail: { checked: shouldBeChecked, value: value },
+              bubbles: true,
+              cancelable: true
+            });
+            checkbox.dispatchEvent(changeEvent);
+
+            checkbox.dispatchEvent(new Event('input', { bubbles: true }));
+
+            if (typeof checkbox.forceUpdate === 'function') {
+              checkbox.forceUpdate();
+            }
+            if (typeof checkbox.updateChecked === 'function') {
+              checkbox.updateChecked();
+            }
+          }
+        }
+      }
+    });
+
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      this.cdr.detectChanges();
+    }, 10);
+  }
+
+  private updatePopoverCheckboxes(selectedValues: number[]): void {
+    const popover = document.querySelector('ion-popover');
+    if (!popover) return;
+
+    const findInShadow = (element: any, selector: string): any[] => {
+      const results: any[] = [];
+      if (element.shadowRoot) {
+        const found = element.shadowRoot.querySelectorAll(selector);
+        results.push(...Array.from(found));
+        element.shadowRoot.querySelectorAll('*').forEach((child: any) => {
+          if (child.shadowRoot) {
+            results.push(...findInShadow(child, selector));
+          }
+        });
+      }
+      return results;
+    };
+
+    let options = Array.from(popover.querySelectorAll('ion-select-option'));
+
+    if (popover.shadowRoot) {
+      options = options.concat(Array.from(popover.shadowRoot.querySelectorAll('ion-select-option')));
+      options = options.concat(findInShadow(popover, 'ion-select-option'));
+    }
+
+    options.forEach((option: any) => {
+      let value: number | null = null;
+
+      const ngReflectValue = option.getAttribute('ng-reflect-value');
+      if (ngReflectValue) {
+        const parsed = parseInt(ngReflectValue, 10);
+        if (!isNaN(parsed)) {
+          value = parsed;
+        }
+      }
+
+      if (value === null) {
+        const valueAttr = option.getAttribute('value');
+        if (valueAttr) {
+          const parsed = parseInt(valueAttr, 10);
+          if (!isNaN(parsed)) {
+            value = parsed;
+          }
+        }
+      }
+
+      if (value === null && (option as any).value !== undefined) {
+        const optionValue = (option as any).value;
+        if (typeof optionValue === 'number') {
+          value = optionValue;
+        } else if (typeof optionValue === 'string') {
+          const parsed = parseInt(optionValue, 10);
+          if (!isNaN(parsed)) {
+            value = parsed;
+          }
+        }
+      }
+
+      if (value !== null) {
+        let checkbox = option.querySelector('ion-checkbox');
+
+        if (!checkbox) {
+          checkbox = findInShadow(option, 'ion-checkbox')[0];
+        }
+
+        if (checkbox) {
+          const shouldBeChecked = selectedValues.includes(value);
+          if (checkbox.checked !== shouldBeChecked) {
+            checkbox.checked = shouldBeChecked;
+            if (checkbox.value !== undefined) {
+              checkbox.value = shouldBeChecked;
+            }
+            const event = new CustomEvent('ionChange', {
+              detail: { checked: shouldBeChecked, value: value },
+              bubbles: true,
+              cancelable: true
+            });
+            checkbox.dispatchEvent(event);
+            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }
+      }
+    });
+
+    this.cdr.detectChanges();
+  }
+
+  onSucursalChange(sucursalIds: number[]): void {
+    this.processingIonChange = true;
+    try {
+      this.processSucursalChange(sucursalIds);
+    } finally {
+      setTimeout(() => {
+        this.processingIonChange = false;
+      }, 100);
+    }
+  }
+
+  private processSucursalChange(sucursalIds: number[]): void {
+    const todasLasSucursales = this.sucursalList.map(s => s.id);
     const idsFiltrados = sucursalIds?.filter(id => id !== -1) || [];
-    
-    if (idsFiltrados.length === 0) {
+    const hasTodas = sucursalIds?.includes(-1);
+    const previousValue = this.form.get('sucursalSelect')?.value || [];
+    const hadTodas = previousValue.includes(-1);
+
+    if (hadTodas && !hasTodas) {
+      this.form.get('sucursalSelect')?.setValue([], { emitEvent: false });
+      this.todasSucursalesSeleccionadas = false;
+
+      this.ngZone.run(() => {
+        requestAnimationFrame(() => {
+          this.forcePopoverUpdate([]);
+        });
+      });
+
       this.selectedSucursales = [];
       this.selectedSector = null;
       this.selectedZona = null;
@@ -216,13 +438,79 @@ export class ProductosVencidosComponent implements OnInit {
       return;
     }
 
+    if (hasTodas && !hadTodas) {
+      const todasConTodas = [...todasLasSucursales, -1];
+      this.form.get('sucursalSelect')?.setValue(todasConTodas, { emitEvent: false });
+      this.todasSucursalesSeleccionadas = true;
+
+      this.ngZone.run(() => {
+        requestAnimationFrame(() => {
+          this.forcePopoverUpdate(todasConTodas);
+        });
+      });
+
+      this.selectedSucursales = [...this.sucursalList];
+      this.selectedSector = null;
+      this.selectedZona = null;
+      this.sectorList = [];
+      this.zonaList = [];
+      this.form.get('sectorSelect')?.setValue(null);
+      this.form.get('zonaSelect')?.setValue(null);
+      this.pageIndex = 0;
+      this.itemsList = [];
+      this.hasMorePages = true;
+      this.updateFilters();
+      return;
+    }
+
+    if (idsFiltrados.length === todasLasSucursales.length && todasLasSucursales.every(id => idsFiltrados.includes(id))) {
+      const todasConTodas = [...todasLasSucursales, -1];
+      this.form.get('sucursalSelect')?.patchValue(todasConTodas, { emitEvent: false });
+      this.ngZone.run(() => {
+        setTimeout(() => {
+          this.updatePopoverCheckboxes(todasConTodas);
+        }, 0);
+        setTimeout(() => {
+          this.updatePopoverCheckboxes(todasConTodas);
+        }, 50);
+      });
+      this.selectedSucursales = [...this.sucursalList];
+      this.selectedSector = null;
+      this.selectedZona = null;
+      this.sectorList = [];
+      this.zonaList = [];
+      this.form.get('sectorSelect')?.setValue(null);
+      this.form.get('zonaSelect')?.setValue(null);
+      this.pageIndex = 0;
+      this.itemsList = [];
+      this.hasMorePages = true;
+      this.todasSucursalesSeleccionadas = true;
+      this.updateFilters();
+      return;
+    }
+
+    if (idsFiltrados.length === 0) {
+      this.selectedSucursales = [];
+      this.selectedSector = null;
+      this.selectedZona = null;
+      this.sectorList = [];
+      this.zonaList = [];
+      this.form.get('sectorSelect')?.setValue(null);
+      this.form.get('zonaSelect')?.setValue(null);
+      this.pageIndex = 0;
+      this.itemsList = [];
+      this.hasMorePages = true;
+      this.todasSucursalesSeleccionadas = false;
+      this.updateFilters();
+      return;
+    }
+
     this.selectedSucursales = this.sucursalList.filter(s => idsFiltrados.includes(s.id));
-    
-    // Si solo hay una sucursal seleccionada, cargar sectores
+    this.todasSucursalesSeleccionadas = false;
+
     if (this.selectedSucursales.length === 1) {
       this.loadSectores(this.selectedSucursales[0].id);
     } else {
-      // Si hay múltiples sucursales, limpiar sectores y zonas
       this.selectedSector = null;
       this.selectedZona = null;
       this.sectorList = [];
@@ -230,16 +518,11 @@ export class ProductosVencidosComponent implements OnInit {
       this.form.get('sectorSelect')?.setValue(null);
       this.form.get('zonaSelect')?.setValue(null);
     }
-    
+
     this.pageIndex = 0;
     this.itemsList = [];
     this.hasMorePages = true;
     this.updateFilters();
-  }
-
-  onSeleccionarTodasSucursales(): void {
-    // Este método se llama cuando se hace clic en "TODAS"
-    // El valor -1 se agregará al array y será manejado en onSucursalChange
   }
 
   async loadSectores(sucursalId: number) {
@@ -260,11 +543,11 @@ export class ProductosVencidosComponent implements OnInit {
     this.selectedZona = null;
     this.zonaList = [];
     this.form.get('zonaSelect')?.setValue(null);
-    
+
     if (sectorId && this.selectedSector?.zonaList) {
       this.zonaList = this.selectedSector.zonaList.filter(z => z.activo);
     }
-    
+
     this.pageIndex = 0;
     this.itemsList = [];
     this.hasMorePages = true;
@@ -291,8 +574,8 @@ export class ProductosVencidosComponent implements OnInit {
       closeIcon: true,
       weekStart: 1,
       defaultScrollTo: this.selectedRange?.fechaInicio ? new Date(this.selectedRange.fechaInicio) : new Date(),
-      defaultDateRange: this.selectedRange?.fechaInicio && this.selectedRange?.fechaFin ? 
-                        { from: new Date(this.selectedRange.fechaInicio), to: new Date(this.selectedRange.fechaFin) } : undefined
+      defaultDateRange: this.selectedRange?.fechaInicio && this.selectedRange?.fechaFin ?
+        { from: new Date(this.selectedRange.fechaInicio), to: new Date(this.selectedRange.fechaFin) } : undefined
     };
 
     const myCalendar = await this.modalCtrl.create({
@@ -321,7 +604,7 @@ export class ProductosVencidosComponent implements OnInit {
   async openBuscadorProducto() {
     const sucursalIds = this.form.get('sucursalSelect')?.value || [];
     const sucursalId = sucursalIds.length === 1 ? sucursalIds[0] : null;
-    
+
     const modal = await this.modalCtrl.create({
       component: SearchProductoDialogComponent,
       componentProps: {
@@ -359,6 +642,7 @@ export class ProductosVencidosComponent implements OnInit {
     this.pageIndex = 0;
     this.itemsList = [];
     this.hasMorePages = true;
+    this.forceRefresh = true;
     this.updateFilters();
   }
 
@@ -366,21 +650,20 @@ export class ProductosVencidosComponent implements OnInit {
     const end = new Date();
     const start = new Date();
     start.setDate(end.getDate() - 7);
-    
-    // Formatear fechas sin horas para el rango
+
     const startStr = start.toISOString().split('T')[0];
     const endStr = end.toISOString().split('T')[0];
-    
+
     this.selectedRange = {
       fechaInicio: startStr,
       fechaFin: endStr
     };
-    
+
     this.form.get('sucursalSelect')?.setValue([]);
     this.form.get('sectorSelect')?.setValue(null);
     this.form.get('zonaSelect')?.setValue(null);
     this.form.get('productoInput')?.setValue('');
-    
+
     this.selectedSucursales = [];
     this.selectedSector = null;
     this.selectedZona = null;
@@ -388,10 +671,11 @@ export class ProductosVencidosComponent implements OnInit {
     this.soloRealmenteVencidos = false;
     this.sectorList = [];
     this.zonaList = [];
-    
+    this.todasSucursalesSeleccionadas = false;
+
     this.vencimientoColorCache.clear();
     this.diasDiferenciaCache.clear();
-    
+
     this.pageIndex = 0;
     this.itemsList = [];
     this.hasMorePages = true;
@@ -416,14 +700,13 @@ export class ProductosVencidosComponent implements OnInit {
       this.isLoadingMore = true;
       this.isLoading = false;
     }
-    
+
     return this.productosVencidosGQL.fetch(filters).pipe(
       tap(result => {
         this.handleProductosVencidosResponse(result, filters.page === 0);
         this.isLoading = false;
         this.isLoadingMore = false;
-        
-        // Completar el evento de infinite scroll si existe
+
         if (this.infiniteScrollEvent) {
           this.infiniteScrollEvent.target.complete();
           this.infiniteScrollEvent = null;
@@ -457,12 +740,11 @@ export class ProductosVencidosComponent implements OnInit {
     if (isNewSearch) {
       this.itemsList = enriched;
     } else {
-      // Agregar nuevos items a la lista existente, evitando duplicados
       const existingIds = new Set(this.itemsList.map(item => item.id));
       const newItems = enriched.filter(item => !existingIds.has(item.id));
       this.itemsList = [...this.itemsList, ...newItems];
     }
-    
+
     this.selectedPageInfo = pageData;
     this.hasMorePages = pageData.hasNext || false;
   }
@@ -473,10 +755,10 @@ export class ProductosVencidosComponent implements OnInit {
   }
 
   private updateFilters(): void {
-    const sucursalIdList = this.selectedSucursales.length > 0 
-      ? this.selectedSucursales.map(s => s.id) 
+    const sucursalIdList = this.selectedSucursales.length > 0
+      ? this.selectedSucursales.map(s => s.id)
       : null;
-    
+
     const filters: ProductosVencidosFilters = {
       startDate: this.selectedRange?.fechaInicio || null,
       endDate: this.selectedRange?.fechaFin || null,
@@ -539,7 +821,6 @@ export class ProductosVencidosComponent implements OnInit {
       return;
     }
 
-    // Guardar el evento para completarlo cuando termine la carga
     this.infiniteScrollEvent = event;
     this.pageIndex++;
     this.updateFilters();
