@@ -172,10 +172,12 @@ export class NuevaTransferenciaComponent implements OnInit {
             if (this.productosVencidos && this.productosVencidos.length > 0) {
               this.router.navigate(['transferencias', 'edit', nuevaTransferencia.id], {
                 state: {
+                  fromEdit: false,
                   sucursalOrigen: this.selectedOrigen,
                   sucursalDestino: this.selectedDestino,
                   productosVencidos: this.productosVencidos
-                }
+                },
+                replaceUrl: true
               });
             } else {
               this.router.navigate(['transferencias', 'gestion-productos'], {

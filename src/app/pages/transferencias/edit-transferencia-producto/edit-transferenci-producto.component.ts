@@ -41,6 +41,7 @@ export class EditTransferenciaProductoComponent implements OnInit {
   responsableNombreText: string = '';
   private isNavigatingToGestion: boolean = false;
   private isChangingSucursales: boolean = false;
+  private productosVencidosYaAgregados: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -63,29 +64,41 @@ export class EditTransferenciaProductoComponent implements OnInit {
     const navigation = this.router.getCurrentNavigation();
     let productoData = null;
     let productosVencidos = null;
+    let fromEdit = false;
 
     if (navigation?.extras?.state) {
       const state = navigation.extras.state as any;
       this.sucursalOrigen = state.sucursalOrigen;
       this.sucursalDestino = state.sucursalDestino;
       productoData = state.productoData;
-      productosVencidos = state.productosVencidos;
+      if (state.productosVencidos !== null && !state.fromEdit) {
+        productosVencidos = state.productosVencidos;
+      }
+      fromEdit = state.fromEdit;
+
+      console.log('📍 State de navegación:', {
+        fromEdit,
+        tieneProductosVencidos: !!productosVencidos,
+        cantidadProductos: productosVencidos?.length
+      });
     } else {
       const historyState = (window.history as any).state;
       if (historyState && historyState.sucursalOrigen) {
         this.sucursalOrigen = historyState.sucursalOrigen;
         this.sucursalDestino = historyState.sucursalDestino;
-        productoData = historyState.productoData;
-        productosVencidos = historyState.productosVencidos;
+        fromEdit = historyState.fromEdit || false;
       }
+      console.log('⚠️ Sin navigation state, cargando desde history (sin productos)');
     }
 
     this.route.paramMap.pipe(untilDestroyed(this)).subscribe((res) => {
       const idParam = res.get('id');
       if (idParam && idParam !== 'new') {
         this.transferenciaId = +idParam;
-        // Guardar productosVencidos para usarlos después de cargar la transferencia
-        if (productosVencidos && productosVencidos.length > 0) {
+
+        if (!fromEdit && productosVencidos && productosVencidos.length > 0) {
+          const storageKey = `productosVencidosAgregados_${this.transferenciaId}`;
+          sessionStorage.removeItem(storageKey);
           this.buscarTransferencia(this.transferenciaId, productosVencidos);
         } else {
           this.buscarTransferencia(this.transferenciaId);
@@ -117,18 +130,20 @@ export class EditTransferenciaProductoComponent implements OnInit {
             }
             this.responsableNombreText = this.selectedTransferencia?.usuarioPreTransferencia?.persona?.nombre || '';
             this.onGetTransferenciaItems(this.transferenciaId);
-            
-            // Si hay productos vencidos, agregarlos después de cargar la transferencia
-            if (productosVencidos && productosVencidos.length > 0) {
-              // Esperar un poco más para asegurar que la transferencia esté completamente cargada
+
+            const storageKey = `productosVencidosAgregados_${id}`;
+            const yaAgregados = sessionStorage.getItem(storageKey) === 'true';
+
+            if (productosVencidos && productosVencidos.length > 0 && !yaAgregados) {
               setTimeout(async () => {
                 await this.agregarProductosVencidos(productosVencidos);
+                sessionStorage.setItem(storageKey, 'true');
               }, 1500);
+            } else if (yaAgregados) {
             }
           }
         },
         error: (error) => {
-          console.error('Error cargando transferencia:', error);
           this.notificacionService.open('Error al cargar la transferencia', TipoNotificacion.DANGER, 2);
         }
       });
@@ -138,7 +153,6 @@ export class EditTransferenciaProductoComponent implements OnInit {
     (await this.transferenciaService.onGetTransferenciaItensPorTransferenciaId(id, page, 5))
       .pipe(untilDestroyed(this))
       .subscribe((res) => {
-        console.log('Items recibidos del servidor:', res);
         if (res != null && res.getContent) {
           if (this.selectedTransferencia.transferenciaItemList == null) {
             this.selectedTransferencia.transferenciaItemList = [];
@@ -149,11 +163,8 @@ export class EditTransferenciaProductoComponent implements OnInit {
             this.selectedTransferencia.transferenciaItemList =
               this.selectedTransferencia.transferenciaItemList.concat(res.getContent);
           }
-          console.log('Items después de procesar:', this.selectedTransferencia.transferenciaItemList);
-          console.log('Filtro actual:', this.mostrarControl.value);
           this.cdr.detectChanges();
         } else {
-          console.log('No se recibieron items o res.getContent es null');
         }
       });
   }
@@ -212,8 +223,16 @@ export class EditTransferenciaProductoComponent implements OnInit {
   }
 
   onBack() {
-    const destino = ['transferencias'];
-    this.router.navigate(destino);
+    if (this.transferenciaId) {
+      this.router.navigate(['transferencias', 'list', 'info', this.transferenciaId], {
+        state: {
+          productosVencidos: null,
+          productoData: null
+        }
+      });
+    } else {
+      this.router.navigate(['transferencias']);
+    }
   }
 
   onMenuClick() {
@@ -250,8 +269,19 @@ export class EditTransferenciaProductoComponent implements OnInit {
           if (res) {
             this.selectedTransferencia.estado = TransferenciaEstado.EN_ORIGEN;
             this.buscarTransferencia(this.transferenciaId);
+
             if (this.transferenciaId) {
-              this.router.navigate(['transferencias', 'list', 'info', this.transferenciaId]);
+              const storageKey = `productosVencidosAgregados_${this.transferenciaId}`;
+              sessionStorage.removeItem(storageKey);
+
+              this.router.navigate(['transferencias', 'list', 'info', this.transferenciaId], {
+                state: {
+                  productosVencidos: null,
+                  productoData: null,
+                  fromEdit: null
+                },
+                replaceUrl: true
+              });
             }
           }
         });
@@ -318,7 +348,6 @@ export class EditTransferenciaProductoComponent implements OnInit {
           }
         },
         error: (error) => {
-          console.error('Error creando transferencia:', error);
           this.notificacionService.open('Error al crear la transferencia', TipoNotificacion.DANGER, 2);
           this.onBack();
         }
@@ -352,7 +381,6 @@ export class EditTransferenciaProductoComponent implements OnInit {
       .subscribe({
         next: (res) => {
           if (res != null) {
-            console.log('Producto agregado exitosamente:', res);
             this.notificacionService.open('Producto agregado a la transferencia', TipoNotificacion.SUCCESS, 2);
             if (!this.selectedTransferencia) {
               this.buscarTransferencia(this.transferenciaId);
@@ -372,7 +400,6 @@ export class EditTransferenciaProductoComponent implements OnInit {
           }
         },
         error: (error) => {
-          console.error('Error guardando item:', error);
           this.notificacionService.open('Error al guardar el producto', TipoNotificacion.DANGER, 2);
         }
       });
@@ -380,35 +407,26 @@ export class EditTransferenciaProductoComponent implements OnInit {
 
   private async agregarProductosVencidos(productosVencidos: any[]) {
     if (!productosVencidos || productosVencidos.length === 0) {
-      console.log('No hay productos vencidos para agregar');
       return;
     }
 
     if (!this.transferenciaId) {
-      console.error('No hay transferenciaId para agregar productos');
       this.notificacionService.open('Error: No se pudo identificar la transferencia', TipoNotificacion.DANGER, 2);
       return;
     }
 
-    console.log('Agregando productos vencidos:', productosVencidos.length, 'productos');
-    console.log('Transferencia ID:', this.transferenciaId);
-
     const loading = await this.cargandoService.open('Agregando productos vencidos...');
-    
-    // Timeout de seguridad para cerrar el loading si algo falla
+
     const loadingTimeout = setTimeout(() => {
-      console.warn('Timeout: cerrando loading después de 30 segundos');
       this.cargandoService.close(loading);
       this.notificacionService.open('Tiempo de espera agotado al agregar productos', TipoNotificacion.WARN, 3);
     }, 30000);
 
     try {
-      // Filtrar productos que tengan presentación y cantidad válidas
       const productosValidos = productosVencidos.filter(item => {
         const tienePresentacion = item.presentacion && item.presentacion.id;
         const tieneCantidad = item.cantidad && item.cantidad > 0;
         if (!tienePresentacion || !tieneCantidad) {
-          console.warn('Producto inválido omitido:', item);
         }
         return tienePresentacion && tieneCantidad;
       });
@@ -475,7 +493,6 @@ export class EditTransferenciaProductoComponent implements OnInit {
             );
           }),
           catchError(error => {
-            console.error(`Error agregando producto ${index + 1}:`, error);
             return of(null);
           })
         );
@@ -489,7 +506,7 @@ export class EditTransferenciaProductoComponent implements OnInit {
             this.cargandoService.close(loading);
             const exitosos = results.filter(r => r != null).length;
             const fallidos = results.length - exitosos;
-            
+
             if (exitosos > 0) {
               this.notificacionService.open(
                 `${exitosos} producto${exitosos !== 1 ? 's' : ''} agregado${exitosos !== 1 ? 's' : ''} a la transferencia${fallidos > 0 ? ` (${fallidos} fallido${fallidos !== 1 ? 's' : ''})` : ''}`,
@@ -504,8 +521,6 @@ export class EditTransferenciaProductoComponent implements OnInit {
             }, 500);
           },
           error: (error) => {
-            console.error('Error en forkJoin:', error);
-            console.error('Stack trace:', error.stack);
             clearTimeout(loadingTimeout);
             this.cargandoService.close(loading);
             this.notificacionService.open('Error al agregar productos', TipoNotificacion.DANGER, 3);
@@ -517,7 +532,6 @@ export class EditTransferenciaProductoComponent implements OnInit {
           }
         });
     } catch (error) {
-      console.error('Error en agregarProductosVencidos:', error);
       clearTimeout(loadingTimeout);
       this.cargandoService.close(loading);
       this.notificacionService.open('Error al agregar productos vencidos', TipoNotificacion.DANGER, 2);
