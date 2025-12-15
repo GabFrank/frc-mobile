@@ -98,21 +98,14 @@ export class InfoTransferenciaComponent implements OnInit {
   }
 
   ngOnInit() {
-    //innicializar arrays
     this.actionMenuOptionsList = [];
 
     setTimeout(() => {
       this.route.paramMap.subscribe((res) => {
-        console.log(res);
         this.buscarTransferencia(res.get('id'));
       });
     }, 1000);
 
-    // this.buscarControl.valueChanges.pipe(untilDestroyed(this)).subscribe(res => {
-    //   setTimeout(() => {
-    //     this.onFilterTransferenciaItem()
-    //   }, 100);
-    // })
   }
 
   onBuscarFocus() {
@@ -171,8 +164,6 @@ export class InfoTransferenciaComponent implements OnInit {
       )
     ).subscribe((res) => {
       this.selectedPageInfo = res;
-      console.log(res);
-      console.log(this.page, this.size);
       this.selectedTransferencia.transferenciaItemList = res.getContent;
       this.filteredTransferenciaItemList =
         this.selectedTransferencia.transferenciaItemList;
@@ -189,7 +180,6 @@ export class InfoTransferenciaComponent implements OnInit {
     let isItemLoaded = await this.getTransferenciaItemList(false);
     if (isItemLoaded) {
       this.onVerificarConfirmados();
-      // this.onFilterTransferenciaItem();
       switch (this.selectedTransferencia?.etapa) {
         case EtapaTransferencia.PRE_TRANSFERENCIA_CREACION:
           this.isPreTransferenciaCreacion = true;
@@ -250,7 +240,6 @@ export class InfoTransferenciaComponent implements OnInit {
           this.actionMenuOptionsList = [
             { texto: 'Verificar', role: 'verificar' },
             { texto: 'Confirmar', role: 'confirmar' },
-            // { texto: 'Modif. Item', role: 'cantidad' },
             { texto: 'Desconfirmar', role: 'desconfirmar' },
             { texto: 'Rechazar', role: 'rechazar' }
           ];
@@ -293,7 +282,7 @@ export class InfoTransferenciaComponent implements OnInit {
     this.selectedTransferencia?.transferenciaItemList.find((i) => {
       if (
         this.selectedTransferencia.etapa ==
-          EtapaTransferencia.PREPARACION_MERCADERIA &&
+        EtapaTransferencia.PREPARACION_MERCADERIA &&
         i.cantidadPreparacion == null &&
         i.vencimientoPreparacion == null &&
         i.motivoRechazoPreparacion == null
@@ -301,7 +290,7 @@ export class InfoTransferenciaComponent implements OnInit {
         okPreparacion = false;
       } else if (
         this.selectedTransferencia.etapa ==
-          EtapaTransferencia.TRANSPORTE_VERIFICACION &&
+        EtapaTransferencia.TRANSPORTE_VERIFICACION &&
         i.cantidadTransporte == null &&
         i.vencimientoTransporte == null &&
         i.motivoRechazoTransporte == null
@@ -309,7 +298,7 @@ export class InfoTransferenciaComponent implements OnInit {
         okTransporte = false;
       } else if (
         this.selectedTransferencia.etapa ==
-          EtapaTransferencia.TRANSPORTE_EN_CAMINO &&
+        EtapaTransferencia.TRANSPORTE_EN_CAMINO &&
         i.cantidadTransporte == null &&
         i.vencimientoTransporte == null &&
         i.motivoRechazoTransporte == null
@@ -317,7 +306,7 @@ export class InfoTransferenciaComponent implements OnInit {
         okTransporte = false;
       } else if (
         this.selectedTransferencia.etapa ==
-          EtapaTransferencia.RECEPCION_EN_VERIFICACION &&
+        EtapaTransferencia.RECEPCION_EN_VERIFICACION &&
         i.cantidadRecepcion == null &&
         i.vencimientoRecepcion == null &&
         i.motivoRechazoRecepcion == null
@@ -333,33 +322,33 @@ export class InfoTransferenciaComponent implements OnInit {
   onItemPress(item) {
     this.actionMenuOptionsList.length > 0
       ? this.menuActionService
-          .presentActionSheet(this.actionMenuOptionsList)
-          .then((res) => {
-            let role = res.role;
-            switch (role) {
-              case 'verificar':
-                this.onVerificarProducto(item);
-                break;
-              case 'confirmar':
-                this.onConfirm(item);
-                break;
-              case 'desconfirmar':
-                this.onDesconfirm(item);
-                break;
-              case 'cantidad':
-                this.onModifCantidad(item);
-                break;
-              case 'vencimiento':
-                this.onModifVencimiento(item);
-                break;
-              case 'rechazar':
-                this.onRechazar(item);
-                break;
+        .presentActionSheet(this.actionMenuOptionsList)
+        .then((res) => {
+          let role = res.role;
+          switch (role) {
+            case 'verificar':
+              this.onVerificarProducto(item);
+              break;
+            case 'confirmar':
+              this.onConfirm(item);
+              break;
+            case 'desconfirmar':
+              this.onDesconfirm(item);
+              break;
+            case 'cantidad':
+              this.onModifCantidad(item);
+              break;
+            case 'vencimiento':
+              this.onModifVencimiento(item);
+              break;
+            case 'rechazar':
+              this.onRechazar(item);
+              break;
 
-              default:
-                break;
-            }
-          })
+            default:
+              break;
+          }
+        })
       : null;
   }
 
@@ -370,34 +359,34 @@ export class InfoTransferenciaComponent implements OnInit {
     }
     ok
       ? this.transferenciaService
-          .onAvanzarEtapa(this.selectedTransferencia, etapa)
-          .pipe(untilDestroyed(this))
-          .subscribe((res) => {
-            if (res) {
-              this.selectedTransferencia.etapa = etapa;
-              if (etapa == EtapaTransferencia.TRANSPORTE_VERIFICACION) {
-                this.selectedTransferencia.usuarioTransporte =
-                  this.mainService.usuarioActual;
-              } else if (etapa == EtapaTransferencia.PREPARACION_MERCADERIA) {
-                this.selectedTransferencia.usuarioPreparacion =
-                  this.mainService.usuarioActual;
-              } else if (etapa == EtapaTransferencia.PRE_TRANSFERENCIA_ORIGEN) {
-                this.selectedTransferencia.estado =
-                  TransferenciaEstado.EN_ORIGEN;
-              } else if (etapa == EtapaTransferencia.TRANSPORTE_EN_CAMINO) {
-                this.selectedTransferencia.estado =
-                  TransferenciaEstado.EN_TRANSITO;
-              } else if (
-                etapa == EtapaTransferencia.RECEPCION_EN_VERIFICACION
-              ) {
-                this.selectedTransferencia.estado =
-                  TransferenciaEstado.EN_DESTINO;
-                this.selectedTransferencia.usuarioRecepcion =
-                  this.mainService.usuarioActual;
-              }
-              this.verificarEtapa();
+        .onAvanzarEtapa(this.selectedTransferencia, etapa)
+        .pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          if (res) {
+            this.selectedTransferencia.etapa = etapa;
+            if (etapa == EtapaTransferencia.TRANSPORTE_VERIFICACION) {
+              this.selectedTransferencia.usuarioTransporte =
+                this.mainService.usuarioActual;
+            } else if (etapa == EtapaTransferencia.PREPARACION_MERCADERIA) {
+              this.selectedTransferencia.usuarioPreparacion =
+                this.mainService.usuarioActual;
+            } else if (etapa == EtapaTransferencia.PRE_TRANSFERENCIA_ORIGEN) {
+              this.selectedTransferencia.estado =
+                TransferenciaEstado.EN_ORIGEN;
+            } else if (etapa == EtapaTransferencia.TRANSPORTE_EN_CAMINO) {
+              this.selectedTransferencia.estado =
+                TransferenciaEstado.EN_TRANSITO;
+            } else if (
+              etapa == EtapaTransferencia.RECEPCION_EN_VERIFICACION
+            ) {
+              this.selectedTransferencia.estado =
+                TransferenciaEstado.EN_DESTINO;
+              this.selectedTransferencia.usuarioRecepcion =
+                this.mainService.usuarioActual;
             }
-          })
+            this.verificarEtapa();
+          }
+        })
       : null;
   }
 
@@ -530,9 +519,6 @@ export class InfoTransferenciaComponent implements OnInit {
         ) {
           switch (this.selectedTransferencia.etapa) {
             case EtapaTransferencia.PREPARACION_MERCADERIA:
-              // item.cantidadPreparacion = null;
-              // item.motivoModificacionPreparacion = null;
-              // item.vencimientoPreparacion = null;
               item.motivoRechazoPreparacion = getEnumValueByValue(
                 TransferenciaItemMotivoRechazo,
                 res.role
@@ -540,9 +526,6 @@ export class InfoTransferenciaComponent implements OnInit {
               responsableId = this.selectedTransferencia.usuarioPreparacion;
               break;
             case EtapaTransferencia.TRANSPORTE_VERIFICACION:
-              // item.cantidadTransporte = null;
-              // item.motivoModificacionTransporte = null;
-              // item.vencimientoTransporte = null;
               item.motivoRechazoTransporte = getEnumValueByValue(
                 TransferenciaItemMotivoRechazo,
                 res.role
@@ -550,9 +533,6 @@ export class InfoTransferenciaComponent implements OnInit {
               responsableId = this.selectedTransferencia.usuarioTransporte;
               break;
             case EtapaTransferencia.RECEPCION_EN_VERIFICACION:
-              // item.cantidadRecepcion = null;
-              // item.motivoModificacionRecepcion = null;
-              // item.vencimientoRecepcion = null;
               item.motivoRechazoRecepcion = getEnumValueByValue(
                 TransferenciaItemMotivoRechazo,
                 res.role
@@ -593,7 +573,6 @@ export class InfoTransferenciaComponent implements OnInit {
                     notificacionInput
                   )
                 ).subscribe((notiRes) => {
-                  console.log(notiRes);
                 });
               }
               this.onVerificarConfirmados();
@@ -632,17 +611,17 @@ export class InfoTransferenciaComponent implements OnInit {
               item.vencimientoPreparacion = res?.data?.vencimiento;
               item.cantidadPreparacion = res.data?.cantidad;
               break;
-              case EtapaTransferencia.TRANSPORTE_VERIFICACION:
-                item.motivoModificacionTransporte = TransferenciaItemMotivoModificacion.CANTIDAD_INCORRECTA;
-                item.presentacionTransporte = res?.data.presentacion;
-                item.vencimientoTransporte = res?.data.vencimiento;
-                item.cantidadTransporte = res.data?.cantidad;
+            case EtapaTransferencia.TRANSPORTE_VERIFICACION:
+              item.motivoModificacionTransporte = TransferenciaItemMotivoModificacion.CANTIDAD_INCORRECTA;
+              item.presentacionTransporte = res?.data.presentacion;
+              item.vencimientoTransporte = res?.data.vencimiento;
+              item.cantidadTransporte = res.data?.cantidad;
               break;
-              case EtapaTransferencia.RECEPCION_EN_VERIFICACION:
-                item.motivoModificacionRecepcion = TransferenciaItemMotivoModificacion.CANTIDAD_INCORRECTA;
-                item.presentacionRecepcion = res?.data.presentacion;
-                item.vencimientoRecepcion = res?.data.vencimiento;
-                item.cantidadRecepcion = res.data?.cantidad;
+            case EtapaTransferencia.RECEPCION_EN_VERIFICACION:
+              item.motivoModificacionRecepcion = TransferenciaItemMotivoModificacion.CANTIDAD_INCORRECTA;
+              item.presentacionRecepcion = res?.data.presentacion;
+              item.vencimientoRecepcion = res?.data.vencimiento;
+              item.cantidadRecepcion = res.data?.cantidad;
               break;
           }
           (
@@ -766,7 +745,16 @@ export class InfoTransferenciaComponent implements OnInit {
 
   onEdit() {
     if (this.selectedTransferencia?.id) {
-      this.router.navigate(['transferencias', 'edit', this.selectedTransferencia.id]);
+      this.router.navigate(['transferencias', 'edit', this.selectedTransferencia.id], {
+        state: {
+          fromEdit: true,
+          sucursalOrigen: this.selectedTransferencia.sucursalOrigen,
+          sucursalDestino: this.selectedTransferencia.sucursalDestino,
+          productosVencidos: null,
+          productoData: null
+        },
+        replaceUrl: true
+      });
     }
   }
 
@@ -802,5 +790,5 @@ export class InfoTransferenciaComponent implements OnInit {
       });
   }
 
-  onCameraClick() {}
+  onCameraClick() { }
 }
