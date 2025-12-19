@@ -359,14 +359,15 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
   }
 
   onBack() {
-    console.log('onBack - Regresando a edición de transferencia');
-    const destino = this.transferenciaId != null ? ['transferencias', 'edit', this.transferenciaId] : ['transferencias', 'edit', 'new'];
+    console.log('onBack - Regresando a detalles de transferencia');
+    const destino = this.transferenciaId != null ? ['transferencias', 'list', 'info', this.transferenciaId] : ['transferencias', 'edit', 'new'];
     console.log('Navegando a:', destino);
     this.router.navigate(destino, {
       state: {
         sucursalOrigen: this.sucursalOrigen,
         sucursalDestino: this.sucursalDestino,
-        transferenciaId: this.transferenciaId
+        transferenciaId: this.transferenciaId,
+        fromEdit: true
       }
     });
   }

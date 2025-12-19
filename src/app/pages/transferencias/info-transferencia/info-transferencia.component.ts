@@ -172,7 +172,7 @@ export class InfoTransferenciaComponent implements OnInit {
   }
 
   onBack() {
-    this._location.back();
+    this.router.navigate(['transferencias', 'list']);
   }
 
   async verificarEtapa() {
