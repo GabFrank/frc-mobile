@@ -32,7 +32,7 @@ export class ListTransferenciasComponent implements OnInit {
     this.route.paramMap.pipe(untilDestroyed(this)).subscribe(params => {
       const sucursalId = params.get('sucursalId');
       const etapa = params.get('etapa');
-      
+
       if (sucursalId && etapa) {
         this.modoInventario = true;
         this.titulo = 'Transferencias Activas';
@@ -87,16 +87,14 @@ export class ListTransferenciasComponent implements OnInit {
 
   onItemClick(item: Transferencia) {
     if (this.modoInventario) {
-      // Si estamos en modo inventario, usar ruta absoluta
       this.router.navigate(['/transferencias/list/info', item.id]);
     } else {
-      // Si no, usar ruta relativa como antes
       this.router.navigate(['info', item.id], { relativeTo: this.route });
     }
   }
 
   onBack() {
-    this._location.back()
+    this.router.navigate(['transferencias']);
   }
 
   openFilterMenu() {
