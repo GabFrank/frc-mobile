@@ -67,7 +67,7 @@ export class TransferenciaService {
   }
 
   async onGetTransferenciaItensWithFilters(id, name?, page?, size?, showLoading: boolean = true): Promise<Observable<PageInfo<TransferenciaItem>>> {
-    return await this.genericCrudService.onCustomGet(this.transferenciaItemPorTransferenciaIdWithFilter, {id, name, page, size}, undefined, showLoading);
+    return await this.genericCrudService.onCustomGet(this.transferenciaItemPorTransferenciaIdWithFilter, { id, name, page, size }, undefined, showLoading);
   }
 
   async onSaveTransferenciaItem(input): Promise<Observable<TransferenciaItem>> {
@@ -102,7 +102,7 @@ export class TransferenciaService {
     return new Observable(obs => {
       if (transferencia.estado == TransferenciaEstado.ABIERTA) {
         this.dialogoService.open('Realmente desea finalizar esta transferencia?', 'Una vez finalizada, la transferencia estara disponible para ser preparada', true).then(res => {
-          if (res) {
+          if (res.role == 'aceptar') {
             this.finalizarTransferencia.mutate({
               id: transferencia.id,
               usuarioId: this.mainService.usuarioActual.id
@@ -145,7 +145,7 @@ export class TransferenciaService {
     }
     return new Observable(obs => {
       this.dialogoService.open('Atención, revise los datos antes de proceder.', texto).then(res => {
-        if (res.role=='aceptar') {
+        if (res.role == 'aceptar') {
           this.prepararTransferencia.mutate({
             id: transferencia.id,
             etapa,
