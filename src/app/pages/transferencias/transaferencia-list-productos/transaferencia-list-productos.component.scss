@@ -1,35 +1,108 @@
 ion-input {
-    text-transform: uppercase !important;
+  text-transform: uppercase !important;
+}
+
+.search-header {
+  padding: 8px 16px 12px 0px;
+  background: var(--ion-background-color);
+  border-bottom: 1px solid rgba(var(--ion-color-dark-rgb), 0.08);
+  margin-bottom: 12px;
+}
+
+.search-wrapper {
+  margin-left: -5px;
+}
+
+.custom-search-item {
+  --border-radius: 12px;
+  --border-color: #2eb872;
+  --highlight-color-focused: #2eb872;
+  --padding-start: 12px;
+  --background: var(--ion-background-color);
+  margin-bottom: 0;
+
+  ion-label {
+    color: #2eb872 !important;
+    font-weight: 500;
   }
-  
-  ion-fab ion-fab-button {
-    --background: #f44336 !important;
-    --border-radius: 35% !important;
+
+  ion-input {
+    font-weight: 400;
   }
-  
-  ion-button {
-    margin-bottom: 0px;
-    margin-top: 2px;
-    top: 2px
+}
+
+.icon-camera {
+  font-size: 24px;
+  color: #2eb872;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.icon-clear {
+  font-size: 18px;
+  color: var(--ion-color-medium);
+  cursor: pointer;
+}
+
+.btn-back {
+  --color: #2eb872;
+  margin: 0;
+  --padding-start: 8px;
+  --padding-end: 8px;
+}
+
+.search-btn-container {
+  display: flex;
+  justify-content: center;
+  margin: 4px 16px 0px 16px;
+  animation: fadeInDown 0.3s ease-out;
+}
+
+.btn-search-flat {
+  --color: #2eb872;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin: 0;
+  font-size: 18px;
+  --ripple-color: transparent;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
   }
-  .desc {
-    white-space: normal;   
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    font-size: 14px;      
-    max-width: 100%;       
-  }
-  
-  
-  .fade-in{
+
+  to {
     opacity: 1;
     transform: translateY(0);
-    transition: opacity 0.4s ease, transform 0.4s ease;
   }
-  
-  .fade-out{
-    opacity: 0;
-    transform: translateY(0);
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    pointer-events: none;
-  }
+}
+
+ion-button {
+  margin-bottom: 0px;
+  margin-top: 2px;
+}
+
+.desc {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-size: 14px;
+  max-width: 100%;
+}
+
+
+.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.fade-out {
+  opacity: 0;
+  transform: translateY(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
