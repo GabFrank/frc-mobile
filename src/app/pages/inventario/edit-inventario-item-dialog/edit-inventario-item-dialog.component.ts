@@ -33,8 +33,8 @@ export class EditInventarioItemDialogComponent implements OnInit {
 
   estadosList = Object.values(InventarioProductoEstado)
   selectedInventarioProductoItem: InventarioProductoItem;
-  cantidadControl = new UntypedFormControl(null, [Validators.required, Validators.min(0)])
-  vencimientoControl = new UntypedFormControl(null, [Validators.required])
+  cantidadControl = new UntypedFormControl(null, [Validators.required])
+  vencimientoControl = new UntypedFormControl(null)
   estadoControl = new UntypedFormControl(InventarioProductoEstado.BUENO)
   formGroup;
 
@@ -50,42 +50,17 @@ export class EditInventarioItemDialogComponent implements OnInit {
   }
 
   ngOnInit() {
-    let tieneVencimiento = false;
-    
-    if (this.data?.producto?.vencimiento === true) {
-      tieneVencimiento = true;
-    }
-    else if (typeof this.data?.producto?.vencimiento === 'string' && this.data?.producto?.vencimiento === 'true') {
-      tieneVencimiento = true;
-      if (this.data?.producto) {
-        this.data.producto.vencimiento = true;
-      }
-    } 
-    else if (this.data?.inventarioProductoItem?.vencimiento && this.data?.producto) {
-      tieneVencimiento = true;
-      this.data.producto.vencimiento = true;
-    }
-    if (tieneVencimiento) {
-      if (!this.vencimientoControl.hasValidator(Validators.required)) {
-        this.vencimientoControl.setValidators(Validators.required);
-      }
-    } else {
-      this.vencimientoControl.clearValidators();
-      this.vencimientoControl.setValue(null);
-    }
-    this.vencimientoControl.updateValueAndValidity();
-
     if (this.data?.inventarioProductoItem?.id != null) {
       this.cargarDatos(this.data.inventarioProductoItem);
     } else {
       if (this.data?.producto && this.data?.presentacion) {
         if (this.data.producto.stockPorProducto != null && this.data.presentacion.cantidad > 0) {
-          const stockTeoricoPresentaciones = this.data.producto.stockPorProducto / this.data.presentacion.cantidad; 
+          const stockTeoricoPresentaciones = this.data.producto.stockPorProducto / this.data.presentacion.cantidad;
           this.cantidadOriginalDelItem = parseFloat(stockTeoricoPresentaciones.toFixed(3));
         } else {
           this.cantidadOriginalDelItem = 0;
         }
-        
+
         if (this.data?.peso != null) {
           this.cantidadControl.setValue(this.data.peso);
         }
@@ -107,17 +82,13 @@ export class EditInventarioItemDialogComponent implements OnInit {
     setTimeout(() => {
       this.selectedInventarioProductoItem = new InventarioProductoItem;
       Object.assign(this.selectedInventarioProductoItem, invProItem)
-      
-      // Si el item ya tiene cantidadAnterior, usarla (stock original del sistema)
-      // Si no tiene cantidadAnterior pero tiene cantidadFisica, usarla (deberían ser iguales)
-      // Si no tiene ninguno, calcular desde stockPorProducto del producto
       if (invProItem.cantidadAnterior != null) {
         this.cantidadOriginalDelItem = invProItem.cantidadAnterior;
       } else if (invProItem.cantidadFisica != null) {
         this.cantidadOriginalDelItem = invProItem.cantidadFisica;
       } else if (this.data?.producto && this.data?.presentacion) {
         if (this.data.producto.stockPorProducto != null && this.data.presentacion.cantidad > 0) {
-          const stockTeoricoPresentaciones = this.data.producto.stockPorProducto / this.data.presentacion.cantidad; 
+          const stockTeoricoPresentaciones = this.data.producto.stockPorProducto / this.data.presentacion.cantidad;
           this.cantidadOriginalDelItem = parseFloat(stockTeoricoPresentaciones.toFixed(3));
         } else {
           this.cantidadOriginalDelItem = 0;
@@ -125,20 +96,20 @@ export class EditInventarioItemDialogComponent implements OnInit {
       } else {
         this.cantidadOriginalDelItem = 0;
       }
-      
+
       this.isPesable = this.selectedInventarioProductoItem.presentacion.producto.balanza;
       this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
       this.cantidadControl.setValue(invProItem?.cantidad)
-      
-      const tieneVencimiento = this.data?.producto?.vencimiento === true || 
-                             (typeof this.data?.producto?.vencimiento === 'string' && this.data?.producto?.vencimiento === 'true');
-      
+
+      const tieneVencimiento = this.data?.producto?.vencimiento === true ||
+        (typeof this.data?.producto?.vencimiento === 'string' && this.data?.producto?.vencimiento === 'true');
+
       if (tieneVencimiento && invProItem?.vencimiento) {
         this.vencimientoControl.setValue(invProItem.vencimiento);
       } else {
         this.vencimientoControl.setValue(null);
       }
-      
+
 
       let fechaFormato: string = null;
       if (invProItem?.vencimiento) {
@@ -160,15 +131,13 @@ export class EditInventarioItemDialogComponent implements OnInit {
 
     if (this.selectedInventarioProductoItem == null) {
       this.selectedInventarioProductoItem = new InventarioProductoItem()
-      // cantidad = valor ingresado por el usuario
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
-      // cantidadFisica y cantidadAnterior = stock original del sistema (mismo valor)
       this.selectedInventarioProductoItem.cantidadFisica = this.cantidadOriginalDelItem;
       this.selectedInventarioProductoItem.cantidadAnterior = this.cantidadOriginalDelItem;
       this.selectedInventarioProductoItem.revisado = true;
       this.selectedInventarioProductoItem.verificado = false;
       if (this.data?.producto?.vencimiento === true) {
-      this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
+        this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
       } else {
         this.selectedInventarioProductoItem.vencimiento = null;
       }
@@ -183,18 +152,15 @@ export class EditInventarioItemDialogComponent implements OnInit {
       this.selectedInventarioProductoItem.zona = this.data.inventarioProducto?.zona;
       this.selectedInventarioProductoItem.copiedFromItemId = this.originalItemId;
     } else {
-      // cantidadAnterior = stock original del sistema
       this.selectedInventarioProductoItem.cantidadAnterior = this.cantidadOriginalDelItem;
-      // cantidad = valor ingresado por el usuario
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
-      // cantidadFisica = stock original del sistema (igual a cantidadAnterior)
       this.selectedInventarioProductoItem.cantidadFisica = this.cantidadOriginalDelItem;
-      
+
       this.selectedInventarioProductoItem.revisado = true;
       this.selectedInventarioProductoItem.verificado = false;
-      
+
       if (this.data?.producto?.vencimiento === true) {
-      this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
+        this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
       } else {
         this.selectedInventarioProductoItem.vencimiento = null;
       }

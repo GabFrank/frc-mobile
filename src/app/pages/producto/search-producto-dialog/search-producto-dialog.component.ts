@@ -307,14 +307,14 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
     const cantidad = this.cantidadById[presentacion.id];
     const venc = this.vencimientoById[presentacion.id];
     const estado = this.estadoById[presentacion.id] || InventarioProductoEstado.BUENO;
-    if (cantidad == null || cantidad < 0 || venc == null) {
-      this.notificacionService.warn('Complete la cantidad y el vencimiento');
+    if (cantidad == null || cantidad < 0) {
+      this.notificacionService.warn('Complete la cantidad');
       return;
     }
     const invPro = this.data?.data?.invPro;
-    const vencStr = typeof venc === 'string'
+    const vencStr = venc ? (typeof venc === 'string'
       ? (venc.includes('/') ? this.convertToIsoDate(venc) : venc)
-      : dateToString(new Date(venc));
+      : dateToString(new Date(venc))) : null;
     const input: InventarioProductoItemInput = {
       id: null,
       inventarioProductoId: invPro?.id,
@@ -402,7 +402,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
       this.productosAccordion.value = undefined as any;
     }
   }
-  
+
   setFocusOnInput() {
     if (this.inputEl) {
       setTimeout(() => {
