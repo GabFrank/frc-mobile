@@ -1,24 +1,32 @@
 <ion-content #content fullscreen (ionScroll)="onScroll($event)">
-  <ion-row>
-    <ion-col size="2">
-      <ion-icon name="arrow-back" style="font-size: 1.5em; margin-top: 5px;" (click)="onBack()"></ion-icon>
-    </ion-col>
-    <ion-col size="10">
-      <ion-item>
-        <ion-label position="floating">Nombre o Código de Barra</ion-label>
-        <ion-input #buscarInput [formControl]="buscarControl" autocapitalize="on"
-          (keyup.enter)="onBuscarClick()"></ion-input>
-        <ion-icon style="font-size: 2em; padding-top: 5px" name="camera-outline" slot="end"
-          (click)="onCameraClick()"></ion-icon>
-      </ion-item>
-    </ion-col>
-  </ion-row>
+  <div class="search-header">
+    <ion-row class="ion-align-items-center ion-no-padding">
+      <ion-col size="auto">
+        <ion-button fill="clear" (click)="onBack()" class="btn-back">
+          <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+        </ion-button>
+      </ion-col>
+      <ion-col>
+        <div class="search-wrapper">
+          <ion-item fill="outline" class="custom-search-item">
+            <ion-label position="floating">Nombre o Código de Barra</ion-label>
+            <ion-input #buscarInput [formControl]="buscarControl" placeholder="Nombre o Código" autocapitalize="on"
+              (keyup.enter)="onBuscarClick()">
+            </ion-input>
+            <ion-icon name="camera-outline" slot="end" class="icon-camera" (click)="onCameraClick()"></ion-icon>
+            <ion-icon name="close-circle" slot="end" class="icon-clear" *ngIf="buscarControl.value"
+              (click)="buscarControl.setValue('')"></ion-icon>
+          </ion-item>
+        </div>
+      </ion-col>
+    </ion-row>
 
-  <ion-row *ngIf="buscarControl.valid">
-    <ion-col size="12" style="text-align: center">
-      <ion-button class="btn-success-flat" fill="clear" (click)="onBuscarClick()">Buscar</ion-button>
-    </ion-col>
-  </ion-row>
+    <div class="search-btn-container" *ngIf="buscarControl.valid">
+      <ion-button fill="clear" class="btn-search-flat" (click)="onBuscarClick()">
+        BUSCAR
+      </ion-button>
+    </div>
+  </div>
 
   <ion-accordion-group #productosAccordion (ionChange)="onAccordionChangeProducto($event, producto)">
     <ion-accordion *ngFor="let producto of productosList; let i = index; trackBy: trackByProductoId"
