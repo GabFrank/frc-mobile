@@ -123,9 +123,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
       this.onBack();
     }
   }
-
-  // Loading es gestionado por GenericCrudService en las llamadas al backend
-
   private calcularStockDisponible(producto: Producto, presentacion: Presentacion): number {
     if (!producto || producto.stockPorProducto == null || !presentacion || !presentacion.cantidad) {
       return 0;
@@ -359,8 +356,8 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
   }
 
   onBack() {
-    console.log('onBack - Regresando a detalles de transferencia');
-    const destino = this.transferenciaId != null ? ['transferencias', 'list', 'info', this.transferenciaId] : ['transferencias', 'edit', 'new'];
+    console.log('onBack - Regresando a detalles de transferencia (edición)');
+    const destino = this.transferenciaId != null ? ['transferencias', 'edit', this.transferenciaId] : ['transferencias', 'edit', 'new'];
     console.log('Navegando a:', destino);
     this.router.navigate(destino, {
       state: {
