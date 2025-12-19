@@ -38,7 +38,7 @@
     </ion-col>
     <ion-col size="6" class="center">
       <ion-button fill="clear" class="btn-success-flat" (click)="onAceptar()"
-        [disabled]="formGroup.invalid && cantidadControl.value !== 0">Aceptar</ion-button>
+        [disabled]="cantidadControl.value === null || cantidadControl.value === '' || cantidadControl.value === undefined">Aceptar</ion-button>
     </ion-col>
   </ion-row>
 </ion-content>
