@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ViewWillEnter } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { UntilDestroy } from '@ngneat/until-destroy';
@@ -31,7 +32,7 @@ enum OpcionesMostrar {
   templateUrl: './edit-transferenci-producto.component.html',
   styleUrls: ['./edit-transferenci-producto.component.scss']
 })
-export class EditTransferenciaProductoComponent implements OnInit {
+export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter {
   selectedTransferencia: Transferencia;
   transferenciaId: number;
   mostrarControl = new UntypedFormControl(OpcionesMostrar.TODOS);
@@ -61,6 +62,7 @@ export class EditTransferenciaProductoComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.isNavigatingToGestion = false;
     const navigation = this.router.getCurrentNavigation();
     let productoData = null;
     let productosVencidos = null;
@@ -98,7 +100,6 @@ export class EditTransferenciaProductoComponent implements OnInit {
 
         if (!fromEdit && productosVencidos && productosVencidos.length > 0) {
           const storageKey = `productosVencidosAgregados_${this.transferenciaId}`;
-          sessionStorage.removeItem(storageKey);
           this.buscarTransferencia(this.transferenciaId, productosVencidos);
         } else {
           this.buscarTransferencia(this.transferenciaId);
@@ -116,6 +117,11 @@ export class EditTransferenciaProductoComponent implements OnInit {
         }
       }
     });
+  }
+
+  ionViewWillEnter() {
+    console.log('ionViewWillEnter - Desbloqueando navegación');
+    this.isNavigatingToGestion = false;
   }
 
   async buscarTransferencia(id: number, productosVencidos?: any[]) {
@@ -174,13 +180,18 @@ export class EditTransferenciaProductoComponent implements OnInit {
       this.notificacionService.open('No hay transferencia seleccionada', TipoNotificacion.DANGER, 2);
       return;
     }
+
     if (this.isNavigatingToGestion) {
-      return;
+      console.warn('⚠️ Navegación bloqueada: isNavigatingToGestion es true. Intentando desbloquear...');
+      this.isNavigatingToGestion = false;
     }
+
     if (!this.selectedTransferencia?.sucursalOrigen || !this.selectedTransferencia?.sucursalDestino) {
       this.notificacionService.open('Faltan datos de sucursales', TipoNotificacion.DANGER, 2);
       return;
     }
+
+    console.log('Navigating to gestion-productos...');
     this.isNavigatingToGestion = true;
     this.router.navigate(['transferencias', 'gestion-productos'], {
       state: {
