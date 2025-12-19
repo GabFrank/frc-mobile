@@ -89,7 +89,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
   }
 
   async ngOnInit() {
-    console.log('ngOnInit - Iniciando componente de lista de productos');
     await this.obtenerDatosSucursales();
     this.displayedItemsByPresentacionId = {};
 
@@ -99,18 +98,12 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
   }
 
   private async obtenerDatosSucursales() {
-    console.log('obtenerDatosSucursales - Obteniendo datos de navegación');
     const navigation = this.router.getCurrentNavigation();
     if (navigation?.extras?.state) {
       const state = navigation.extras.state as any;
       this.sucursalOrigen = state.sucursalOrigen;
       this.sucursalDestino = state.sucursalDestino;
       this.transferenciaId = state.transferenciaId;
-      console.log('Datos recibidos:', {
-        origen: this.sucursalOrigen,
-        destino: this.sucursalDestino,
-        transferenciaId: this.transferenciaId
-      });
 
       if (!this.transferenciaId) {
         console.error('ERROR: No se recibió transferenciaId');
@@ -183,7 +176,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
   }
 
   onBuscarClick() {
-    console.log('onBuscarClick - Buscando:', this.buscarControl.value);
     if (this.buscarControl.valid) {
       this.onSearchProducto(this.buscarControl.value, null);
     } else {
@@ -192,7 +184,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
   }
 
   onSearchProducto(text: string, offset?: number) {
-    console.log('onSearchProducto - Ejecutando búsqueda:', { text, offset });
 
     if (this.onSearchTimer != null) {
       clearTimeout(this.onSearchTimer);
@@ -215,18 +206,15 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
       codigo = text.substring(2, 7);
       peso = +text.substring(7, 12) / 1000;
       text = codigo;
-      console.log('Producto pesable detectado:', { codigo, peso });
     }
 
     this.onSearchTimer = setTimeout(async () => {
       try {
         if (isPesable) {
-          console.log('Buscando código pesable:', codigo);
           (await this.codigoService.onGetCodigoPorCodigo(codigo))
             .pipe(untilDestroyed(this))
             .subscribe({
               next: (codigoRes) => {
-                console.log('Resultado código pesable:', codigoRes);
                 if (codigoRes && codigoRes.length > 0) {
                   this.abrirFormularioPresentacion(codigoRes[0]?.presentacion, codigoRes[0]?.presentacion?.producto, peso);
                 } else {
@@ -246,7 +234,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
             .pipe(untilDestroyed(this))
             .subscribe({
               next: (res) => {
-                console.log('Resultados de búsqueda:', res);
                 if (offset == null) {
                   this.productosList = res || [];
                   if (this.productosList.length === 0) {
@@ -288,15 +275,12 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
   }
 
   async onProductoClick(producto: Producto, index: number) {
-    console.log('onProductoClick - Clic en producto:', { producto, index });
     if (producto?.presentaciones == null) {
-      console.log('Cargando presentaciones para producto:', producto.id);
       (await this.productoService.getProducto(producto.id))
         .pipe(untilDestroyed(this))
         .subscribe({
           next: (res) => {
             this.productosList[index].presentaciones = res.presentaciones;
-            console.log('Presentaciones cargadas:', res.presentaciones);
             this.actualizarStockDisponibleParaProducto(this.productosList[index]);
           },
           error: (error) => {
@@ -306,7 +290,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     }
     if (this.sucursalOrigen?.id != null && producto?.stockPorProducto == null) {
       this.isSearchingList[index] = true;
-      console.log('Cargando stock para producto:', { productoId: producto.id, sucursalId: this.sucursalOrigen.id });
       (await this.productoService.onGetStockPorSucursal(producto.id, this.sucursalOrigen.id))
         .pipe(untilDestroyed(this))
         .subscribe({
@@ -314,7 +297,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
             this.isSearchingList[index] = false;
             if (res != null) {
               this.productosList[index].stockPorProducto = res;
-              console.log('Stock cargado:', res);
               this.actualizarStockDisponibleParaProducto(this.productosList[index]);
             }
           },
@@ -326,7 +308,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     }
     if (this.sucursalDestino?.id != null && (producto as any)?.stockPorProductoDestino == null) {
       this.isSearchingDestinoList[index] = true;
-      console.log('Cargando stock DESTINO para producto:', { productoId: producto.id, sucursalDestinoId: this.sucursalDestino.id });
       (await this.productoService.onGetStockPorSucursal(producto.id, this.sucursalDestino.id))
         .pipe(untilDestroyed(this))
         .subscribe({
@@ -334,7 +315,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
             this.isSearchingDestinoList[index] = false;
             if (res != null) {
               (this.productosList[index] as any).stockPorProductoDestino = res;
-              console.log('Stock DESTINO cargado:', res);
               this.actualizarStockDisponibleDestinoParaProducto(this.productosList[index]);
             }
           },
@@ -347,18 +327,11 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
   }
 
   private abrirFormularioPresentacion(presentacion: Presentacion, producto: Producto, peso?: number) {
-    console.log('abrirFormularioPresentacion - Abriendo formulario para:', {
-      producto: producto.descripcion,
-      presentacion,
-      peso
-    });
     this.notificacionService.open(`Producto encontrado: ${producto.descripcion}`, TipoNotificacion.SUCCESS, 2);
   }
 
   onBack() {
-    console.log('onBack - Regresando a detalles de transferencia (edición)');
     const destino = this.transferenciaId != null ? ['transferencias', 'edit', this.transferenciaId] : ['transferencias', 'edit', 'new'];
-    console.log('Navegando a:', destino);
     this.router.navigate(destino, {
       state: {
         sucursalOrigen: this.sucursalOrigen,
@@ -370,9 +343,7 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
   }
 
   onCameraClick() {
-    console.log('onCameraClick - Iniciando escáner de código de barras');
     this.barcodeScanner.scan().then(barcodeData => {
-      console.log('Código escaneado:', barcodeData.text);
       this.buscarControl.setValue(barcodeData.text);
       this.onSearchProducto(this.buscarControl.value, null);
     }).catch(error => {
@@ -383,37 +354,25 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
 
   validarCantidad(presentacion: Presentacion, producto: Producto) {
     const cantidad = this.cantidadById[presentacion.id];
-    console.log('validarCantidad - Validando cantidad:', {
-      presentacionId: presentacion.id,
-      cantidad,
-      stockPorProducto: producto?.stockPorProducto,
-      cantidadPresentacion: presentacion?.cantidad
-    });
     if (cantidad && cantidad > 0) {
       const stockDisponible = this.getStockDisponible(producto, presentacion);
-      console.log('Stock disponible (origen) para validar visualmente:', stockDisponible);
     }
   }
 
   onVencChange(presentacionId: number, event: any) {
-    console.log('onVencChange - Cambiando vencimiento:', { presentacionId, value: event.target.value });
     this.vencimientoById[presentacionId] = event.target.value;
   }
 
   onAccordionChangeProducto(event: any, producto: Producto) {
-    console.log('onAccordionChangeProducto - Cambio en acordeón de producto:', { event, producto });
   }
 
   onAccordionChangePresentacion(event: any, producto: Producto) {
-    console.log('onAccordionChangePresentacion - Cambio en acordeón de presentación:', { event, producto });
   }
 
   onAccordionTogglePresentacion(event: any, presentacionId: number, producto: Producto) {
-    console.log('onAccordionTogglePresentacion - Toggle en acordeón de presentación:', { event, presentacionId, producto });
   }
 
   limpiarFormulario(presentacionId: number) {
-    console.log('limpiarFormulario - Limpiando formulario para presentación:', presentacionId);
     this.cantidadById[presentacionId] = null;
     this.vencimientoById[presentacionId] = null;
     this.observacionById[presentacionId] = '';
@@ -430,7 +389,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
       return;
     }
 
-    console.log('onEditarItemTransferencia - Editando item:', item);
     const presentacionId = item.presentacionPreTransferencia?.id;
 
     if (presentacionId) {
@@ -455,11 +413,6 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
       console.error('onEliminarItemTransferencia - Item no válido');
       return;
     }
-
-    console.log('onEliminarItemTransferencia - Procesando eliminación mediante servicio genérico:', {
-      itemId: item.id,
-      presentacionId
-    });
 
     this.procesarEliminacionItem(item, presentacionId);
   }
@@ -514,39 +467,25 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
   }
 
   async onGuardarEnTransferencia(presentacion: Presentacion, producto: Producto) {
-    console.log('🔵 onGuardarEnTransferencia - Iniciando guardado', {
-      presentacionId: presentacion.id,
-      productoId: producto.id,
-      transferenciaId: this.transferenciaId,
-      cantidad: this.cantidadById[presentacion.id],
-      vencimiento: this.vencimientoById[presentacion.id],
-      observacion: this.observacionById[presentacion.id]
-    });
-
     const now = Date.now();
     const last = this.lastAddClickAtById[presentacion.id] || 0;
     if (now - last < 600) {
-      console.log('⚠️ Evitando doble click rápido');
       return;
     }
     this.lastAddClickAtById[presentacion.id] = now;
 
     const cantidad = this.cantidadById[presentacion.id];
     if (!cantidad || cantidad <= 0) {
-      console.warn('⚠️ Cantidad inválida:', cantidad);
       this.notificacionService.warn('Ingrese una cantidad válida');
       return;
     }
 
     if (!this.transferenciaId) {
-      console.error('❌ ERROR CRÍTICO: No hay transferenciaId disponible');
       this.notificacionService.open('Error: No se pudo crear la transferencia', TipoNotificacion.DANGER, 2);
       return;
     }
 
     try {
-      console.log('💾 Preparando item para guardar en transferencia:', this.transferenciaId);
-
       const itemInput: TransferenciaItemInput = {
         id: null,
         transferenciaId: this.transferenciaId,
@@ -580,28 +519,19 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
         creadoEn: null
       };
 
-      console.log('📤 Datos del item a enviar:', JSON.stringify(itemInput, null, 2));
-
       const itemObservable = await this.transferenciaService.onSaveTransferenciaItem(itemInput);
 
       itemObservable.pipe(untilDestroyed(this)).subscribe({
         next: (result) => {
-          console.log('✅ Respuesta exitosa del servicio:', result);
-
           if (result) {
             this.notificacionService.open('Producto guardado en la transferencia', TipoNotificacion.SUCCESS, 2);
             this.limpiarFormulario(presentacion.id);
             this.resetBusquedaYAccordion();
-            console.log('✅ Item agregado exitosamente, formulario limpiado y búsqueda reseteada');
           } else {
-            console.error('❌ El servicio retornó null o false');
             this.notificacionService.open('Error: No se pudo guardar el producto', TipoNotificacion.DANGER, 2);
           }
         },
         error: (error) => {
-          console.error('❌ Error guardando item:', error);
-          console.error('Detalles del error:', JSON.stringify(error, null, 2));
-
           let mensajeError = 'Error al guardar el producto';
           if (error?.message) {
             mensajeError += `: ${error.message}`;

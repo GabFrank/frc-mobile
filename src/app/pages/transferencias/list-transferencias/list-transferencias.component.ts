@@ -36,7 +36,6 @@ export class ListTransferenciasComponent implements OnInit {
       if (sucursalId && etapa) {
         this.modoInventario = true;
         this.titulo = 'Transferencias Activas';
-        console.log('Filtros - SucursalId:', sucursalId, 'Etapa:', etapa);
         this.onGetTransferenciasWithFilters(+sucursalId, etapa as EtapaTransferencia);
       } else {
         this.verificarUsuario();
@@ -55,7 +54,6 @@ export class ListTransferenciasComponent implements OnInit {
   }
 
   async onGetTransferenciasWithFilters(sucursalId: number, etapa: EtapaTransferencia) {
-    console.log('Buscando transferencias con filtros:', { sucursalDestinoId: sucursalId, etapa: etapa });
     (await this.transferenciaService.onGetTransferenciasWithFilters({
       sucursalDestinoId: sucursalId,
       etapa: etapa,
@@ -64,12 +62,9 @@ export class ListTransferenciasComponent implements OnInit {
     }))
       .pipe(untilDestroyed(this))
       .subscribe(res => {
-        console.log('Resultado de transferencias:', res);
         if (res != null && res.getContent) {
           this.transferenciaList = res.getContent;
-          console.log('Transferencias encontradas:', this.transferenciaList.length);
         } else {
-          console.log('No se encontraron transferencias o respuesta es null');
           this.transferenciaList = [];
         }
       })
@@ -105,7 +100,6 @@ export class ListTransferenciasComponent implements OnInit {
     ]).then(res => {
       let role = res.role;
       this.onFiltrar(role)
-      console.log(role)
     })
   }
 

@@ -77,12 +77,6 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
         productosVencidos = state.productosVencidos;
       }
       fromEdit = state.fromEdit;
-
-      console.log('📍 State de navegación:', {
-        fromEdit,
-        tieneProductosVencidos: !!productosVencidos,
-        cantidadProductos: productosVencidos?.length
-      });
     } else {
       const historyState = (window.history as any).state;
       if (historyState && historyState.sucursalOrigen) {
@@ -90,7 +84,6 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
         this.sucursalDestino = historyState.sucursalDestino;
         fromEdit = historyState.fromEdit || false;
       }
-      console.log('⚠️ Sin navigation state, cargando desde history (sin productos)');
     }
 
     this.route.paramMap.pipe(untilDestroyed(this)).subscribe((res) => {
@@ -120,7 +113,6 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
   }
 
   ionViewWillEnter() {
-    console.log('ionViewWillEnter - Desbloqueando navegación');
     this.isNavigatingToGestion = false;
   }
 
@@ -182,7 +174,6 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
     }
 
     if (this.isNavigatingToGestion) {
-      console.warn('⚠️ Navegación bloqueada: isNavigatingToGestion es true. Intentando desbloquear...');
       this.isNavigatingToGestion = false;
     }
 
@@ -191,7 +182,6 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
       return;
     }
 
-    console.log('Navigating to gestion-productos...');
     this.isNavigatingToGestion = true;
     this.router.navigate(['transferencias', 'gestion-productos'], {
       state: {
