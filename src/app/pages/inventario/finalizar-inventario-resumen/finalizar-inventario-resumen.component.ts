@@ -54,7 +54,7 @@ export class FinalizarInventarioResumenComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.route.paramMap.subscribe(res => {
+    this.route.paramMap.pipe(untilDestroyed(this)).subscribe(res => {
       this.inventarioId = res.get('id')
       if (this.inventarioId != null) {
         this.cargarDatos(this.inventarioId)
@@ -62,7 +62,7 @@ export class FinalizarInventarioResumenComponent implements OnInit {
         this.notificacionService.openItemNoEncontrado()
         this.onBack()
       }
-    }).unsubscribe();
+    });
   }
 
   async cargarDatos(id) {
@@ -123,15 +123,15 @@ export class FinalizarInventarioResumenComponent implements OnInit {
 
   onFinalizar() {
     let texto = 'Realmente desea finalizar este inventario?. Se procedera a ajustar el stock';
-    if (this.terminadas > 0) texto = `Aún quedan zonas sin inventariar. Realmente desea finalizar este inventario?. Se procedera a ajustar el stock`;
+    if (this.terminadas < this.total) texto = `Aún quedan zonas sin inventariar. Realmente desea finalizar este inventario?. Se procedera a ajustar el stock`;
     this.dialogoService.open('Atención!', texto).then(async res => {
       if (res.role == 'aceptar') {
         let loading = await this.cargandoService.open('Finalizando...')
         this.inventarioService.onFinalizarInventario(this.selectedInventario?.id)
-          .pipe(untilDestroyed(this)) //cuando recibe respuesta se cierra observable
+          .pipe(untilDestroyed(this))
           .subscribe(respuesta => {
             this.cargandoService.close(loading)
-            if(respuesta!=null) this.selectedInventario = respuesta;
+            if (respuesta != null) this.selectedInventario = respuesta;
           })
       }
     })
@@ -143,8 +143,8 @@ export class FinalizarInventarioResumenComponent implements OnInit {
       if (res.role == 'aceptar') {
         this.inventarioService.onCancelarInventario(this.selectedInventario?.id)
           .pipe(untilDestroyed(this))
-          .subscribe(res => { //res => true o false
-            if(res){
+          .subscribe(res => {
+            if (res) {
               this.selectedInventario.estado = InventarioEstado.CANCELADO
             }
           })
@@ -152,14 +152,14 @@ export class FinalizarInventarioResumenComponent implements OnInit {
     })
   }
 
-  onReabrir(){
+  onReabrir() {
     let texto = 'Realmente desea reabrir este inventario?';
     this.dialogoService.open('Atención!', texto).then(res => {
       if (res.role == 'aceptar') {
         this.inventarioService.onReabrirInventario(this.selectedInventario?.id)
           .pipe(untilDestroyed(this))
-          .subscribe(res => { //res => true o false
-            if(res){
+          .subscribe(res => {
+            if (res) {
               this.selectedInventario.estado = InventarioEstado.ABIERTO
               this.selectedInventario.abierto = true;
               this.onBack();
@@ -168,14 +168,14 @@ export class FinalizarInventarioResumenComponent implements OnInit {
       }
     })
   }
-  
-  onRevisar(){
+
+  onRevisar() {
     this.router.navigate(['/inventario/list/info', this.selectedInventario?.id, 'revisar'], { relativeTo: this.route });
   }
 
-  onNuevoInventario(){
-    this.modalService.openModal(NuevoInventarioComponent, {data: this.selectedInventario?.sucursal}).then(res => {
-      if(res.data?.inventario?.id!=null){
+  onNuevoInventario() {
+    this.modalService.openModal(NuevoInventarioComponent, { data: this.selectedInventario?.sucursal }).then(res => {
+      if (res.data?.inventario?.id != null) {
         this.router.navigate(['/inventario/list/info', res.data.inventario.id], { relativeTo: this.route });
       } else {
 
@@ -184,37 +184,3 @@ export class FinalizarInventarioResumenComponent implements OnInit {
   }
 
 }
-
-// this.menuActionService.presentActionSheet(menu).then(res => {
-//   let role = res.role;
-//   if (role == 'actualizar') {
-//     this.ngOnInit()
-//   } else if (role == 'finalizar') {
-//     let zonasAbiertas: string[] = [];
-//     this.inventarioService.onGetInventario(this.selectedInventario.id)
-//       .pipe(untilDestroyed(this))
-//       .subscribe(res2 => {
-//         res2.inventarioProductoList.forEach(ip => {
-//           if (ip.concluido == false) {
-//             zonasAbiertas.push(ip?.zona?.descripcion)
-//           }
-//         })
-//         let texto = 'Realmente desea finalizar este inventario?. Verifica si todas las zonas fueron inventariadas';
-//         if (zonasAbiertas.length == 0) {
-//           this.dialogoService.open('Atención!!', texto, true).then(res => {
-//             if (res.role == 'aceptar') {
-//               this.router.navigate(['finalizar'], { relativeTo: this.route });
-//             }
-//           })
-//         } else {
-//           let zonas = '';
-//           zonasAbiertas.forEach(z => {
-//             zonas = zonas.concat(...z + ', ')
-//           })
-//           this.notificacionService.open('Las siguientes zonas estan abiertas: ' + zonas, TipoNotificacion.WARN, 3)
-//         }
-
-//       })
-//   }
-// })
-// }
