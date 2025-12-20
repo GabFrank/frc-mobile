@@ -88,17 +88,15 @@ export class EditInventarioComponent implements OnInit {
     private productoService: ProductoService,
     private cdr: ChangeDetectorRef,
     private transferenciaService: TransferenciaService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.selectedResponsable = this.mainService.usuarioActual;
-    // Suscribirse a guardados desde el buscador para refrescar la lista en vivo
     this.inventarioService.inventarioItemSaved$
       .pipe(untilDestroyed(this))
       .subscribe((payload) => {
         if (payload == null) return;
         const { item: nuevoItem, inventarioProductoId } = payload;
-        // Insertar el item en la zona correspondiente
         this.selectedInventario?.inventarioProductoList?.forEach((invPro) => {
           if (invPro?.id === inventarioProductoId) {
             if (invPro.inventarioProductoItemList == null)
@@ -108,7 +106,6 @@ export class EditInventarioComponent implements OnInit {
             invPro.inventarioProductoItemList.unshift(nuevoItem);
           }
         });
-        // Forzar detección de cambios para refrescar la UI inmediatamente
         this.cdr.detectChanges();
       });
     this.route.paramMap.pipe(untilDestroyed(this)).subscribe((res) => {
@@ -121,33 +118,33 @@ export class EditInventarioComponent implements OnInit {
 
   async buscarInventario(id) {
     const currentAccordionId = this.activeAccordionId;
-    
+
     const mostrarNotificacion = this.route.snapshot.queryParams['mostrarNotificacion'] === 'true';
-  
+
     const loading = await this.cargandoService.open(null, false);
-    
+
     (await this.inventarioService.onGetInventario(id, false))
       .pipe(untilDestroyed(this))
       .subscribe((res) => {
         if (res != null) {
           this.selectedInventario = res;
           this.ordenarZonas();
-          
-         
+
+
           setTimeout(() => {
             this.cargandoService.close(loading);
           }, 300);
-         
+
           this.onGetSectores(this.selectedInventario.sucursal.id, false);
           this.cargarCantidadTransferenciasActivas(false);
-  
+
           if (currentAccordionId) {
             setTimeout(() => {
               this.activeAccordionId = currentAccordionId;
             }, 1);
           }
-          
-          
+
+
           if (mostrarNotificacion) {
             this.verificarTransferenciasPendientes();
             this.router.navigate([], {
@@ -278,7 +275,7 @@ export class EditInventarioComponent implements OnInit {
   verificarAbiertos(): boolean {
     return (
       this.selectedInventario.inventarioProductoList.find(
-        (e) => e.concluido == false
+        (e) => !e.concluido
       ) == null
     );
   }
@@ -296,12 +293,11 @@ export class EditInventarioComponent implements OnInit {
 
   onAddProducto(invPro, i) {
     console.log(this.selectedInventario);
-    let data = {sucursal:this.selectedInventario.sucursal,  sucursalId: +this.selectedInventario.sucursal.id, isInventario: true, invPro: invPro };
+    let data = { sucursal: this.selectedInventario.sucursal, sucursalId: +this.selectedInventario.sucursal.id, isInventario: true, invPro: invPro };
     this.modalService
       .openModal(SearchProductoDialogComponent, { data })
       .then((res) => {
         if (res?.data) {
-          // Dos flujos posibles: (A) input completo desde el buscador, (B) solo presentación -> abrir diálogo clásico
           if (res.data?.inventarioProductoId != null || res.data?.cantidad != null) {
             const invProItemAux: InventarioProductoItemInput = res.data;
             this.productoService.onGetStockPorSucursal(
@@ -310,8 +306,6 @@ export class EditInventarioComponent implements OnInit {
             ).then(obs => {
               obs.pipe(untilDestroyed(this)).subscribe(async (stockResponse) => {
                 if (stockResponse != null) {
-                  // El backend no acepta productoId en el input; se usa solo para calcular stock
-                  // Aseguramos eliminarlo antes de enviar la mutación
                   if ((invProItemAux as any)['productoId'] !== undefined) {
                     delete (invProItemAux as any)['productoId'];
                   }
@@ -418,11 +412,11 @@ export class EditInventarioComponent implements OnInit {
   ) {
     let selectedPresentacion = invProItem?.presentacion;
     let selectedProducto = invProItem?.presentacion?.producto;
-    
+
     if (selectedProducto && selectedProducto.vencimiento === undefined && invProItem.vencimiento !== null) {
       selectedProducto.vencimiento = true;
     }
-    
+
     let data: InventarioItemData = {
       inventarioProducto: invPro,
       producto: selectedProducto,
@@ -443,7 +437,7 @@ export class EditInventarioComponent implements OnInit {
                   if (i.id == invPro.id)
                     i.inventarioProductoItemList[index] = res3;
                 });
-                
+
                 const invProIdStr = invPro.id?.toString();
                 this.activeAccordionId = undefined;
                 setTimeout(() => {
@@ -478,16 +472,16 @@ export class EditInventarioComponent implements OnInit {
   }
 
   onMenuClick() {
-    const textoTransferencias = this.cantidadTransferenciasActivas > 0 
+    const textoTransferencias = this.cantidadTransferenciasActivas > 0
       ? `Transferencias activas (${this.cantidadTransferenciasActivas})`
       : 'Transferencias activas';
-    
+
     let menu: ActionMenuData[] = [
       { texto: this.selectedInventario?.estado == 'ABIERTO' ? 'Finalizar' : 'Resumen', role: 'resumen' },
       { texto: 'Actualizar datos', role: 'actualizar' },
       { texto: 'Compartir', role: 'compartir' },
       { texto: 'Zonas y sectores', role: 'zonas' },
-      { texto: textoTransferencias, role : 'transferencias'}
+      { texto: textoTransferencias, role: 'transferencias' }
     ];
     this.menuActionService.presentActionSheet(menu).then((res) => {
       let role = res.role;
@@ -500,7 +494,7 @@ export class EditInventarioComponent implements OnInit {
           );
           return;
         }
-        this.router.navigate(['finalizar'], { relativeTo: this.route });
+        this.router.navigate(['/inventario/list/info', this.selectedInventario.id, 'finalizar']);
       } else if (role == 'compartir') {
         let codigo = new QrData();
         codigo.sucursalId = this.selectedInventario?.sucursal?.id;
@@ -511,9 +505,9 @@ export class EditInventarioComponent implements OnInit {
           codificarQr(codigo),
           PopoverSize.XS
         );
-      } else if(role == 'zonas'){
-        this.router.navigate(['gestion-zona-sector', this.selectedInventario.sucursal.id], { relativeTo: this.route });
-      } else if(role == 'transferencias'){
+      } else if (role == 'zonas') {
+        this.router.navigate(['/inventario/list/info', this.selectedInventario.id, 'gestion-zona-sector', this.selectedInventario.sucursal.id]);
+      } else if (role == 'transferencias') {
         this.router.navigate(['/transferencias/list/filtradas', this.selectedInventario.sucursal.id, EtapaTransferencia.TRANSPORTE_EN_CAMINO]);
       }
     });
@@ -533,7 +527,7 @@ export class EditInventarioComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe((res) => {
         if (res != null && res.getContent && res.getContent.length > 0) {
-         this.notificacionService.open('Hay transferencias pendientes a ser concluidas', TipoNotificacion.WARN, 6);
+          this.notificacionService.open('Hay transferencias pendientes a ser concluidas', TipoNotificacion.WARN, 6);
         }
       });
   }
