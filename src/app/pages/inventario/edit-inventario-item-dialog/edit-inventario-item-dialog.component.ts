@@ -81,51 +81,46 @@ export class EditInventarioItemDialogComponent implements OnInit {
   }
 
   async cargarDatos(invProItem: InventarioProductoItem) {
-    let loading = await this.cargandoService.open()
-    setTimeout(() => {
-      this.selectedInventarioProductoItem = new InventarioProductoItem;
-      Object.assign(this.selectedInventarioProductoItem, invProItem)
-      if (invProItem.cantidadAnterior != null) {
-        this.cantidadOriginalDelItem = invProItem.cantidadAnterior;
-      } else if (invProItem.cantidadFisica != null) {
-        this.cantidadOriginalDelItem = invProItem.cantidadFisica;
-      } else if (this.data?.producto && this.data?.presentacion) {
-        if (this.data.producto.stockPorProducto != null && this.data.presentacion.cantidad > 0) {
-          const stockTeoricoPresentaciones = this.data.producto.stockPorProducto / this.data.presentacion.cantidad;
-          this.cantidadOriginalDelItem = parseFloat(stockTeoricoPresentaciones.toFixed(3));
-        } else {
-          this.cantidadOriginalDelItem = 0;
-        }
+    let loading = await this.cargandoService.open();
+    this.selectedInventarioProductoItem = new InventarioProductoItem();
+    Object.assign(this.selectedInventarioProductoItem, invProItem);
+
+    if (invProItem.cantidadAnterior != null) {
+      this.cantidadOriginalDelItem = invProItem.cantidadAnterior;
+    } else if (invProItem.cantidadFisica != null) {
+      this.cantidadOriginalDelItem = invProItem.cantidadFisica;
+    } else if (this.data?.producto && this.data?.presentacion) {
+      if (this.data.producto.stockPorProducto != null && this.data.presentacion.cantidad > 0) {
+        const stockTeoricoPresentaciones = this.data.producto.stockPorProducto / this.data.presentacion.cantidad;
+        this.cantidadOriginalDelItem = parseFloat(stockTeoricoPresentaciones.toFixed(3));
       } else {
         this.cantidadOriginalDelItem = 0;
       }
+    } else {
+      this.cantidadOriginalDelItem = 0;
+    }
 
-      this.isPesable = this.selectedInventarioProductoItem.presentacion.producto.balanza;
-      this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
-      this.cantidadControl.setValue(invProItem?.cantidad)
+    this.isPesable = this.selectedInventarioProductoItem.presentacion?.producto?.balanza || false;
+    this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
+    this.cantidadControl.setValue(invProItem?.cantidad);
 
-      this.tieneVencimiento = this.data?.producto?.vencimiento === true ||
-        (typeof this.data?.producto?.vencimiento === 'string' && (this.data?.producto?.vencimiento === 'true' || this.data?.producto?.vencimiento === '1'));
+    if (this.tieneVencimiento && invProItem?.vencimiento) {
+      this.vencimientoControl.setValue(invProItem.vencimiento);
+    } else {
+      this.vencimientoControl.setValue(null);
+    }
 
-      if (this.tieneVencimiento && invProItem?.vencimiento) {
-        this.vencimientoControl.setValue(invProItem.vencimiento);
-      } else {
-        this.vencimientoControl.setValue(null);
-      }
+    let fechaFormato: string = null;
+    if (invProItem?.vencimiento) {
+      const fecha = invProItem.vencimiento instanceof Date
+        ? invProItem.vencimiento
+        : new Date(invProItem.vencimiento);
+      fechaFormato = formatDate(fecha, 'yyyy-MM-dd', 'en-US');
+    }
+    this.vencimientoControl.setValue(fechaFormato);
 
-
-      let fechaFormato: string = null;
-      if (invProItem?.vencimiento) {
-        const fecha = invProItem.vencimiento instanceof Date
-          ? invProItem.vencimiento
-          : new Date(invProItem.vencimiento);
-        fechaFormato = formatDate(fecha, 'yyyy-MM-dd', 'en-US');
-      }
-      this.vencimientoControl.setValue(fechaFormato)
-
-      this.estadoControl.setValue(invProItem?.estado)
-      this.cargandoService.close(loading)
-    }, 1000);
+    this.estadoControl.setValue(invProItem?.estado);
+    this.cargandoService.close(loading);
   }
 
   onAceptar() {
@@ -133,23 +128,37 @@ export class EditInventarioItemDialogComponent implements OnInit {
     const fechaDate = (this.tieneVencimiento && fechaValue) ? new Date(fechaValue + 'T00:00:00') : null;
 
     if (this.selectedInventarioProductoItem == null) {
-      this.selectedInventarioProductoItem = new InventarioProductoItem()
+      this.selectedInventarioProductoItem = new InventarioProductoItem();
       this.selectedInventarioProductoItem.cantidadFisica = this.cantidadOriginalDelItem;
       this.selectedInventarioProductoItem.cantidadAnterior = this.cantidadOriginalDelItem;
       this.selectedInventarioProductoItem.revisado = true;
       this.selectedInventarioProductoItem.verificado = false;
+      // In case of new item, take the IDs from data
+      this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
+      this.selectedInventarioProductoItem.presentacion = this.data.presentacion;
+      this.selectedInventarioProductoItem.zona = this.data.inventarioProducto?.zona;
+    }
+
+    // Ensure metadata is always present
+    if (!this.selectedInventarioProductoItem.presentacion && this.data.presentacion) {
+      this.selectedInventarioProductoItem.presentacion = this.data.presentacion;
+    }
+    if (!this.selectedInventarioProductoItem.inventarioProducto && this.data.inventarioProducto) {
+      this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
     }
 
     if (this.isEditingFromPreviousInventory) {
       this.selectedInventarioProductoItem.id = null;
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
       this.selectedInventarioProductoItem.vencimiento = fechaDate;
-      this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
-      this.selectedInventarioProductoItem.presentacion = this.data.presentacion;
       this.selectedInventarioProductoItem.estado = this.estadoControl.value;
       this.selectedInventarioProductoItem.zona = this.data.inventarioProducto?.zona;
       this.selectedInventarioProductoItem.copiedFromItemId = this.originalItemId;
     } else {
+      // Normal edit: preserve the ID from original record
+      if (this.originalItemId != null) {
+        this.selectedInventarioProductoItem.id = this.originalItemId;
+      }
       this.selectedInventarioProductoItem.cantidadAnterior = this.cantidadOriginalDelItem;
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
       this.selectedInventarioProductoItem.cantidadFisica = this.cantidadOriginalDelItem;
