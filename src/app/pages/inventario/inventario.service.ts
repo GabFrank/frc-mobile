@@ -224,9 +224,9 @@ export class InventarioService {
           } else {
             console.log(res.errors)
             obs.next(null)
-            const msg = res.errors[0]?.message || ''
+            const msg = res.errors[0]?.message || '';
             if (msg.includes('ya fue registrado en este inventario')) {
-              this.notificacionService.open('Este producto ya fue registrado en este inventario', TipoNotificacion.WARN, 3)
+              this.notificacionService.open('Atención: El producto ya fue registrado con este mismo vencimiento en el inventario actual.', TipoNotificacion.WARN, 5);
             } else {
               this.notificacionService.open('Ups!! Algo salió mal', TipoNotificacion.DANGER, 2)
             }
