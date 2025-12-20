@@ -2,19 +2,13 @@
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-button (click)="onBack()">
-        <ion-icon
-        slot="icon-only"
-        name="arrow-back"
-        style="font-size: 1.5em; color: white"
-      ></ion-icon>
-      </ion-button> 
+        <ion-icon slot="icon-only" name="arrow-back" style="font-size: 1.5em; color: white"></ion-icon>
+      </ion-button>
     </ion-buttons>
-    <ion-title 
-      style="
+    <ion-title style="
       text-align: center;
       padding-left: 0;
-      padding-right: 48px;"
-    >
+      padding-right: 48px;">
       Buscar Productos
     </ion-title>
   </ion-toolbar>
@@ -161,7 +155,7 @@
                       </p>
                     </ion-label>
                     <ion-icon name="create-outline" class="btn-success-flat" slot="end" style="margin-right: 8px;"
-                      (click)="onEditarItem(it, data?.data?.invPro?.id)"></ion-icon>
+                      (click)="onEditarItem(it, data?.data?.invPro)"></ion-icon>
                     <ion-icon name="trash-outline" class="btn-danger-flat" slot="end"
                       (click)="onEliminarItem(it, presentacion.id, data?.data?.invPro?.id)"></ion-icon>
                   </ion-item>

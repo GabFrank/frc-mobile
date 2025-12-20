@@ -27,6 +27,7 @@ export class EditInventarioItemDialogComponent implements OnInit {
   private cantidadOriginalDelItem: number = 0;
   isEditingFromPreviousInventory = false;
   originalItemId: number;
+  tieneVencimiento = false;
 
   @Input()
   data: InventarioItemData;
@@ -50,6 +51,12 @@ export class EditInventarioItemDialogComponent implements OnInit {
   }
 
   ngOnInit() {
+    const v = this.data?.producto?.vencimiento as any;
+    this.tieneVencimiento = v !== false && v !== 'false' && v !== 0 && v !== '0';
+    if (this.data?.inventarioProductoItem?.vencimiento) {
+      this.tieneVencimiento = true;
+    }
+
     if (this.data?.inventarioProductoItem?.id != null) {
       this.cargarDatos(this.data.inventarioProductoItem);
     } else {
@@ -68,11 +75,7 @@ export class EditInventarioItemDialogComponent implements OnInit {
         this.cantidadOriginalDelItem = 0;
       }
     }
-    if (this.data?.inventarioProductoItem?.id != null) {
-      this.cargarDatos(this.data?.inventarioProductoItem)
-    } else if (this.data?.peso != null) {
-      this.cantidadControl.setValue(this.data.peso)
-    }
+
     this.isEditingFromPreviousInventory = this.data?.fromPreviousInventory || false;
     this.originalItemId = this.data?.inventarioProductoItem?.id;
   }
@@ -101,10 +104,10 @@ export class EditInventarioItemDialogComponent implements OnInit {
       this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
       this.cantidadControl.setValue(invProItem?.cantidad)
 
-      const tieneVencimiento = this.data?.producto?.vencimiento === true ||
-        (typeof this.data?.producto?.vencimiento === 'string' && this.data?.producto?.vencimiento === 'true');
+      this.tieneVencimiento = this.data?.producto?.vencimiento === true ||
+        (typeof this.data?.producto?.vencimiento === 'string' && (this.data?.producto?.vencimiento === 'true' || this.data?.producto?.vencimiento === '1'));
 
-      if (tieneVencimiento && invProItem?.vencimiento) {
+      if (this.tieneVencimiento && invProItem?.vencimiento) {
         this.vencimientoControl.setValue(invProItem.vencimiento);
       } else {
         this.vencimientoControl.setValue(null);
@@ -127,21 +130,16 @@ export class EditInventarioItemDialogComponent implements OnInit {
 
   onAceptar() {
     const fechaValue = this.vencimientoControl.value;
-    const fechaDate = fechaValue ? new Date(fechaValue + 'T00:00:00') : null;
+    const fechaDate = (this.tieneVencimiento && fechaValue) ? new Date(fechaValue + 'T00:00:00') : null;
 
     if (this.selectedInventarioProductoItem == null) {
       this.selectedInventarioProductoItem = new InventarioProductoItem()
-      this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
       this.selectedInventarioProductoItem.cantidadFisica = this.cantidadOriginalDelItem;
       this.selectedInventarioProductoItem.cantidadAnterior = this.cantidadOriginalDelItem;
       this.selectedInventarioProductoItem.revisado = true;
       this.selectedInventarioProductoItem.verificado = false;
-      if (this.data?.producto?.vencimiento === true) {
-        this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
-      } else {
-        this.selectedInventarioProductoItem.vencimiento = null;
-      }
     }
+
     if (this.isEditingFromPreviousInventory) {
       this.selectedInventarioProductoItem.id = null;
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
@@ -155,15 +153,8 @@ export class EditInventarioItemDialogComponent implements OnInit {
       this.selectedInventarioProductoItem.cantidadAnterior = this.cantidadOriginalDelItem;
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
       this.selectedInventarioProductoItem.cantidadFisica = this.cantidadOriginalDelItem;
-
       this.selectedInventarioProductoItem.revisado = true;
       this.selectedInventarioProductoItem.verificado = false;
-
-      if (this.data?.producto?.vencimiento === true) {
-        this.selectedInventarioProductoItem.vencimiento = this.vencimientoControl.value;
-      } else {
-        this.selectedInventarioProductoItem.vencimiento = null;
-      }
       this.selectedInventarioProductoItem.vencimiento = fechaDate;
       this.selectedInventarioProductoItem.estado = this.estadoControl.value;
     }

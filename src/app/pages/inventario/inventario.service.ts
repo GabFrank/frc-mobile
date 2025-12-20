@@ -72,7 +72,7 @@ export class InventarioService {
 
   async onGetInventarioUsuarioPaginado(
     usuarioId: number,
-    page: number, 
+    page: number,
     size: number,
     sortOrder?: string | null
   ): Promise<Observable<PageInfo<Inventario>>> {
@@ -97,7 +97,7 @@ export class InventarioService {
           this.cargandoService.close(loading);
           if (res.errors == null) {
             const responseData = res.data?.getInventarioItemsParaRevisar;
-            
+
             if (responseData) {
               obs.next(responseData);
             } else {
@@ -188,15 +188,31 @@ export class InventarioService {
   }
 
   async onSaveInventarioProductoItem(input): Promise<Observable<InventarioProductoItem>> {
-    // Manejo específico para duplicado en inventario (bloqueado por backend) en el frontend
-    let loading = await this.cargandoService.open(null, false)
-    if (input.usuarioId == null) {
-      input.usuarioId = +localStorage.getItem('usuarioId');
+    const cleanInput: any = {};
+    if (input.id !== undefined && input.id !== null) cleanInput.id = typeof input.id === 'string' ? parseInt(input.id) : input.id;
+    if (input.inventarioProductoId !== undefined) cleanInput.inventarioProductoId = typeof input.inventarioProductoId === 'string' ? parseInt(input.inventarioProductoId) : input.inventarioProductoId;
+    if (input.zonaId !== undefined && input.zonaId !== null) cleanInput.zonaId = typeof input.zonaId === 'string' ? parseInt(input.zonaId) : input.zonaId;
+    if (input.sectorId !== undefined && input.sectorId !== null) cleanInput.sectorId = typeof input.sectorId === 'string' ? parseInt(input.sectorId) : input.sectorId;
+    if (input.presentacionId !== undefined) cleanInput.presentacionId = typeof input.presentacionId === 'string' ? parseInt(input.presentacionId) : input.presentacionId;
+    if (input.cantidad !== undefined) cleanInput.cantidad = typeof input.cantidad === 'string' ? parseFloat(input.cantidad) : input.cantidad;
+    if (input.cantidadFisica !== undefined && input.cantidadFisica !== null) cleanInput.cantidadFisica = typeof input.cantidadFisica === 'string' ? parseFloat(input.cantidadFisica) : input.cantidadFisica;
+    if (input.cantidadAnterior !== undefined && input.cantidadAnterior !== null) cleanInput.cantidadAnterior = typeof input.cantidadAnterior === 'string' ? parseFloat(input.cantidadAnterior) : input.cantidadAnterior;
+    if (input.fechaVerificado !== undefined && input.fechaVerificado !== null) cleanInput.fechaVerificado = input.fechaVerificado;
+    if (input.verificado !== undefined && input.verificado !== null) cleanInput.verificado = input.verificado;
+    if (input.revisado !== undefined && input.revisado !== null) cleanInput.revisado = input.revisado;
+    if (input.vencimiento !== undefined) cleanInput.vencimiento = input.vencimiento;
+    if (input.estado !== undefined) cleanInput.estado = input.estado;
+    if (input.usuarioId !== undefined && input.usuarioId !== null) {
+      cleanInput.usuarioId = typeof input.usuarioId === 'string' ? parseInt(input.usuarioId) : input.usuarioId;
+    } else {
+      cleanInput.usuarioId = +localStorage.getItem('usuarioId');
     }
+
+    let loading = await this.cargandoService.open(null, false)
     return new Observable((obs) => {
       this.saveInventarioProductoItem
         .mutate(
-          { entity: input },
+          { entity: cleanInput },
           { fetchPolicy: 'no-cache', errorPolicy: 'all' }
         )
         .pipe(untilDestroyed(this))
@@ -216,25 +232,7 @@ export class InventarioService {
             }
           }
         })
-    })
-    const cleanInput: any = {};
-    if (input.id !== undefined && input.id !== null) cleanInput.id = typeof input.id === 'string' ? parseInt(input.id) : input.id;
-    if (input.inventarioProductoId !== undefined) cleanInput.inventarioProductoId = typeof input.inventarioProductoId === 'string' ? parseInt(input.inventarioProductoId) : input.inventarioProductoId;
-    if (input.zonaId !== undefined && input.zonaId !== null) cleanInput.zonaId = typeof input.zonaId === 'string' ? parseInt(input.zonaId) : input.zonaId;
-    if (input.sectorId !== undefined && input.sectorId !== null) cleanInput.sectorId = typeof input.sectorId === 'string' ? parseInt(input.sectorId) : input.sectorId;
-    if (input.presentacionId !== undefined) cleanInput.presentacionId = typeof input.presentacionId === 'string' ? parseInt(input.presentacionId) : input.presentacionId;
-    if (input.cantidad !== undefined) cleanInput.cantidad = typeof input.cantidad === 'string' ? parseFloat(input.cantidad) : input.cantidad;
-    if (input.cantidadFisica !== undefined && input.cantidadFisica !== null) cleanInput.cantidadFisica = typeof input.cantidadFisica === 'string' ? parseFloat(input.cantidadFisica) : input.cantidadFisica;
-    if (input.cantidadAnterior !== undefined && input.cantidadAnterior !== null) cleanInput.cantidadAnterior = typeof input.cantidadAnterior === 'string' ? parseFloat(input.cantidadAnterior) : input.cantidadAnterior;
-    if (input.fechaVerificado !== undefined && input.fechaVerificado !== null) cleanInput.fechaVerificado = input.fechaVerificado;
-    if (input.verificado !== undefined && input.verificado !== null) cleanInput.verificado = input.verificado;
-    if (input.revisado !== undefined && input.revisado !== null) cleanInput.revisado = input.revisado;
-    if (input.vencimiento !== undefined) cleanInput.vencimiento = input.vencimiento;
-    if (input.estado !== undefined) cleanInput.estado = input.estado;
-    if (input.usuarioId !== undefined && input.usuarioId !== null) cleanInput.usuarioId = typeof input.usuarioId === 'string' ? parseInt(input.usuarioId) : input.usuarioId;
-
-    console.log('Input limpio para guardar:', cleanInput);
-    return await this.genericCrudService.onSave(this.saveInventarioProductoItem, cleanInput);
+    });
   }
 
   async onDeleteInventarioProductoItem(id, item?): Promise<Observable<boolean>> {
@@ -315,7 +313,7 @@ export class InventarioService {
           this.cargandoService.close(loading);
           if (res.errors == null) {
             const responseData = res.data?.data;
-            
+
             if (responseData) {
               obs.next(responseData);
             } else {
@@ -344,7 +342,7 @@ export class InventarioService {
           this.cargandoService.close(loading);
           if (res.errors == null) {
             const responseData = res.data?.data;
-            
+
             if (responseData) {
               obs.next(responseData);
             } else {
@@ -375,7 +373,7 @@ export class InventarioService {
           this.cargandoService.close(loading);
           if (res.errors == null) {
             const responseData = res.data?.data;
-            
+
             if (responseData) {
               obs.next(responseData);
             } else {

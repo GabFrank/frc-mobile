@@ -142,7 +142,7 @@ export const inventarioItemsPorInvProYPresentacionQuery = gql`
       presentacion {
         id
         cantidad
-        producto { descripcion balanza }
+        producto { descripcion balanza vencimiento }
       }
       cantidad
       cantidadFisica
@@ -179,7 +179,7 @@ export const inventarioItemsDeInventariosAnterioresQuery = gql`
       presentacion {
         id
         cantidad
-        producto { descripcion balanza }
+        producto { descripcion balanza vencimiento }
       }
       cantidad
       cantidadFisica
@@ -646,6 +646,7 @@ export const getInventarioItemsParaRevisarQuery = gql`
             id
             descripcion
             imagenPrincipal
+            vencimiento
           }
           imagenPrincipal
         }

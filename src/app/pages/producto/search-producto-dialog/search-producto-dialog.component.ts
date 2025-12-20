@@ -240,9 +240,9 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
     }
   }
 
-  async onEditarItem(item: InventarioProductoItem, invProId: number) {
+  async onEditarItem(item: InventarioProductoItem, invPro: any) {
     const data: InventarioItemData = {
-      inventarioProducto: { id: invProId } as any,
+      inventarioProducto: invPro,
       inventarioProductoItem: item,
       presentacion: item.presentacion,
       producto: item.presentacion?.producto,
@@ -257,7 +257,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
       }
       {
         payload.id = null;
-        payload.inventarioProductoId = invProId;
+        payload.inventarioProductoId = invPro?.id;
         if (!payload.presentacionId && item.presentacion?.id) {
           payload.presentacionId = item.presentacion.id;
         }
@@ -270,7 +270,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
               const presentacionId = item.presentacion?.id;
               this.inventarioService.inventarioItemSaved$.next({
                 item: savedItem,
-                inventarioProductoId: invProId
+                inventarioProductoId: invPro?.id
               });
               this.removeItemFromDisplay(presentacionId, item.id);
 
