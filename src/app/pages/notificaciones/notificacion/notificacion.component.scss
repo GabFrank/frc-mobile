@@ -225,3 +225,30 @@ ion-skeleton-text {
 ion-item {
     --inner-border-width: 0;
 }
+
+ion-footer {
+    --background: #000000;
+    background: #000000;
+    padding-bottom: 20px;
+
+    ::ng-deep app-paginacion {
+        ion-button {
+            --color: #ffffff !important;
+            --border-color: #ffffff !important;
+
+            &[fill="solid"] {
+                --background: #ffffff !important;
+                --color: #000000 !important;
+            }
+
+            &[fill="outline"] {
+                --border-color: #ffffff !important;
+                --color: #ffffff !important;
+            }
+
+            &[fill="clear"] {
+                --color: #ffffff !important;
+            }
+        }
+    }
+}

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { NotificacionService } from '../notificacion.service';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
@@ -28,6 +29,7 @@ export class NotificacionComponent implements OnInit {
   private readonly notificacionService = inject(NotificacionService);
   private readonly modalCtrl = inject(ModalController);
   private readonly fb = inject(UntypedFormBuilder);
+  private readonly router = inject(Router);
 
   public readonly notifications$: Observable<NotificationUIModel[]> = this.notificacionService.notificaciones$.pipe(
     map(notifications => notifications.map(n => this.mapToUIModel(n)))
@@ -224,6 +226,11 @@ export class NotificacionComponent implements OnInit {
         this.loadData();
       }
     });
+  }
+
+  goToComments(event: Event, notification: NotificationUIModel) {
+    event.stopPropagation();
+    this.router.navigate(['notificacion', 'comentarios']);
   }
 
   onPageChange(page: number) {

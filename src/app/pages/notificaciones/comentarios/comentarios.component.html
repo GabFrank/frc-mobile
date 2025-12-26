@@ -1,3 +1,64 @@
-<p>
-  comentarios works!
-</p>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="dark-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/" color="light" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title class="header-title">Comentarios</ion-title>
+    <ion-buttons slot="end">
+      <ion-button class="join-btn">
+        Unirse
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="dark-content">
+  <div class="recipient-bar">
+    <span class="label">Para:</span>
+    <div class="chips-container">
+      <div class="user-chip" *ngFor="let user of recipients">
+        <img [src]="user.avatar" alt="">
+        <span>{{ user.name }}</span>
+      </div>
+      <div class="user-chip" *ngFor="let user of otherRecipients">
+        <img [src]="user.avatar" alt="">
+        <span>{{ user.name }}</span>
+      </div>
+    </div>
+    <ion-icon name="add-circle" class="add-recipient-icon"></ion-icon>
+  </div>
+
+  <div class="hero-section">
+    <div class="avatar-group">
+      <div class="avatar-wrapper" *ngFor="let user of recipients; let i = index" [style.z-index]="10 - i">
+        <img [src]="user.avatar" [style.border-color]="user.color">
+      </div>
+    </div>
+
+    <h2 class="group-title">
+      breaddog, graggle, mallow,<br>
+      phibi y wumpus
+    </h2>
+
+    <p class="welcome-text">
+      Bienvenido a los comentarios. Empieza la conversación cuando estés listo.
+    </p>
+
+  </div>
+
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="message-input-bar">
+    <div class="add-btn">
+      <ion-icon name="add"></ion-icon>
+    </div>
+    <div class="input-wrapper">
+      <input type="text" placeholder="Mensaje para el grupo" class="native-input">
+      <ion-icon name="happy-outline" class="emoji-icon"></ion-icon>
+    </div>
+    <div class="mic-btn">
+      <ion-icon name="mic-outline"></ion-icon>
+    </div>
+  </div>
+</ion-footer>

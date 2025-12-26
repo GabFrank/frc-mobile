@@ -41,6 +41,10 @@ const routes: Routes = [
     loadChildren: () => import('./splash/splash.module').then(m => m.SplashPageModule)
   },
   {
+    path: 'comentarios',
+    loadChildren: () => import('./pages/notificaciones/notificacion.module').then(m => m.NotificacionModule)
+  },
+  {
     path: 'operaciones',
     loadChildren: () => import('./pages/operaciones/operaciones.module').then(m => m.OperacionesModule)
   },
