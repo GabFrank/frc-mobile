@@ -61,11 +61,11 @@
                     <p>{{ notification.description }}</p>
                     <span class="time">{{ notification.time }}</span>
                 </ion-label>
+                <ion-button slot="end" fill="clear" (click)="goToComments($event, notification)">
+                    <ion-icon name="chatbox-ellipses-outline" slot="icon-only"></ion-icon>
+                </ion-button>
             </ion-item>
         </ion-list>
-
-        <app-paginacion *ngIf="pageData" [pageData]="pageData" [pageIndex]="pageIndex"
-            (pageChange)="onPageChange($event)"></app-paginacion>
     </ng-container>
 
     <ng-template #loadingTemplate>
@@ -91,3 +91,7 @@
         </div>
     </ng-template>
 </ion-content>
+<ion-footer *ngIf="pageData">
+    <app-paginacion [pageData]="pageData" [pageIndex]="pageIndex" (pageChange)="onPageChange($event)">
+    </app-paginacion>
+</ion-footer>
