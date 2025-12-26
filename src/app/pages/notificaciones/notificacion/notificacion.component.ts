@@ -161,7 +161,7 @@ export class NotificacionComponent implements OnInit {
     };
     const style = mapping[tipo] || mapping['default'];
     return {
-      id: n.id,
+      id: n.notificacion.id,
       title: n.notificacion.titulo,
       description: n.notificacion.mensaje,
       time: this.getTimeAgo(n.creadoEn),
@@ -230,7 +230,7 @@ export class NotificacionComponent implements OnInit {
 
   goToComments(event: Event, notification: NotificationUIModel) {
     event.stopPropagation();
-    this.router.navigate(['notificacion', 'comentarios']);
+    this.router.navigate(['notificacion', 'comentarios', notification.id]);
   }
 
   onPageChange(page: number) {

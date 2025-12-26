@@ -77,3 +77,17 @@ export const CREAR_COMENTARIO_NOTIFICACION_MUTATION = gql`
     }
   }
 `;
+
+export const USUARIOS_CON_ACCESO_NOTIFICACION_QUERY = gql`
+  query usuariosConAccesoNotificacion($notificacionId: Int!) {
+    usuariosConAccesoNotificacion(notificacionId: $notificacionId) {
+      id
+      nickname
+      persona {
+        id
+        nombre
+        imagenes
+      }
+    }
+  }
+`;
