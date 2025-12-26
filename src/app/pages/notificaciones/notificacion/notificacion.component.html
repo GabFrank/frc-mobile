@@ -1,33 +1,93 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button aria-label="Filter notifications">
-        <ion-icon slot="icon-only" name="funnel-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-buttons slot="end">
-      <ion-button aria-label="More options">
-        <ion-icon slot="icon-only" name="ellipsis-horizontal"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="/"></ion-back-button>
+        </ion-buttons>
+        <ion-title>Notificaciones</ion-title>
+        <ion-buttons slot="end">
+            <ion-button (click)="onResetFiltro()">
+                <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="header-container">
-    <h1 class="title">Notificaciones</h1>
-  </div>
+    <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
 
-  <ion-list lines="none" class="notification-list">
-    <ion-item *ngFor="let notification of notifications; trackBy: trackById" class="notification-item">
-      <div slot="start" [class]="'icon-container ' + notification.color">
-        <ion-icon [name]="notification.icon + '-outline'"></ion-icon>
-      </div>
-      <ion-label>
-        <h2>{{ notification.title }}</h2>
-        <p>{{ notification.description }}</p>
-        <span class="time">{{ notification.time }}</span>
-      </ion-label>
-    </ion-item>
-  </ion-list>
+    <div class="filter-section">
+        <div *ngIf="selectedRange.fechaInicio && selectedRange.fechaFin" class="date-range-display">
+            <p>
+                <span>Fecha inicio:</span> {{ selectedRange.fechaInicio | date: 'dd/MM/yyyy' }}
+                <span class="spacer">Fecha fin:</span> {{ selectedRange.fechaFin | date: 'dd/MM/yyyy' }}
+            </p>
+        </div>
+
+        <div class="filter-actions">
+            <ion-button class="search-btn" (click)="onBuscar()">
+                BUSCAR
+            </ion-button>
+            <ion-button class="calendar-btn" (click)="openCalendar()">
+                <ion-icon name="calendar-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+        </div>
+
+        <form [formGroup]="form">
+            <ion-item lines="none" class="toggle-item">
+                <ion-label>Ver solo no leídas</ion-label>
+                <ion-toggle formControlName="leidas" (ionChange)="onBuscar()"></ion-toggle>
+            </ion-item>
+        </form>
+    </div>
+
+    <div class="header-container">
+        <h1 class="title">Recientes</h1>
+    </div>
+
+    <ng-container *ngIf="notifications$ | async as notifications; else loadingTemplate">
+        <ion-list lines="none" class="notification-list" *ngIf="notifications.length > 0; else emptyTemplate">
+            <ion-item *ngFor="let notification of notifications; trackBy: trackById" class="notification-item"
+                detail="false" [button]="true" (click)="markAsRead(notification)">
+                <div slot="start" [class]="'icon-container ' + notification.color">
+                    <ion-icon [name]="notification.icon + '-outline'"></ion-icon>
+                </div>
+                <ion-label>
+                    <div class="notification-header">
+                        <h2>{{ notification.title }}</h2>
+                        <div class="unread-dot" *ngIf="!notification.leida"></div>
+                    </div>
+                    <p>{{ notification.description }}</p>
+                    <span class="time">{{ notification.time }}</span>
+                </ion-label>
+            </ion-item>
+        </ion-list>
+
+        <app-paginacion *ngIf="pageData" [pageData]="pageData" [pageIndex]="pageIndex"
+            (pageChange)="onPageChange($event)"></app-paginacion>
+    </ng-container>
+
+    <ng-template #loadingTemplate>
+        <ion-list lines="none" class="notification-list">
+            <ion-item *ngFor="let i of [1,2,3,4,5]" class="notification-item">
+                <ion-thumbnail slot="start" style="width: 48px; height: 48px; border-radius: 50%;">
+                    <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+                </ion-thumbnail>
+                <ion-label>
+                    <h2><ion-skeleton-text [animated]="true" style="width: 60%;"></ion-skeleton-text></h2>
+                    <p><ion-skeleton-text [animated]="true" style="width: 80%;"></ion-skeleton-text></p>
+                    <span class="time"><ion-skeleton-text [animated]="true"
+                            style="width: 30%;"></ion-skeleton-text></span>
+                </ion-label>
+            </ion-item>
+        </ion-list>
+    </ng-template>
+
+    <ng-template #emptyTemplate>
+        <div class="empty-container">
+            <ion-icon name="notifications-off-outline"></ion-icon>
+            <p>No tienes notificaciones en este rango</p>
+        </div>
+    </ng-template>
 </ion-content>
