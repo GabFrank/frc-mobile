@@ -5,6 +5,9 @@ import { NotificacionDestinatario, NotificacionesUsuarioVariables } from './mode
 import { NotificacionesUsuarioQueryService } from './graphql/notificaciones-usuario-query.service';
 import { MarcarNotificacionLeidaMutationService } from './graphql/marcar-notificacion-leida-mutation.service';
 import { ConteoNotificacionesNoLeidasQueryService } from './graphql/conteo-notificaciones-no-leidas-query.service';
+import { ComentariosNotificacionQueryService } from './graphql/comentarios-notificacion-query.service';
+import { CrearComentarioNotificacionMutationService } from './graphql/crear-comentario-notificacion-mutation.service';
+import { NotificacionComentario } from './models/notificacion-comentario.model';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +16,8 @@ export class NotificacionService {
   private readonly notificacionesUsuarioQuery = inject(NotificacionesUsuarioQueryService);
   private readonly marcarLeidaMutation = inject(MarcarNotificacionLeidaMutationService);
   private readonly countNoLeidasQuery = inject(ConteoNotificacionesNoLeidasQueryService);
+  private readonly comentariosQuery = inject(ComentariosNotificacionQueryService);
+  private readonly crearComentarioMutation = inject(CrearComentarioNotificacionMutationService);
 
   private _notificaciones$ = new BehaviorSubject<NotificacionDestinatario[]>([]);
   public notificaciones$ = this._notificaciones$.asObservable();
@@ -47,6 +52,18 @@ export class NotificacionService {
   conteoNoLeidas(): Observable<number | null | undefined> {
     return this.countNoLeidasQuery.fetch().pipe(
       map(res => res.data?.conteoNotificacionesNoLeidas)
+    );
+  }
+
+  comentarios(notificacionId: number): Observable<NotificacionComentario[]> {
+    return this.comentariosQuery.watch({ notificacionId }).valueChanges.pipe(
+      map(res => res.data?.comentariosNotificacion || [])
+    );
+  }
+
+  crearComentario(notificacionId: number, comentario: string, comentarioPadreId?: number): Observable<NotificacionComentario | null | undefined> {
+    return this.crearComentarioMutation.mutate({ notificacionId, comentario, comentarioPadreId }).pipe(
+      map(res => res.data?.crearComentarioNotificacion)
     );
   }
 }
