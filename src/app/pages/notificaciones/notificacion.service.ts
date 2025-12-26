@@ -7,7 +7,9 @@ import { MarcarNotificacionLeidaMutationService } from './graphql/marcar-notific
 import { ConteoNotificacionesNoLeidasQueryService } from './graphql/conteo-notificaciones-no-leidas-query.service';
 import { ComentariosNotificacionQueryService } from './graphql/comentarios-notificacion-query.service';
 import { CrearComentarioNotificacionMutationService } from './graphql/crear-comentario-notificacion-mutation.service';
+import { UsuariosConAccesoNotificacionQueryService } from './graphql/usuarios-con-acceso-notificacion-query.service';
 import { NotificacionComentario } from './models/notificacion-comentario.model';
+import { Usuario } from './models/usuario.model';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +20,7 @@ export class NotificacionService {
   private readonly countNoLeidasQuery = inject(ConteoNotificacionesNoLeidasQueryService);
   private readonly comentariosQuery = inject(ComentariosNotificacionQueryService);
   private readonly crearComentarioMutation = inject(CrearComentarioNotificacionMutationService);
+  private readonly usuariosAccesoQuery = inject(UsuariosConAccesoNotificacionQueryService);
 
   private _notificaciones$ = new BehaviorSubject<NotificacionDestinatario[]>([]);
   public notificaciones$ = this._notificaciones$.asObservable();
@@ -64,6 +67,12 @@ export class NotificacionService {
   crearComentario(notificacionId: number, comentario: string, comentarioPadreId?: number): Observable<NotificacionComentario | null | undefined> {
     return this.crearComentarioMutation.mutate({ notificacionId, comentario, comentarioPadreId }).pipe(
       map(res => res.data?.crearComentarioNotificacion)
+    );
+  }
+
+  usuariosConAcceso(notificacionId: number): Observable<Usuario[]> {
+    return this.usuariosAccesoQuery.watch({ notificacionId }).valueChanges.pipe(
+      map(res => res.data?.usuariosConAccesoNotificacion || [])
     );
   }
 }

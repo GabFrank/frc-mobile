@@ -8,39 +8,55 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="dark-content">
-  <div class="recipient-bar">
-    <span class="label">Para:</span>
-    <div class="chips-container">
-      <div class="user-chip" *ngFor="let user of recipients">
-        <img [src]="user.avatar" alt="">
-        <span>{{ user.name }}</span>
+  <ng-container *ngIf="usuarios$ | async as usuarios">
+    <div class="recipient-bar" *ngIf="usuarios.length > 0">
+      <div class="chips-container">
+        <div class="user-chip" *ngFor="let user of destinatariosChips(usuarios)">
+          <img [src]="avatar(user)" alt="">
+          <span>{{ user.nickname }}</span>
+        </div>
       </div>
-      <div class="user-chip" *ngFor="let user of otherRecipients">
-        <img [src]="user.avatar" alt="">
-        <span>{{ user.name }}</span>
-      </div>
+      <ion-icon name="eye-outline" class="add-recipient-icon" (click)="toggleMostrarTodos()"></ion-icon>
     </div>
-    <ion-icon name="eye-outline" class="add-recipient-icon"></ion-icon>
-  </div>
+    <ng-container *ngIf="comentarios$ | async as comentarios">
+      <div class="hero-section" *ngIf="comentarios.length === 0">
+        <div class="avatar-group">
+          <div class="avatar-wrapper" *ngFor="let user of destinatariosHero(usuarios); let i = index"
+            [style.z-index]="10 - i">
+            <img [src]="avatar(user)">
+          </div>
+        </div>
 
-  <div class="hero-section">
-    <div class="avatar-group">
-      <div class="avatar-wrapper" *ngFor="let user of recipients; let i = index" [style.z-index]="10 - i">
-        <img [src]="user.avatar" [style.border-color]="user.color">
+        <h2 class="group-title">
+          <ng-container *ngFor="let user of destinatariosHero(usuarios); let isLast = last">
+            {{ user.nickname }}<span *ngIf="!isLast">, </span>
+          </ng-container>
+          <ng-container *ngIf="conteoOcultosHero(usuarios) > 0">
+            y {{ conteoOcultosHero(usuarios) }} más
+          </ng-container>
+        </h2>
+
+        <p class="welcome-text">
+          Bienvenido a los comentarios. Empieza la conversación cuando estés listo.
+        </p>
       </div>
-    </div>
-
-    <h2 class="group-title">
-      breaddog, graggle, mallow,<br>
-      phibi y wumpus
-    </h2>
-
-    <p class="welcome-text">
-      Bienvenido a los comentarios. Empieza la conversación cuando estés listo.
-    </p>
-
-  </div>
-
+      <div class="comments-list" *ngIf="comentarios.length > 0">
+        <div class="comment-item" *ngFor="let comentario of comentarios; trackBy: trackById">
+          <div class="comment-avatar">
+            <img [src]="avatar(comentario.usuario)" alt="">
+          </div>
+          <div class="comment-content">
+            <div class="comment-header">
+              <span class="comment-author">{{ comentario.usuario.nickname }}</span>
+              <span class="comment-time">{{ comentario.creadoEn | date:'shortTime' }}</span>
+            </div>
+            <div class="comment-bubble" [innerHTML]="formatComentario(comentario.comentario)">
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
 </ion-content>
 
 <ion-footer class="ion-no-border">
@@ -49,8 +65,9 @@
       <ion-icon name="add"></ion-icon>
     </div>
     <div class="input-wrapper">
-      <input type="text" placeholder="Mensaje para el grupo" class="native-input">
-      <ion-icon name="send" class="send-icon"></ion-icon>
+      <input [formControl]="comentarioInput" type="text" placeholder="Mensaje para el grupo" class="native-input"
+        (keyup.enter)="enviarComentario()">
+      <ion-icon name="send" class="send-icon" (click)="enviarComentario()"></ion-icon>
     </div>
     <div class="mic-btn">
       <ion-icon name="mic-outline"></ion-icon>
