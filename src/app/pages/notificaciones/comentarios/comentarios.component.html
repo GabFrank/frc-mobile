@@ -1,14 +1,9 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="dark-toolbar">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/" color="light" text=""></ion-back-button>
+      <ion-back-button defaultHref="/notificacion" style="color: white; display: block;" text=""></ion-back-button>
     </ion-buttons>
     <ion-title class="header-title">Comentarios</ion-title>
-    <ion-buttons slot="end">
-      <ion-button class="join-btn">
-        Unirse
-      </ion-button>
-    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -25,7 +20,7 @@
         <span>{{ user.name }}</span>
       </div>
     </div>
-    <ion-icon name="add-circle" class="add-recipient-icon"></ion-icon>
+    <ion-icon name="eye-outline" class="add-recipient-icon"></ion-icon>
   </div>
 
   <div class="hero-section">
@@ -56,6 +51,7 @@
     <div class="input-wrapper">
       <input type="text" placeholder="Mensaje para el grupo" class="native-input">
       <ion-icon name="happy-outline" class="emoji-icon"></ion-icon>
+      <ion-icon name="send" class="send-icon"></ion-icon>
     </div>
     <div class="mic-btn">
       <ion-icon name="mic-outline"></ion-icon>
