@@ -7,13 +7,20 @@ import { NotificacionRoutingModule } from './notificacion-routing.module';
 import { NotificacionComponent } from './notificacion/notificacion.component';
 
 
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ComponentsModule } from 'src/app/components/components.module';
+
 @NgModule({
   declarations: [NotificacionComponent],
   imports: [
     CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
     IonicModule,
-    NotificacionRoutingModule
+    NotificacionRoutingModule,
+    ComponentsModule
   ]
 })
+
 
 export class NotificacionModule { }

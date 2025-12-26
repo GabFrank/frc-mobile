@@ -3,8 +3,8 @@
     --notification-time-color: #8e8e93;
     --notification-desc-color: #8e8e93;
     --notification-title-color: #ffffff;
+    --accent-red: #f44336;
 
-    // Custom colors for icon circles
     --color-orange: #ff9500;
     --color-green: #34c759;
     --color-purple: #af52de;
@@ -21,25 +21,70 @@ ion-header {
         --color: #ffffff;
         --border-style: none;
         padding: 8px 4px;
-    }
 
-    ion-icon {
-        font-size: 24px;
-        color: #ffffff;
+        ion-title {
+            font-weight: 600;
+        }
     }
 }
 
 ion-content {
     --background: #000000;
-    --padding-top: 10px;
+}
+
+.filter-section {
+    padding: 16px;
+    background: #000000;
+
+    .date-range-display {
+        text-align: center;
+        margin-bottom: 16px;
+
+        p {
+            color: #ffffff;
+            font-size: 14px;
+            margin: 0;
+
+            span {
+                color: var(--accent-red);
+                font-weight: bold;
+
+                &.spacer {
+                    margin-left: 10px;
+                }
+            }
+        }
+    }
+
+    .filter-actions {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 20px;
+
+        ion-button {
+            --border-radius: 8px;
+            --padding-start: 24px;
+            --padding-end: 24px;
+            --background: var(--accent-red);
+            font-weight: bold;
+            margin: 0;
+            height: 44px;
+
+            &.calendar-btn {
+                --padding-start: 12px;
+                --padding-end: 12px;
+            }
+        }
+    }
 }
 
 .header-container {
-    padding: 0 20px 20px 20px;
+    padding: 0 20px 10px 20px;
 
     .title {
         margin: 0;
-        font-size: 34px;
+        font-size: 28px;
         font-weight: 700;
         color: #ffffff;
         letter-spacing: -0.5px;
@@ -110,11 +155,30 @@ ion-content {
     ion-label {
         margin: 0;
 
-        h2 {
-            font-size: 17px;
-            font-weight: 600;
-            color: var(--notification-title-color);
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 4px;
+
+            h2 {
+                font-size: 17px;
+                font-weight: 600;
+                color: var(--notification-title-color);
+                margin: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .unread-dot {
+                width: 10px;
+                height: 10px;
+                background-color: var(--ion-color-primary);
+                border-radius: 50%;
+                margin-left: 8px;
+                flex-shrink: 0;
+            }
         }
 
         p {
@@ -132,7 +196,32 @@ ion-content {
     }
 }
 
-// Ensure modern Ionic look
+.empty-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 150px;
+    padding: 40px;
+    color: var(--notification-desc-color);
+    text-align: center;
+
+    ion-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    p {
+        font-size: 16px;
+    }
+}
+
+ion-skeleton-text {
+    --background: rgba(255, 255, 255, 0.05);
+    --background-focused: rgba(255, 255, 255, 0.1);
+}
+
 ion-item {
     --inner-border-width: 0;
 }
