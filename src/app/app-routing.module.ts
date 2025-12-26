@@ -21,6 +21,10 @@ const routes: Routes = [
     loadChildren: () => import('./pages/funcionario/funcionario.module').then(m => m.FuncionarioModule)
   },
   {
+    path: 'notificacion',
+    loadChildren: () => import('./pages/notificaciones/notificacion.module').then(m => m.NotificacionModule)
+  },
+  {
     path: 'marcacion',
     loadChildren: () => import('./pages/marcacion/marcacion.module').then(m => m.MarcacionModule)
   },
@@ -34,7 +38,7 @@ const routes: Routes = [
   },
   {
     path: 'splash',
-    loadChildren: () => import('./splash/splash.module').then( m => m.SplashPageModule)
+    loadChildren: () => import('./splash/splash.module').then(m => m.SplashPageModule)
   },
   {
     path: 'operaciones',
@@ -42,11 +46,11 @@ const routes: Routes = [
   },
   {
     path: 'informaciones-personales',
-    loadChildren: () => import('./pages/informaciones-personales/informaciones-personales.module').then( m => m.InformacionesPersonalesModule)
+    loadChildren: () => import('./pages/informaciones-personales/informaciones-personales.module').then(m => m.InformacionesPersonalesModule)
   },
   {
     path: 'mis-finanzas',
-    loadChildren: () => import('./pages/mis-finanzas/mis-finanzas.module').then( m => m.MisFinanzasModule)
+    loadChildren: () => import('./pages/mis-finanzas/mis-finanzas.module').then(m => m.MisFinanzasModule)
   }
 ];
 @NgModule({
@@ -55,4 +59,4 @@ const routes: Routes = [
   ],
   exports: [RouterModule]
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }
