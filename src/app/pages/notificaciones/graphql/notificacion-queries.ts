@@ -36,3 +36,44 @@ export const CONTEO_NOTIFICACIONES_NO_LEIDAS_QUERY = gql`
     conteoNotificacionesNoLeidas
   }
 `;
+
+export const COMENTARIOS_NOTIFICACION_QUERY = gql`
+  query comentariosNotificacion($notificacionId: Int!) {
+    comentariosNotificacion(notificacionId: $notificacionId) {
+      id
+      comentario
+      creadoEn
+      usuario {
+        id
+        nickname
+        persona {
+          id
+          nombre
+          imagenes
+        }
+      }
+      comentarioPadre {
+        id
+      }
+    }
+  }
+`;
+
+export const CREAR_COMENTARIO_NOTIFICACION_MUTATION = gql`
+  mutation crearComentarioNotificacion($notificacionId: Int!, $comentario: String!, $comentarioPadreId: Int) {
+    crearComentarioNotificacion(notificacionId: $notificacionId, comentario: $comentario, comentarioPadreId: $comentarioPadreId) {
+      id
+      comentario
+      creadoEn
+      usuario {
+        id
+        nickname
+        persona {
+          id
+          nombre
+          imagenes
+        }
+      }
+    }
+  }
+`;
