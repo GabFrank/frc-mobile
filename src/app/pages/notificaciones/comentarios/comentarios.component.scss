@@ -248,13 +248,51 @@ ion-footer {
         }
 
         .comment-bubble {
-            background-color: #2c2c2c;
+            background-color: #2b2d31;
             color: #e0e0e0;
             padding: 10px 14px;
             border-radius: 0px 16px 16px 16px;
             font-size: 0.95rem;
             line-height: 1.4;
             word-wrap: break-word;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+            &:active {
+                background-color: #35373c;
+                transform: scale(0.98);
+            }
+
+            .reply-reference {
+                background: rgba(255, 255, 255, 0.08); // Más visible
+                border-left: 3px solid var(--ion-color-primary);
+                padding: 8px 12px;
+                border-radius: 6px;
+                margin-bottom: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                position: relative;
+                backdrop-filter: blur(4px);
+
+                span {
+                    font-size: 11px;
+                    font-weight: 800;
+                    color: var(--ion-color-primary);
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
+                p {
+                    margin: 0;
+                    font-size: 12.5px;
+                    color: #b9bbbe;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
         }
     }
 }
@@ -268,6 +306,80 @@ ion-footer {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+.reply-bar {
+    background: #2b2d31;
+    border-top: 1px solid #3d3d3d;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+
+    .reply-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        border-left: 3px solid var(--ion-color-primary);
+        padding-left: 12px;
+
+        ion-icon {
+            font-size: 18px;
+            color: var(--ion-color-primary);
+            opacity: 0.8;
+        }
+
+        .reply-text {
+            display: flex;
+            flex-direction: column;
+
+            span {
+                font-size: 11px;
+                font-weight: 800;
+                color: var(--ion-color-primary);
+                text-transform: uppercase;
+            }
+
+            p {
+                margin: 0;
+                font-size: 13px;
+                color: #dcddde;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 200px;
+            }
+        }
+    }
+
+    .close-reply {
+        font-size: 24px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+
+        &:active {
+            opacity: 1;
+        }
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
     }
 }
 

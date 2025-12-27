@@ -1,11 +1,20 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NotificacionService } from '../notificacion.service';
 import { BehaviorSubject, Observable, combineLatest, merge, Subject, timer } from 'rxjs';
-import { map, switchMap, debounceTime, startWith, takeUntil } from 'rxjs/operators';
+import { map, switchMap, debounceTime, startWith, takeUntil, shareReplay } from 'rxjs/operators';
 import { Usuario } from '../models/usuario.model';
 import { NotificacionComentario } from '../models/notificacion-comentario.model';
 import { FormControl } from '@angular/forms';
+
+interface ComentarioProcesado extends NotificacionComentario {
+  avatarUrl: string;
+  textoFormateado: string;
+}
+
+interface UsuarioProcesado extends Usuario {
+  avatarUrl: string;
+}
 
 @Component({
   selector: 'app-comentarios',
@@ -16,6 +25,7 @@ import { FormControl } from '@angular/forms';
 export class ComentariosComponent implements OnInit {
   private readonly ruta = inject(ActivatedRoute);
   private readonly notificacionService = inject(NotificacionService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   public comentarioInput = new FormControl('');
   private readonly refrescar$ = new BehaviorSubject<void>(undefined);
@@ -24,13 +34,13 @@ export class ComentariosComponent implements OnInit {
   private readonly destruir$ = new Subject<void>();
 
   public notificacionId$: Observable<number>;
-  public usuariosConAcceso$: Observable<Usuario[]>;
-  public fichasUsuarios$: Observable<Usuario[]>;
-  public portadaData$: Observable<{ usuarios: Usuario[], conteoOcultos: number }>;
-  public comentariosProcesados$: Observable<any[]>;
-  public sugerenciasProcesadas$: Observable<any[]>;
-
-  public mostrarSugerencias = false;
+  public usuariosConAcceso$: Observable<UsuarioProcesado[]>;
+  public fichasUsuarios$: Observable<UsuarioProcesado[]>;
+  public portadaData$: Observable<{ usuarios: UsuarioProcesado[], conteoOcultos: number }>;
+  public comentariosProcesados$: Observable<ComentarioProcesado[]>;
+  public sugerenciasProcesadas$: Observable<UsuarioProcesado[] | null>;
+  private readonly comentarioParaResponder$ = new BehaviorSubject<ComentarioProcesado | null>(null);
+  public respuestaActiva$ = this.comentarioParaResponder$.asObservable();
 
   ngOnInit() {
     this.notificacionId$ = this.ruta.paramMap.pipe(
@@ -39,7 +49,8 @@ export class ComentariosComponent implements OnInit {
 
     this.usuariosConAcceso$ = this.notificacionId$.pipe(
       switchMap(id => this.notificacionService.usuariosConAcceso(id)),
-      map(usuarios => usuarios.map(u => ({ ...u, avatarUrl: this.obtenerAvatar(u) })))
+      map(usuarios => usuarios.map(u => ({ ...u, avatarUrl: this.obtenerAvatar(u) }))),
+      shareReplay(1)
     );
 
     this.fichasUsuarios$ = combineLatest([this.usuariosConAcceso$, this.mostrarTodos$]).pipe(
@@ -77,24 +88,23 @@ export class ComentariosComponent implements OnInit {
     );
     this.sugerenciasProcesadas$ = combineLatest([
       this.comentarioInput.valueChanges.pipe(startWith(''), debounceTime(100)),
-      this.usuariosConAcceso$
+      this.usuariosConAcceso$.pipe(startWith([]))
     ]).pipe(
       map(([valor, usuarios]) => {
-        const val = valor || '';
-        const ultimoAt = val.lastIndexOf('@');
+        const texto = (valor || '').toString();
+        const ultimoAt = texto.lastIndexOf('@');
+
         if (ultimoAt !== -1) {
-          const busqueda = val.substring(ultimoAt + 1).toLowerCase();
+          const busqueda = texto.substring(ultimoAt + 1).toLowerCase();
           if (!busqueda.includes(' ')) {
             const filtrados = usuarios.filter(u =>
               u.nickname?.toLowerCase().includes(busqueda) ||
               u.persona?.nombre?.toLowerCase().includes(busqueda)
             ).slice(0, 5);
-            this.mostrarSugerencias = filtrados.length > 0;
-            return filtrados;
+            return filtrados.length > 0 ? filtrados : null;
           }
         }
-        this.mostrarSugerencias = false;
-        return [];
+        return null;
       })
     );
   }
@@ -115,28 +125,54 @@ export class ComentariosComponent implements OnInit {
       const prefijo = valorActual.substring(0, ultimoAt);
       const valorNuevo = `${prefijo}@${usuario.nickname} `;
       this.comentarioInput.setValue(valorNuevo);
-      this.mostrarSugerencias = false;
       document.getElementById('commentInput')?.focus();
     }
+  }
+
+  public responderAComentario(comentario: ComentarioProcesado) {
+    this.comentarioParaResponder$.next(comentario);
+
+    const valorActual = this.comentarioInput.value || '';
+    const mencion = `@${comentario.usuario.nickname} `;
+
+    if (!valorActual.includes(mencion)) {
+      this.comentarioInput.setValue(mencion + valorActual);
+    }
+
+    this.cdr.markForCheck();
+    setTimeout(() => {
+      const input = document.getElementById('commentInput');
+      if (input) input.focus();
+    }, 100);
+  }
+
+  public cancelarRespuesta() {
+    this.comentarioParaResponder$.next(null);
+    this.cdr.markForCheck();
   }
 
   public enviarComentario() {
     const texto = this.comentarioInput.value || '';
     if (texto.trim().length === 0) return;
 
+    const padre = this.comentarioParaResponder$.value;
     const idTemporal = -Date.now();
+
     const comentarioTemp: NotificacionComentario = {
       id: idTemporal,
       comentario: texto,
       creadoEn: new Date(),
       actualizadoEn: new Date(),
-      usuario: { id: 0, nickname: 'Yo' } as any
+      usuario: { id: 0, nickname: 'Yo' } as any,
+      comentarioPadre: padre || undefined
     };
+
     this.comentariosPendientes$.next([...this.comentariosPendientes$.value, comentarioTemp]);
     this.comentarioInput.reset();
+    this.cancelarRespuesta();
 
     const notificacionId = Number(this.ruta.snapshot.paramMap.get('id'));
-    this.notificacionService.crearComentario(notificacionId, texto).subscribe({
+    this.notificacionService.crearComentario(notificacionId, texto, padre?.id).subscribe({
       next: () => {
         this.limpiarPendiente(idTemporal);
         this.refrescar$.next();
