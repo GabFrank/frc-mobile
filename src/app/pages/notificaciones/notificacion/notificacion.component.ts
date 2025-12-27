@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificacionService } from '../notificacion.service';
-import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable, timer, merge, Subject } from 'rxjs';
+import { map, takeUntil, shareReplay } from 'rxjs/operators';
 import { NotificacionDestinatario, NotificacionesUsuarioVariables } from '../models/notificacion.model';
 import { ModalController } from '@ionic/angular';
 import { CalendarModal, CalendarModalOptions } from 'ion7-calendar';
@@ -26,17 +26,19 @@ interface NotificacionUI {
   styleUrls: ['./notificacion.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NotificacionComponent implements OnInit {
+export class NotificacionComponent implements OnInit, OnDestroy {
   private readonly notificacionService = inject(NotificacionService);
   private readonly modalCtrl = inject(ModalController);
   private readonly fb = inject(UntypedFormBuilder);
   private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   public readonly notificaciones$: Observable<NotificacionUI[]> = this.notificacionService.notificaciones$.pipe(
     map(notificaciones => notificaciones.map(n => this.mapearAModeloUI(n)))
   );
 
   public readonly cargando$ = this.notificacionService.cargando$;
+  private readonly disparadorRefresco$ = new BehaviorSubject<void>(undefined);
 
   public seleccionadoRango: { fechaInicio: string | null, fechaFin: string | null } = { fechaInicio: null, fechaFin: null };
   public formulario: UntypedFormGroup;
@@ -61,7 +63,20 @@ export class NotificacionComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.cargarDatos();
+    const polling$ = timer(0, 5000).pipe(map(() => undefined));
+
+    merge(polling$, this.disparadorRefresco$).pipe(
+      takeUntil(this.destruir$)
+    ).subscribe(() => {
+      this.cargarDatos();
+    });
+  }
+
+  private readonly destruir$ = new Subject<void>();
+
+  ngOnDestroy() {
+    this.destruir$.next();
+    this.destruir$.complete();
   }
 
   private cargarDatos() {
@@ -74,7 +89,7 @@ export class NotificacionComponent implements OnInit {
       estadoTablero: this.formulario.get('estadoTablero')?.value
     };
 
-    this.notificacionService['notificacionesUsuarioQuery'].fetch(variables).subscribe(response => {
+    this.notificacionService['notificacionesUsuarioQuery'].fetch(variables, { fetchPolicy: 'network-only' }).subscribe(response => {
       if (response && response.data && response.data.notificacionesUsuario) {
         const data = response.data.notificacionesUsuario;
         this.datosPagina = {
@@ -89,6 +104,7 @@ export class NotificacionComponent implements OnInit {
           getContent: data.content
         };
         this.notificacionService['_notificaciones$'].next(data.content);
+        this.cdr.markForCheck();
       }
     });
   }
@@ -129,12 +145,12 @@ export class NotificacionComponent implements OnInit {
         fechaInicio: fechaInicio.toISOString(),
         fechaFin: fechaFin.toISOString()
       };
-      this.cargarDatos();
+      this.disparadorRefresco$.next();
     }
   }
 
   alBuscar() {
-    this.cargarDatos();
+    this.disparadorRefresco$.next();
   }
 
   alReiniciarFiltro() {
@@ -148,7 +164,7 @@ export class NotificacionComponent implements OnInit {
       fechaFin: fin.toISOString()
     };
     this.formulario.reset();
-    this.cargarDatos();
+    this.disparadorRefresco$.next();
   }
 
   private mapearAModeloUI(n: NotificacionDestinatario): NotificacionUI {
@@ -225,7 +241,7 @@ export class NotificacionComponent implements OnInit {
     if (notificacion.leida) return;
     this.notificacionService.marcarComoLeida(notificacion.id).subscribe(exito => {
       if (exito) {
-        this.cargarDatos();
+        this.disparadorRefresco$.next();
       }
     });
   }
@@ -237,6 +253,6 @@ export class NotificacionComponent implements OnInit {
 
   alCambiarPagina(pagina: number) {
     this.indicePagina = pagina - 1;
-    this.cargarDatos();
+    this.disparadorRefresco$.next();
   }
 }
