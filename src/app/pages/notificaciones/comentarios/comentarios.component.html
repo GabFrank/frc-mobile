@@ -8,31 +8,31 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="dark-content">
-  <ng-container *ngIf="usuarios$ | async as usuarios">
+  <ng-container *ngIf="usuariosConAcceso$ | async as usuarios">
     <div class="recipient-bar" *ngIf="usuarios.length > 0">
       <div class="chips-container">
-        <div class="user-chip" *ngFor="let user of destinatariosChips(usuarios)">
-          <img [src]="avatar(user)" alt="">
+        <div class="user-chip" *ngFor="let user of fichasUsuarios$ | async">
+          <img [src]="user.avatarUrl" alt="">
           <span>{{ user.nickname }}</span>
         </div>
       </div>
-      <ion-icon name="eye-outline" class="add-recipient-icon" (click)="toggleMostrarTodos()"></ion-icon>
+      <ion-icon name="eye-outline" class="add-recipient-icon" (click)="alternarMostrarTodos()"></ion-icon>
     </div>
-    <ng-container *ngIf="comentarios$ | async as comentarios">
-      <div class="hero-section" *ngIf="comentarios.length === 0">
+
+    <ng-container *ngIf="comentariosProcesados$ | async as comentarios">
+      <div class="hero-section" *ngIf="comentarios.length === 0 && (portadaData$ | async) as portada">
         <div class="avatar-group">
-          <div class="avatar-wrapper" *ngFor="let user of destinatariosHero(usuarios); let i = index"
-            [style.z-index]="10 - i">
-            <img [src]="avatar(user)">
+          <div class="avatar-wrapper" *ngFor="let user of portada.usuarios; let i = index" [style.z-index]="10 - i">
+            <img [src]="user.avatarUrl">
           </div>
         </div>
 
         <h2 class="group-title">
-          <ng-container *ngFor="let user of destinatariosHero(usuarios); let isLast = last">
+          <ng-container *ngFor="let user of portada.usuarios; let isLast = last">
             {{ user.nickname }}<span *ngIf="!isLast">, </span>
           </ng-container>
-          <ng-container *ngIf="conteoOcultosHero(usuarios) > 0">
-            y {{ conteoOcultosHero(usuarios) }} más
+          <ng-container *ngIf="portada.conteoOcultos > 0">
+            y {{ portada.conteoOcultos }} más
           </ng-container>
         </h2>
 
@@ -40,17 +40,18 @@
           Bienvenido a los comentarios. Empieza la conversación cuando estés listo.
         </p>
       </div>
+
       <div class="comments-list" *ngIf="comentarios.length > 0">
-        <div class="comment-item" *ngFor="let comentario of comentarios; trackBy: trackById">
+        <div class="comment-item" *ngFor="let comentario of comentarios; trackBy: identificarPorId">
           <div class="comment-avatar">
-            <img [src]="avatar(comentario.usuario)" alt="">
+            <img [src]="comentario.avatarUrl" alt="">
           </div>
           <div class="comment-content">
             <div class="comment-header">
               <span class="comment-author">{{ comentario.usuario.nickname }}</span>
               <span class="comment-time">{{ comentario.creadoEn | date:'shortTime' }}</span>
             </div>
-            <div class="comment-bubble" [innerHTML]="formatComentario(comentario.comentario)">
+            <div class="comment-bubble" [innerHTML]="comentario.textoFormateado">
             </div>
           </div>
         </div>
@@ -60,13 +61,20 @@
 </ion-content>
 
 <ion-footer class="ion-no-border">
+  <div class="suggestions-container" *ngIf="mostrarSugerencias && (sugerenciasProcesadas$ | async) as sugerencias">
+    <div class="suggestion-item" *ngFor="let usuario of sugerencias" (click)="seleccionarUsuario(usuario)">
+      <img [src]="usuario.avatarUrl" alt="">
+      <span>{{ usuario.nickname }}</span>
+    </div>
+  </div>
+
   <div class="message-input-bar">
     <div class="add-btn">
       <ion-icon name="add"></ion-icon>
     </div>
     <div class="input-wrapper">
-      <input [formControl]="comentarioInput" type="text" placeholder="Mensaje para el grupo" class="native-input"
-        (keyup.enter)="enviarComentario()">
+      <input [formControl]="comentarioInput" id="commentInput" type="text" placeholder="Mensaje para el grupo"
+        class="native-input" (keyup.enter)="enviarComentario()">
       <ion-icon name="send" class="send-icon" (click)="enviarComentario()"></ion-icon>
     </div>
     <div class="mic-btn">

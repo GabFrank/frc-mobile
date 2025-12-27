@@ -59,7 +59,7 @@ export class NotificacionService {
   }
 
   comentarios(notificacionId: number): Observable<NotificacionComentario[]> {
-    return this.comentariosQuery.watch({ notificacionId }).valueChanges.pipe(
+    return this.comentariosQuery.watch({ notificacionId }, { fetchPolicy: 'cache-and-network' }).valueChanges.pipe(
       map(res => res.data?.comentariosNotificacion || [])
     );
   }
