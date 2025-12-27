@@ -42,7 +42,8 @@
       </div>
 
       <div class="comments-list" *ngIf="comentarios.length > 0">
-        <div class="comment-item" *ngFor="let comentario of comentarios; trackBy: identificarPorId">
+        <div class="comment-item" *ngFor="let comentario of comentarios; trackBy: identificarPorId"
+          [id]="'comentario-' + comentario.id">
           <ng-container *ngIf="comentario.usuario && comentario.comentario">
             <div class="comment-avatar">
               <img [src]="comentario.avatarUrl" alt="">

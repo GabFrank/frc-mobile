@@ -18,6 +18,9 @@ interface NotificacionUI {
   color: string;
   leida: boolean;
   conteoComentarios: number;
+  esMencion: boolean;
+  comentarioId?: number;
+  notificacionOriginalId?: number;
 }
 
 @Component({
@@ -177,6 +180,19 @@ export class NotificacionComponent implements OnInit, OnDestroy {
       'default': { icono: 'notifications', color: 'orange' }
     };
     const estilo = mapeo[tipo] || mapeo['default'];
+    const esMencion = n.notificacion.titulo?.toLowerCase().includes('mencionado') || n.notificacion.tipo?.toLowerCase() === 'mencion';
+    let comentarioId: number | undefined;
+    let notificacionOriginalId: number | undefined;
+
+    if (esMencion && n.notificacion.data) {
+      try {
+        const dataJson = JSON.parse(n.notificacion.data);
+        comentarioId = dataJson.comentarioId;
+        notificacionOriginalId = dataJson.notificacionId;
+      } catch (e) {
+      }
+    }
+
     return {
       id: n.notificacion.id,
       titulo: n.notificacion.titulo,
@@ -185,7 +201,10 @@ export class NotificacionComponent implements OnInit, OnDestroy {
       icono: estilo.icono,
       color: estilo.color,
       leida: n.leida,
-      conteoComentarios: n.notificacion.conteoComentarios || 0
+      conteoComentarios: n.notificacion.conteoComentarios || 0,
+      esMencion,
+      comentarioId,
+      notificacionOriginalId
     };
   }
 
@@ -249,6 +268,13 @@ export class NotificacionComponent implements OnInit, OnDestroy {
   irAComentarios(event: Event, notificacion: NotificacionUI) {
     event.stopPropagation();
     this.router.navigate(['notificacion', 'comentarios', notificacion.id]);
+  }
+
+  verMencion(event: Event, notificacion: NotificacionUI) {
+    event.stopPropagation();
+    const idParaNavegar = notificacion.notificacionOriginalId || notificacion.id;
+    const queryParams = notificacion.comentarioId ? { comentarioId: notificacion.comentarioId } : {};
+    this.router.navigate(['notificacion', 'comentarios', idParaNavegar], { queryParams });
   }
 
   alCambiarPagina(pagina: number) {

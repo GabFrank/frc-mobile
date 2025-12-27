@@ -47,7 +47,7 @@
     <ng-container *ngIf="notificaciones$ | async as notificaciones; else cargandoTemplate">
         <ion-list lines="none" class="notification-list" *ngIf="notificaciones.length > 0; else vacioTemplate">
             <ion-item *ngFor="let notificacion of notificaciones; trackBy: identificarPorId" class="notification-item"
-                detail="false" [button]="true" (click)="irAComentarios($event, notificacion)">
+                detail="false" [button]="true" (click)="marcarComoLeida(notificacion)">
                 <div slot="start" [class]="'icon-container ' + notificacion.color">
                     <ion-icon [name]="notificacion.icono + '-outline'"></ion-icon>
                 </div>
@@ -60,6 +60,10 @@
                     <span class="tiempo">{{ notificacion.tiempo }}</span>
                 </ion-label>
                 <ion-buttons slot="end">
+                    <ion-button fill="clear" color="primary" *ngIf="notificacion.esMencion"
+                        (click)="verMencion($event, notificacion)">
+                        <ion-icon name="eye-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
                     <ion-button fill="clear" color="success" *ngIf="!notificacion.leida"
                         (click)="$event.stopPropagation(); marcarComoLeida(notificacion)">
                         <ion-icon name="checkmark-done-outline" slot="icon-only"></ion-icon>

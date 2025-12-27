@@ -41,6 +41,7 @@ export class ComentariosComponent implements OnInit {
   public sugerenciasProcesadas$: Observable<UsuarioProcesado[] | null>;
   private readonly comentarioParaResponder$ = new BehaviorSubject<ComentarioProcesado | null>(null);
   public respuestaActiva$ = this.comentarioParaResponder$.asObservable();
+  private idComentarioScrolleado: string | null = null;
 
   ngOnInit() {
     this.notificacionId$ = this.ruta.paramMap.pipe(
@@ -107,6 +108,22 @@ export class ComentariosComponent implements OnInit {
         return null;
       })
     );
+    this.comentariosProcesados$.pipe(
+      takeUntil(this.destruir$),
+    ).subscribe((comentarios) => {
+      const comentarioId = this.ruta.snapshot.queryParamMap.get('comentarioId');
+      if (comentarioId && this.idComentarioScrolleado !== comentarioId && comentarios.length > 0) {
+        setTimeout(() => {
+          const elemento = document.getElementById(`comentario-${comentarioId}`);
+          if (elemento) {
+            this.idComentarioScrolleado = comentarioId;
+            elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            elemento.classList.add('highlight-comment');
+            setTimeout(() => elemento.classList.remove('highlight-comment'), 3000);
+          }
+        }, 500);
+      }
+    });
   }
 
   ngOnDestroy() {
