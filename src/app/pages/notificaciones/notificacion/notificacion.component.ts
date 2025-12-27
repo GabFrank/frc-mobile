@@ -9,14 +9,15 @@ import { CalendarModal, CalendarModalOptions } from 'ion7-calendar';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { PageInfo } from 'src/app/app.component';
 
-interface NotificationUIModel {
+interface NotificacionUI {
   id: number;
-  title: string;
-  description: string;
-  time: string;
-  icon: string;
+  titulo: string;
+  descripcion: string;
+  tiempo: string;
+  icono: string;
   color: string;
   leida: boolean;
+  conteoComentarios: number;
 }
 
 @Component({
@@ -31,52 +32,52 @@ export class NotificacionComponent implements OnInit {
   private readonly fb = inject(UntypedFormBuilder);
   private readonly router = inject(Router);
 
-  public readonly notifications$: Observable<NotificationUIModel[]> = this.notificacionService.notificaciones$.pipe(
-    map(notifications => notifications.map(n => this.mapToUIModel(n)))
+  public readonly notificaciones$: Observable<NotificacionUI[]> = this.notificacionService.notificaciones$.pipe(
+    map(notificaciones => notificaciones.map(n => this.mapearAModeloUI(n)))
   );
 
-  public readonly loading$ = this.notificacionService.cargando$;
+  public readonly cargando$ = this.notificacionService.cargando$;
 
-  public selectedRange: { fechaInicio: string | null, fechaFin: string | null } = { fechaInicio: null, fechaFin: null };
-  public form: UntypedFormGroup;
-  public pageData: PageInfo<NotificacionDestinatario>;
-  public pageIndex: number = 0;
+  public seleccionadoRango: { fechaInicio: string | null, fechaFin: string | null } = { fechaInicio: null, fechaFin: null };
+  public formulario: UntypedFormGroup;
+  public datosPagina: PageInfo<NotificacionDestinatario>;
+  public indicePagina: number = 0;
 
   constructor() {
-    this.form = this.fb.group({
+    this.formulario = this.fb.group({
       leidas: [null],
       estadoTablero: [null]
     });
 
-    const end = new Date();
-    end.setHours(23, 59, 59, 999);
-    const start = new Date();
-    start.setDate(end.getDate() - 7);
-    start.setHours(0, 0, 0, 0);
-    this.selectedRange = {
-      fechaInicio: start.toISOString(),
-      fechaFin: end.toISOString()
+    const fin = new Date();
+    fin.setHours(23, 59, 59, 999);
+    const inicio = new Date();
+    inicio.setDate(fin.getDate() - 7);
+    inicio.setHours(0, 0, 0, 0);
+    this.seleccionadoRango = {
+      fechaInicio: inicio.toISOString(),
+      fechaFin: fin.toISOString()
     };
   }
 
   ngOnInit() {
-    this.loadData();
+    this.cargarDatos();
   }
 
-  private loadData() {
+  private cargarDatos() {
     const variables: NotificacionesUsuarioVariables = {
-      page: this.pageIndex,
+      page: this.indicePagina,
       size: 10,
-      fechaInicio: this.selectedRange.fechaInicio || undefined,
-      fechaFin: this.selectedRange.fechaFin || undefined,
-      leidas: this.form.get('leidas')?.value,
-      estadoTablero: this.form.get('estadoTablero')?.value
+      fechaInicio: this.seleccionadoRango.fechaInicio || undefined,
+      fechaFin: this.seleccionadoRango.fechaFin || undefined,
+      leidas: this.formulario.get('leidas')?.value,
+      estadoTablero: this.formulario.get('estadoTablero')?.value
     };
 
     this.notificacionService['notificacionesUsuarioQuery'].fetch(variables).subscribe(response => {
       if (response && response.data && response.data.notificacionesUsuario) {
         const data = response.data.notificacionesUsuario;
-        this.pageData = {
+        this.datosPagina = {
           getTotalPages: data.totalPages,
           getTotalElements: data.totalElements,
           getNumberOfElements: data.content.length,
@@ -92,7 +93,7 @@ export class NotificacionComponent implements OnInit {
     });
   }
 
-  async openCalendar() {
+  async abrirCalendario() {
     const options: CalendarModalOptions = {
       pickMode: 'range',
       title: 'SELECCIONAR FECHA',
@@ -103,9 +104,9 @@ export class NotificacionComponent implements OnInit {
       canBackwardsSelected: true,
       closeIcon: true,
       weekStart: 1,
-      defaultScrollTo: this.selectedRange?.fechaInicio ? new Date(this.selectedRange.fechaInicio) : new Date(),
-      defaultDateRange: this.selectedRange?.fechaInicio && this.selectedRange?.fechaFin ?
-        { from: new Date(this.selectedRange.fechaInicio), to: new Date(this.selectedRange.fechaFin) } : undefined
+      defaultScrollTo: this.seleccionadoRango?.fechaInicio ? new Date(this.seleccionadoRango.fechaInicio) : new Date(),
+      defaultDateRange: this.seleccionadoRango?.fechaInicio && this.seleccionadoRango?.fechaFin ?
+        { from: new Date(this.seleccionadoRango.fechaInicio), to: new Date(this.seleccionadoRango.fechaFin) } : undefined
     };
 
     const myCalendar = await this.modalCtrl.create({
@@ -124,85 +125,86 @@ export class NotificacionComponent implements OnInit {
       fechaInicio.setHours(0, 0, 0, 0);
       const fechaFin = new Date(date.to.string);
       fechaFin.setHours(23, 59, 59, 999);
-      this.selectedRange = {
+      this.seleccionadoRango = {
         fechaInicio: fechaInicio.toISOString(),
         fechaFin: fechaFin.toISOString()
       };
-      this.loadData();
+      this.cargarDatos();
     }
   }
 
-  onBuscar() {
-    this.loadData();
+  alBuscar() {
+    this.cargarDatos();
   }
 
-  onResetFiltro() {
-    const end = new Date();
-    end.setHours(23, 59, 59, 999);
-    const start = new Date();
-    start.setDate(end.getDate() - 7);
-    start.setHours(0, 0, 0, 0);
-    this.selectedRange = {
-      fechaInicio: start.toISOString(),
-      fechaFin: end.toISOString()
+  alReiniciarFiltro() {
+    const fin = new Date();
+    fin.setHours(23, 59, 59, 999);
+    const inicio = new Date();
+    inicio.setDate(fin.getDate() - 7);
+    inicio.setHours(0, 0, 0, 0);
+    this.seleccionadoRango = {
+      fechaInicio: inicio.toISOString(),
+      fechaFin: fin.toISOString()
     };
-    this.form.reset();
-    this.loadData();
+    this.formulario.reset();
+    this.cargarDatos();
   }
 
-  private mapToUIModel(n: NotificacionDestinatario): NotificationUIModel {
+  private mapearAModeloUI(n: NotificacionDestinatario): NotificacionUI {
     const tipo = n.notificacion.tipo?.toLowerCase() || 'default';
-    const mapping: Record<string, { icon: string; color: string }> = {
-      'pago': { icon: 'checkmark', color: 'green' },
-      'orden': { icon: 'cube', color: 'orange' },
-      'descuento': { icon: 'pricetag', color: 'purple' },
-      'cancelado': { icon: 'close', color: 'red' },
-      'default': { icon: 'notifications', color: 'orange' }
+    const mapeo: Record<string, { icono: string; color: string }> = {
+      'pago': { icono: 'checkmark', color: 'green' },
+      'orden': { icono: 'cube', color: 'orange' },
+      'descuento': { icono: 'pricetag', color: 'purple' },
+      'cancelado': { icono: 'close', color: 'red' },
+      'default': { icono: 'notifications', color: 'orange' }
     };
-    const style = mapping[tipo] || mapping['default'];
+    const estilo = mapeo[tipo] || mapeo['default'];
     return {
       id: n.notificacion.id,
-      title: n.notificacion.titulo,
-      description: n.notificacion.mensaje,
-      time: this.getTimeAgo(n.creadoEn),
-      icon: style.icon,
-      color: style.color,
-      leida: n.leida
+      titulo: n.notificacion.titulo,
+      descripcion: n.notificacion.mensaje,
+      tiempo: this.obtenerHaceCuanto(n.creadoEn),
+      icono: estilo.icono,
+      color: estilo.color,
+      leida: n.leida,
+      conteoComentarios: n.notificacion.conteoComentarios || 0
     };
   }
 
-  private getTimeAgo(date: Date | string): string {
-    if (!date) return '';
-    const d = new Date(date);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - d.getTime()) / 1000);
-    if (diffInSeconds < 0) return 'Just now';
-    if (diffInSeconds < 60) return 'Just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    if (diffInSeconds < 172800) return 'A day ago';
-    return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  private obtenerHaceCuanto(fecha: Date | string): string {
+    if (!fecha) return '';
+    const d = new Date(fecha);
+    const ahora = new Date();
+    const difSegundos = Math.floor((ahora.getTime() - d.getTime()) / 1000);
+    if (difSegundos < 0) return 'Recién';
+    if (difSegundos < 60) return 'Recién';
+    if (difSegundos < 3600) return `Hace ${Math.floor(difSegundos / 60)} min`;
+    if (difSegundos < 86400) return `Hace ${Math.floor(difSegundos / 3600)} hs`;
+    if (difSegundos < 172800) return 'Hace un día';
+    return `Hace ${Math.floor(difSegundos / 86400)} días`;
   }
 
-  trackById(index: number, item: NotificationUIModel): number {
+  identificarPorId(index: number, item: NotificacionUI): number {
     return item.id;
   }
 
-  doRefresh(event: any) {
-    this.pageIndex = 0;
+  alRefrescar(event: any) {
+    this.indicePagina = 0;
     const variables: NotificacionesUsuarioVariables = {
-      page: this.pageIndex,
+      page: this.indicePagina,
       size: 10,
-      fechaInicio: this.selectedRange.fechaInicio || undefined,
-      fechaFin: this.selectedRange.fechaFin || undefined,
-      leidas: this.form.get('leidas')?.value,
-      estadoTablero: this.form.get('estadoTablero')?.value
+      fechaInicio: this.seleccionadoRango.fechaInicio || undefined,
+      fechaFin: this.seleccionadoRango.fechaFin || undefined,
+      leidas: this.formulario.get('leidas')?.value,
+      estadoTablero: this.formulario.get('estadoTablero')?.value
     };
 
     this.notificacionService['notificacionesUsuarioQuery'].fetch(variables).subscribe(response => {
       if (response && response.data && response.data.notificacionesUsuario) {
         const data = response.data.notificacionesUsuario;
-        this.pageData = {
+        this.datosPagina = {
           getTotalPages: data.totalPages,
           getTotalElements: data.totalElements,
           getNumberOfElements: data.content.length,
@@ -219,22 +221,22 @@ export class NotificacionComponent implements OnInit {
     });
   }
 
-  markAsRead(notification: NotificationUIModel) {
-    if (notification.leida) return;
-    this.notificacionService.marcarComoLeida(notification.id).subscribe(success => {
-      if (success) {
-        this.loadData();
+  marcarComoLeida(notificacion: NotificacionUI) {
+    if (notificacion.leida) return;
+    this.notificacionService.marcarComoLeida(notificacion.id).subscribe(exito => {
+      if (exito) {
+        this.cargarDatos();
       }
     });
   }
 
-  goToComments(event: Event, notification: NotificationUIModel) {
+  irAComentarios(event: Event, notificacion: NotificacionUI) {
     event.stopPropagation();
-    this.router.navigate(['notificacion', 'comentarios', notification.id]);
+    this.router.navigate(['notificacion', 'comentarios', notificacion.id]);
   }
 
-  onPageChange(page: number) {
-    this.pageIndex = page - 1;
-    this.loadData();
+  alCambiarPagina(pagina: number) {
+    this.indicePagina = pagina - 1;
+    this.cargarDatos();
   }
 }

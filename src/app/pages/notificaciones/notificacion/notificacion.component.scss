@@ -194,6 +194,29 @@ ion-content {
             display: block;
         }
     }
+
+    .comment-button {
+        position: relative;
+        --padding-start: 8px;
+        --padding-end: 8px;
+
+        .comment-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            font-size: 10px;
+            padding: 2px 5px;
+            min-width: 18px;
+            min-height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--notification-card-bg);
+            scale: 0.9;
+        }
+    }
 }
 
 .empty-container {
