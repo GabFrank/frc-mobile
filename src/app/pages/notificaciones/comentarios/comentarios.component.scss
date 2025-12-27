@@ -214,6 +214,10 @@ ion-footer {
         align-items: flex-start;
         animation: fadeIn 0.3s ease-in-out;
 
+        &.highlight-comment {
+            animation: highlightPulse 2s ease-in-out;
+        }
+
         .comment-avatar {
             img {
                 width: 36px;
@@ -415,5 +419,20 @@ ion-footer {
             color: #e0e0e0;
             font-weight: 500;
         }
+    }
+}
+
+@keyframes highlightPulse {
+    0% {
+        background-color: transparent;
+    }
+
+    30% {
+        background-color: rgba(62, 161, 219, 0.3);
+    }
+
+    // Color primario aprox
+    100% {
+        background-color: transparent;
     }
 }

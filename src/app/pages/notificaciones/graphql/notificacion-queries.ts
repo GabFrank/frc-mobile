@@ -16,6 +16,7 @@ export const NOTIFICACIONES_USUARIO_QUERY = gql`
           tipo
           creadoEn
           conteoComentarios
+          data
         }
       }
       totalElements
