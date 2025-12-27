@@ -43,17 +43,24 @@
 
       <div class="comments-list" *ngIf="comentarios.length > 0">
         <div class="comment-item" *ngFor="let comentario of comentarios; trackBy: identificarPorId">
-          <div class="comment-avatar">
-            <img [src]="comentario.avatarUrl" alt="">
-          </div>
-          <div class="comment-content">
-            <div class="comment-header">
-              <span class="comment-author">{{ comentario.usuario.nickname }}</span>
-              <span class="comment-time">{{ comentario.creadoEn | date:'shortTime' }}</span>
+          <ng-container *ngIf="comentario.usuario && comentario.comentario">
+            <div class="comment-avatar">
+              <img [src]="comentario.avatarUrl" alt="">
             </div>
-            <div class="comment-bubble" [innerHTML]="comentario.textoFormateado">
+            <div class="comment-content">
+              <div class="comment-header">
+                <span class="comment-author">{{ comentario.usuario.nickname }}</span>
+                <span class="comment-time">{{ comentario.creadoEn | date:'shortTime' }}</span>
+              </div>
+              <div class="comment-bubble" (click)="responderAComentario(comentario)">
+                <div class="reply-reference" *ngIf="comentario.comentarioPadre && comentario.comentarioPadre.usuario">
+                  <span>{{ comentario.comentarioPadre.usuario?.nickname }}:</span>
+                  <p>{{ comentario.comentarioPadre.comentario }}</p>
+                </div>
+                <div [innerHTML]="comentario.textoFormateado"></div>
+              </div>
             </div>
-          </div>
+          </ng-container>
         </div>
       </div>
     </ng-container>
@@ -61,7 +68,18 @@
 </ion-content>
 
 <ion-footer class="ion-no-border">
-  <div class="suggestions-container" *ngIf="mostrarSugerencias && (sugerenciasProcesadas$ | async) as sugerencias">
+  <div class="reply-bar" *ngIf="respuestaActiva$ | async as respuesta">
+    <div class="reply-info">
+      <ion-icon name="return-up-back-outline"></ion-icon>
+      <div class="reply-text">
+        <span>Respondiendo a {{ respuesta.usuario?.nickname }}</span>
+        <p>{{ respuesta.comentario }}</p>
+      </div>
+    </div>
+    <ion-icon name="close-circle" class="close-reply" (click)="cancelarRespuesta()"></ion-icon>
+  </div>
+
+  <div class="suggestions-container" *ngIf="sugerenciasProcesadas$ | async as sugerencias">
     <div class="suggestion-item" *ngFor="let usuario of sugerencias" (click)="seleccionarUsuario(usuario)">
       <img [src]="usuario.avatarUrl" alt="">
       <span>{{ usuario.nickname }}</span>
