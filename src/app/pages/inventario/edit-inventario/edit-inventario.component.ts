@@ -291,6 +291,16 @@ export class EditInventarioComponent implements OnInit {
       });
   }
 
+  onSearchStock() {
+    this.modalService.openModal(SearchProductoDialogComponent, {
+      data: {
+        sucursalId: this.selectedInventario?.sucursal?.id,
+        mostrarPrecio: false,
+        isInventario: false
+      }
+    });
+  }
+
   onAddProducto(invPro, i) {
     console.log(this.selectedInventario);
     let data = { sucursal: this.selectedInventario.sucursal, sucursalId: +this.selectedInventario.sucursal.id, isInventario: true, invPro: invPro };

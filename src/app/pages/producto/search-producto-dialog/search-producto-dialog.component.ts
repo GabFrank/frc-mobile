@@ -11,7 +11,7 @@ import { UntypedFormControl, Validators } from '@angular/forms';
 import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ProductoService } from '../producto.service';
 import { Location } from '@angular/common';
-import { IonAccordionGroup, IonContent, Platform, IonItemSliding, IonInput } from '@ionic/angular';
+import { IonAccordionGroup, IonContent, Platform, IonInput } from '@ionic/angular';
 import { CodigoService } from '../../codigo/codigo.service';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { StockPorSucursalDialogComponent, StockPorSucursalDialogData } from '../../operaciones/movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component';
@@ -179,9 +179,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
       (await this.productoService.onGetStockPorSucursal(producto.id, this.data?.data?.sucursalId)).pipe(untilDestroyed(this)).subscribe(res => {
         this.isSearchingList[index] = false;
         if (res != null) {
-          setTimeout(() => {
-            this.productosList[index].stockPorProducto = res;
-          }, 2000);
+          this.productosList[index].stockPorProducto = res;
         }
       })
     }
