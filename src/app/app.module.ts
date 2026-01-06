@@ -45,8 +45,6 @@ import { ProductoModule } from './pages/producto/producto.module';
 import { TransferenciasModule } from './pages/transferencias/transferencias.module';
 import { MainService } from './services/main.service';
 import { NgxCurrencyModule } from 'ngx-currency';
-import { MarcacionModule } from './pages/marcacion/marcacion.module';
-import { EnumToStringPipe } from './generic/utils/pipes/enum-to-string';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { BarcodeScannerService } from './services/barcode-scanner.service';
 import { HomeModule } from './pages/home/home/home.module';
@@ -100,8 +98,6 @@ wsClient.onReconnected(() => {
 @Injectable()
 export class HammerConfig extends HammerGestureConfig {
   overrides = <any>{
-    // I will only use the swap gesture so
-    // I will deactivate the others to avoid overlaps
     pinch: { enable: false },
     rotate: { enable: false }
   };
@@ -148,9 +144,6 @@ export class HammerConfig extends HammerGestureConfig {
       provide: APOLLO_OPTIONS,
       useFactory(httpLink: HttpLink): ApolloClientOptions<any> {
         const basic = setContext((operation, context) => ({
-          // headers: {
-          //   Accept: 'charset=utf-8'
-          // }
         }));
         const auth = setContext((operation, context) => {
           const token = localStorage.getItem('token');
@@ -165,7 +158,6 @@ export class HammerConfig extends HammerGestureConfig {
             };
           }
         });
-        // Create an http link:
         const http = ApolloLink.from([
           basic,
           auth,
@@ -173,13 +165,9 @@ export class HammerConfig extends HammerGestureConfig {
             uri: uri
           })
         ]);
-        // Create a WebSocket link:
         const ws = new WebSocketLink(wsClient);
-        // using the ability to split links, you can send data to each link
-        // depending on what kind of operation is being sent
         const link = errorLink.concat(
           split(
-            // split based on operation type
             ({ query }) => {
               const definition = getMainDefinition(query);
               return (

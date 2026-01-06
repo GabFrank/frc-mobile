@@ -146,7 +146,6 @@
           </ion-button>
         </ion-buttons>
 
-        <!-- <ion-title style="text-align: center">BODEGA FRANCO</ion-title> -->
         <ion-row>
           <ion-col size="12" class="center">
             <img [src]="isFarma ? '/assets/logof.png' : '/assets/logo.png'" alt=""
@@ -159,7 +158,6 @@
       <ion-router-outlet></ion-router-outlet>
     </ion-content>
 
-    <!-- Tab Bar Inferior -->
     <ion-tab-bar slot="bottom" class="custom-tab-bar">
       <ion-tab-button tab="home" [routerLink]="['/']">
         <ion-icon name="home-outline"></ion-icon>
@@ -180,7 +178,7 @@
       <ion-tab-button tab="notificaciones" [routerLink]="['/notificacion']">
         <ion-icon name="notifications-outline"></ion-icon>
         <ion-badge color="danger" *ngIf="true">3</ion-badge>
-        <ion-label>Alertas</ion-label>
+        <ion-label>notificaciones</ion-label>
       </ion-tab-button>
     </ion-tab-bar>
   </div>
