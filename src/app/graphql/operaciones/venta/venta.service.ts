@@ -20,6 +20,8 @@ import { NotificacionService } from "src/app/services/notificacion.service";
 import { Venta, VentaEstado } from "src/app/domains/venta/venta.model";
 import { Cobro } from "src/app/domains/cobro/cobro.model";
 
+import { VentasPorSucursalAndUsuarioGQL } from "./graphql/ventasPorSucursalAndUsuario";
+
 @UntilDestroy({ checkProperties: true })
 @Injectable({
   providedIn: "root",
@@ -39,7 +41,8 @@ export class VentaService {
     private imprimirPagare: ImprimirPagareGQL,
     private countVenta: CountVentaGQL,
     private saveVentaItemQuery: SaveVentaItemGQL,
-    private saveCobroDetalleQuery: SaveCobroDetalleGQL
+    private saveCobroDetalleQuery: SaveCobroDetalleGQL,
+    private ventasPorSucursalAndUsuario: VentasPorSucursalAndUsuarioGQL
   ) { }
 
   // $venta:VentaInput!, $venteItemList: [VentaItemInput], $cobro: CobroInput, $cobroDetalleList: [CobroDetalleInput]
@@ -231,4 +234,19 @@ export class VentaService {
   // onSaveCobroDetalle(cobroDetalleInput: CobroDetalleInput): Observable<CobroDetalle> {
   //   return this.genericService.onSave(this.saveCobroDetalleQuery, cobroDetalleInput);
   // }
+
+  onGetVentasPorSucursalAndUsuario(usuarioId: number, inicio: string, fin: string): Observable<any> {
+    return new Observable((obs) => {
+      this.ventasPorSucursalAndUsuario.fetch({ usuarioId, inicio, fin }, {
+        fetchPolicy: "no-cache",
+        errorPolicy: "all",
+      }).pipe(untilDestroyed(this)).subscribe(res => {
+        if (res.errors == null) {
+          obs.next(res.data.data)
+        } else {
+          obs.next(null)
+        }
+      })
+    });
+  }
 }

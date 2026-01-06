@@ -166,6 +166,11 @@
         background: linear-gradient(135deg, #1e1e1e 0%, rgba(245, 124, 0, 0.05) 100%);
     }
 
+    &.info {
+        border-color: rgba(56, 128, 255, 0.3);
+        background: linear-gradient(135deg, #1e1e1e 0%, rgba(56, 128, 255, 0.05) 100%);
+    }
+
     &.success {
         border-color: rgba(67, 160, 71, 0.3);
         background: linear-gradient(135deg, #1e1e1e 0%, rgba(67, 160, 71, 0.05) 100%);
@@ -185,6 +190,10 @@
 
     .metric-card.alert & {
         color: #f57c00 !important;
+    }
+
+    .metric-card.info & {
+        color: #3880ff !important;
     }
 
     .metric-card.success & {
@@ -209,199 +218,4 @@
 .metric-subtitle {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
-}
-
-// Activity Section
-.activity-section {
-    padding: 0 16px 24px;
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-.see-all-btn {
-    --color: #f44336;
-    font-size: 13px;
-    font-weight: 500;
-    text-transform: none;
-    margin: 0;
-    height: auto;
-
-    ion-icon {
-        font-size: 16px;
-        margin-left: 4px;
-    }
-}
-
-.activity-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.activity-item {
-    background: #1e1e1e;
-    border-radius: 12px;
-    padding: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.2s ease;
-
-    &:active {
-        background: #2a2a2a;
-        transform: scale(0.98);
-    }
-}
-
-.activity-icon-wrapper {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-
-    ion-icon {
-        font-size: 20px;
-        color: #ffffff !important;
-    }
-
-    &.inventory {
-        background: rgba(244, 67, 54, 0.15);
-
-        ion-icon {
-            color: #f44336 !important;
-        }
-    }
-
-    &.transfers {
-        background: rgba(56, 128, 255, 0.15);
-
-        ion-icon {
-            color: #3880ff !important;
-        }
-    }
-
-    &.products {
-        background: rgba(245, 124, 0, 0.15);
-
-        ion-icon {
-            color: #f57c00 !important;
-        }
-    }
-}
-
-.activity-content {
-    flex: 1;
-    min-width: 0;
-}
-
-.activity-title {
-    font-size: 14px;
-    color: #ffffff;
-    font-weight: 500;
-    margin: 0 0 4px 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.activity-time {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.5);
-}
-
-.activity-arrow {
-    font-size: 18px;
-    color: rgba(255, 255, 255, 0.3) !important;
-    flex-shrink: 0;
-}
-
-// Alerts Section
-.alerts-section {
-    padding: 0 16px 24px;
-}
-
-.alert-card {
-    background: #1e1e1e;
-    border-radius: 12px;
-    padding: 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-
-    &.warning {
-        border-color: rgba(245, 124, 0, 0.3);
-        background: linear-gradient(135deg, #1e1e1e 0%, rgba(245, 124, 0, 0.05) 100%);
-    }
-
-    &.danger {
-        border-color: rgba(244, 67, 54, 0.3);
-        background: linear-gradient(135deg, #1e1e1e 0%, rgba(244, 67, 54, 0.05) 100%);
-    }
-}
-
-.alert-icon-wrapper {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-
-    .alert-card.warning & {
-        background: rgba(245, 124, 0, 0.2);
-
-        ion-icon {
-            font-size: 22px;
-            color: #f57c00 !important;
-        }
-    }
-
-    .alert-card.danger & {
-        background: rgba(244, 67, 54, 0.2);
-
-        ion-icon {
-            font-size: 22px;
-            color: #f44336 !important;
-        }
-    }
-}
-
-.alert-content {
-    flex: 1;
-    min-width: 0;
-}
-
-.alert-title {
-    font-size: 14px;
-    color: #ffffff;
-    font-weight: 600;
-    margin: 0 0 4px 0;
-}
-
-.alert-description {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.6);
-    margin: 0;
-}
-
-.alert-action {
-    --color: #f44336;
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: none;
-    margin: 0;
-    height: auto;
-    flex-shrink: 0;
 }

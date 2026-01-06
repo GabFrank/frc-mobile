@@ -47,7 +47,7 @@ import { MainService } from './services/main.service';
 import { NgxCurrencyModule } from 'ngx-currency';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { BarcodeScannerService } from './services/barcode-scanner.service';
-import { HomeModule } from './pages/home/home/home.module';
+import { HomeModule } from './pages/home/home.module';
 
 registerLocaleData(localePY);
 

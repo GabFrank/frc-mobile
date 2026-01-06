@@ -1,0 +1,62 @@
+<ion-header>
+  <ion-toolbar class="new-background-color">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Ventas del Día</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="summary-container">
+    <div *ngIf="selectedRange.fechaInicio && selectedRange.fechaFin" class="date-range-display"
+      (click)="openCalendar()">
+      <div class="date-range-content">
+        <p>
+          <span>Desde:</span> {{ selectedRange.fechaInicio | date: 'dd/MM/yyyy' }}
+          <span>Hasta:</span> {{ selectedRange.fechaFin | date: 'dd/MM/yyyy' }}
+        </p>
+        <ion-icon name="calendar-outline" class="calendar-icon-inline"></ion-icon>
+      </div>
+    </div>
+
+    <ion-card class="total-card">
+      <ion-card-header>
+        <ion-card-subtitle style="color: rgba(255,255,255,0.7)">Total Ventas</ion-card-subtitle>
+        <ion-card-title style="font-size: 2rem; font-weight: bold; color: white;">₲ {{ totalVentasGs | number:'1.0-0'
+          }}</ion-card-title>
+      </ion-card-header>
+    </ion-card>
+
+    <div class="chart-section" *ngIf="!loading && ventasPorSucursal.length > 0">
+      <h3 class="section-title">Distribución por Sucursal</h3>
+      <div class="chart-container">
+        <canvas #pieChart></canvas>
+      </div>
+
+      <ion-list class="branch-details-list" lines="none">
+        <ion-item *ngFor="let v of ventasPorSucursal">
+          <ion-label>
+            <div class="branch-info">
+              <span class="branch-name">{{ v.nombre }}</span>
+              <span class="branch-total">₲ {{ v.total | number:'1.0-0' }}</span>
+            </div>
+            <div class="percentage-bar-container">
+              <div class="percentage-bar" [style.width]="(v.total / totalVentasGs * 100) + '%'"></div>
+            </div>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <div *ngIf="loading" class="status-container">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p>Cargando datos...</p>
+    </div>
+
+    <div *ngIf="!loading && ventasPorSucursal.length === 0" class="status-container">
+      <ion-icon name="stats-chart-outline" style="font-size: 64px; color: #444;"></ion-icon>
+      <p>No hay ventas registradas en este periodo.</p>
+    </div>
+  </div>
+</ion-content>

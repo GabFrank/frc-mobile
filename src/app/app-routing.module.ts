@@ -2,11 +2,16 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home/home.component';
 import { SalirComponent } from './pages/salir/salir.component';
+import { VentaDiaComponent } from './pages/home/venta-dia/venta-dia.component';
 
 const routes: Routes = [
   {
     path: '',
     component: HomeComponent
+  },
+  {
+    path: 'venta-dia',
+    component: VentaDiaComponent
   },
   {
     path: 'inventario',
@@ -34,7 +39,7 @@ const routes: Routes = [
   },
   {
     path: 'splash',
-    loadChildren: () => import('./splash/splash.module').then( m => m.SplashPageModule)
+    loadChildren: () => import('./splash/splash.module').then(m => m.SplashPageModule)
   },
   {
     path: 'operaciones',
@@ -42,11 +47,11 @@ const routes: Routes = [
   },
   {
     path: 'informaciones-personales',
-    loadChildren: () => import('./pages/informaciones-personales/informaciones-personales.module').then( m => m.InformacionesPersonalesModule)
+    loadChildren: () => import('./pages/informaciones-personales/informaciones-personales.module').then(m => m.InformacionesPersonalesModule)
   },
   {
     path: 'mis-finanzas',
-    loadChildren: () => import('./pages/mis-finanzas/mis-finanzas.module').then( m => m.MisFinanzasModule)
+    loadChildren: () => import('./pages/mis-finanzas/mis-finanzas.module').then(m => m.MisFinanzasModule)
   }
 ];
 @NgModule({
@@ -55,4 +60,4 @@ const routes: Routes = [
   ],
   exports: [RouterModule]
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }
