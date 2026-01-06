@@ -1,8 +1,10 @@
-.new-background-color{
+.new-background-color {
   --background: #f44336 !important;
 }
 
-.contact-popover .popover-content{ width: 320px; }
+.contact-popover .popover-content {
+  width: 320px;
+}
 
 .online {
   --background: #43a047;
@@ -27,4 +29,54 @@ ion-menu {
 
 ion-accordion {
   background-color: rgb(30, 30, 30);
+}
+
+// Custom Tab Bar Styles
+.custom-tab-bar {
+  --background: #1e1e1e;
+  --color: rgba(255, 255, 255, 0.6);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: env(safe-area-inset-bottom);
+  height: calc(56px + env(safe-area-inset-bottom));
+}
+
+ion-tab-button {
+  --color: rgba(255, 255, 255, 0.6);
+  --color-selected: #f44336;
+  --background-focused: transparent;
+  --ripple-color: rgba(244, 67, 54, 0.2);
+  position: relative;
+
+  ion-icon {
+    font-size: 24px;
+    margin-bottom: 2px;
+  }
+
+  ion-label {
+    font-size: 11px;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  ion-badge {
+    position: absolute;
+    top: 4px;
+    right: calc(50% - 20px);
+    min-width: 16px;
+    height: 16px;
+    font-size: 10px;
+    padding: 2px 4px;
+  }
+
+  &.tab-selected {
+
+    ion-icon,
+    ion-label {
+      color: #f44336 !important;
+    }
+  }
+
+  &:hover {
+    --color: rgba(255, 255, 255, 0.8);
+  }
 }

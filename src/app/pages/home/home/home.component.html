@@ -1,0 +1,171 @@
+<ion-content [fullscreen]="true" class="dashboard-content">
+
+    <!-- Tarjeta de Resumen Principal -->
+    <div class="summary-card">
+        <div class="summary-header">
+            <span class="summary-label">Ventas del Día</span>
+            <ion-icon name="trending-up-outline" class="summary-icon"></ion-icon>
+        </div>
+        <h2 class="summary-amount">₲ 2,567,345</h2>
+        <div class="summary-footer">
+            <span class="summary-change positive">+12.5%</span>
+            <span class="summary-period">vs. ayer</span>
+        </div>
+    </div>
+
+    <!-- Accesos Rápidos -->
+    <div class="quick-actions-section">
+        <h3 class="section-title">Accesos Rápidos</h3>
+        <div class="quick-actions-grid">
+            <div class="quick-action-item" [routerLink]="['/inventario']">
+                <div class="action-icon-wrapper inventory">
+                    <ion-icon name="clipboard-outline"></ion-icon>
+                </div>
+                <span class="action-label">Inventario</span>
+            </div>
+
+            <div class="quick-action-item" [routerLink]="['/producto']">
+                <div class="action-icon-wrapper products">
+                    <ion-icon name="pricetag-outline"></ion-icon>
+                </div>
+                <span class="action-label">Productos</span>
+            </div>
+
+            <div class="quick-action-item" [routerLink]="['/transferencias']">
+                <div class="action-icon-wrapper transfers">
+                    <ion-icon name="swap-horizontal-outline"></ion-icon>
+                </div>
+                <span class="action-label">Transferencias</span>
+            </div>
+
+            <div class="quick-action-item" [routerLink]="['/operaciones/caja']">
+                <div class="action-icon-wrapper cash">
+                    <ion-icon name="cash-outline"></ion-icon>
+                </div>
+                <span class="action-label">Caja</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Métricas Rápidas -->
+    <div class="metrics-section">
+        <h3 class="section-title">Resumen</h3>
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-header">
+                    <ion-icon name="cube-outline" class="metric-icon"></ion-icon>
+                    <span class="metric-label">Stock</span>
+                </div>
+                <div class="metric-value">1,234</div>
+                <div class="metric-subtitle">productos</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <ion-icon name="people-outline" class="metric-icon"></ion-icon>
+                    <span class="metric-label">Clientes</span>
+                </div>
+                <div class="metric-value">567</div>
+                <div class="metric-subtitle">activos</div>
+            </div>
+
+            <div class="metric-card alert">
+                <div class="metric-header">
+                    <ion-icon name="alert-circle-outline" class="metric-icon"></ion-icon>
+                    <span class="metric-label">Alertas</span>
+                </div>
+                <div class="metric-value">8</div>
+                <div class="metric-subtitle">pendientes</div>
+            </div>
+
+            <div class="metric-card success">
+                <div class="metric-header">
+                    <ion-icon name="checkmark-circle-outline" class="metric-icon"></ion-icon>
+                    <span class="metric-label">Pedidos</span>
+                </div>
+                <div class="metric-value">23</div>
+                <div class="metric-subtitle">completados</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actividad Reciente -->
+    <div class="activity-section">
+        <div class="section-header">
+            <h3 class="section-title">Actividad Reciente</h3>
+            <ion-button fill="clear" size="small" class="see-all-btn">
+                Ver todo
+                <ion-icon name="chevron-forward-outline" slot="end"></ion-icon>
+            </ion-button>
+        </div>
+
+        <div class="activity-list">
+            <div class="activity-item">
+                <div class="activity-icon-wrapper inventory">
+                    <ion-icon name="clipboard-outline"></ion-icon>
+                </div>
+                <div class="activity-content">
+                    <p class="activity-title">Inventario #1234 finalizado</p>
+                    <span class="activity-time">Hace 2 horas</span>
+                </div>
+                <ion-icon name="chevron-forward-outline" class="activity-arrow"></ion-icon>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon-wrapper transfers">
+                    <ion-icon name="swap-horizontal-outline"></ion-icon>
+                </div>
+                <div class="activity-content">
+                    <p class="activity-title">Transferencia #567 recibida</p>
+                    <span class="activity-time">Hace 4 horas</span>
+                </div>
+                <ion-icon name="chevron-forward-outline" class="activity-arrow"></ion-icon>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon-wrapper products">
+                    <ion-icon name="pricetag-outline"></ion-icon>
+                </div>
+                <div class="activity-content">
+                    <p class="activity-title">15 productos actualizados</p>
+                    <span class="activity-time">Hace 6 horas</span>
+                </div>
+                <ion-icon name="chevron-forward-outline" class="activity-arrow"></ion-icon>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertas Importantes -->
+    <div class="alerts-section">
+        <div class="section-header">
+            <h3 class="section-title">Alertas Importantes</h3>
+        </div>
+
+        <div class="alert-card warning">
+            <div class="alert-icon-wrapper">
+                <ion-icon name="warning-outline"></ion-icon>
+            </div>
+            <div class="alert-content">
+                <p class="alert-title">Stock Bajo</p>
+                <p class="alert-description">5 productos por debajo del mínimo</p>
+            </div>
+            <ion-button fill="clear" size="small" class="alert-action">
+                Ver
+            </ion-button>
+        </div>
+
+        <div class="alert-card danger">
+            <div class="alert-icon-wrapper">
+                <ion-icon name="time-outline"></ion-icon>
+            </div>
+            <div class="alert-content">
+                <p class="alert-title">Productos Próximos a Vencer</p>
+                <p class="alert-description">3 productos vencen en 7 días</p>
+            </div>
+            <ion-button fill="clear" size="small" class="alert-action">
+                Ver
+            </ion-button>
+        </div>
+    </div>
+
+</ion-content>

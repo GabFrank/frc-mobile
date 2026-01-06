@@ -1,0 +1,407 @@
+// Dashboard Content
+.dashboard-content {
+    --background: #000000;
+    --padding-top: 20px;
+    --padding-bottom: 20px;
+}
+
+// Summary Card
+.summary-card {
+    background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 0 16px 24px;
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.15);
+    border: 1px solid rgba(244, 67, 54, 0.2);
+}
+
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.summary-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+}
+
+.summary-icon {
+    font-size: 24px;
+    color: #43a047;
+}
+
+.summary-amount {
+    font-size: 32px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
+}
+
+.summary-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.summary-change {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 6px;
+
+    &.positive {
+        color: #43a047;
+        background: rgba(67, 160, 71, 0.15);
+    }
+
+    &.negative {
+        color: #f44336;
+        background: rgba(244, 67, 54, 0.15);
+    }
+}
+
+.summary-period {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+// Section Titles
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 16px 0;
+}
+
+// Quick Actions
+.quick-actions-section {
+    padding: 0 16px 24px;
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.quick-action-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
+.action-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+
+    ion-icon {
+        font-size: 28px;
+        color: #ffffff !important;
+    }
+
+    &.inventory {
+        background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+    }
+
+    &.products {
+        background: linear-gradient(135deg, #f57c00 0%, #e65100 100%);
+        box-shadow: 0 4px 12px rgba(245, 124, 0, 0.3);
+    }
+
+    &.transfers {
+        background: linear-gradient(135deg, #3880ff 0%, #2563eb 100%);
+        box-shadow: 0 4px 12px rgba(56, 128, 255, 0.3);
+    }
+
+    &.cash {
+        background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+        box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
+    }
+}
+
+.action-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    font-weight: 500;
+}
+
+// Metrics Section
+.metrics-section {
+    padding: 0 16px 24px;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.metric-card {
+    background: #1e1e1e;
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+
+    &.alert {
+        border-color: rgba(245, 124, 0, 0.3);
+        background: linear-gradient(135deg, #1e1e1e 0%, rgba(245, 124, 0, 0.05) 100%);
+    }
+
+    &.success {
+        border-color: rgba(67, 160, 71, 0.3);
+        background: linear-gradient(135deg, #1e1e1e 0%, rgba(67, 160, 71, 0.05) 100%);
+    }
+}
+
+.metric-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.metric-icon {
+    font-size: 20px;
+    color: #f44336 !important;
+
+    .metric-card.alert & {
+        color: #f57c00 !important;
+    }
+
+    .metric-card.success & {
+        color: #43a047 !important;
+    }
+}
+
+.metric-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+}
+
+.metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 4px;
+    line-height: 1;
+}
+
+.metric-subtitle {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+// Activity Section
+.activity-section {
+    padding: 0 16px 24px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.see-all-btn {
+    --color: #f44336;
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: none;
+    margin: 0;
+    height: auto;
+
+    ion-icon {
+        font-size: 16px;
+        margin-left: 4px;
+    }
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.activity-item {
+    background: #1e1e1e;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+
+    &:active {
+        background: #2a2a2a;
+        transform: scale(0.98);
+    }
+}
+
+.activity-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    ion-icon {
+        font-size: 20px;
+        color: #ffffff !important;
+    }
+
+    &.inventory {
+        background: rgba(244, 67, 54, 0.15);
+
+        ion-icon {
+            color: #f44336 !important;
+        }
+    }
+
+    &.transfers {
+        background: rgba(56, 128, 255, 0.15);
+
+        ion-icon {
+            color: #3880ff !important;
+        }
+    }
+
+    &.products {
+        background: rgba(245, 124, 0, 0.15);
+
+        ion-icon {
+            color: #f57c00 !important;
+        }
+    }
+}
+
+.activity-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-title {
+    font-size: 14px;
+    color: #ffffff;
+    font-weight: 500;
+    margin: 0 0 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.activity-time {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.activity-arrow {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.3) !important;
+    flex-shrink: 0;
+}
+
+// Alerts Section
+.alerts-section {
+    padding: 0 16px 24px;
+}
+
+.alert-card {
+    background: #1e1e1e;
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    &.warning {
+        border-color: rgba(245, 124, 0, 0.3);
+        background: linear-gradient(135deg, #1e1e1e 0%, rgba(245, 124, 0, 0.05) 100%);
+    }
+
+    &.danger {
+        border-color: rgba(244, 67, 54, 0.3);
+        background: linear-gradient(135deg, #1e1e1e 0%, rgba(244, 67, 54, 0.05) 100%);
+    }
+}
+
+.alert-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .alert-card.warning & {
+        background: rgba(245, 124, 0, 0.2);
+
+        ion-icon {
+            font-size: 22px;
+            color: #f57c00 !important;
+        }
+    }
+
+    .alert-card.danger & {
+        background: rgba(244, 67, 54, 0.2);
+
+        ion-icon {
+            font-size: 22px;
+            color: #f44336 !important;
+        }
+    }
+}
+
+.alert-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.alert-title {
+    font-size: 14px;
+    color: #ffffff;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+}
+
+.alert-description {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+}
+
+.alert-action {
+    --color: #f44336;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: none;
+    margin: 0;
+    height: auto;
+    flex-shrink: 0;
+}

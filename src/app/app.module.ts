@@ -49,6 +49,7 @@ import { MarcacionModule } from './pages/marcacion/marcacion.module';
 import { EnumToStringPipe } from './generic/utils/pipes/enum-to-string';
 import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { BarcodeScannerService } from './services/barcode-scanner.service';
+import { HomeModule } from './pages/home/home/home.module';
 
 registerLocaleData(localePY);
 
@@ -76,7 +77,7 @@ const wUri = `ws://${localStorage.getItem('serverIp')}:${localStorage.getItem(
   'serverPort'
 )}/subscriptions`;
 
-const errorLink = onError(({ graphQLErrors, networkError }) => {});
+const errorLink = onError(({ graphQLErrors, networkError }) => { });
 
 const wsClient = new SubscriptionClient(wUri, {
   reconnect: true
@@ -130,8 +131,9 @@ export class HammerConfig extends HammerGestureConfig {
     FuncionarioModule,
     NgxQRCodeModule,
     HttpClientModule,
-    CommonModule
-    ],
+    CommonModule,
+    HomeModule
+  ],
   exports: [],
   providers: [
     BarcodeScanner,
@@ -210,7 +212,7 @@ export class HammerConfig extends HammerGestureConfig {
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule { }
 
 export function appInit(appConfigService: MainService) {
   return () => appConfigService.load();
