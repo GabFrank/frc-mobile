@@ -175,6 +175,10 @@
         border-color: rgba(67, 160, 71, 0.3);
         background: linear-gradient(135deg, #1e1e1e 0%, rgba(67, 160, 71, 0.05) 100%);
     }
+
+    &.wide {
+        grid-column: span 2;
+    }
 }
 
 .metric-header {
@@ -218,4 +222,34 @@
 .metric-subtitle {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
+}
+.credit-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 4px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 8px;
+
+    &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+}
+
+.detail-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.detail-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
 }

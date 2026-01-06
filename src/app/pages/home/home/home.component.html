@@ -52,12 +52,12 @@
     <div class="metrics-section">
         <h3 class="section-title">Resumen</h3>
         <div class="metrics-grid">
-            <div class="metric-card" [routerLink]="['/producto']">
+            <div class="metric-card alert" [routerLink]="['/producto/productos-vencidos']">
                 <div class="metric-header">
-                    <ion-icon name="cube-outline" class="metric-icon"></ion-icon>
-                    <span class="metric-label">Stock</span>
+                    <ion-icon name="alert-circle-outline" class="metric-icon"></ion-icon>
+                    <span class="metric-label">Vencidos</span>
                 </div>
-                <div class="metric-value">{{ countStockTotal | number:'1.0-0' }}</div>
+                <div class="metric-value">{{ countVencidosTotal | number:'1.0-0' }}</div>
                 <div class="metric-subtitle">productos</div>
             </div>
 
@@ -66,27 +66,39 @@
                     <ion-icon name="people-outline" class="metric-icon"></ion-icon>
                     <span class="metric-label">Clientes</span>
                 </div>
-                <div class="metric-value">{{ countClientesTotal | number:'1.0-0' }}</div>
-                <div class="metric-subtitle">activos</div>
+                <div class="metric-value">0</div>
+                <div class="metric-subtitle">agregar</div>
             </div>
 
-            <div class="metric-card info">
+            <div class="metric-card info" [class.wide]="clienteActual" [routerLink]="['/mis-finanzas']">
                 <div class="metric-header">
                     <ion-icon name="card-outline" class="metric-icon"></ion-icon>
                     <span class="metric-label">Créditos</span>
                 </div>
-                <div class="metric-value">{{ countCreditosTotal | number:'1.0-0' }}</div>
-                <div class="metric-subtitle">cuentas</div>
+                <div *ngIf="!clienteActual">
+                    <div class="metric-value">{{ countCreditosTotal | number:'1.0-0' }}</div>
+                    <div class="metric-subtitle">cuentas</div>
+                </div>
+                <div *ngIf="clienteActual" class="credit-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Convenios del mes:</span>
+                        <span class="detail-value">{{ conveniosMes }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Crédito:</span>
+                        <span class="detail-value">{{ creditoHome | number:'1.0-0' }} Gs.</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Utilizado:</span>
+                        <span class="detail-value">{{ utilizadoHome | number:'1.0-0' }} Gs.</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Saldo:</span>
+                        <span class="detail-value">{{ saldoHome | number:'1.0-0' }} Gs.</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="metric-card success">
-                <div class="metric-header">
-                    <ion-icon name="checkmark-circle-outline" class="metric-icon"></ion-icon>
-                    <span class="metric-label">Pedidos</span>
-                </div>
-                <div class="metric-value">23</div>
-                <div class="metric-subtitle">completados</div>
-            </div>
         </div>
     </div>
 

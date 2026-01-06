@@ -3,10 +3,15 @@ import { LoginService } from 'src/app/services/login.service';
 import { VentaService } from 'src/app/graphql/operaciones/venta/venta.service';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import * as moment from 'moment';
+import { MainService } from 'src/app/services/main.service';
+import { ClienteService } from 'src/app/graphql/personas/cliente/graphql/cliente.service';
+import { VentaCreditoService } from 'src/app/graphql/financiero/venta-credito/venta-credito.service';
+import { Cliente } from 'src/app/domains/cliente/cliente.model';
+import { EstadoVentaCredito } from 'src/app/domains/venta-credito/venta-credito.model';
 import { CountStockTotalGQL } from '../graphql/countStockTotal';
 import { CountClientesTotalGQL } from '../graphql/countClientesTotal';
 import { CountVentaCreditoGQL } from '../graphql/countVentaCredito';
-import { MainService } from 'src/app/services/main.service';
+import { ProductosVencidosGQL } from '../../producto/graphql/productosVencidos';
 
 @UntilDestroy()
 @Component({
@@ -23,6 +28,13 @@ export class HomeComponent implements OnInit {
   countStockTotal = 0;
   countClientesTotal = 0;
   countCreditosTotal = 0;
+  countVencidosTotal = 0;
+
+  clienteActual: Cliente;
+  conveniosMes = 0;
+  creditoHome = 0;
+  utilizadoHome = 0;
+  saldoHome = 0;
 
   constructor(
     public loginService: LoginService,
@@ -30,7 +42,10 @@ export class HomeComponent implements OnInit {
     private countStockTotalGQL: CountStockTotalGQL,
     private countClientesTotalGQL: CountClientesTotalGQL,
     private countVentaCreditoGQL: CountVentaCreditoGQL,
-    public mainService: MainService
+    public mainService: MainService,
+    private clienteService: ClienteService,
+    private ventaCreditoService: VentaCreditoService,
+    private productosVencidosGQL: ProductosVencidosGQL
   ) { }
 
   ngOnInit() {
@@ -39,6 +54,7 @@ export class HomeComponent implements OnInit {
       if (usuario) {
         this.loadVentasHoy();
         this.loadMetrics();
+        this.loadClienteInfo();
       }
     });
   }
@@ -103,5 +119,59 @@ export class HomeComponent implements OnInit {
       .subscribe(res => {
         this.countCreditosTotal = res.data?.data || 0;
       });
+
+    // Productos Vencidos
+    const fechaFin = moment().format('YYYY-MM-DD');
+    const fechaInicio = moment().subtract(7, 'days').format('YYYY-MM-DD');
+
+    this.productosVencidosGQL.fetch({
+      soloRealmenteVencidos: true,
+      startDate: fechaInicio,
+      endDate: fechaFin,
+      page: 0,
+      size: 1
+    }, { fetchPolicy: 'no-cache' })
+      .pipe(untilDestroyed(this))
+      .subscribe(res => {
+        this.countVencidosTotal = res.data?.productosVencidos?.getTotalElements || 0;
+      });
+  }
+
+  async loadClienteInfo() {
+    const personaId = this.loginService.usuarioActual?.persona?.id;
+    if (personaId) {
+      (await this.clienteService.onGetByPersonaId(personaId)).subscribe(async (cliente) => {
+        if (cliente) {
+          this.clienteActual = cliente;
+          this.creditoHome = cliente.credito || 0;
+
+          (await this.ventaCreditoService.onGetPorClienteId(cliente.id, EstadoVentaCredito.ABIERTO, null, null))
+            .pipe(untilDestroyed(this))
+            .subscribe((res) => {
+              if (res) {
+                const creditos = Array.isArray(res) ? res : res.getContent || [];
+
+                this.utilizadoHome = 0;
+                creditos.forEach(vc => {
+                  this.utilizadoHome += vc.valorTotal;
+                });
+
+                this.saldoHome = this.creditoHome - this.utilizadoHome;
+              }
+            });
+
+          // Fetch all for this month to count them
+          (await this.ventaCreditoService.onGetPorClienteId(cliente.id, null, null, null))
+            .pipe(untilDestroyed(this))
+            .subscribe((res) => {
+              if (res) {
+                const allCreditos = Array.isArray(res) ? res : res.getContent || [];
+                const startOfMonth = moment().startOf('month');
+                this.conveniosMes = allCreditos.filter(vc => moment(vc.creadoEn).isSameOrAfter(startOfMonth)).length;
+              }
+            });
+        }
+      });
+    }
   }
 }
