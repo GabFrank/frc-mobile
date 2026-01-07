@@ -1,3 +1,100 @@
-<p>
-  clientes works!
-</p>
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="volver()">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Información del cliente</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="registration-container">
+    <form [formGroup]="clienteForm" (ngSubmit)="registrar()">
+      <div class="form-section">
+        <ion-item lines="full" class="custom-item">
+          <ion-label position="stacked">Nombre**</ion-label>
+          <ion-input formControlName="nombre" placeholder="Ej. FELIPE GONZALEZ PEÑA"></ion-input>
+          <ion-icon name="search-outline" slot="end" class="input-icon"></ion-icon>
+        </ion-item>
+
+        <ion-item lines="full" class="custom-item">
+          <ion-label position="stacked">Alias</ion-label>
+          <ion-input formControlName="apodo" placeholder="Ej. Felipe"></ion-input>
+        </ion-item>
+
+        <ion-item lines="full" class="custom-item">
+          <ion-label position="stacked">C.I / RUC (Sin digito verificador)**</ion-label>
+          <ion-input formControlName="documento" placeholder="Ej. 2514772"></ion-input>
+        </ion-item>
+
+        <ion-item lines="full" class="custom-item">
+          <ion-label position="stacked">Teléfono**</ion-label>
+          <ion-input formControlName="telefono" placeholder="Ej. 0981 123 456"></ion-input>
+        </ion-item>
+
+        <ion-item lines="full" class="custom-item">
+          <ion-label position="stacked">Dirección</ion-label>
+          <ion-textarea formControlName="direccion" placeholder="Dirección completa" [autoGrow]="true"></ion-textarea>
+        </ion-item>
+        <ion-item lines="full" class="custom-item" id="open-date-modal">
+          <ion-label position="stacked">Fecha de nacimiento</ion-label>
+          <div class="date-value-container">
+            <ion-text class="date-text">
+              {{ clienteForm.get('nacimiento')?.value ? (clienteForm.get('nacimiento')?.value | date:'dd/MM/yyyy') :
+              'Seleccionar fecha' }}
+            </ion-text>
+            <ion-icon name="calendar-outline" class="input-icon"></ion-icon>
+          </div>
+
+          <ion-modal trigger="open-date-modal" [keepContentsMounted]="true" class="date-picker-modal">
+            <ng-template>
+              <ion-datetime presentation="date" formControlName="nacimiento" [showDefaultButtons]="true"
+                doneText="Confirmar" cancelText="Cancelar" size="cover"></ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+
+        <ion-item lines="full" class="custom-item">
+          <ion-label position="stacked">Email</ion-label>
+          <ion-input formControlName="email" type="email" placeholder="Ej. felipe@mail.com"></ion-input>
+        </ion-item>
+
+        <ion-item lines="full" class="custom-item">
+          <ion-label position="stacked">Tipo*</ion-label>
+          <ion-select formControlName="tipo" interface="popover">
+            <ion-select-option value="NORMAL">Normal</ion-select-option>
+            <ion-select-option value="ASOCIADO">Asociado</ion-select-option>
+            <ion-select-option value="CONVENIADO">Conveniado</ion-select-option>
+            <ion-select-option value="FUNCIONARIO">Funcionario</ion-select-option>
+            <ion-select-option value="VIP">VIP</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item lines="full" class="custom-item">
+          <ion-label position="stacked">Crédito</ion-label>
+          <ion-input formControlName="credito" type="number" placeholder="0"></ion-input>
+          <ion-icon name="lock-closed-outline" slot="end" class="input-icon"
+            *ngIf="clienteForm.get('credito')?.disabled"></ion-icon>
+        </ion-item>
+      </div>
+    </form>
+  </div>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="footer-buttons">
+    <ion-button fill="clear" class="cancel-button" (click)="volver()">
+      Cancelar
+    </ion-button>
+    <ion-button fill="clear" class="save-button" [disabled]="clienteForm.invalid" (click)="registrar()">
+      Guardar
+    </ion-button>
+  </div>
+</ion-footer>

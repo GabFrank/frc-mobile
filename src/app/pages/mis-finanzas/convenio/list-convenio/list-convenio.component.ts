@@ -33,7 +33,7 @@ export class ListConvenioComponent implements OnInit {
   totalAbiertos = 0;
   selectedEstado = EstadoVentaCredito.ABIERTO;
   selectedCliente: Cliente;
-  
+
   // Propiedades para paginación
   pageIndex = 0;
   pageSize = 5;
@@ -48,7 +48,7 @@ export class ListConvenioComponent implements OnInit {
     private ventaService: VentaService,
     private modalService: ModalService,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   async ngOnInit() {
     (
@@ -75,12 +75,12 @@ export class ListConvenioComponent implements OnInit {
     ).pipe(untilDestroyed(this)).subscribe((res) => {
       if (res != null) {
         const todosLosConvenios = Array.isArray(res) ? res : res.getContent;
-        
+
         this.totalAbiertos = 0;
         todosLosConvenios?.forEach((vc) => {
           this.totalAbiertos += vc.valorTotal;
         });
-        
+
         if (this.selectedCliente) {
           this.selectedCliente.saldo = this.selectedCliente.credito - this.totalAbiertos;
         }
@@ -90,7 +90,7 @@ export class ListConvenioComponent implements OnInit {
 
   async cargarConvenios() {
     if (this.pageSize < 1) this.pageSize = 10;
-    
+
     (
       await this.ventaCreditoService.onGetPorClienteId(
         this.selectedCliente.id,
@@ -114,13 +114,13 @@ export class ListConvenioComponent implements OnInit {
     return totalPagina;
   }
 
-  onItemClick(ventaCredito: VentaCredito) {}
+  onItemClick(ventaCredito: VentaCredito) { }
 
   onBack() {
     this._location.back();
   }
 
-  openFilterMenu() {}
+  openFilterMenu() { }
 
   handlePagination(e: number) {
     this.pageIndex = e - 1;

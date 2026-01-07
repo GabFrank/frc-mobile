@@ -52,6 +52,10 @@ const routes: Routes = [
   {
     path: 'mis-finanzas',
     loadChildren: () => import('./pages/mis-finanzas/mis-finanzas.module').then(m => m.MisFinanzasModule)
+  },
+  {
+    path: 'clientes',
+    loadComponent: () => import('./pages/personas/clientes/clientes.component').then(m => m.ClientesComponent)
   }
 ];
 @NgModule({

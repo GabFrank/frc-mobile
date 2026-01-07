@@ -4,7 +4,7 @@ import { Cliente } from '../model/cliente.model';
 import { saveCliente } from './graphql-query';
 
 export interface Response {
-    cliente: Cliente;
+    data: Cliente;
 }
 
 @Injectable({

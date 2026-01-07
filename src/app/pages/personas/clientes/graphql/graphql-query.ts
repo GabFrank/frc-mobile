@@ -64,7 +64,7 @@ export const clientePorId = gql`
 
 export const saveCliente = gql`
   mutation saveCliente($entity: ClienteInput!) {
-    data: saveCliente(input: $entity) {
+    data: saveCliente(cliente: $entity) {
         id
         tipo
         credito
@@ -72,6 +72,16 @@ export const saveCliente = gql`
             id
             nombre
         }
+    }
+  }
+`;
+
+export const savePersona = gql`
+  mutation savePersona($persona: PersonaInput!) {
+    data: savePersona(persona: $persona) {
+      id
+      nombre
+      documento
     }
   }
 `;

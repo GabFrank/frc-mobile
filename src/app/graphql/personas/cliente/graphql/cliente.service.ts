@@ -26,7 +26,7 @@ export class ClienteService {
   ) {
   }
 
-  async onGetClientePorPersonaDocumento(texto: string): Promise<Observable<Cliente>>{
+  async onGetClientePorPersonaDocumento(texto: string): Promise<Observable<Cliente>> {
     return await this.genericService.onGetByTexto(this.getClientePorPersonaDocumento, texto)
   }
 

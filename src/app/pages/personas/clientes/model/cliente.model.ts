@@ -26,14 +26,36 @@ export interface Cliente {
 export interface ClienteInput {
     id?: number;
     tipo?: TipoCliente;
+    personaId?: number;
+    nombre?: string;
     credito?: number;
+    creadoEn?: Date;
+    direccion?: string;
+    usuarioId?: number;
+    documento?: string;
+    saldo?: number;
     codigo?: string;
     sucursalId?: number;
-    personaId?: number;
-    usuarioId?: number;
-    direccion?: string;
-    nombre?: string;
     tributa?: boolean;
     verificadoSet?: boolean;
+}
+
+export interface PersonaInput {
+    id?: number;
+    nombre?: string;
+    apodo?: string;
     documento?: string;
+    nacimiento?: string;
+    sexo?: string;
+    direccion?: string;
+    email?: string;
+    ciudadId?: number;
+    telefono?: string;
+    socialMedia?: string;
+    imagenes?: string;
+    creadoEn?: Date;
+    usuarioId?: number;
+    isFuncionario?: boolean;
+    isCliente?: boolean;
+    isProveedor?: boolean;
 }
