@@ -13,7 +13,6 @@ export class AppUpdateComponent implements OnInit {
 
   constructor(private readonly platform: Platform) { }
   ngOnInit(): void {
-    throw new Error('Method not implemented.');
   }
 
 

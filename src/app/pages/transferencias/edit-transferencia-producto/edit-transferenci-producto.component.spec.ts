@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { EditTransferenciProductoComponent } from './edit-transferenci-producto.component';
+import { EditTransferenciaProductoComponent } from './edit-transferenci-producto.component';
 
 describe('EditTransferenciProductoComponent', () => {
-  let component: EditTransferenciProductoComponent;
-  let fixture: ComponentFixture<EditTransferenciProductoComponent>;
+  let component: EditTransferenciaProductoComponent;
+  let fixture: ComponentFixture<EditTransferenciaProductoComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ EditTransferenciProductoComponent ],
+      declarations: [EditTransferenciaProductoComponent],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(EditTransferenciProductoComponent);
+    fixture = TestBed.createComponent(EditTransferenciaProductoComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
