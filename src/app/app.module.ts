@@ -28,7 +28,7 @@ import { WebSocketLink } from '@apollo/client/link/ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { FingerprintAIO } from '@ionic-native/fingerprint-aio/ngx';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
-import { NgxQRCodeModule } from '@techiediaries/ngx-qrcode';
+import { NgxQRCodeModule } from 'ngx-qrcode2';
 import { APOLLO_OPTIONS, ApolloModule } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { BehaviorSubject } from 'rxjs';
@@ -44,8 +44,8 @@ import { StockPorSucursalDialogComponent } from './pages/operaciones/movimiento-
 import { ProductoModule } from './pages/producto/producto.module';
 import { TransferenciasModule } from './pages/transferencias/transferencias.module';
 import { MainService } from './services/main.service';
-import { NgxCurrencyModule } from 'ngx-currency';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { NgxCurrencyDirective } from 'ngx-currency';
+
 import { BarcodeScannerService } from './services/barcode-scanner.service';
 import { HomeModule } from './pages/home/home.module';
 
@@ -123,7 +123,7 @@ export class HammerConfig extends HammerGestureConfig {
     TransferenciasModule,
     ProductoModule,
     HammerModule,
-    NgxCurrencyModule,
+    NgxCurrencyDirective,
     FuncionarioModule,
     NgxQRCodeModule,
     HttpClientModule,
@@ -132,7 +132,7 @@ export class HammerConfig extends HammerGestureConfig {
   ],
   exports: [],
   providers: [
-    BarcodeScanner,
+
     FingerprintAIO,
     {
       provide: HAMMER_GESTURE_CONFIG,
@@ -195,7 +195,6 @@ export class HammerConfig extends HammerGestureConfig {
         multi: true
       }
     ],
-    BarcodeScanner,
     BarcodeScannerService
   ],
   bootstrap: [AppComponent]

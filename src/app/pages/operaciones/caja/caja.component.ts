@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
 import { UntilDestroy } from '@ngneat/until-destroy';
 
 @UntilDestroy({ checkProperties: true })
@@ -7,7 +7,7 @@ import { UntilDestroy } from '@ngneat/until-destroy';
   selector: 'app-caja',
   templateUrl: './caja.component.html',
   styleUrls: ['./caja.component.scss'],
-  providers: [BarcodeScanner]
+
 })
 export class CajaComponent implements OnInit {
 
@@ -25,15 +25,15 @@ export class CajaComponent implements OnInit {
 
   ngOnInit() { }
 
-  abrirCaja(){
+  abrirCaja() {
 
   }
 
-  buscarCaja(){
+  buscarCaja() {
 
   }
 
-  buscarHistoricoDeCajas(){
+  buscarHistoricoDeCajas() {
 
   }
 

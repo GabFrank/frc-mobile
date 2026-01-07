@@ -9,7 +9,7 @@ import { DialogoService } from 'src/app/services/dialogo.service';
 import { ModalService } from 'src/app/services/modal.service';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { TransferenciaService } from '../transferencia.service';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
 import { CodigoService } from '../../codigo/codigo.service';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { Producto } from 'src/app/domains/productos/producto.model';
@@ -24,7 +24,7 @@ import { TransferenciaItemInput } from '../transferencia.model';
   selector: 'app-transaferencia-list-productos',
   templateUrl: './transaferencia-list-productos.component.html',
   styleUrls: ['./transaferencia-list-productos.component.scss'],
-  providers: [BarcodeScanner, PhotoViewer]
+  providers: [PhotoViewer]
 })
 export class TransaferenciaListProductosComponent implements OnInit, AfterViewInit {
 
@@ -62,7 +62,7 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     private productoService: ProductoService,
     private modalService: ModalService,
     private dialogService: DialogoService,
-    private barcodeScanner: BarcodeScanner,
+    private barcodeScanner: BarcodeScannerService,
     private _location: Location,
     private platform: Platform,
     private codigoService: CodigoService,
@@ -343,10 +343,10 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
   }
 
   onCameraClick() {
-    this.barcodeScanner.scan().then(barcodeData => {
+    this.barcodeScanner.scan().subscribe(barcodeData => {
       this.buscarControl.setValue(barcodeData.text);
       this.onSearchProducto(this.buscarControl.value, null);
-    }).catch(error => {
+    }, error => {
       console.error('Error escaneando:', error);
       this.notificacionService.open('Error al escanear código', TipoNotificacion.DANGER, 2);
     });

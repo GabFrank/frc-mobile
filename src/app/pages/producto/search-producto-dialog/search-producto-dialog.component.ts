@@ -1,5 +1,5 @@
 import { ActivatedRoute } from '@angular/router';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
 import { Presentacion } from 'src/app/domains/productos/presentacion.model';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { ModalService } from './../../../services/modal.service';
@@ -31,7 +31,7 @@ export interface SearchProductoDialogData {
   selector: 'app-search-producto-dialog',
   templateUrl: './search-producto-dialog.component.html',
   styleUrls: ['./search-producto-dialog.component.scss'],
-  providers: [BarcodeScanner, PhotoViewer]
+  providers: [PhotoViewer]
 })
 export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
 
@@ -68,7 +68,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
     private popoverService: PopOverService,
     private modalService: ModalService,
     private dialogService: DialogoService,
-    private barcodeScanner: BarcodeScanner,
+    private barcodeScanner: BarcodeScannerService,
     private route: ActivatedRoute,
     private _location: Location,
     private plf: Platform,
@@ -367,7 +367,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
   }
 
   onCameraClick() {
-    this.barcodeScanner.scan().then(barcodeData => {
+    this.barcodeScanner.scan().subscribe(barcodeData => {
       this.buscarControl.setValue(barcodeData.text)
       this.onSearchProducto(this.buscarControl.value, null)
     })

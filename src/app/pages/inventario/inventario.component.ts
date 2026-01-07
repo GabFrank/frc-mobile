@@ -2,7 +2,7 @@ import { NuevoInventarioComponent } from './nuevo-inventario/nuevo-inventario.co
 import { ModalService } from './../../services/modal.service';
 import { descodificarQr, QrData } from './../../generic/utils/qrUtils';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { DialogoService } from './../../services/dialogo.service';
 import { InventarioService } from './inventario.service';
@@ -24,7 +24,7 @@ import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
   selector: 'app-inventario',
   templateUrl: './inventario.component.html',
   styleUrls: ['./inventario.component.scss'],
-  providers: [BarcodeScanner]
+
 })
 export class InventarioComponent implements OnInit {
 
@@ -37,7 +37,7 @@ export class InventarioComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private activatedRoute: ActivatedRoute,
-    private barcodeScanner: BarcodeScanner,
+    private barcodeScanner: BarcodeScannerService,
     private notificacionService: NotificacionService,
     private modalService: ModalService,
     private mainService: MainService,
@@ -52,7 +52,8 @@ export class InventarioComponent implements OnInit {
     setTimeout(() => {
       this.cargandoService.close(loading)
     }, 1000);
-    this.barcodeScanner.scan().then(async barcodeData => {
+    this.barcodeScanner.scan().subscribe(async barcodeData => {
+      if (barcodeData.cancelled) return;
       this.notificacionService.open('Escaneado con éxito!', TipoNotificacion.SUCCESS, 1)
       let codigo: string = barcodeData.text;
       let qrData: QrData = descodificarQr(codigo);
@@ -73,7 +74,7 @@ export class InventarioComponent implements OnInit {
       } else {
         this.notificacionService.openItemNoEncontrado()
       }
-    }).catch(err => {
+    }, err => {
       this.notificacionService.openAlgoSalioMal()
     });
   }
@@ -104,7 +105,7 @@ export class InventarioComponent implements OnInit {
           if (res2 != null) {
             console.log(res2);
             this.modalService.openModal(NuevoInventarioComponent, res2).then(res => {
-              if(res.data?.inventario?.id!=null){
+              if (res.data?.inventario?.id != null) {
                 this.router.navigate(['list/info', res.data.inventario.id], { relativeTo: this.route });
               } else {
 

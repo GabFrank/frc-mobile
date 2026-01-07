@@ -154,12 +154,11 @@ export class RecepcionProductoComponent implements OnInit {
   }
 
   onBuscarProducto() {
-    // this.barcodeScanner.scan().subscribe(res => {
-    //   let codigoBarra = res.text;
-    //   if(codigoBarra != null){
-    this.onBuscarProductoPorCodigoBarra("7840058000019");
-    //   }
-    // });
+    this.barcodeScanner.scan().subscribe(res => {
+      if (!res.cancelled && res.text != null) {
+        this.onBuscarProductoPorCodigoBarra(res.text);
+      }
+    });
   }
   async onBuscarProductoPorCodigoBarra(codigoBarra: string) {
     // First, get the Codigo object by barcode
