@@ -1,6 +1,7 @@
 <ion-content [fullscreen]="true" class="dashboard-content">
 
-    <div class="summary-card" [routerLink]="['/venta-dia']">
+    <div class="summary-card" [routerLink]="puedeVerVentasDia ? ['/venta-dia'] : null"
+        [class.disabled]="!puedeVerVentasDia">
         <div class="summary-header">
             <span class="summary-label">Ventas del Día</span>
             <ion-icon name="trending-up-outline" class="summary-icon"></ion-icon>
@@ -11,6 +12,9 @@
                 {{ positivo ? '+' : '' }}{{ porcentajeCambio | number:'1.1-1' }}%
             </span>
             <span class="summary-period">vs. ayer</span>
+        </div>
+        <div *ngIf="!puedeVerVentasDia" class="disabled-overlay">
+            <ion-icon name="lock-closed-outline"></ion-icon>
         </div>
     </div>
 
@@ -38,6 +42,13 @@
                     <ion-icon name="swap-horizontal-outline"></ion-icon>
                 </div>
                 <span class="action-label">Transferencias</span>
+            </div>
+
+            <div class="quick-action-item" (click)="onAbrirLectorQR()">
+                <div class="action-icon-wrapper payment">
+                    <ion-icon name="qr-code-outline"></ion-icon>
+                </div>
+                <span class="action-label">Pagar</span>
             </div>
 
             <div class="quick-action-item" [routerLink]="['/operaciones/caja']">

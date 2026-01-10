@@ -269,7 +269,7 @@ export const saveCobroDetalleQuery = gql`
 `;
 
 export const ventasPorSucursalAndUsuarioQuery = gql`
-  query ($usuarioId: ID!, $inicio: String!, $fin: String!) {
+    query ($usuarioId: ID!, $inicio: String!, $fin: String!) {
     data: ventasPorSucursalAndUsuario(usuarioId: $usuarioId, inicio: $inicio, fin: $fin) {
       sucId
       nombre
@@ -277,4 +277,6 @@ export const ventasPorSucursalAndUsuarioQuery = gql`
     }
   }
 `;
+
+
 

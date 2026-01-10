@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { VentaDiaComponent } from './venta-dia/venta-dia.component';
+import { ComponentsModule } from '../../components/components.module';
 
 @NgModule({
     imports: [
@@ -12,7 +13,8 @@ import { VentaDiaComponent } from './venta-dia/venta-dia.component';
         FormsModule,
         ReactiveFormsModule,
         IonicModule,
-        RouterModule
+        RouterModule,
+        ComponentsModule
     ],
     declarations: [HomeComponent, VentaDiaComponent],
     exports: [HomeComponent, VentaDiaComponent]

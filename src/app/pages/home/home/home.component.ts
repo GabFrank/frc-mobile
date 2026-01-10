@@ -12,6 +12,10 @@ import { CountStockTotalGQL } from '../graphql/countStockTotal';
 import { CountClientesTotalGQL } from '../graphql/countClientesTotal';
 import { CountVentaCreditoGQL } from '../graphql/countVentaCredito';
 import { ProductosVencidosGQL } from '../../producto/graphql/productosVencidos';
+import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
+import { Platform } from '@ionic/angular';
+import { stringToInteger } from 'src/app/generic/utils/numbersUtils';
+import { descodificarQr } from 'src/app/generic/utils/qrUtils';
 
 @UntilDestroy()
 @Component({
@@ -45,7 +49,9 @@ export class HomeComponent implements OnInit {
     public mainService: MainService,
     private clienteService: ClienteService,
     private ventaCreditoService: VentaCreditoService,
-    private productosVencidosGQL: ProductosVencidosGQL
+    private productosVencidosGQL: ProductosVencidosGQL,
+    private barcodeScanner: BarcodeScannerService,
+    private plt: Platform
   ) { }
 
   ngOnInit() {
@@ -57,6 +63,12 @@ export class HomeComponent implements OnInit {
         this.loadClienteInfo();
       }
     });
+  }
+
+  get puedeVerVentasDia(): boolean {
+    const rolesPermitidos = ['ADMIN', 'ANALISIS DE CAJA', 'ANALISIS CONTABLE'];
+    const userRoles = this.mainService.usuarioActual?.roles || [];
+    return rolesPermitidos.some(rol => userRoles.includes(rol));
   }
 
   loadVentasHoy() {
@@ -72,14 +84,11 @@ export class HomeComponent implements OnInit {
     const inicioAyer = ayer + ' 00:00';
     const finAyer = ayer + ' 23:59';
 
-    // Cargar hoy
     this.ventaService.onGetVentasPorSucursalAndUsuario(usuarioId, inicioHoy, finHoy)
       .pipe(untilDestroyed(this))
       .subscribe(resHoy => {
         if (resHoy) {
           this.totalVentasGs = resHoy.reduce((acc, curr) => acc + curr.total, 0);
-
-          // Cargar ayer para comparar
           this.ventaService.onGetVentasPorSucursalAndUsuario(usuarioId, inicioAyer, finAyer)
             .pipe(untilDestroyed(this))
             .subscribe(resAyer => {
@@ -99,28 +108,24 @@ export class HomeComponent implements OnInit {
   }
 
   loadMetrics() {
-    // Stock Total
     this.countStockTotalGQL.fetch({}, { fetchPolicy: 'no-cache' })
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         this.countStockTotal = res.data?.data || 0;
       });
 
-    // Clientes Total
     this.countClientesTotalGQL.fetch({}, { fetchPolicy: 'no-cache' })
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         this.countClientesTotal = res.data?.data || 0;
       });
 
-    // Créditos Total
     this.countVentaCreditoGQL.fetch({}, { fetchPolicy: 'no-cache' })
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         this.countCreditosTotal = res.data?.data || 0;
       });
 
-    // Productos Vencidos
     const fechaFin = moment().format('YYYY-MM-DD');
     const fechaInicio = moment().subtract(7, 'days').format('YYYY-MM-DD');
 
@@ -160,7 +165,6 @@ export class HomeComponent implements OnInit {
               }
             });
 
-          // Fetch all for this month to count them
           (await this.ventaCreditoService.onGetPorClienteId(cliente.id, null, null, null))
             .pipe(untilDestroyed(this))
             .subscribe((res) => {
@@ -170,6 +174,25 @@ export class HomeComponent implements OnInit {
                 this.conveniosMes = allCreditos.filter(vc => moment(vc.creadoEn).isSameOrAfter(startOfMonth)).length;
               }
             });
+        }
+      });
+    }
+  }
+
+  async onAbrirLectorQR() {
+    if (this.plt.is("mobileweb")) {
+      console.log("Escáner QR no disponible en web");
+    } else if (this.plt.is("android") || this.plt.is("iphone") || this.plt.is("capacitor")) {
+      this.barcodeScanner.scan().subscribe(async res => {
+        let data = descodificarQr(res.text);
+        if (data && data.timestamp) {
+          let idCliente = data.idOrigen;
+          let timestamp = stringToInteger(data.timestamp);
+          let sucursalId = data.sucursalId;
+          let secretKey = data.data;
+          (await this.ventaCreditoService.onVentaCreditoQrAuth(this.mainService.usuarioActual?.persona?.id, timestamp, sucursalId, secretKey)).subscribe(res => {
+            console.log('Pago confirmado:', res);
+          });
         }
       });
     }

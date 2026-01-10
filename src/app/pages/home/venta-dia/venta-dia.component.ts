@@ -4,7 +4,7 @@ import { VentaService } from 'src/app/graphql/operaciones/venta/venta.service';
 import { MainService } from 'src/app/services/main.service';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import * as moment from 'moment';
-import { ModalController } from '@ionic/angular';
+import { ModalController, NavController } from '@ionic/angular';
 import { CalendarModal, CalendarModalOptions } from 'ion7-calendar';
 
 Chart.register(...registerables);
@@ -23,11 +23,13 @@ export class VentaDiaComponent implements OnInit, AfterViewInit {
   totalVentasGs = 0;
   ventasPorSucursal: any[] = [];
   selectedRange: { fechaInicio: string | null, fechaFin: string | null } = { fechaInicio: null, fechaFin: null };
+  isAdmin = false;
 
   constructor(
     private ventaService: VentaService,
     private mainService: MainService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
+    private navCtrl: NavController
   ) {
     const hoy = moment().format('YYYY-MM-DD');
     this.selectedRange = {
@@ -36,35 +38,49 @@ export class VentaDiaComponent implements OnInit, AfterViewInit {
     };
   }
 
-  ngOnInit() { }
+  ngOnInit() {
+    const rolesPermitidos = ['ADMIN', 'ANALISIS DE CAJA', 'ANALISIS CONTABLE'];
+    const userRoles = this.mainService.usuarioActual?.roles || [];
+    this.isAdmin = rolesPermitidos.some(rol => userRoles.includes(rol));
+
+    if (!this.isAdmin) {
+      this.navCtrl.back();
+      return;
+    }
+  }
 
   ngAfterViewInit() {
-    this.loadData();
+    if (this.isAdmin) {
+      this.loadData();
+    }
   }
 
   loadData() {
-    const usuarioId = this.mainService.usuarioActual?.id;
-    if (!usuarioId) return;
-
     this.loading = true;
 
     const inicio = this.selectedRange.fechaInicio + ' 00:00';
     const fin = this.selectedRange.fechaFin + ' 23:59';
 
-    this.ventaService.onGetVentasPorSucursalAndUsuario(usuarioId, inicio, fin)
+    this.ventaService.onGetVentasPorSucursal(inicio, fin)
       .pipe(untilDestroyed(this))
-      .subscribe(res => {
+      .subscribe((res: any[]) => {
         this.loading = false;
-        if (res) {
+        if (res && res.length > 0) {
           this.ventasPorSucursal = res;
-          this.totalVentasGs = res.reduce((acc, curr) => acc + curr.total, 0);
+          this.totalVentasGs = this.ventasPorSucursal.reduce((acc, curr) => acc + curr.total, 0);
           setTimeout(() => {
             if (this.ventasPorSucursal.length > 0) this.createChart();
           }, 100);
         } else {
           this.ventasPorSucursal = [];
           this.totalVentasGs = 0;
+          if (this.chart) this.chart.destroy();
         }
+      }, err => {
+        this.loading = false;
+        this.ventasPorSucursal = [];
+        this.totalVentasGs = 0;
+        console.error('Error fetching data', err);
       });
   }
 

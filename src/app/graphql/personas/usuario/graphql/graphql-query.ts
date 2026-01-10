@@ -36,6 +36,7 @@ export const usuariosSearch = gql`
           nombre
         }
       }
+      roles
     }
   }
 `;

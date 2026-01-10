@@ -1,11 +1,9 @@
-// Dashboard Content
 .dashboard-content {
     --background: #000000;
     --padding-top: 20px;
     --padding-bottom: 20px;
 }
 
-// Summary Card
 .summary-card {
     background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
     border-radius: 20px;
@@ -13,6 +11,33 @@
     margin: 0 16px 24px;
     box-shadow: 0 4px 12px rgba(244, 67, 54, 0.15);
     border: 1px solid rgba(244, 67, 54, 0.2);
+    position: relative;
+    transition: all 0.3s ease;
+
+    &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+}
+
+.disabled-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 20px;
+    backdrop-filter: blur(2px);
+
+    ion-icon {
+        font-size: 48px;
+        color: rgba(255, 255, 255, 0.5);
+    }
 }
 
 .summary-header {
@@ -69,7 +94,6 @@
     color: rgba(255, 255, 255, 0.5);
 }
 
-// Section Titles
 .section-title {
     font-size: 18px;
     font-weight: 600;
@@ -77,7 +101,6 @@
     margin: 0 0 16px 0;
 }
 
-// Quick Actions
 .quick-actions-section {
     padding: 0 16px 24px;
 }
@@ -130,6 +153,11 @@
         box-shadow: 0 4px 12px rgba(56, 128, 255, 0.3);
     }
 
+    &.payment {
+        background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+        box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
+    }
+
     &.cash {
         background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
         box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
@@ -143,7 +171,6 @@
     font-weight: 500;
 }
 
-// Metrics Section
 .metrics-section {
     padding: 0 16px 24px;
 }
@@ -223,6 +250,7 @@
     font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
 }
+
 .credit-details {
     display: flex;
     flex-direction: column;

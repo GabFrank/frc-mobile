@@ -29,7 +29,8 @@ import { PaginacionComponent } from './paginacion/paginacion.component';
     QrGeneratorComponent,
     EnumToStringPipe,
     NgxPaginationModule,
-    PaginacionComponent
+    PaginacionComponent,
+    GenericListDialogComponent
   ]
 })
 export class ComponentsModule { }
