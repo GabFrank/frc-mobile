@@ -72,9 +72,6 @@ export class HomeComponent implements OnInit {
   }
 
   loadVentasHoy() {
-    const usuarioId = this.loginService.usuarioActual?.id;
-    if (!usuarioId) return;
-
     const hoy = moment().format('YYYY-MM-DD');
     const ayer = moment().subtract(1, 'days').format('YYYY-MM-DD');
 
@@ -84,12 +81,12 @@ export class HomeComponent implements OnInit {
     const inicioAyer = ayer + ' 00:00';
     const finAyer = ayer + ' 23:59';
 
-    this.ventaService.onGetVentasPorSucursalAndUsuario(usuarioId, inicioHoy, finHoy)
+    this.ventaService.onGetVentasPorSucursal(inicioHoy, finHoy)
       .pipe(untilDestroyed(this))
       .subscribe(resHoy => {
         if (resHoy) {
           this.totalVentasGs = resHoy.reduce((acc, curr) => acc + curr.total, 0);
-          this.ventaService.onGetVentasPorSucursalAndUsuario(usuarioId, inicioAyer, finAyer)
+          this.ventaService.onGetVentasPorSucursal(inicioAyer, finAyer)
             .pipe(untilDestroyed(this))
             .subscribe(resAyer => {
               if (resAyer) {

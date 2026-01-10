@@ -189,13 +189,21 @@
     transition: all 0.3s ease;
 
     &.alert {
-        border-color: rgba(245, 124, 0, 0.3);
-        background: linear-gradient(135deg, #1e1e1e 0%, rgba(245, 124, 0, 0.05) 100%);
+        background: linear-gradient(135deg, #2a1f1a 0%, #1f1410 100%);
+        border: 1px solid rgba(255, 152, 0, 0.4);
+        box-shadow: 0 4px 16px rgba(255, 152, 0, 0.2);
+    }
+
+    &.clients {
+        background: linear-gradient(135deg, #1a2a1f 0%, #0f1f14 100%);
+        border: 1px solid rgba(76, 175, 80, 0.4);
+        box-shadow: 0 4px 16px rgba(76, 175, 80, 0.2);
     }
 
     &.info {
-        border-color: rgba(56, 128, 255, 0.3);
-        background: linear-gradient(135deg, #1e1e1e 0%, rgba(56, 128, 255, 0.05) 100%);
+        background: linear-gradient(135deg, #1a1f2a 0%, #10141f 100%);
+        border: 1px solid rgba(33, 150, 243, 0.4);
+        box-shadow: 0 4px 16px rgba(33, 150, 243, 0.2);
     }
 
     &.success {
@@ -220,15 +228,19 @@
     color: #f44336 !important;
 
     .metric-card.alert & {
-        color: #f57c00 !important;
+        color: #ff9800 !important;
+    }
+
+    .metric-card.clients & {
+        color: #4caf50 !important;
     }
 
     .metric-card.info & {
-        color: #3880ff !important;
+        color: #2196f3 !important;
     }
 
     .metric-card.success & {
-        color: #43a047 !important;
+        color: #4caf50 !important;
     }
 }
 
