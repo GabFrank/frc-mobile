@@ -1,7 +1,7 @@
 <ion-content [fullscreen]="true" class="dashboard-content">
 
-    <div class="summary-card" [routerLink]="puedeVerVentasDia ? ['/venta-dia'] : null"
-        [class.disabled]="!puedeVerVentasDia">
+    <div class="summary-card" [routerLink]="puedeVerVentasDia() ? ['/venta-dia'] : null"
+        [class.disabled]="!puedeVerVentasDia()">
         <div class="summary-header">
             <span class="summary-label">Ventas del Día</span>
             <ion-icon name="trending-up-outline" class="summary-icon"></ion-icon>
@@ -13,7 +13,7 @@
             </span>
             <span class="summary-period">vs. ayer</span>
         </div>
-        <div *ngIf="!puedeVerVentasDia" class="disabled-overlay">
+        <div *ngIf="!puedeVerVentasDia()" class="disabled-overlay">
             <ion-icon name="lock-closed-outline"></ion-icon>
         </div>
     </div>
@@ -63,13 +63,18 @@
     <div class="metrics-section">
         <h3 class="section-title">Resumen</h3>
         <div class="metrics-grid">
-            <div class="metric-card alert" [routerLink]="['/producto/productos-vencidos']">
+            <div class="metric-card alert"
+                [routerLink]="puedeVerProductosVencidos() ? ['/producto/productos-vencidos'] : null"
+                [class.disabled]="!puedeVerProductosVencidos()">
                 <div class="metric-header">
                     <ion-icon name="alert-circle-outline" class="metric-icon"></ion-icon>
                     <span class="metric-label">Vencidos</span>
                 </div>
                 <div class="metric-value">{{ countVencidosTotal | number:'1.0-0' }}</div>
                 <div class="metric-subtitle">productos</div>
+                <div *ngIf="!puedeVerProductosVencidos()" class="disabled-overlay">
+                    <ion-icon name="lock-closed-outline"></ion-icon>
+                </div>
             </div>
 
             <div class="metric-card clients" [routerLink]="['/clientes']">

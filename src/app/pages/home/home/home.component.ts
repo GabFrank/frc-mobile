@@ -65,8 +65,24 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  get puedeVerVentasDia(): boolean {
+  puedeVerVentasDia(): boolean {
     const rolesPermitidos = ['ADMIN', 'ANALISIS DE CAJA', 'ANALISIS CONTABLE'];
+    const userRoles = this.mainService.usuarioActual?.roles || [];
+    return rolesPermitidos.some(rol => userRoles.includes(rol));
+  }
+
+  puedeVerProductosVencidos(): boolean {
+    const rolesPermitidos = [
+      'ADMIN',
+      'ANALISIS FINANCIERO',
+      'ANALISIS CONTABLE',
+      'EDITAR PRODUCTOS',
+      'CREAR PRECIOS',
+      'EDITAR PRECIOS',
+      'VER PRECIO COSTO',
+      'CREAR INVENTARIO',
+      'VER INVENTARIO'
+    ];
     const userRoles = this.mainService.usuarioActual?.roles || [];
     return rolesPermitidos.some(rol => userRoles.includes(rol));
   }
