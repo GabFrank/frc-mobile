@@ -172,7 +172,7 @@ export class InventarioService {
 
           } else {
             console.log(res.errors)
-            obs.next()
+            obs.next(null)
             if (res.errors[0].message.includes('inventario_producto_un')) {
               this.notificacionService.open('Esta zona ya esta siendo inventariada.', TipoNotificacion.WARN, 2)
             } else if (res.errors[0].message.includes('Ya tenes una zona abierta')) {
