@@ -31,59 +31,31 @@ export class BarcodeScannerService {
   private async scanNative(): Promise<BarcodeScanResult> {
     try {
       // Check if the Google Barcode Scanner module is available
-      const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable();
+      let { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable();
 
       if (!available) {
         // Install the module if not available
         console.log('Google Barcode Scanner Module not available. Installing...');
+        await BarcodeScanner.installGoogleBarcodeScannerModule();
 
-        await new Promise<void>((resolve, reject) => {
-          BarcodeScanner.addListener('googleBarcodeScannerModuleInstallProgress', (event) => {
-            console.log('Installation progress:', event);
-            if (event.state === 1) { // COMPLETED = 1
-              // We can resolve here, but let's remove listener first (implicitly done by scope or we can store it)
-              resolve();
-            } else if (event.state === 2 || event.state === 3) { // FAILED = 2, CANCELED = 3 (approximate enum values, checking success mainly)
-              // However, we will rely on key completion or just wait for `installGoogleBarcodeScannerModule` to promise return if simpler.
-              // Actually, if the promise returns, it should be done. 
-              // But logs show promise returns before progress completes? 
-              // Let's rely on the promise AND a final check.
-            }
-          });
+        // Wait for usage - Poll for availability
+        // Some devices (like Android 10) might not fire the progress event reliably or strictly sequentially.
+        // Polling is safer here.
+        let attempts = 0;
+        const maxAttempts = 15; // Wait up to 15 seconds (usually takes 2-3s)
 
-          // Trigger installation
-          BarcodeScanner.installGoogleBarcodeScannerModule().catch(reject);
+        while (!available && attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const result = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable();
+          available = result.available;
+          attempts++;
+          console.log(`Checking availability attempt ${attempts}: ${available}`);
+        }
 
-          // If the installation is synchronous or the promise resolves only after completion, this await above is what we rely on.
-          // But if it returns early, we might need to poll.
-          // Given the logs, the event *came after* the error.
-        });
-
-        // Wait a bit to ensure system registers it?
-        // Actually, let's keep it simple: The promise `installGoogleBarcodeScannerModule` *should* wait.
-        // If it didn't, maybe we just need to try-catch the scan with a retry?
-
-        // Let's go with a retry mechanism instead of complex listener logic which might differ by version.
-        // We will loop check availability for a few seconds.
-      }
-
-      // Retry availability check loop
-      let attempts = 0;
-      while (attempts < 5) {
-        const check = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable();
-        if (check.available) break;
-
-        // Wait 1 second
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        attempts++;
-      }
-
-      // Final check
-      const { available: finalAvailable } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable();
-      if (!finalAvailable) {
-        // Try one last time to install? No, just fail.
-        await BarcodeScanner.installGoogleBarcodeScannerModule(); // One last kick
-        throw new Error('Google Barcode Scanner Module is not available even after waiting.');
+        if (!available) {
+          // One final check or attempt to scan anyway, relying on the error catch
+          throw new Error('Google Barcode Scanner Module installation timed out or failed to verify availability.');
+        }
       }
 
       // Start the scan
