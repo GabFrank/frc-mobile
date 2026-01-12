@@ -37,10 +37,15 @@
     </provider>
     <meta-data android:name="com.google.android.geo.API_KEY"
       android:value="AIzaSyCHwGrrR6zNzmIRRPOvziFXpyW7H3BmwU4" />
+      
+    <meta-data
+      android:name="com.google.mlkit.vision.DEPENDENCIES"
+      android:value="barcode" />
   </application>
 
   <!-- Permissions -->
 
   <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.USE_BIOMETRIC" />
   <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 </manifest>

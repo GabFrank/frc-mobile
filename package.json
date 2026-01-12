@@ -59,6 +59,7 @@
     "@zxing/library": "^0.21.3",
     "@zxing/ngx-scanner": "^21.0.0",
     "apollo-angular": "^4.2.1",
+    "capacitor-native-biometric": "^4.2.2",
     "chart.js": "^3.8.0",
     "cordova-plugin-app-version": "^0.1.14",
     "cordova-plugin-globalization": "^1.11.0",

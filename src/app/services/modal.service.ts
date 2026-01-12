@@ -7,7 +7,7 @@ import { ModalController } from '@ionic/angular';
 export class ModalService {
   currentModal;
 
-  constructor(private modalController: ModalController) {}
+  constructor(private modalController: ModalController) { }
 
   async openModal(component: any, data?, modalSize?: ModalSize): Promise<any> {
     let modalClass = 'my-custom-class';
@@ -21,16 +21,27 @@ export class ModalService {
       case ModalSize.MEDIUM:
         modalClass = 'custom-modal-medium';
         break;
+      case ModalSize.BIOMETRIC:
+        modalClass = 'biometric-modal';
+        break;
       default:
         break;
     }
-    const modal = await this.modalController.create({
+    const modalOptions: any = {
       component: component,
       cssClass: modalClass,
       componentProps: {
         data
       }
-    });
+    };
+
+    if (modalSize === ModalSize.BIOMETRIC) {
+      modalOptions.initialBreakpoint = 0.35;
+      modalOptions.breakpoints = [0, 0.35];
+      modalOptions.handle = false;
+    }
+
+    const modal = await this.modalController.create(modalOptions);
     await modal.present();
     this.currentModal = modal;
     return await modal.onWillDismiss();
@@ -44,5 +55,6 @@ export class ModalService {
 export enum ModalSize {
   LARGE,
   MEDIUM,
-  AUTO
+  AUTO,
+  BIOMETRIC
 }

@@ -1,6 +1,6 @@
 import { PreRegistroFuncionarioComponent } from './../../pages/funcionario/pre-registro-funcionario/pre-registro-funcionario.component';
 import { PreRegistroFuncionario } from './../../pages/funcionario/funcionario.model';
-import { ModalService } from './../../services/modal.service';
+import { ModalService, ModalSize } from './../../services/modal.service';
 import { Router } from '@angular/router';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { CargandoService } from './../../services/cargando.service';
@@ -11,6 +11,8 @@ import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { LoginService } from 'src/app/services/login.service';
 import { ChangeServerIpDialogComponent } from 'src/app/components/change-server-ip-dialog/change-server-ip-dialog.component';
+import { NativeBiometric } from 'capacitor-native-biometric';
+import { serverAdress } from 'src/environments/environment';
 
 @UntilDestroy()
 @Component({
@@ -31,6 +33,8 @@ export class LoginComponent implements OnInit {
   subscription;
   error = null;
   activateDev = 0;
+  isBiometricAvailable = false;
+  isHardwareAvailable = false;
 
   constructor(private loginService: LoginService,
     private popoverController: PopoverController,
@@ -43,18 +47,13 @@ export class LoginComponent implements OnInit {
   ) { }
 
   async ngOnInit() {
+    this.checkBiometricAvailability();
+
     this.formGroup = new UntypedFormGroup({
       'usuario': this.usuarioControl,
       'password': this.passwordControl
     })
 
-    this.loginService.isAuthenticated()
-      .pipe(untilDestroyed(this))
-      .subscribe(async res => {
-        if (res != null) {
-          this.onSelectUsuarioAndDismiss(res)
-        }
-      })
   }
 
   async onLogin() {
@@ -67,6 +66,15 @@ export class LoginComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         if (res.error == null) {
+          if (this.isHardwareAvailable) {
+            NativeBiometric.setCredentials({
+              username: usuario,
+              password: this.passwordControl.value,
+              server: 'franco-system-auth',
+            }).then(() => localStorage.setItem('hasBiometrics', 'true'))
+              .catch(err => console.error('Error saving credentials', err));
+          }
+
           this.onSelectUsuarioAndDismiss(res.usuario)
         } else {
           this.error = res.error['message'];
@@ -96,6 +104,68 @@ export class LoginComponent implements OnInit {
 
   ionViewWillLeave() {
     this.subscription.unsubscribe();
+  }
+
+  async checkBiometricAvailability() {
+    try {
+      const result = await NativeBiometric.isAvailable();
+      this.isHardwareAvailable = result.isAvailable;
+      const hasPreviousLogin = localStorage.getItem('hasBiometrics') === 'true';
+      this.isBiometricAvailable = this.isHardwareAvailable && hasPreviousLogin;
+      if (this.isBiometricAvailable) {
+        this.performBiometricAuth();
+      }
+    } catch (error) {
+      console.error('Biometric check failed', error);
+    }
+  }
+
+  onBiometric() {
+    this.performBiometricAuth();
+  }
+
+  async performBiometricAuth() {
+    try {
+      await NativeBiometric.verifyIdentity({
+        reason: 'Por favor, autentíquese para continuar',
+        title: 'Autenticación Biométrica',
+        subtitle: 'Use su huella o FaceID',
+        description: 'Coloque su dedo en el sensor'
+      });
+
+      const credentials = await NativeBiometric.getCredentials({
+        server: 'franco-system-auth',
+      });
+
+      if (credentials && credentials.username && credentials.password) {
+        this.loginWithBiometrics(credentials.username, credentials.password);
+      } else {
+        this.notificacionService.open('No hay credenciales guardadas. Inicie sesión manualmente primero.', TipoNotificacion.WARN, 5);
+      }
+
+    } catch (error) {
+      console.error('Biometric auth failed', error);
+    }
+  }
+
+  loginWithBiometrics(username: string, password: string) {
+    this.loginService.login(username, password)
+      .then(observable => {
+        observable
+          .pipe(untilDestroyed(this))
+          .subscribe(res => {
+            if (res.error == null && res.usuario) {
+              this.onSelectUsuarioAndDismiss(res.usuario);
+            } else {
+              this.notificacionService.open('Error al iniciar sesión con biometría', TipoNotificacion.DANGER, 5);
+            }
+          }, err => {
+            console.error('Login observable error:', err);
+          });
+      })
+      .catch(err => {
+        console.error('Login promise error:', err);
+      });
   }
 
   async onDev() {

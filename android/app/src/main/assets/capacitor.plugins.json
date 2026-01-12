@@ -50,5 +50,9 @@
 	{
 		"pkg": "@capawesome/capacitor-app-update",
 		"classpath": "io.capawesome.capacitorjs.plugins.appupdate.AppUpdatePlugin"
+	},
+	{
+		"pkg": "capacitor-native-biometric",
+		"classpath": "com.epicshaggy.biometric.NativeBiometric"
 	}
 ]

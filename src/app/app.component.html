@@ -140,18 +140,11 @@
         <ion-buttons slot="start">
           <ion-menu-button auto-hide="false"></ion-menu-button>
         </ion-buttons>
-        <ion-buttons slot="primary">
-          <ion-button>
-            <ion-icon [hidden]="true" slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical"></ion-icon>
-          </ion-button>
-        </ion-buttons>
 
-        <ion-row>
-          <ion-col size="12" class="center">
-            <img [src]="isFarma ? '/assets/logof.png' : '/assets/logo.png'" alt=""
-              style="width: auto; max-height: 45px; object-fit: contain" />
-          </ion-col>
-        </ion-row>
+        <ion-title class="ion-text-center">
+          <img [src]="isFarma ? '/assets/logof.png' : '/assets/logo.png'" alt=""
+            style="width: auto; max-height: 45px; object-fit: contain; vertical-align: middle;" />
+        </ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">

@@ -32,6 +32,15 @@
         (click)="onLogin()">Entrar</ion-button>
     </ion-col>
   </ion-row>
+
+  <ion-row *ngIf="selectedUsuario === null && isBiometricAvailable">
+    <ion-col size="12" class="ion-text-center">
+      <ion-button fill="clear" (click)="onBiometric()">
+        <ion-icon slot="start" name="finger-print-outline"></ion-icon>
+        Ingresar con Huella
+      </ion-button>
+    </ion-col>
+  </ion-row>
   <ion-row *ngIf="error !== null">
     <ion-col size="12">
       <div style="color: red; font-size: 0.8em; width: 100%; text-align: center; padding: 10px 0;">
