@@ -50,6 +50,24 @@ export class ClientesComponent implements OnInit {
     if (roles.includes('ADMIN')) {
       this.clienteForm.get('credito')?.enable();
     }
+
+    const rolesPermitidosTipo = [
+      'VER PERSONAS',
+      'EDITAR PERSONAS',
+      'VER USUARIOS',
+      'EDITAR USUARIOS',
+      'ADMIN',
+      'VER FUNCIONARIOS',
+      'CREAR FUNCIONARIOS',
+      'EDITAR FUNCIONARIOS'
+    ];
+
+    const tienePermisoTipo = roles.some(r => rolesPermitidosTipo.includes(r));
+
+    if (!tienePermisoTipo) {
+      this.clienteForm.get('tipo')?.setValue(TipoCliente.NORMAL);
+      this.clienteForm.get('tipo')?.disable();
+    }
   }
 
   async registrar() {

@@ -1,5 +1,19 @@
 .new-background-color {
   --background: #f44336 !important;
+  --background: #f44336 !important;
+}
+
+.absolute-center {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .contact-popover .popover-content {
