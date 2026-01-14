@@ -80,6 +80,7 @@ export const CREAR_COMENTARIO_NOTIFICACION_MUTATION = gql`
   }
 `;
 
+
 export const USUARIOS_CON_ACCESO_NOTIFICACION_QUERY = gql`
   query usuariosConAccesoNotificacion($notificacionId: Int!) {
     usuariosConAccesoNotificacion(notificacionId: $notificacionId) {
@@ -91,5 +92,22 @@ export const USUARIOS_CON_ACCESO_NOTIFICACION_QUERY = gql`
         imagenes
       }
     }
+  }
+`;
+
+export const MIS_CONFIGURACIONES_NOTIFICACION_QUERY = gql`
+  query misConfiguracionesNotificacion {
+    misConfiguracionesNotificacion {
+      tipo
+      descripcion
+      habilitado
+      esObligatorio
+    }
+  }
+`;
+
+export const ACTUALIZAR_PREFERENCIA_NOTIFICACION_MUTATION = gql`
+  mutation actualizarPreferenciaNotificacion($tipoNotificacion: String!, $habilitado: Boolean!) {
+    actualizarPreferenciaNotificacion(tipoNotificacion: $tipoNotificacion, habilitado: $habilitado)
   }
 `;
