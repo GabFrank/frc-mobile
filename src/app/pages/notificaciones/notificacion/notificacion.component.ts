@@ -88,7 +88,7 @@ export class NotificacionComponent implements OnInit, OnDestroy {
       size: 10,
       fechaInicio: this.seleccionadoRango.fechaInicio || undefined,
       fechaFin: this.seleccionadoRango.fechaFin || undefined,
-      leidas: this.formulario.get('leidas')?.value,
+      leidas: this.formulario.get('leidas')?.value ? false : undefined,
       estadoTablero: this.formulario.get('estadoTablero')?.value
     };
 
@@ -232,7 +232,7 @@ export class NotificacionComponent implements OnInit, OnDestroy {
       size: 10,
       fechaInicio: this.seleccionadoRango.fechaInicio || undefined,
       fechaFin: this.seleccionadoRango.fechaFin || undefined,
-      leidas: this.formulario.get('leidas')?.value,
+      leidas: this.formulario.get('leidas')?.value ? false : undefined,
       estadoTablero: this.formulario.get('estadoTablero')?.value
     };
 
