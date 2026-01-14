@@ -8,6 +8,12 @@ ion-header {
         ion-title {
             font-weight: 600;
         }
+
+        ion-back-button {
+            --color: white !important;
+            color: white !important;
+            display: block;
+        }
     }
 }
 

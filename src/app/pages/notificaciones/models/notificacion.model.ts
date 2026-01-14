@@ -51,3 +51,23 @@ export interface ConteoNotificacionesNoLeidasResponse {
 export interface MarcarNotificacionLeidaResponse {
     marcarNotificacionLeida: boolean;
 }
+
+export interface ConfiguracionNotificacion {
+    tipo: string;
+    descripcion: string;
+    habilitado: boolean;
+    esObligatorio: boolean;
+}
+
+export interface MisConfiguracionesNotificacionResponse {
+    misConfiguracionesNotificacion: ConfiguracionNotificacion[];
+}
+
+export interface ActualizarPreferenciaNotificacionVariables {
+    tipoNotificacion: string;
+    habilitado: boolean;
+}
+
+export interface ActualizarPreferenciaNotificacionResponse {
+    actualizarPreferenciaNotificacion: boolean;
+}
