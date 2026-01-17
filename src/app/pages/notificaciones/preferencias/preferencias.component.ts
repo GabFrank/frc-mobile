@@ -27,8 +27,8 @@ export class PreferenciasComponent implements OnInit {
 
   cargarConfiguraciones() {
     this.loading = true;
-    this.misConfiguracionesQuery.watch().valueChanges.subscribe(result => {
-      this.configuraciones = result.data.misConfiguracionesNotificacion;
+    this.misConfiguracionesQuery.watch({}, { fetchPolicy: 'cache-and-network' }).valueChanges.subscribe(result => {
+      this.configuraciones = result.data.misConfiguracionesNotificacion.map(c => ({ ...c }));
       this.loading = false;
     }, err => {
       this.loading = false;
