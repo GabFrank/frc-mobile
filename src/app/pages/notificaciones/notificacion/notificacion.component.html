@@ -55,7 +55,7 @@
                 <div slot="start" [class]="'icon-container ' + notificacion.color">
                     <ion-icon [name]="notificacion.icono + '-outline'"></ion-icon>
                 </div>
-                <ion-label>
+                <ion-label class="ion-text-wrap">
                     <div class="notification-header">
                         <h2>{{ notificacion.titulo }}</h2>
                         <div class="unread-dot" *ngIf="!notificacion.leida"></div>
