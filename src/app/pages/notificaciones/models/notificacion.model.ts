@@ -71,3 +71,25 @@ export interface ActualizarPreferenciaNotificacionVariables {
 export interface ActualizarPreferenciaNotificacionResponse {
     actualizarPreferenciaNotificacion: boolean;
 }
+
+export interface EnviarNotificacionPersonalizadaVariables {
+    titulo: string;
+    mensaje: string;
+    tipoEnvio: string;
+    usuariosIds?: number[];
+}
+
+export interface EnviarNotificacionPersonalizadaResponse {
+    enviarNotificacionPersonalizada: boolean;
+}
+
+export interface UsuariosActivosResponse {
+    usuariosActivos: {
+        id: number;
+        nickname: string;
+        persona?: {
+            id: number;
+            nombre: string;
+        };
+    }[];
+}

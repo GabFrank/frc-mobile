@@ -8,7 +8,7 @@ import { NotificacionComponent } from './notificacion/notificacion.component';
 import { ComentariosComponent } from './comentarios/comentarios.component';
 import { NotificacionMenuComponent } from './notificacion-menu/notificacion-menu.component';
 import { PreferenciasComponent } from './preferencias/preferencias.component';
-
+import { CrearNotificacionComponent } from './crear-notificacion/crear-notificacion.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ComponentsModule } from 'src/app/components/components.module';
 
@@ -17,7 +17,8 @@ import { ComponentsModule } from 'src/app/components/components.module';
     NotificacionComponent,
     ComentariosComponent,
     NotificacionMenuComponent,
-    PreferenciasComponent
+    PreferenciasComponent,
+    CrearNotificacionComponent
   ],
   imports: [
     CommonModule,

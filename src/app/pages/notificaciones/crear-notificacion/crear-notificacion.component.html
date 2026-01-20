@@ -1,0 +1,94 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/notificacion"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Crear Notificación</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="container">
+    <form [formGroup]="form">
+      <ion-list lines="none">
+        <ion-radio-group [value]="tipoEnvio" (ionChange)="cambiarTipoEnvio($event)">
+          <ion-item class="radio-item">
+            <ion-label>Todos los Usuarios</ion-label>
+            <ion-radio slot="start" value="TODOS"></ion-radio>
+          </ion-item>
+          <ion-item class="radio-item">
+            <ion-label>Usuarios Específicos</ion-label>
+            <ion-radio slot="start" value="ESPECIFICOS"></ion-radio>
+          </ion-item>
+        </ion-radio-group>
+        <div *ngIf="tipoEnvio === 'ESPECIFICOS'" class="usuarios-section">
+          <div class="search-container">
+            <ion-searchbar placeholder="Buscar usuario..." [(ngModel)]="textoBusqueda"
+              [ngModelOptions]="{standalone: true}" (ngModelChange)="filtrarUsuarios()" animated>
+            </ion-searchbar>
+            <ion-button (click)="filtrarUsuarios()" class="search-btn" color="success">
+              <ion-icon name="search" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+
+          <div class="user-list-container">
+            <ion-item *ngIf="cargando">
+              <ion-spinner slot="start"></ion-spinner>
+              <ion-label>Cargando usuarios...</ion-label>
+            </ion-item>
+
+            <ion-item *ngFor="let usuario of usuariosFiltrados" (click)="toggleUsuario(usuario.id)" button
+              detail="false">
+              <ion-checkbox slot="start" [checked]="esUsuarioSeleccionado(usuario.id)"></ion-checkbox>
+              <ion-label>
+                <h2>{{ usuario.nickname }}</h2>
+                <p>{{ usuario.persona?.nombre || 'Sin nombre' }}</p>
+              </ion-label>
+            </ion-item>
+
+            <ion-item *ngIf="usuariosFiltrados.length === 0 && !cargando">
+              <ion-label class="ion-text-center ion-text-wrap" style="color: var(--ion-color-medium)">
+                No se encontraron usuarios
+              </ion-label>
+            </ion-item>
+          </div>
+
+          <div class="selected-count" *ngIf="usuariosSeleccionados.length > 0">
+            {{ usuariosSeleccionados.length }} usuario(s) seleccionado(s)
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <ion-item class="input-item">
+          <ion-label position="stacked">TÍTULO DE LA NOTIFICACIÓN</ion-label>
+          <ion-input formControlName="titulo" placeholder="Título" class="uppercase-input"
+            (ionInput)="onTituloInput($event)">
+          </ion-input>
+          <ion-note slot="error" *ngIf="form.get('titulo').touched && form.get('titulo').hasError('required')">
+            El título es requerido
+          </ion-note>
+        </ion-item>
+        <ion-item class="input-item">
+          <ion-label position="stacked">MENSAJE DE LA NOTIFICACIÓN</ion-label>
+          <ion-textarea formControlName="mensaje" placeholder="Escribe tu mensaje aquí" rows="5">
+          </ion-textarea>
+          <ion-note slot="error" *ngIf="form.get('mensaje').touched && form.get('mensaje').hasError('required')">
+            El mensaje es requerido
+          </ion-note>
+        </ion-item>
+
+      </ion-list>
+
+      <div class="actions">
+        <ion-button expand="block" fill="solid" color="danger" routerLink="/notificacion" class="cancel-btn">
+          CANCELAR
+        </ion-button>
+        <ion-button expand="block" (click)="enviar()" [disabled]="guardando" class="submit-btn" color="success">
+          <ion-spinner name="crescent" *ngIf="guardando"></ion-spinner>
+          <span *ngIf="!guardando">ENVIAR</span>
+        </ion-button>
+      </div>
+
+    </form>
+  </div>
+</ion-content>
