@@ -8,6 +8,8 @@ import { ConteoNotificacionesNoLeidasQueryService } from './graphql/conteo-notif
 import { ComentariosNotificacionQueryService } from './graphql/comentarios-notificacion-query.service';
 import { CrearComentarioNotificacionMutationService } from './graphql/crear-comentario-notificacion-mutation.service';
 import { UsuariosConAccesoNotificacionQueryService } from './graphql/usuarios-con-acceso-notificacion-query.service';
+import { EnviarNotificacionPersonalizadaMutationService } from './graphql/enviar-notificacion-personalizada-mutation.service';
+import { UsuariosActivosQueryService } from './graphql/usuarios-activos-query.service';
 import { NotificacionComentario } from './models/notificacion-comentario.model';
 import { Usuario } from './models/usuario.model';
 
@@ -21,6 +23,8 @@ export class NotificacionService {
   private readonly comentariosQuery = inject(ComentariosNotificacionQueryService);
   private readonly crearComentarioMutation = inject(CrearComentarioNotificacionMutationService);
   private readonly usuariosAccesoQuery = inject(UsuariosConAccesoNotificacionQueryService);
+  private readonly enviarNotificacionMutation = inject(EnviarNotificacionPersonalizadaMutationService);
+  private readonly usuariosActivosQuery = inject(UsuariosActivosQueryService);
 
   private _notificaciones$ = new BehaviorSubject<NotificacionDestinatario[]>([]);
   public notificaciones$ = this._notificaciones$.asObservable();
@@ -73,6 +77,18 @@ export class NotificacionService {
   usuariosConAcceso(notificacionId: number): Observable<Usuario[]> {
     return this.usuariosAccesoQuery.watch({ notificacionId }).valueChanges.pipe(
       map(res => res.data?.usuariosConAccesoNotificacion || [])
+    );
+  }
+
+  enviarNotificacionPersonalizada(titulo: string, mensaje: string, tipoEnvio: string, usuariosIds?: number[]): Observable<boolean | null | undefined> {
+    return this.enviarNotificacionMutation.mutate({ titulo, mensaje, tipoEnvio, usuariosIds }).pipe(
+      map(res => res.data?.enviarNotificacionPersonalizada)
+    );
+  }
+
+  obtenerUsuariosActivos(): Observable<any[]> {
+    return this.usuariosActivosQuery.watch().valueChanges.pipe(
+      map(res => res.data?.usuariosActivos || [])
     );
   }
 }

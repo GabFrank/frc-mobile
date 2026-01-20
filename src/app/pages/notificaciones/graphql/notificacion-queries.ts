@@ -111,3 +111,22 @@ export const ACTUALIZAR_PREFERENCIA_NOTIFICACION_MUTATION = gql`
     actualizarPreferenciaNotificacion(tipoNotificacion: $tipoNotificacion, habilitado: $habilitado)
   }
 `;
+
+export const ENVIAR_NOTIFICACION_PERSONALIZADA_MUTATION = gql`
+  mutation enviarNotificacionPersonalizada($titulo: String!, $mensaje: String!, $tipoEnvio: String!, $usuariosIds: [Int]) {
+    enviarNotificacionPersonalizada(titulo: $titulo, mensaje: $mensaje, tipoEnvio: $tipoEnvio, usuariosIds: $usuariosIds)
+  }
+`;
+
+export const USUARIOS_ACTIVOS_QUERY = gql`
+  query usuariosActivos {
+    usuariosActivos {
+      id
+      nickname
+      persona {
+        id
+        nombre
+      }
+    }
+  }
+`;
