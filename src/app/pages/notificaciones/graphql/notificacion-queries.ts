@@ -44,6 +44,7 @@ export const COMENTARIOS_NOTIFICACION_QUERY = gql`
     comentariosNotificacion(notificacionId: $notificacionId) {
       id
       comentario
+      mediaUrl
       creadoEn
       usuario {
         id
@@ -62,10 +63,11 @@ export const COMENTARIOS_NOTIFICACION_QUERY = gql`
 `;
 
 export const CREAR_COMENTARIO_NOTIFICACION_MUTATION = gql`
-  mutation crearComentarioNotificacion($notificacionId: Int!, $comentario: String!, $comentarioPadreId: Int) {
-    crearComentarioNotificacion(notificacionId: $notificacionId, comentario: $comentario, comentarioPadreId: $comentarioPadreId) {
+  mutation crearComentarioNotificacion($notificacionId: Int!, $comentario: String!, $comentarioPadreId: Int, $mediaUrl: String) {
+    crearComentarioNotificacion(notificacionId: $notificacionId, comentario: $comentario, comentarioPadreId: $comentarioPadreId, mediaUrl: $mediaUrl) {
       id
       comentario
+      mediaUrl
       creadoEn
       usuario {
         id

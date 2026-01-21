@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, ChangeDetectorRef, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { MediaUploadService } from '../../../services/media-upload.service';
+import { AudioRecordingService } from '../../../services/audio-recording.service';
 import { ActivatedRoute } from '@angular/router';
 import { NotificacionService } from '../notificacion.service';
 import { BehaviorSubject, Observable, combineLatest, merge, Subject, timer } from 'rxjs';
@@ -10,6 +12,7 @@ import { FormControl } from '@angular/forms';
 interface ComentarioProcesado extends NotificacionComentario {
   avatarUrl: string;
   textoFormateado: string;
+  tipoMedia?: string;
 }
 
 interface UsuarioProcesado extends Usuario {
@@ -22,13 +25,26 @@ interface UsuarioProcesado extends Usuario {
   styleUrls: ['./comentarios.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ComentariosComponent implements OnInit {
+export class ComentariosComponent implements OnInit, OnDestroy {
   private readonly ruta = inject(ActivatedRoute);
   private readonly notificacionService = inject(NotificacionService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly mediaUploadService = inject(MediaUploadService);
+  private readonly audioRecordingService = inject(AudioRecordingService);
+
+  @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('cameraInput') cameraInput?: ElementRef<HTMLInputElement>;
 
   public comentarioInput = new FormControl('');
   private readonly refrescar$ = new BehaviorSubject<void>(undefined);
+  public selectedFile: File | null = null;
+  public filePreview: string | null = null;
+  public isUploading = false;
+  public uploadProgress = 0;
+  public enviando = false;
+
+  readonly estadoGrabacion$ = this.audioRecordingService.estado$;
+  readonly duracionFormateada$ = this.audioRecordingService.duracionFormateada$;
   private readonly mostrarTodos$ = new BehaviorSubject<boolean>(false);
   private readonly comentariosPendientes$ = new BehaviorSubject<NotificacionComentario[]>([]);
   private readonly destruir$ = new Subject<void>();
@@ -83,7 +99,8 @@ export class ComentariosComponent implements OnInit {
         return todos.map(c => ({
           ...c,
           avatarUrl: this.obtenerAvatar(c.usuario),
-          textoFormateado: this.formatearTexto(c.comentario)
+          textoFormateado: this.formatearTexto(c.comentario),
+          tipoMedia: this.obtenerTipoMedia(c.mediaUrl)
         }));
       })
     );
@@ -127,6 +144,7 @@ export class ComentariosComponent implements OnInit {
   }
 
   ngOnDestroy() {
+    this.audioRecordingService.destruir();
     this.destruir$.next();
     this.destruir$.complete();
   }
@@ -170,26 +188,72 @@ export class ComentariosComponent implements OnInit {
 
   public enviarComentario() {
     const texto = this.comentarioInput.value || '';
-    if (texto.trim().length === 0) return;
+    const estadoGrabacion = this.audioRecordingService.obtenerEstadoActual();
 
+    if ((texto.trim().length === 0 && !this.selectedFile && !estadoGrabacion.audioGrabado) || this.enviando || this.isUploading) return;
+
+    this.enviando = true;
+    this.cdr.markForCheck();
+
+    if (this.selectedFile) {
+      this.subirMediaYEnviar(this.selectedFile, texto);
+    } else if (estadoGrabacion.audioGrabado) {
+      const audioFile = new File([estadoGrabacion.audioGrabado], `audio_${Date.now()}.webm`, { type: 'audio/webm' });
+      this.subirMediaYEnviar(audioFile, 'Mensaje de voz');
+    } else {
+      this.procesarEnvio(texto);
+    }
+  }
+
+  private subirMediaYEnviar(archivo: File, texto: string) {
+    this.isUploading = true;
+    this.uploadProgress = 0;
+    this.cdr.markForCheck();
+
+    this.mediaUploadService.subirArchivo(archivo).subscribe({
+      next: (url) => {
+        this.isUploading = false;
+        this.procesarEnvio(texto, url);
+      },
+      error: (err) => {
+        console.error('Error subiendo archivo', err);
+        this.isUploading = false;
+        this.enviando = false;
+        this.cdr.markForCheck();
+      }
+    });
+
+    this.mediaUploadService.progreso$.pipe(takeUntil(this.destruir$)).subscribe(p => {
+      this.uploadProgress = p.progreso;
+      this.cdr.markForCheck();
+    });
+  }
+
+  private procesarEnvio(texto: string, mediaUrl?: string) {
+    const comentarioFinal = texto || (mediaUrl ? 'Archivo adjunto' : '');
     const padre = this.comentarioParaResponder$.value;
     const idTemporal = -Date.now();
 
     const comentarioTemp: NotificacionComentario = {
       id: idTemporal,
-      comentario: texto,
+      comentario: comentarioFinal,
       creadoEn: new Date(),
       actualizadoEn: new Date(),
       usuario: { id: 0, nickname: 'Yo' } as any,
-      comentarioPadre: padre || undefined
+      comentarioPadre: padre || undefined,
+      mediaUrl: mediaUrl
     };
 
     this.comentariosPendientes$.next([...this.comentariosPendientes$.value, comentarioTemp]);
     this.comentarioInput.reset();
     this.cancelarRespuesta();
+    this.removeFile();
+    this.audioRecordingService.eliminarAudioGrabado();
+    this.enviando = false;
+    this.cdr.markForCheck();
 
     const notificacionId = Number(this.ruta.snapshot.paramMap.get('id'));
-    this.notificacionService.crearComentario(notificacionId, texto, padre?.id).subscribe({
+    this.notificacionService.crearComentario(notificacionId, comentarioFinal, padre?.id, mediaUrl).subscribe({
       next: () => {
         this.limpiarPendiente(idTemporal);
         this.refrescar$.next();
@@ -201,12 +265,72 @@ export class ComentariosComponent implements OnInit {
     });
   }
 
+  triggerFileInput(): void {
+    this.fileInput?.nativeElement.click();
+  }
+
+  triggerCamera(): void {
+    this.cameraInput?.nativeElement.click();
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.filePreview = reader.result as string;
+        this.cdr.markForCheck();
+      };
+      reader.readAsDataURL(this.selectedFile);
+    }
+  }
+
+  removeFile(): void {
+    this.selectedFile = null;
+    this.filePreview = null;
+    if (this.fileInput) this.fileInput.nativeElement.value = '';
+    if (this.cameraInput) this.cameraInput.nativeElement.value = '';
+    this.cdr.markForCheck();
+  }
+
+  async startRecording(): Promise<void> {
+    await this.audioRecordingService.iniciarGrabacion();
+    this.cdr.markForCheck();
+  }
+
+  stopRecording(): void {
+    this.audioRecordingService.detenerGrabacion();
+    this.cdr.markForCheck();
+  }
+
+  cancelRecording(): void {
+    this.audioRecordingService.cancelarGrabacion();
+    this.cdr.markForCheck();
+  }
+
+  removeRecordedAudio(): void {
+    this.audioRecordingService.eliminarAudioGrabado();
+    this.cdr.markForCheck();
+  }
+
+
   private limpiarPendiente(id: number) {
     const restantes = this.comentariosPendientes$.value.filter(c => c.id !== id);
     this.comentariosPendientes$.next(restantes);
   }
   private obtenerAvatar(usuario: any): string {
     return usuario?.persona?.imagenes || `https://ui-avatars.com/api/?name=${usuario?.nickname}&background=random`;
+  }
+
+  private obtenerTipoMedia(url?: string): string {
+    if (!url) return '';
+    const ext = url.split('.').pop()?.toLowerCase() || '';
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return 'imagen';
+    if (['mp4', 'webm', 'ogg', 'mov'].includes(ext)) return 'video';
+    if (['mp3', 'wav', 'ogg', 'webm', 'm4a'].includes(ext) || url.includes('audio')) return 'audio'; // Weak check but simplified
+    if (['pdf'].includes(ext)) return 'pdf';
+    return 'archivo';
   }
 
   private formatearTexto(texto: string): string {

@@ -58,6 +58,17 @@
                   <span>{{ comentario.comentarioPadre.usuario?.nickname }}:</span>
                   <p>{{ comentario.comentarioPadre.comentario }}</p>
                 </div>
+
+                <div class="media-attachment" *ngIf="comentario.mediaUrl" [ngSwitch]="comentario.tipoMedia">
+                  <img *ngSwitchCase="'imagen'" [src]="comentario.mediaUrl" class="media-img" loading="lazy">
+                  <video *ngSwitchCase="'video'" [src]="comentario.mediaUrl" controls class="media-video"></video>
+                  <audio *ngSwitchCase="'audio'" [src]="comentario.mediaUrl" controls class="media-audio"></audio>
+                  <div *ngSwitchDefault class="media-file">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                    <a [href]="comentario.mediaUrl" target="_blank">Ver archivo adjunto</a>
+                  </div>
+                </div>
+
                 <div [innerHTML]="comentario.textoFormateado"></div>
               </div>
             </div>
@@ -87,16 +98,59 @@
     </div>
   </div>
 
-  <div class="message-input-bar">
-    <div class="add-btn">
-      <ion-icon name="add"></ion-icon>
+  <div class="preview-area" *ngIf="selectedFile || (estadoGrabacion$ | async)?.audioGrabado">
+    <div class="file-preview-card" *ngIf="selectedFile">
+      <div class="preview-content">
+        <img *ngIf="filePreview && selectedFile.type.startsWith('image/')" [src]="filePreview">
+        <ion-icon *ngIf="!selectedFile.type.startsWith('image/')" name="document-attach-outline"></ion-icon>
+        <span class="file-name">{{ selectedFile.name }}</span>
+      </div>
+      <ion-icon name="close-circle" class="remove-btn" (click)="removeFile()"></ion-icon>
     </div>
+    <div class="audio-preview-card"
+      *ngIf="(estadoGrabacion$ | async)?.audioGrabado && !(estadoGrabacion$ | async)?.grabando">
+      <ion-icon name="mic"></ion-icon>
+      <span>Audio grabado</span>
+      <ion-icon name="trash-outline" class="remove-btn" (click)="removeRecordedAudio()"></ion-icon>
+    </div>
+
+    <div class="upload-progress" *ngIf="isUploading">
+      <div class="bar" [style.width.%]="uploadProgress"></div>
+    </div>
+  </div>
+  <div class="recording-bar" *ngIf="(estadoGrabacion$ | async)?.grabando">
+    <div class="recording-info">
+      <div class="recording-dot"></div>
+      <span>Grabando... {{ duracionFormateada$ | async }}</span>
+    </div>
+    <div class="recording-actions">
+      <ion-icon name="close-outline" (click)="cancelRecording()"></ion-icon>
+      <ion-icon name="stop-circle-outline" class="stop-btn" (click)="stopRecording()"></ion-icon>
+    </div>
+  </div>
+
+  <div class="message-input-bar" *ngIf="!(estadoGrabacion$ | async)?.grabando">
+    <input type="file" #fileInput hidden (change)="onFileSelected($event)">
+    <input type="file" #cameraInput hidden accept="image/*" capture="environment" (change)="onFileSelected($event)">
+
+    <div class="action-btn" (click)="triggerCamera()">
+      <ion-icon name="camera-outline"></ion-icon>
+    </div>
+    <div class="action-btn" (click)="triggerFileInput()">
+      <ion-icon name="attach-outline"></ion-icon>
+    </div>
+
     <div class="input-wrapper">
-      <input [formControl]="comentarioInput" id="commentInput" type="text" placeholder="Mensaje para el grupo"
-        class="native-input" (keyup.enter)="enviarComentario()">
-      <ion-icon name="send" class="send-icon" (click)="enviarComentario()"></ion-icon>
+      <input [formControl]="comentarioInput" id="commentInput" type="text" placeholder="Mensaje" class="native-input"
+        (keyup.enter)="enviarComentario()">
+
+      <div class="send-btn" (click)="enviarComentario()" *ngIf="!enviando && !isUploading">
+        <ion-icon name="send"></ion-icon>
+      </div>
+      <ion-spinner *ngIf="enviando || isUploading" name="crescent" class="loading-spinner"></ion-spinner>
     </div>
-    <div class="mic-btn">
+
+    <div class="mic-btn" (click)="startRecording()">
       <ion-icon name="mic-outline"></ion-icon>
     </div>
   </div>
