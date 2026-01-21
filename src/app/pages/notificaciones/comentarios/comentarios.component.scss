@@ -143,40 +143,153 @@ ion-footer {
     padding: 10px 16px;
     padding-bottom: 20px;
 
+    .preview-area {
+        margin-bottom: 12px;
+        background: #2b2d31;
+        border-radius: 12px;
+        padding: 8px;
+        animation: slideUp 0.2s ease-out;
+
+        .file-preview-card, .audio-preview-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            background: #36393f;
+            border-radius: 8px;
+
+            .preview-content {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                overflow: hidden;
+
+                img {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 4px;
+                    object-fit: cover;
+                }
+
+                ion-icon {
+                    font-size: 24px;
+                    color: var(--accent-color);
+                }
+
+                .file-name {
+                    font-size: 13px;
+                    color: var(--text-main);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 200px;
+                }
+            }
+
+            .remove-btn {
+                color: #ef5350;
+                font-size: 20px;
+                cursor: pointer;
+                padding: 4px;
+            }
+        }
+
+        .upload-progress {
+            margin-top: 8px;
+            height: 4px;
+            background: #40444b;
+            border-radius: 2px;
+            overflow: hidden;
+
+            .bar {
+                height: 100%;
+                background: var(--accent-color);
+                transition: width 0.3s ease;
+            }
+        }
+    }
+
+    .recording-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #eb4034;
+        border-radius: 24px;
+        padding: 8px 16px;
+        color: white;
+        height: 50px;
+        animation: fadeIn 0.2s ease-out;
+
+        .recording-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+
+            .recording-dot {
+                width: 10px;
+                height: 10px;
+                background: white;
+                border-radius: 50%;
+                animation: pulse 1s infinite;
+            }
+        }
+
+        .recording-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+
+            ion-icon {
+                font-size: 24px;
+                cursor: pointer;
+            }
+
+            .stop-btn {
+                font-size: 28px;
+            }
+        }
+    }
+
     .message-input-bar {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
 
-        .add-btn,
+        .action-btn,
         .mic-btn {
             color: var(--text-secondary);
             font-size: 24px;
             display: flex;
             align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: background 0.2s;
+
+            &:active {
+                background: rgba(255, 255, 255, 0.1);
+            }
         }
 
-        .add-btn {
+        .action-btn {
+            color: var(--text-main);
             background: #3f4147;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            justify-content: center;
-
-            ion-icon {
-                font-size: 20px;
-                color: var(--text-main);
-            }
+            width: 36px;
+            height: 36px;
+            font-size: 20px;
         }
 
         .input-wrapper {
             flex: 1;
             background: var(--input-bg);
             border-radius: 20px;
-            height: 40px;
+            min-height: 40px;
             display: flex;
             align-items: center;
-            padding: 0 16px;
+            padding: 4px 12px;
+            gap: 8px;
 
             .native-input {
                 background: transparent;
@@ -185,20 +298,44 @@ ion-footer {
                 flex: 1;
                 outline: none;
                 font-size: 15px;
+                padding: 8px 0;
 
                 &::placeholder {
                     color: #6d6f78;
                 }
             }
 
-            .send-icon {
-                color: var(--text-secondary);
-                font-size: 20px;
-                margin-left: 8px;
+            .send-btn {
+                color: var(--accent-color);
+                font-size: 24px;
+                display: flex;
+                align-items: center;
+                cursor: pointer;
             }
 
+            .loading-spinner {
+                width: 24px;
+                height: 24px;
+                --color: var(--accent-color);
+            }
+        }
+
+        .mic-btn {
+            background: var(--accent-color);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            
+            &:active {
+                transform: scale(0.95);
+            }
         }
     }
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
 }
 
 .comments-list {
@@ -262,10 +399,55 @@ ion-footer {
             cursor: pointer;
             transition: all 0.2s ease;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 100%; /* Ensure bubble doesn't overflow */
 
             &:active {
                 background-color: #35373c;
                 transform: scale(0.98);
+            }
+
+            .media-attachment {
+                margin-bottom: 8px;
+                border-radius: 8px;
+                overflow: hidden;
+                
+                img, video {
+                    width: 100%;
+                    max-width: 300px;
+                    border-radius: 8px;
+                    display: block;
+                }
+
+                audio {
+                    width: 100%;
+                    max-width: 250px;
+                    margin-top: 4px;
+                }
+
+                .media-file {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    background: rgba(0,0,0,0.2);
+                    padding: 8px;
+                    border-radius: 8px;
+
+                    ion-icon {
+                        font-size: 24px;
+                        color: var(--accent-color);
+                    }
+
+                    a {
+                        color: var(--accent-color);
+                        text-decoration: none;
+                        font-size: 14px;
+                        font-weight: 500;
+                        
+                        &:hover {
+                            text-decoration: underline;
+                        }
+                    }
+                }
             }
 
             .reply-reference {

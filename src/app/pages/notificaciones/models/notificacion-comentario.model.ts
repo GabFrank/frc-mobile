@@ -7,4 +7,5 @@ export interface NotificacionComentario {
     comentarioPadre?: NotificacionComentario;
     creadoEn: Date;
     actualizadoEn?: Date;
+    mediaUrl?: string;
 }

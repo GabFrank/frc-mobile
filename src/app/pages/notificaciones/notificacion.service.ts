@@ -68,8 +68,8 @@ export class NotificacionService {
     );
   }
 
-  crearComentario(notificacionId: number, comentario: string, comentarioPadreId?: number): Observable<NotificacionComentario | null | undefined> {
-    return this.crearComentarioMutation.mutate({ notificacionId, comentario, comentarioPadreId }).pipe(
+  crearComentario(notificacionId: number, comentario: string, comentarioPadreId?: number, mediaUrl?: string): Observable<NotificacionComentario | null | undefined> {
+    return this.crearComentarioMutation.mutate({ notificacionId, comentario, comentarioPadreId, mediaUrl }).pipe(
       map(res => res.data?.crearComentarioNotificacion)
     );
   }

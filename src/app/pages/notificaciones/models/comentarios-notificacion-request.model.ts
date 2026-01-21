@@ -12,6 +12,7 @@ export interface CrearComentarioNotificacionVariables {
     notificacionId: number;
     comentario: string;
     comentarioPadreId?: number;
+    mediaUrl?: string;
 }
 
 export interface CrearComentarioNotificacionResponse {
