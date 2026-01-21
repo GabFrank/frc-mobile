@@ -19,6 +19,7 @@ import { GetTransferenciaItensPorTransferenciaIdGQL } from './graphql/getTransfe
 import { PageInfo } from 'src/app/app.component';
 import { GetTransferenciaItensWithFilterGQL } from './graphql/getTransferenciaItensWithFilter';
 import { GetTransferenciasWithFiltersGQL } from './graphql/getTransferenciasWithFilters';
+import { ImprimirTransferenciaGQL } from './graphql/imprimirTransferencia';
 
 @UntilDestroy()
 @Injectable({
@@ -42,7 +43,8 @@ export class TransferenciaService {
     private transferenciasPorUsuario: GetTransferenciasPorUsuarioGQL,
     private transferenciaItemPorTransferenciaId: GetTransferenciaItensPorTransferenciaIdGQL,
     private transferenciaItemPorTransferenciaIdWithFilter: GetTransferenciaItensWithFilterGQL,
-    private transferenciasWithFilters: GetTransferenciasWithFiltersGQL
+    private transferenciasWithFilters: GetTransferenciasWithFiltersGQL,
+    private imprimirTransferencia: ImprimirTransferenciaGQL
   ) { }
 
   async onGetTrasferenciasPorFecha(inicio, fin) {
@@ -164,5 +166,13 @@ export class TransferenciaService {
         }
       })
     })
+  }
+
+  async onImprimirTransferencia(id: number): Promise<Observable<any>> {
+    return await this.genericCrudService.onCustomGet(this.imprimirTransferencia, {
+      id: id,
+      printerName: 'pdf',
+      ticket: false
+    });
   }
 }

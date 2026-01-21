@@ -238,6 +238,7 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
 
   onMenuClick() {
     let menu: ActionMenuData[] = [
+      { texto: 'Imprimir', role: 'imprimir' },
       { texto: 'Actualizar datos', role: 'actualizar' }
     ];
     if (
@@ -252,7 +253,9 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
 
     this.menuActionService.presentActionSheet(menu).then((res) => {
       let role = res.role;
-      if (role == 'actualizar') {
+      if (role == 'imprimir') {
+        this.onImprimir();
+      } else if (role == 'actualizar') {
         this.onRefresh();
       } else if (role === 'cambiar-sucursales') {
         this.onCambiarSucursales();
@@ -260,6 +263,18 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
         this.onFinalizar();
       }
     });
+  }
+
+  async onImprimir() {
+    (await this.transferenciaService.onImprimirTransferencia(this.transferenciaId))
+      .pipe(untilDestroyed(this))
+      .subscribe((res) => {
+        if (res) {
+          const dataUrl = 'data:application/pdf;base64,' + res;
+          const win = window.open();
+          win.document.write('<iframe src="' + dataUrl + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+        }
+      });
   }
 
   onFinalizar() {
