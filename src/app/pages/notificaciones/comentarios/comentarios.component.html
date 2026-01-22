@@ -53,7 +53,26 @@
                 <span class="comment-author">{{ comentario.usuario.nickname }}</span>
                 <span class="comment-time">{{ comentario.creadoEn | date:'shortTime' }}</span>
               </div>
-              <div class="comment-bubble" (click)="responderAComentario(comentario)">
+
+              <div *ngIf="comentario.tipoMedia === 'audio'" class="whatsapp-audio"
+                (click)="responderAComentario(comentario)">
+                <img [src]="comentario.avatarUrl" class="audio-avatar" alt="">
+                <button class="play-btn" (click)="toggleAudio($event, comentario)">
+                  <ion-icon [name]="comentario.isPlaying ? 'pause' : 'play'"></ion-icon>
+                </button>
+                <div class="audio-track">
+                  <div class="waveform">
+                    <span *ngFor="let h of [35,50,70,45,80,55,90,40,75,60,85,50,65,40,55,70,45,60,35,50]" class="bar"
+                      [style.height.%]="h"></span>
+                  </div>
+                  <div class="progress-dot" [style.left.%]="comentario.audioProgress || 0"></div>
+                </div>
+                <span class="duration">{{ comentario.audioDuration || '0:00' }}</span>
+                <audio [src]="comentario.mediaUrl" (timeupdate)="onAudioTime($event, comentario)"
+                  (loadedmetadata)="onAudioLoad($event, comentario)" (ended)="onAudioEnd(comentario)" hidden></audio>
+              </div>
+              <div class="comment-bubble" *ngIf="comentario.tipoMedia !== 'audio'"
+                (click)="responderAComentario(comentario)">
                 <div class="reply-reference" *ngIf="comentario.comentarioPadre && comentario.comentarioPadre.usuario">
                   <span>{{ comentario.comentarioPadre.usuario?.nickname }}:</span>
                   <p>{{ comentario.comentarioPadre.comentario }}</p>
@@ -62,7 +81,6 @@
                 <div class="media-attachment" *ngIf="comentario.mediaUrl" [ngSwitch]="comentario.tipoMedia">
                   <img *ngSwitchCase="'imagen'" [src]="comentario.mediaUrl" class="media-img" loading="lazy">
                   <video *ngSwitchCase="'video'" [src]="comentario.mediaUrl" controls class="media-video"></video>
-                  <audio *ngSwitchCase="'audio'" [src]="comentario.mediaUrl" controls class="media-audio"></audio>
                   <div *ngSwitchDefault class="media-file">
                     <ion-icon name="document-text-outline"></ion-icon>
                     <a [href]="comentario.mediaUrl" target="_blank">Ver archivo adjunto</a>
