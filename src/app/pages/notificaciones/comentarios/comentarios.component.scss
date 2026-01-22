@@ -150,7 +150,8 @@ ion-footer {
         padding: 8px;
         animation: slideUp 0.2s ease-out;
 
-        .file-preview-card, .audio-preview-card {
+        .file-preview-card,
+        .audio-preview-card {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -323,8 +324,8 @@ ion-footer {
         .mic-btn {
             background: var(--accent-color);
             color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
             &:active {
                 transform: scale(0.95);
             }
@@ -333,9 +334,17 @@ ion-footer {
 }
 
 @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 .comments-list {
@@ -388,6 +397,79 @@ ion-footer {
             }
         }
 
+        .whatsapp-audio {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #2b2d31;
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 300px;
+            cursor: pointer;
+
+            .audio-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+
+            .play-btn {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: transparent;
+                border: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+
+                ion-icon {
+                    font-size: 24px;
+                }
+            }
+
+            .audio-track {
+                flex: 1;
+                height: 24px;
+                position: relative;
+                display: flex;
+                align-items: center;
+
+                .waveform {
+                    display: flex;
+                    align-items: center;
+                    gap: 2px;
+                    width: 100%;
+                    height: 100%;
+
+                    .bar {
+                        flex: 1;
+                        background: rgba(255, 255, 255, 0.5);
+                        border-radius: 1px;
+                        min-width: 2px;
+                    }
+                }
+
+                .progress-dot {
+                    position: absolute;
+                    width: 10px;
+                    height: 10px;
+                    background: #34b7f1;
+                    border-radius: 50%;
+                    top: 50%;
+                    transform: translateY(-50%);
+                }
+            }
+
+            .duration {
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.8);
+                min-width: 32px;
+            }
+        }
+
         .comment-bubble {
             background-color: #2b2d31;
             color: #e0e0e0;
@@ -399,7 +481,7 @@ ion-footer {
             cursor: pointer;
             transition: all 0.2s ease;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            max-width: 100%; /* Ensure bubble doesn't overflow */
+            max-width: 100%;
 
             &:active {
                 background-color: #35373c;
@@ -410,8 +492,9 @@ ion-footer {
                 margin-bottom: 8px;
                 border-radius: 8px;
                 overflow: hidden;
-                
-                img, video {
+
+                img,
+                video {
                     width: 100%;
                     max-width: 300px;
                     border-radius: 8px;
@@ -428,7 +511,7 @@ ion-footer {
                     display: flex;
                     align-items: center;
                     gap: 8px;
-                    background: rgba(0,0,0,0.2);
+                    background: rgba(0, 0, 0, 0.2);
                     padding: 8px;
                     border-radius: 8px;
 
@@ -442,7 +525,7 @@ ion-footer {
                         text-decoration: none;
                         font-size: 14px;
                         font-weight: 500;
-                        
+
                         &:hover {
                             text-decoration: underline;
                         }
@@ -613,7 +696,6 @@ ion-footer {
         background-color: rgba(62, 161, 219, 0.3);
     }
 
-    // Color primario aprox
     100% {
         background-color: transparent;
     }

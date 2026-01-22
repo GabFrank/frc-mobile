@@ -13,6 +13,9 @@ interface ComentarioProcesado extends NotificacionComentario {
   avatarUrl: string;
   textoFormateado: string;
   tipoMedia?: string;
+  isPlaying?: boolean;
+  audioProgress?: number;
+  audioDuration?: string;
 }
 
 interface UsuarioProcesado extends Usuario {
@@ -325,10 +328,10 @@ export class ComentariosComponent implements OnInit, OnDestroy {
 
   private obtenerTipoMedia(url?: string): string {
     if (!url) return '';
-    const ext = url.split('.').pop()?.toLowerCase() || '';
+    const ext = url.split('.').pop()?.toLowerCase().split('?')[0] || '';
     if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return 'imagen';
-    if (['mp4', 'webm', 'ogg', 'mov'].includes(ext)) return 'video';
-    if (['mp3', 'wav', 'ogg', 'webm', 'm4a'].includes(ext) || url.includes('audio')) return 'audio'; // Weak check but simplified
+    if (['mp4', 'mov', 'avi'].includes(ext)) return 'video';
+    if (['mp3', 'wav', 'm4a', 'ogg', 'webm'].includes(ext)) return 'audio';
     if (['pdf'].includes(ext)) return 'pdf';
     return 'archivo';
   }
@@ -350,5 +353,50 @@ export class ComentariosComponent implements OnInit, OnDestroy {
 
   public identificarPorId(indice: number, elemento: any): number {
     return elemento.id;
+  }
+
+  private audioActual: HTMLAudioElement | null = null;
+  private comentarioActual: ComentarioProcesado | null = null;
+
+  toggleAudio(event: Event, c: ComentarioProcesado): void {
+    event.stopPropagation();
+    const audio = (event.target as HTMLElement).closest('.whatsapp-audio')?.querySelector('audio') as HTMLAudioElement;
+    if (!audio) return;
+    if (this.audioActual && this.audioActual !== audio) {
+      this.audioActual.pause();
+      if (this.comentarioActual) this.comentarioActual.isPlaying = false;
+    }
+    if (audio.paused) {
+      audio.play(); c.isPlaying = true;
+      this.audioActual = audio; this.comentarioActual = c;
+    } else {
+      audio.pause(); c.isPlaying = false;
+    }
+    this.cdr.markForCheck();
+  }
+
+  onAudioTime(e: Event, c: ComentarioProcesado): void {
+    const a = e.target as HTMLAudioElement;
+    if (a.duration) {
+      c.audioProgress = (a.currentTime / a.duration) * 100;
+      c.audioDuration = this.formatTime(a.duration - a.currentTime);
+      this.cdr.markForCheck();
+    }
+  }
+
+  onAudioLoad(e: Event, c: ComentarioProcesado): void {
+    c.audioDuration = this.formatTime((e.target as HTMLAudioElement).duration);
+    this.cdr.markForCheck();
+  }
+
+  onAudioEnd(c: ComentarioProcesado): void {
+    c.isPlaying = false; c.audioProgress = 0;
+    this.audioActual = null; this.comentarioActual = null;
+    this.cdr.markForCheck();
+  }
+
+  private formatTime(s: number): string {
+    if (!s || isNaN(s)) return '0:00';
+    return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
   }
 }
