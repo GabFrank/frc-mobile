@@ -20,6 +20,7 @@ import { ProductoService } from '../../producto/producto.service';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
 import { GenericListDialogComponent, TableData, GenericListDialogData } from 'src/app/components/generic-list-dialog/generic-list-dialog.component';
+import { PdfViewerService } from 'src/app/services/pdf-viewer.service';
 
 enum OpcionesMostrar {
   TODOS = 'TODOS',
@@ -58,7 +59,8 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
     private router: Router,
     private productoService: ProductoService,
     private cdr: ChangeDetectorRef,
-    private sucursalService: SucursalService
+    private sucursalService: SucursalService,
+    private pdfViewerService: PdfViewerService
   ) { }
 
   ngOnInit() {
@@ -268,11 +270,9 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
   async onImprimir() {
     (await this.transferenciaService.onImprimirTransferencia(this.transferenciaId))
       .pipe(untilDestroyed(this))
-      .subscribe((res) => {
+      .subscribe(async (res) => {
         if (res) {
-          const dataUrl = 'data:application/pdf;base64,' + res;
-          const win = window.open();
-          win.document.write('<iframe src="' + dataUrl + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+          await this.pdfViewerService.openPdfFromBase64(res, `transferencia_${this.transferenciaId}.pdf`);
         }
       });
   }
