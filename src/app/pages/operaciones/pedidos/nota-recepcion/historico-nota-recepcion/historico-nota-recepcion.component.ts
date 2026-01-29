@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { NotaRecepcionAgrupada } from '../nota-recepcion-agrupada/nota-recepcion-agrupada.model';
+import { RecepcionMercaderia } from '../../recepcion-mercaderia/recepcion-mercaderia.model';
 import { MainService } from 'src/app/services/main.service';
-import { NotaRecepcionAgrupadaService } from '../nota-recepcion-agrupada/nota-recepcion-agrupada.service';
+import { RecepcionMercaderiaService } from '../../recepcion-mercaderia/recepcion-mercaderia.service';
 import { PageInfo } from 'src/app/app.component';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,13 +12,13 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrls: ['./historico-nota-recepcion.component.scss']
 })
 export class HistoricoNotaRecepcionComponent implements OnInit {
-  notaRecepcionAgrupadaList: NotaRecepcionAgrupada[];
+  recepcionMercaderiaList: RecepcionMercaderia[];
   pageIndex = 0;
   pageSize = 5;
-  selectedPageInfo: PageInfo<NotaRecepcionAgrupada>;
+  selectedPageInfo: PageInfo<RecepcionMercaderia>;
   constructor(
     private mainService: MainService,
-    private notaRecepcionAgrupadaService: NotaRecepcionAgrupadaService,
+    private recepcionMercaderiaService: RecepcionMercaderiaService,
     private _location: Location,
     private router: Router,
     private route: ActivatedRoute
@@ -26,13 +26,13 @@ export class HistoricoNotaRecepcionComponent implements OnInit {
 
   ngOnInit() {
     setTimeout(() => {
-      this.onSearchNotaRecepcionAgrupada();
+      this.onSearchRecepcionMercaderia();
     }, 500);
   }
 
-  async onSearchNotaRecepcionAgrupada() {
+  async onSearchRecepcionMercaderia() {
     (
-      await this.notaRecepcionAgrupadaService.onGetNotaRecepcionAgrupadaListPorUsuarioId(
+      await this.recepcionMercaderiaService.onGetRecepcionMercaderiaListPorUsuarioId(
         this.mainService.usuarioActual.id,
         this.pageIndex,
         this.pageSize
@@ -41,14 +41,18 @@ export class HistoricoNotaRecepcionComponent implements OnInit {
       console.log(res);
 
       this.selectedPageInfo = res;
-      this.notaRecepcionAgrupadaList = res.getContent;
+      // Calcular cantNotas desde las notas asociadas
+      this.recepcionMercaderiaList = res.getContent.map(rm => {
+        rm.cantNotas = rm.notas?.length || 0;
+        return rm;
+      });
     });
   }
 
-  onItemClick(notaRecepcionAgrupada: NotaRecepcionAgrupada) {
+  onItemClick(recepcionMercaderia: RecepcionMercaderia) {
     this.router.navigate([
       '/operaciones/pedidos/recepcion-producto',
-      notaRecepcionAgrupada.id
+      recepcionMercaderia.id
     ]);
   }
 
@@ -58,6 +62,6 @@ export class HistoricoNotaRecepcionComponent implements OnInit {
 
   handlePagination(e) {
     this.pageIndex = e - 1;
-    this.onSearchNotaRecepcionAgrupada();
+    this.onSearchRecepcionMercaderia();
   }
 }
