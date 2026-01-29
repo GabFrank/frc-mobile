@@ -106,6 +106,18 @@ Migración del componente histórico de recepción de mercaderías de usar la en
 - El campo `notas` es nuevo y no se usa en Desktop, por lo que no afecta funcionalidad existente
 - La navegación a `/operaciones/pedidos/recepcion-producto/:id` se mantiene temporalmente (se adaptará en siguiente fase)
 
+## Commits Realizados
+
+### Frontend Mobile
+- **Commit**: `8a450b3` - `refactor: migrar componente histórico de NotaRecepcionAgrupada a RecepcionMercaderia`
+- **Branch**: `FM-28-compras`
+- **Archivos**: 9 archivos modificados/creados (468 inserciones, 26 eliminaciones)
+
+### Backend
+- **Commit**: `21344e02` - `feat: agregar campo notas en RecepcionMercaderia para mobile`
+- **Branch**: `FD-29-compras`
+- **Archivos**: 2 archivos modificados (30 inserciones)
+
 ## Próximos Pasos
 
 1. Compilar backend para aplicar cambios en resolver y schema
