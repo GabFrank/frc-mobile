@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { GenericCrudService } from 'src/app/generic/generic-crud.service';
 import { PageInfo } from '../../../../app.component';
 import { CountNotaRecepcionPorPedidoIdGQL } from './graphql/countNotaRecepcionPorPedido';
@@ -63,9 +64,23 @@ export class NotaRecepcionService {
     id,
     numero
   ): Promise<Observable<NotaRecepcion[]>> {
-    return await this.genericService.onCustomGet(
+    const obs = await this.genericService.onCustomGet(
       this.getNotaRecepcionPorProveedorAndNumero,
       { id, numero }, true
+    );
+    // Mapear valorTotal a valor para compatibilidad con el modelo del frontend
+    return obs.pipe(
+      map((response: any) => {
+        if (response && Array.isArray(response)) {
+          return response.map((nota: NotaRecepcion) => {
+            if (nota.valorTotal != null && nota.valor == null) {
+              nota.valor = nota.valorTotal;
+            }
+            return nota;
+          });
+        }
+        return response;
+      })
     );
   }
 

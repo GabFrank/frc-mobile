@@ -115,6 +115,15 @@
               <ion-icon name="cash-outline" slot="start"></ion-icon>
               <ion-label>Caja</ion-label>
             </ion-item>
+            <ion-item
+              slot="content"
+              [routerLink]="['/operaciones/pedidos']"
+              (click)="closeMenu()"
+              style="padding-left: 10%"
+            >
+              <ion-icon name="cube-outline" slot="start"></ion-icon>
+              <ion-label>Recepción de Mercaderías</ion-label>
+            </ion-item>
           </ion-accordion>
   
           <ion-accordion value="third">

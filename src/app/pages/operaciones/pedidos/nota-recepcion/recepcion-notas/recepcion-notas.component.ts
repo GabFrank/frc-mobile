@@ -26,9 +26,10 @@ import { Proveedor } from 'src/app/pages/personas/proveedor/proveedor.model';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { NotaRecepcionInfoDialogComponent } from '../nota-recepcion-info-dialog/nota-recepcion-info-dialog.component';
 import { IonInput } from '@ionic/angular';
-import { NotaRecepcionAgrupada, NotaRecepcionAgrupadaEstado } from '../nota-recepcion-agrupada/nota-recepcion-agrupada.model';
-import { NotaRecepcionAgrupadaService } from '../nota-recepcion-agrupada/nota-recepcion-agrupada.service';
-import { forkJoin } from 'rxjs';
+import { RecepcionMercaderiaService } from '../../recepcion-mercaderia/recepcion-mercaderia.service';
+import { MonedaService } from '../../../moneda/moneda.service';
+import { Moneda } from '../../../moneda/moneda.model';
+import { first } from 'rxjs/operators';
 
 @Component({
   selector: 'app-recepcion-notas',
@@ -57,7 +58,8 @@ export class RecepcionNotasComponent implements OnInit {
     private modalService: ModalService,
     public proveedorSearchPage: ProveedoresSearchByPersonaPageGQL,
     private dialogService: DialogoService,
-    private notaRecepcionAgrupadaService: NotaRecepcionAgrupadaService
+    private recepcionMercaderiaService: RecepcionMercaderiaService,
+    private monedaService: MonedaService
   ) { }
 
   ngOnInit() {
@@ -97,7 +99,7 @@ export class RecepcionNotasComponent implements OnInit {
           return false || this.mainService.isDev;
         });
     } else {
-      (await this.sucursalService.onGetSucursal(5)).subscribe((sucRes) => {
+      (await this.sucursalService.onGetSucursal(1)).subscribe((sucRes) => {
         if (sucRes != null) {
           this.selectedSucursal = sucRes;
         }
@@ -145,24 +147,63 @@ export class RecepcionNotasComponent implements OnInit {
       this.selectedProveedor != null &&
       this.numeroNotaControl.value != null
     ) {
+      // Validar que tenemos sucursal seleccionada
+      if (!this.selectedSucursal) {
+        this.notificacionService.warn('Debe seleccionar una sucursal antes de buscar notas');
+        return;
+      }
+
       (
         await this.notaRecepcionService.onGetNotaRecepcionPorProveedorAndNumero(
           this.selectedProveedor.id,
           this.numeroNotaControl.value
         )
-      ).subscribe((res) => {
+      ).subscribe(async (res) => {
         if (res?.length == 1) {
+          const nota = res[0];
+          
+          // Verificar si ya existe una recepción activa para esta nota en esta sucursal
+          try {
+            const recepcionActivaObs = await this.recepcionMercaderiaService.onVerificarRecepcionActivaPorNotaYSucursal(
+              nota.id,
+              this.selectedSucursal.id
+            );
+            const recepcionActiva = await recepcionActivaObs.pipe(first()).toPromise();
+            
+            if (recepcionActiva) {
+              // Ya existe una recepción (activa o finalizada)
+              let mensaje: string;
+              if (recepcionActiva.estado === 'FINALIZADA') {
+                mensaje = `Esta nota ya fue recibida y finalizada (Recepción ID: ${recepcionActiva.id}) en ${this.selectedSucursal.nombre}. ` +
+                          `Si necesita hacer correcciones, use la opción 'Reabrir recepción' en lugar de agregar esta nota. ` +
+                          `Crear una nueva recepción duplicaría movimientos de stock y costos.`;
+              } else {
+                mensaje = `Esta nota ya tiene una recepción en proceso (ID: ${recepcionActiva.id}, Estado: ${recepcionActiva.estado}) en ${this.selectedSucursal.nombre}. ` +
+                          `Debe finalizar o cancelar la recepción existente antes de agregar esta nota.`;
+              }
+              this.notificacionService.warn(mensaje);
+              setTimeout(() => {
+                this.numeroNotaInput?.setFocus();
+              }, 1000);
+              return;
+            }
+          } catch (error) {
+            console.error('Error al verificar recepción activa:', error);
+            // Continuar con el flujo normal si hay error en la verificación
+          }
+
+          // No hay recepción activa, proceder con el diálogo
           this.modalService
             .openModal(
               NotaRecepcionInfoDialogComponent,
               {
-                notaRecepcion: res[0]
+                notaRecepcion: nota
               },
               ModalSize.MEDIUM
             )
             .then((dialogRes) => {
               if (dialogRes?.data?.agregar) {
-                this.notaRecepcionList.push(res[0]);
+                this.notaRecepcionList.push(nota);
                 this.numeroNotaControl.setValue(null);
                 setTimeout(() => {
                   this.numeroNotaInput?.setFocus();
@@ -229,36 +270,54 @@ export class RecepcionNotasComponent implements OnInit {
     const dialogResult = await this.dialogService.open('Atención!!', 'Realmente desea iniciar la recepción de notas?');
     if (dialogResult.role === 'aceptar') {
       try {
-        let notaRecpcionAgrupada = new NotaRecepcionAgrupada();
-        notaRecpcionAgrupada.proveedor = this.selectedProveedor;
-        notaRecpcionAgrupada.usuario = this.mainService.usuarioActual;
-        notaRecpcionAgrupada.sucursal = this.selectedSucursal;
-        notaRecpcionAgrupada.estado = NotaRecepcionAgrupadaEstado.EN_RECEPCION;
+        // Validar que tenemos todos los datos necesarios
+        if (!this.selectedProveedor || !this.selectedSucursal || !this.mainService.usuarioActual) {
+          this.notificacionService.warn('Faltan datos requeridos para iniciar la recepción');
+          return;
+        }
 
-        (await this.notaRecepcionAgrupadaService.onSaveNotaRecepcionAgrupada(notaRecpcionAgrupada.toInput()))
-          .subscribe(async notaRecepcionAggRes => {
-            if (notaRecepcionAggRes != null) {
-              const saveOperations = this.notaRecepcionList.map(async nota => {
-                let notaAux = new NotaRecepcion();
-                Object.assign(notaAux, nota);
-                notaAux.notaRecepcionAgrupada = notaRecepcionAggRes;
-                console.log('Saving nota:', notaAux);
-                return (await this.notaRecepcionService.onSaveNotaRecepcion(notaAux.toInput())).subscribe();
-              });
+        if (!this.notaRecepcionList || this.notaRecepcionList.length === 0) {
+          this.notificacionService.warn('Debe agregar al menos una nota de recepción');
+          return;
+        }
 
-              forkJoin(saveOperations).subscribe({
-                next: () => {
-                  console.log('All notas saved successfully');
-                  this.notificacionService.openGuardadoConExito();
-                  this.router.navigate(['/operaciones/pedidos/recepcion-producto', notaRecepcionAggRes.id]);
-                },
-                error: (error) => {
-                  console.error('Error saving notes:', error);
-                  this.notificacionService.openAlgoSalioMal();
-                }
-              });
+        // Obtener moneda (usar la primera disponible o una por defecto)
+        const monedasObs = await this.monedaService.onGetAll();
+        const monedas = await monedasObs.pipe(first()).toPromise();
+        let monedaId: number;
+        if (monedas && monedas.length > 0) {
+          // Buscar moneda Guaraníes (Gs) o usar la primera
+          const monedaGs = monedas.find(m => m.denominacion?.toUpperCase().includes('GUARANI') || m.denominacion?.toUpperCase().includes('GS'));
+          monedaId = monedaGs?.id || monedas[0].id;
+        } else {
+          this.notificacionService.warn('No se encontró moneda disponible');
+          return;
+        }
+
+        // Obtener IDs de las notas
+        const notaRecepcionIds = this.notaRecepcionList.map(nota => nota.id);
+
+        // Llamar al método iniciarRecepcion que crea la recepción, asocia notas y pre-crea items
+        (await this.recepcionMercaderiaService.onIniciarRecepcion(
+          this.selectedSucursal.id,
+          notaRecepcionIds,
+          this.selectedProveedor.id,
+          monedaId,
+          this.mainService.usuarioActual.id,
+          1.0 // cotizacion por defecto
+        )).subscribe({
+          next: (recepcionMercaderia) => {
+            if (recepcionMercaderia != null) {
+              console.log('Recepción iniciada exitosamente:', recepcionMercaderia);
+              this.notificacionService.openGuardadoConExito();
+              this.router.navigate(['/operaciones/pedidos/recepcion-producto', recepcionMercaderia.id]);
             }
-          });
+          },
+          error: (error) => {
+            console.error('Error al iniciar recepción:', error);
+            this.notificacionService.openAlgoSalioMal();
+          }
+        });
       } catch (error) {
         console.error('Error during save operation:', error);
         this.notificacionService.openAlgoSalioMal();

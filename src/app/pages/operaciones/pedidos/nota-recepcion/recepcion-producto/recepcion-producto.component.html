@@ -11,7 +11,7 @@
     </ion-row>
     <ion-row style="align-items: center">
       <ion-col size="12" class="center">{{
-        selectedNotaRecepcionAgrupada?.proveedor?.persona?.nombre | uppercase
+        selectedRecepcionMercaderia?.proveedor?.persona?.nombre | uppercase
         }}</ion-col>
     </ion-row>
     <!-- <ion-row>
@@ -19,7 +19,7 @@
     </ion-row>
     <ion-row>
       <ion-col size="12" class="center">{{
-        selectedNotaRecepcionAgrupada?.usuario?.persona?.nombre | uppercase
+        selectedRecepcionMercaderia?.usuario?.persona?.nombre | uppercase
       }}</ion-col>
     </ion-row> -->
     <ion-row>
@@ -29,34 +29,34 @@
     </ion-row>
     <ion-row style="text-align: center; font-size: small">
       <ion-col size="4">{{
-        selectedNotaRecepcionAgrupada?.creadoEn | date : 'short'
+        selectedRecepcionMercaderia?.fecha | date : 'short'
         }}</ion-col>
-      <ion-col size="4">{{ selectedNotaRecepcionAgrupada?.cantNotas }}</ion-col>
-      <ion-col size="4" [class.en_recepcion]="
-          selectedNotaRecepcionAgrupada?.estado == 'EN_RECEPCION'
-        " [class.cancelado]="selectedNotaRecepcionAgrupada?.estado == 'CANCELADO'"
-        [class.concluido]="selectedNotaRecepcionAgrupada?.estado == 'CONCLUIDO'">{{
-        selectedNotaRecepcionAgrupada?.estado | enumToString }}</ion-col>
+      <ion-col size="4">{{ selectedRecepcionMercaderia?.cantNotas }}</ion-col>
+      <ion-col size="4" [class.en_proceso]="
+          selectedRecepcionMercaderia?.estado == 'EN_PROCESO'
+        " [class.cancelada]="selectedRecepcionMercaderia?.estado == 'CANCELADA'"
+        [class.finalizada]="selectedRecepcionMercaderia?.estado == 'FINALIZADA'">{{
+        selectedRecepcionMercaderia?.estado | enumToString }}</ion-col>
     </ion-row>
     <ion-row style="text-align: center; align-items: center">
       <ion-col size="6">
-        <ion-button *ngIf="selectedNotaRecepcionAgrupada?.estado != 'CONCLUIDO'" (click)="onModificarNotas()" expand="block" class="btn-success">
+        <ion-button *ngIf="selectedRecepcionMercaderia?.estado != 'FINALIZADA'" (click)="onModificarNotas()" expand="block" class="btn-success">
           Modificar notas
         </ion-button>
-        <ion-button *ngIf="selectedNotaRecepcionAgrupada?.estado == 'CONCLUIDO'" (click)="onNuevaRecepcion()" expand="block" class="btn-success">
+        <ion-button *ngIf="selectedRecepcionMercaderia?.estado == 'FINALIZADA'" (click)="onNuevaRecepcion()" expand="block" class="btn-success">
           Nueva Recepción
         </ion-button>
       </ion-col>
       <ion-col size="6">
-        <ion-button *ngIf="selectedNotaRecepcionAgrupada?.usuario == null" (click)="onIniciarRecepcion()" expand="block"
+        <ion-button *ngIf="selectedRecepcionMercaderia?.usuario == null" (click)="onIniciarRecepcion()" expand="block"
           class="btn-success">
           Iniciar Recepción
         </ion-button>
-        <ion-button *ngIf="selectedNotaRecepcionAgrupada?.usuario != null && selectedNotaRecepcionAgrupada?.estado == 'EN_RECEPCION'" (click)="onFinalizarRecepcion()" expand="block"
+        <ion-button *ngIf="selectedRecepcionMercaderia?.usuario != null && selectedRecepcionMercaderia?.estado == 'EN_PROCESO'" (click)="onFinalizarRecepcion()" expand="block"
           class="btn-success">
           Finalizar Recepción
         </ion-button>
-        <ion-button *ngIf="selectedNotaRecepcionAgrupada?.usuario != null && selectedNotaRecepcionAgrupada?.estado == 'CONCLUIDO'" (click)="onReabrirRecepcion()" expand="block"
+        <ion-button *ngIf="selectedRecepcionMercaderia?.usuario != null && selectedRecepcionMercaderia?.estado == 'FINALIZADA'" (click)="onReabrirRecepcion()" expand="block"
           class="btn-success">
           Reabrir Recepción
         </ion-button>
@@ -125,10 +125,10 @@
   </ion-toolbar> -->
   <ion-row>
     <ion-col size="12">
-      <ion-button *ngIf="selectedNotaRecepcionAgrupada?.usuario != null && selectedNotaRecepcionAgrupada?.estado == 'EN_RECEPCION'" (click)="onBuscarProducto()" expand="block">
+      <ion-button *ngIf="selectedRecepcionMercaderia?.usuario != null && selectedRecepcionMercaderia?.estado == 'EN_PROCESO'" (click)="onBuscarProducto()" expand="block">
         Buscar producto
       </ion-button>
-      <ion-button *ngIf="selectedNotaRecepcionAgrupada?.estado == 'CONCLUIDO'" (click)="onSolicitarPago()" expand="block">
+      <ion-button *ngIf="selectedRecepcionMercaderia?.estado == 'FINALIZADA'" (click)="onSolicitarPago()" expand="block">
         Solicitar pago
       </ion-button>
     </ion-col>
