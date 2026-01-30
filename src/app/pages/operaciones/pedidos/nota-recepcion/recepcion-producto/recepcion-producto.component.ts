@@ -1,9 +1,9 @@
 import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { NotaRecepcionAgrupada, NotaRecepcionAgrupadaEstado } from '../nota-recepcion-agrupada/nota-recepcion-agrupada.model';
+import { RecepcionMercaderia, RecepcionMercaderiaEstado } from '../../recepcion-mercaderia/recepcion-mercaderia.model';
 import { ActivatedRoute, Router, Routes } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { NotaRecepcionAgrupadaService } from '../nota-recepcion-agrupada/nota-recepcion-agrupada.service';
+import { RecepcionMercaderiaService } from '../../recepcion-mercaderia/recepcion-mercaderia.service';
 import { PageInfo } from 'src/app/app.component';
 import { PedidoRecepcionProductoDto, PedidoRecepcionProductoEstado } from '../nota-recepcion-agrupada/pedido-recepcion-producto-dto.model';
 import { ModalService, ModalSize } from 'src/app/services/modal.service';
@@ -29,7 +29,7 @@ import { CargandoService } from 'src/app/services/cargando.service';
 export class RecepcionProductoComponent implements OnInit {
   pageIndex = 0;
   pageSize = 10;
-  selectedNotaRecepcionAgrupada: NotaRecepcionAgrupada;
+  selectedRecepcionMercaderia: RecepcionMercaderia;
   selectedPageInfo: PageInfo<PedidoRecepcionProductoDto>;
   itemList: PedidoRecepcionProductoDto[];
   selectedEstado: PedidoRecepcionProductoEstado = null;
@@ -38,7 +38,7 @@ export class RecepcionProductoComponent implements OnInit {
   constructor(
     private _location: Location,
     private route: ActivatedRoute,
-    private notaRecepcionAgrupadaService: NotaRecepcionAgrupadaService,
+    private recepcionMercaderiaService: RecepcionMercaderiaService,
     private router: Router,
     private modalService: ModalService,
     private actionSheetController: ActionSheetController,
@@ -52,32 +52,32 @@ export class RecepcionProductoComponent implements OnInit {
 
   ngOnInit() {
     this.route.paramMap.pipe(untilDestroyed(this)).subscribe((res) => {
-      let notaRecepcionAgrupadaId = res.get('id');
-      if (notaRecepcionAgrupadaId != null) {
-        this.onBuscarNotaRecepcionAgrupada(notaRecepcionAgrupadaId);
+      let recepcionMercaderiaId = res.get('id');
+      if (recepcionMercaderiaId != null) {
+        this.onBuscarRecepcionMercaderia(recepcionMercaderiaId);
       }
     });
   }
 
-  async onBuscarNotaRecepcionAgrupada(id) {
+  async onBuscarRecepcionMercaderia(id) {
     (
-      await this.notaRecepcionAgrupadaService.onGetNotaRecepcionAgrupadaPorId(
-        id
+      await this.recepcionMercaderiaService.onGetRecepcionMercaderiaPorId(
+        +id
       )
     ).subscribe(async (res) => {
       if (res != null) {
-        this.selectedNotaRecepcionAgrupada = new NotaRecepcionAgrupada();
-        Object.assign(this.selectedNotaRecepcionAgrupada, res);
+        this.selectedRecepcionMercaderia = new RecepcionMercaderia();
+        Object.assign(this.selectedRecepcionMercaderia, res);
         this.onGetPedidoItem();
       }
     });
   }
 
   async onGetPedidoItem() {
-    if (this.selectedNotaRecepcionAgrupada) {
+    if (this.selectedRecepcionMercaderia) {
       (
-        await this.notaRecepcionAgrupadaService.onGetPedidoRecepcionProductoPorNotaRecepcionAgrupada(
-          this.selectedNotaRecepcionAgrupada.id,
+        await this.recepcionMercaderiaService.onGetPedidoRecepcionProductoPorRecepcionMercaderia(
+          this.selectedRecepcionMercaderia.id,
           this.selectedEstado,
           this.pageIndex,
           this.pageSize
@@ -95,7 +95,7 @@ export class RecepcionProductoComponent implements OnInit {
     this.modalService.openModal(
       RecepcionProductoVerificacionDialogComponent,
       {
-        notaRecepcionAgrupada: this.selectedNotaRecepcionAgrupada,
+        recepcionMercaderia: this.selectedRecepcionMercaderia,
         pedidoRecepcionProducto: item,
         presentacion: this.selectedPresentacion || item.producto.presentaciones[0]
       }
@@ -177,8 +177,8 @@ export class RecepcionProductoComponent implements OnInit {
           ModalSize.MEDIUM
         ).then(async dialogRes => {
           if (dialogRes?.data) {
-            (await this.notaRecepcionAgrupadaService.onGetPedidoRecepcionProductoPorNotaRecepcionAgrupadaAndProducto(
-              this.selectedNotaRecepcionAgrupada.id,
+            (await this.recepcionMercaderiaService.onGetPedidoRecepcionProductoPorRecepcionMercaderiaAndProducto(
+              this.selectedRecepcionMercaderia.id,
               producto.id,
               this.selectedEstado
             )).subscribe((res2) => {
@@ -206,11 +206,11 @@ export class RecepcionProductoComponent implements OnInit {
   onFinalizarRecepcion() {
     this.dialogoService.open('Atención!', '¿Realmente desea finalizar esta recepción?').then(async res => {
       if (res.role === 'aceptar') {
-        (await this.notaRecepcionAgrupadaService.onFinalizarRecepcion(this.selectedNotaRecepcionAgrupada.id))
+        (await this.recepcionMercaderiaService.onFinalizarRecepcionMercaderia(this.selectedRecepcionMercaderia.id))
           .pipe(untilDestroyed(this))
           .subscribe(res => {
             if (res != null) {
-              this.selectedNotaRecepcionAgrupada = res;
+              this.selectedRecepcionMercaderia = res;
             }
           });
       }
@@ -220,11 +220,11 @@ export class RecepcionProductoComponent implements OnInit {
   onReabrirRecepcion() {
     this.dialogoService.open('Atención!', '¿Realmente desea reabrir esta recepción?').then(async res => {
       if (res.role === 'aceptar') {
-        (await this.notaRecepcionAgrupadaService.onReabrirRecepcion(this.selectedNotaRecepcionAgrupada.id))
+        (await this.recepcionMercaderiaService.onReabrirRecepcionMercaderia(this.selectedRecepcionMercaderia.id))
           .pipe(untilDestroyed(this))
           .subscribe(res => {
             if (res != null) {
-              this.selectedNotaRecepcionAgrupada = res;
+              this.selectedRecepcionMercaderia = res;
             }
           });
       }
@@ -236,9 +236,11 @@ export class RecepcionProductoComponent implements OnInit {
   }
 
   onSolicitarPago() {
-    this.dialogoService.open('Atención!', '¿Realmente desea solicitar el pago de esta nota?').then(async res => {
+    this.dialogoService.open('Atención!', '¿Realmente desea solicitar el pago de esta recepción?').then(async res => {
       if (res.role === 'aceptar') {
-        this.router.navigate(['/operaciones/pedidos/solicitar-pago-nota-recepcion/', this.selectedNotaRecepcionAgrupada.id]);
+        // TODO: Adaptar ruta de solicitar pago cuando se migre ese componente
+        // Por ahora mantener la ruta original pero con el ID de recepcionMercaderia
+        this.router.navigate(['/operaciones/pedidos/solicitar-pago-nota-recepcion/', this.selectedRecepcionMercaderia.id]);
       }
     });
   }

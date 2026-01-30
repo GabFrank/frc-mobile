@@ -61,7 +61,6 @@ export const findByProveedorAndNumeroQuery = gql`
       id
       pedido {
         id
-        estado
       }
       compra {
         id
@@ -71,25 +70,22 @@ export const findByProveedorAndNumeroQuery = gql`
         descripcion
         activo
       }
-      valor
-      descuento
+      valorTotal
       pagado
       numero
       fecha
       timbrado
+      tipoBoleta
+      estado
+      moneda {
+        id
+        denominacion
+        simbolo
+      }
+      cotizacion
       creadoEn
-      cantidadItensVerificadoRecepcionMercaderia
       usuario {
         id
-      }
-      notaRecepcionAgrupada {
-        id
-        usuario {
-          id
-          persona {
-            nombre
-          }
-        }
       }
     }
   }

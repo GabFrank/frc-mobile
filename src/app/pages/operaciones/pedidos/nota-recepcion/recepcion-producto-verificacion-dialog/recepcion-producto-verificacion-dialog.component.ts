@@ -8,11 +8,14 @@ import { NotificacionService } from 'src/app/services/notificacion.service';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { Location } from '@angular/common';
 import { ModalService } from 'src/app/services/modal.service';
-import { NotaRecepcionAgrupada } from '../nota-recepcion-agrupada/nota-recepcion-agrupada.model';
-import { NotaRecepcionAgrupadaService } from '../nota-recepcion-agrupada/nota-recepcion-agrupada.service';
+import { RecepcionMercaderia } from '../../recepcion-mercaderia/recepcion-mercaderia.model';
+import { RecepcionMercaderiaService } from '../../recepcion-mercaderia/recepcion-mercaderia.service';
+import { RecepcionMercaderiaItemInput, MetodoVerificacion } from '../../recepcion-mercaderia/recepcion-mercaderia-item.model';
+import { MainService } from 'src/app/services/main.service';
+import { first } from 'rxjs/operators';
 
 export class RecepcionProductoVerificacionDialogData {
-  notaRecepcionAgrupada: NotaRecepcionAgrupada;
+  recepcionMercaderia: RecepcionMercaderia;
   pedidoRecepcionProducto: PedidoRecepcionProductoDto;
   presentacion?: Presentacion;
 }
@@ -48,7 +51,8 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
 
   constructor(
     private notificacionService: NotificacionService,
-    private notaRecepcionAgrupadaService: NotaRecepcionAgrupadaService,
+    private recepcionMercaderiaService: RecepcionMercaderiaService,
+    private mainService: MainService,
     private _location: Location,
     private modalService: ModalService
   ) {}
@@ -81,19 +85,49 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
   onAdicionarRecepcion() {
     let cantidad = this.cantidadControl.value;
     let cantidadPresentacion = this.presentacionControl.value?.cantidad;
+    
+    if (!cantidad || cantidad <= 0) {
+      this.notificacionService.warn('Debe ingresar una cantidad válida');
+      return;
+    }
+    
+    if (!cantidadPresentacion || cantidadPresentacion <= 0) {
+      this.notificacionService.warn('Debe seleccionar una presentación');
+      return;
+    }
+    
     let cantidadPorUnidad = cantidad * cantidadPresentacion;
     let itemRecepcion = new ItemRecepcion();
     itemRecepcion.cantidad = cantidad;
     itemRecepcion.presentacion = this.presentacionControl.value;
+    
+    // Calcular cantidad total ya agregada en la lista (excluyendo el item que se está editando)
+    let cantidadYaAgregada = 0;
     if (this.isEditMode) {
-      this.onDelete(this.selectedItemToEdit);
+      // Si está en modo edición, calcular sin el item que se está editando
+      cantidadYaAgregada = this.itemRecepcionList
+        .filter((item, index) => index !== this.selectedItemIndexToEdit)
+        .reduce((sum, item) => sum + (item.cantidad * item.presentacion.cantidad), 0);
+    } else {
+      // Si no está en modo edición, calcular toda la lista
+      cantidadYaAgregada = this.itemRecepcionList
+        .reduce((sum, item) => sum + (item.cantidad * item.presentacion.cantidad), 0);
     }
-    if (
-      cantidadPorUnidad <=
-      this.selectedItem.totalCantidadARecibirPorUnidad -
-        this.selectedItem.totalCantidadRecibidaPorUnidad
-    ) {
-      this.nuevaCantidadRecibida = cantidadPorUnidad;
+    
+    // Calcular cantidad faltante
+    let cantidadFaltante = this.selectedItem.totalCantidadARecibirPorUnidad - 
+                          (this.selectedItem.totalCantidadRecibidaPorUnidad || 0) - 
+                          cantidadYaAgregada;
+    
+    if (cantidadPorUnidad <= cantidadFaltante) {
+      if (this.isEditMode) {
+        // Eliminar el item anterior antes de agregar el nuevo
+        this.onDelete(this.selectedItemToEdit);
+      }
+      
+      // Actualizar nuevaCantidadRecibida sumando la nueva cantidad
+      this.nuevaCantidadRecibida = cantidadYaAgregada + cantidadPorUnidad;
+      
       this.cantidadControl.setValue(null);
       if (this.isEditMode) {
         this.itemRecepcionList[this.selectedItemIndexToEdit] = itemRecepcion;
@@ -129,17 +163,69 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
       this.itemRecepcionList.splice(index, 1);
     }
 
-    // Update nuevaCantidadRecibida instead of totalCantidadRecibidaPorUnidad
-    this.nuevaCantidadRecibida -= itemRecepcion.cantidad * itemRecepcion.presentacion.cantidad;
+    // Recalcular nuevaCantidadRecibida sumando todos los items restantes
+    this.nuevaCantidadRecibida = this.itemRecepcionList
+      .reduce((sum, item) => sum + (item.cantidad * item.presentacion.cantidad), 0);
   }
 
   async onGuardar() {
-    (await this.notaRecepcionAgrupadaService.onRecepcionProductoNotaRecepcionAgrupada(this.data.notaRecepcionAgrupada.id, this.selectedItem.producto.id, this.data.notaRecepcionAgrupada.sucursal.id, this.nuevaCantidadRecibida)).subscribe(res => {
-      if (res) {
-        this.modalService.closeModal(this.nuevaCantidadRecibida);
-      } else {
-        this.notificacionService.warn('Error al guardar la recepción');
+    try {
+      // 1. Buscar NotaRecepcionItem por productoId y recepcionMercaderiaId
+      const notaRecepcionItemObs = await this.recepcionMercaderiaService
+        .onBuscarNotaRecepcionItemPorProductoYRecepcion(
+          this.data.recepcionMercaderia.id,
+          this.selectedItem.producto.id
+        );
+      
+      const notaRecepcionItem = await notaRecepcionItemObs
+        .pipe(first())
+        .toPromise();
+
+      if (!notaRecepcionItem) {
+        this.notificacionService.warn('No se encontró el item de nota de recepción');
+        return;
       }
-    });
+
+      // 2. Construir RecepcionMercaderiaItemInput completo
+      const input: RecepcionMercaderiaItemInput = {
+        id: null,
+        recepcionMercaderiaId: this.data.recepcionMercaderia.id,
+        notaRecepcionItemId: notaRecepcionItem.id,
+        notaRecepcionItemDistribucionId: null,
+        productoId: this.selectedItem.producto.id,
+        presentacionRecibidaId: this.selectedPresentacion?.id,
+        sucursalEntregaId: this.data.recepcionMercaderia.sucursalRecepcion.id,
+        usuarioId: this.mainService.usuarioActual.id,
+        cantidadRecibida: this.nuevaCantidadRecibida,
+        cantidadRechazada: 0,
+        vencimientoRecibido: null,
+        lote: null,
+        esBonificacion: false,
+        motivoRechazo: null,
+        observaciones: null,
+        metodoVerificacion: MetodoVerificacion.MANUAL,
+        motivoVerificacionManual: null,
+        estadoVerificacion: null,
+        variaciones: []
+      };
+
+      // 3. Llamar saveRecepcionMercaderiaItem
+      (await this.recepcionMercaderiaService.onSaveRecepcionMercaderiaItem(input)).subscribe(
+        res => {
+          if (res) {
+            this.modalService.closeModal(this.nuevaCantidadRecibida);
+          } else {
+            this.notificacionService.warn('Error al guardar la recepción');
+          }
+        },
+        error => {
+          console.error('Error al guardar recepción:', error);
+          this.notificacionService.warn('Error al guardar la recepción: ' + (error.message || 'Error desconocido'));
+        }
+      );
+    } catch (error) {
+      console.error('Error al buscar NotaRecepcionItem:', error);
+      this.notificacionService.warn('Error al buscar item de nota: ' + (error.message || 'Error desconocido'));
+    }
   }
 }

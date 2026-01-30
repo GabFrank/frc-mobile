@@ -12,8 +12,9 @@ export class NotaRecepcion {
   compra: Compra;
   documento: Documento;
   tipoBoleta: string;
-  valor: number = 0;
-  descuento: number;
+  valor: number = 0; // Mapeado desde valorTotal del backend
+  valorTotal: number = 0; // Campo del backend
+  descuento: number; // Mantenido para compatibilidad, pero no viene del backend
   pagado: boolean;
   numero: number;
   timbrado: number;
@@ -22,8 +23,11 @@ export class NotaRecepcion {
   usuario: Usuario;
   pedidoItemList: PedidoItem[] = [];
   cantidadItens: number = 0;
-  cantidadItensVerificadoRecepcionMercaderia: number = 0;
+  cantidadItensVerificadoRecepcionMercaderia: number = 0; // Mantenido para compatibilidad, pero no viene del backend
   notaRecepcionAgrupada: NotaRecepcionAgrupada;
+  estado: string; // NotaRecepcionEstado del backend
+  moneda: any; // Moneda del backend
+  cotizacion: number; // Cotización del backend
 
   toInput(): NotaRecepcionInput {
     let input = new NotaRecepcionInput();
