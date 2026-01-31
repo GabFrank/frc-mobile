@@ -10,7 +10,7 @@ import { Cliente } from 'src/app/domains/cliente/cliente.model';
 import { EstadoVentaCredito } from 'src/app/domains/venta-credito/venta-credito.model';
 import { CountStockTotalGQL } from '../graphql/countStockTotal';
 import { CountClientesTotalGQL } from '../graphql/countClientesTotal';
-import { CountVentaCreditoGQL } from '../graphql/countVentaCredito';
+
 import { ProductosVencidosGQL } from '../../producto/graphql/productosVencidos';
 import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
 import { Platform } from '@ionic/angular';
@@ -45,7 +45,7 @@ export class HomeComponent implements OnInit {
     private ventaService: VentaService,
     private countStockTotalGQL: CountStockTotalGQL,
     private countClientesTotalGQL: CountClientesTotalGQL,
-    private countVentaCreditoGQL: CountVentaCreditoGQL,
+
     public mainService: MainService,
     private clienteService: ClienteService,
     private ventaCreditoService: VentaCreditoService,
@@ -133,11 +133,7 @@ export class HomeComponent implements OnInit {
         this.countClientesTotal = res.data?.data || 0;
       });
 
-    this.countVentaCreditoGQL.fetch({}, { fetchPolicy: 'no-cache' })
-      .pipe(untilDestroyed(this))
-      .subscribe(res => {
-        this.countCreditosTotal = res.data?.data || 0;
-      });
+
 
     const fechaFin = moment().format('YYYY-MM-DD');
     const fechaInicio = moment().subtract(7, 'days').format('YYYY-MM-DD');
@@ -168,6 +164,8 @@ export class HomeComponent implements OnInit {
             .subscribe((res) => {
               if (res) {
                 const creditos = Array.isArray(res) ? res : res.getContent || [];
+
+                this.countCreditosTotal = creditos.length;
 
                 this.utilizadoHome = 0;
                 creditos.forEach(vc => {
