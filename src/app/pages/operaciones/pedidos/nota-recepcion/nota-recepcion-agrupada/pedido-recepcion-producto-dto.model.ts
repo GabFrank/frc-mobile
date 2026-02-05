@@ -4,6 +4,7 @@ export class PedidoRecepcionProductoDto {
   producto: Producto;
   totalCantidadARecibirPorUnidad: number;
   totalCantidadRecibidaPorUnidad: number;
+  totalCantidadRechazadaPorUnidad: number;
   estado: PedidoRecepcionProductoEstado;
 }
 

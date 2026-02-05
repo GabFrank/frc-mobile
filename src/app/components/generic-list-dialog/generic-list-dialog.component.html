@@ -9,7 +9,8 @@
       style="
       text-align: center; 
       padding-left: 0; 
-      padding-right: 48px;"
+      padding-right: 48px;
+      font-size: 14px;"
     >
       {{ data?.titulo | titlecase }}    
     </ion-title>
@@ -54,7 +55,7 @@
               <ion-col [size]="info.width" style="min-width: 0; height: auto;">
                 <div class="ion-text-wrap" style="width: 100%; overflow-wrap: break-word;">
                   {{ info.nombre }}:
-                  {{ item[info?.id][info?.nestedId] }}
+                  {{ item[info?.id] ? item[info?.id][info?.nestedId] : 'N/A' }}
                 </div>
               </ion-col>
             </ng-container>

@@ -106,3 +106,19 @@ export enum EstadoVerificacion {
   VERIFICADO_CON_DIFERENCIA = 'VERIFICADO_CON_DIFERENCIA',
   RECHAZADO = 'RECHAZADO'
 }
+
+export enum MotivoRechazoFisico {
+  PRODUCTO_DANADO = 'PRODUCTO_DANADO',
+  PRODUCTO_VENCIDO = 'PRODUCTO_VENCIDO',
+  CANTIDAD_INCORRECTA = 'CANTIDAD_INCORRECTA',
+  PRODUCTO_DIFERENTE = 'PRODUCTO_DIFERENTE',
+  EMBALAJE_DANADO = 'EMBALAJE_DANADO'
+}
+
+export const MotivoRechazoFisicoLabels: { [key in MotivoRechazoFisico]: string } = {
+  [MotivoRechazoFisico.PRODUCTO_DANADO]: 'Producto Dañado',
+  [MotivoRechazoFisico.PRODUCTO_VENCIDO]: 'Producto Vencido',
+  [MotivoRechazoFisico.CANTIDAD_INCORRECTA]: 'Cantidad Incorrecta',
+  [MotivoRechazoFisico.PRODUCTO_DIFERENTE]: 'Producto Diferente',
+  [MotivoRechazoFisico.EMBALAJE_DANADO]: 'Embalaje Dañado'
+};

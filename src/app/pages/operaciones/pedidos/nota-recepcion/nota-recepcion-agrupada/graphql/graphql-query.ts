@@ -148,6 +148,7 @@ export const pedidoRecepcionProductoPorNotaRecepcionAgrupadaQuery = gql`
         }
         totalCantidadARecibirPorUnidad
         totalCantidadRecibidaPorUnidad
+        totalCantidadRechazadaPorUnidad
         estado
       }
     }
@@ -172,6 +173,7 @@ export const pedidoRecepcionProductoPorNotaRecepcionAgrupadaAndProductoQuery = g
       }
       totalCantidadARecibirPorUnidad
       totalCantidadRecibidaPorUnidad
+      totalCantidadRechazadaPorUnidad
       estado
     }
   }

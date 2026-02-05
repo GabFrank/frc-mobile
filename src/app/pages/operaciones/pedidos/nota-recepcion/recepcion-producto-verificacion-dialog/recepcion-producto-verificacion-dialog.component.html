@@ -32,8 +32,16 @@
       Falta:
     </ion-col>
     <ion-col size="4" style="text-align: end;">
-      {{ (selectedItem?.totalCantidadARecibirPorUnidad - (selectedItem?.totalCantidadRecibidaPorUnidad + nuevaCantidadRecibida || 0)) /
+      {{ (selectedItem?.totalCantidadARecibirPorUnidad - (selectedItem?.totalCantidadRecibidaPorUnidad + nuevaCantidadRecibida || 0) - nuevaCantidadRechazada) /
       presentacionControl.value?.cantidad | number : '1.0-2' }}
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="nuevaCantidadRechazada > 0">
+    <ion-col size="8" class="title ">
+      Cant. a rechazar:
+    </ion-col>
+    <ion-col size="4" style="text-align: end;">
+      {{ nuevaCantidadRechazada / presentacionControl.value?.cantidad | number : '1.0-2' }}
     </ion-col>
   </ion-row>
   <ion-row>
@@ -84,8 +92,26 @@
         </ion-col>
       </ion-row>
       <ion-row>
+        <ion-col size="12" style="display: flex; align-items: center; justify-content: center; padding: 10px;">
+          <ion-label style="margin-right: 10px; font-size: 14px;">Rechazo</ion-label>
+          <ion-toggle [formControl]="esRechazoControl" color="danger"></ion-toggle>
+        </ion-col>
+      </ion-row>
+      <ion-row *ngIf="esRechazoControl.value === true">
+        <ion-col size="12" class="title center" style="padding: 10px">Motivo de rechazo</ion-col>
+        <ion-col size="12" class="center">
+          <ion-item>
+            <ion-select style="width: 100%; text-align: center" [formControl]="motivoRechazoControl" placeholder="Seleccionar motivo">
+              <ion-select-option *ngFor="let motivo of motivoRechazoFisicoOptions" [value]="motivo">
+                {{ motivoRechazoFisicoLabels[motivo] }}
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
         <ion-col size="12">
-          <ion-button (click)="onAdicionarRecepcion()" expand="block" fill="clear" [disabled]="!cantidadControl.value">
+          <ion-button (click)="onAdicionarRecepcion()" expand="block" fill="clear" [disabled]="!cantidadControl.value || (esRechazoControl.value && !motivoRechazoControl.value)">
             Agregar
           </ion-button>
         </ion-col>
@@ -95,6 +121,11 @@
   <ion-row *ngIf="data.recepcionMercaderia.estado == 'EN_PROCESO'">
     <ion-col size="12" class="center" style="padding: 10px">
       Lista de itens
+    </ion-col>
+  </ion-row>
+  <ion-row *ngIf="itemRecepcionList.length > 0">
+    <ion-col size="12" class="center" style="padding: 5px; font-size: 14px; font-weight: bold;">
+      Items recibidos
     </ion-col>
   </ion-row>
   <ion-list *ngIf="itemRecepcionList.length > 0">
@@ -131,11 +162,60 @@
       </ion-row>
     </ion-item>
   </ion-list>
+  <ion-row *ngIf="itemRechazoList.length > 0">
+    <ion-col size="12" class="center" style="padding: 5px; font-size: 14px; font-weight: bold; color: #ff6b6b;">
+      Items rechazados
+    </ion-col>
+  </ion-row>
+  <ion-list *ngIf="itemRechazoList.length > 0">
+    <ion-item *ngFor="let itemRechazo of itemRechazoList" class="item-rechazado">
+      <ion-row style="align-items: center; width: 100%;">
+        <ion-col size="3">
+          <ion-row>
+            <ion-col size="12" class="title center">
+              <span>Presentación</span>
+            </ion-col>
+            <ion-col size="12" class="center">
+              <span>{{ itemRechazo.presentacion.cantidad | number : '1.0-2' }}</span>
+            </ion-col>
+          </ion-row>
+        </ion-col>
+        <ion-col size="3">
+          <ion-row>
+            <ion-col size="12" class="title center">
+              <span>Cantidad</span>
+            </ion-col>
+            <ion-col size="12" class="center">
+              <span>{{ itemRechazo.cantidad | number : '1.0-2' }}</span>
+            </ion-col>
+          </ion-row>
+        </ion-col>
+        <ion-col size="3">
+          <ion-row>
+            <ion-col size="12" class="title center">
+              <span>Motivo</span>
+            </ion-col>
+            <ion-col size="12" class="center" style="font-size: 12px;">
+              <span>{{ motivoRechazoFisicoLabels[itemRechazo.motivoRechazo] }}</span>
+            </ion-col>
+          </ion-row>
+        </ion-col>
+        <ion-col size="3" class="center" style="display: flex; justify-content: center; align-items: center;">
+          <ion-button fill="clear" (click)="onEditRechazo(itemRechazo)" style="font-size: large; margin-right: 8px;">
+            <ion-icon name="create-outline"></ion-icon>
+          </ion-button>
+          <ion-button fill="clear" (click)="onDeleteRechazo(itemRechazo)" color="danger" style="font-size: large;">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-item>
+  </ion-list>
 </ion-content>
 <ion-footer>
   <ion-row>
     <ion-col size="12" class="center">
-      <ion-button expand="block" (click)="onGuardar()" class="btn-success" [disabled]="itemRecepcionList?.length === 0">Guardar</ion-button>
+      <ion-button expand="block" (click)="onGuardar()" class="btn-success" [disabled]="itemRecepcionList?.length === 0 && itemRechazoList?.length === 0">Guardar</ion-button>
     </ion-col>
   </ion-row>
 </ion-footer>

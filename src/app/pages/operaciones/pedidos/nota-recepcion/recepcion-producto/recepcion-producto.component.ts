@@ -101,13 +101,9 @@ export class RecepcionProductoComponent implements OnInit {
       }
     ).then(res => {
       if (res?.data != null) {
-        item.totalCantidadRecibidaPorUnidad += res.data;
-        this.itemList[i] = item;
-        if (item.totalCantidadARecibirPorUnidad == item.totalCantidadRecibidaPorUnidad) {
-          if (this.selectedEstado != PedidoRecepcionProductoEstado.RECIBIDO) {
-            this.itemList.splice(i, 1);
-          }
-        }
+        // Recargar la lista para obtener los valores actualizados del backend
+        // El backend ahora calcula totalCantidadRechazadaPorUnidad y actualiza el estado correctamente
+        this.onGetPedidoItem();
       }
     });
   }
