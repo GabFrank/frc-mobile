@@ -64,8 +64,37 @@ export class RecepcionNotasComponent implements OnInit {
 
   ngOnInit() {
     console.log(this.mainService.isDev);
-
+    // Limpiar estado al inicializar (por si viene de navegación)
+    this.limpiarEstado();
     this.onVerificarSucursal();
+  }
+
+  /**
+   * Hook de Ionic que se ejecuta cada vez que la vista se muestra
+   * Esto asegura que el estado se limpie cuando se navega de vuelta desde "Nueva Recepción"
+   */
+  ionViewWillEnter() {
+    // Limpiar estado cada vez que se muestra la vista para preparar nueva sesión
+    this.limpiarEstado();
+  }
+
+  /**
+   * Limpia el estado del componente para preparar una nueva sesión de recepción
+   * Mantiene la sucursal seleccionada ya que es parte del flujo de escaneo
+   */
+  private limpiarEstado(): void {
+    // Limpiar proveedor seleccionado
+    this.selectedProveedor = null;
+    
+    // Limpiar lista de notas
+    this.notaRecepcionList = [];
+    
+    // Limpiar controles de formulario
+    this.numeroNotaControl.setValue(null);
+    this.buscarProveedorControl.setValue(null);
+    
+    // Nota: No limpiamos selectedSucursal porque es parte del flujo de escaneo
+    // y debe mantenerse entre sesiones
   }
 
   async onVerificarSucursal() {
@@ -153,70 +182,201 @@ export class RecepcionNotasComponent implements OnInit {
         return;
       }
 
-      (
-        await this.notaRecepcionService.onGetNotaRecepcionPorProveedorAndNumero(
-          this.selectedProveedor.id,
-          this.numeroNotaControl.value
-        )
-      ).subscribe(async (res) => {
-        if (res?.length == 1) {
-          const nota = res[0];
-          
-          // Verificar si ya existe una recepción activa para esta nota en esta sucursal
-          try {
-            const recepcionActivaObs = await this.recepcionMercaderiaService.onVerificarRecepcionActivaPorNotaYSucursal(
-              nota.id,
-              this.selectedSucursal.id
-            );
-            const recepcionActiva = await recepcionActivaObs.pipe(first()).toPromise();
-            
-            if (recepcionActiva) {
-              // Ya existe una recepción (activa o finalizada)
-              let mensaje: string;
-              if (recepcionActiva.estado === 'FINALIZADA') {
-                mensaje = `Esta nota ya fue recibida y finalizada (Recepción ID: ${recepcionActiva.id}) en ${this.selectedSucursal.nombre}. ` +
-                          `Si necesita hacer correcciones, use la opción 'Reabrir recepción' en lugar de agregar esta nota. ` +
-                          `Crear una nueva recepción duplicaría movimientos de stock y costos.`;
-              } else {
-                mensaje = `Esta nota ya tiene una recepción en proceso (ID: ${recepcionActiva.id}, Estado: ${recepcionActiva.estado}) en ${this.selectedSucursal.nombre}. ` +
-                          `Debe finalizar o cancelar la recepción existente antes de agregar esta nota.`;
-              }
-              this.notificacionService.warn(mensaje);
-              setTimeout(() => {
-                this.numeroNotaInput?.setFocus();
-              }, 1000);
-              return;
-            }
-          } catch (error) {
-            console.error('Error al verificar recepción activa:', error);
-            // Continuar con el flujo normal si hay error en la verificación
-          }
+      const obs = await this.notaRecepcionService.onGetNotaRecepcionPorProveedorAndNumero(
+        this.selectedProveedor.id,
+        this.numeroNotaControl.value
+      );
+      const res = await obs.pipe(first()).toPromise();
 
-          // No hay recepción activa, proceder con el diálogo
-          this.modalService
-            .openModal(
-              NotaRecepcionInfoDialogComponent,
-              {
-                notaRecepcion: nota
-              },
-              ModalSize.MEDIUM
-            )
-            .then((dialogRes) => {
-              if (dialogRes?.data?.agregar) {
-                this.notaRecepcionList.push(nota);
-                this.numeroNotaControl.setValue(null);
-                setTimeout(() => {
-                  this.numeroNotaInput?.setFocus();
-                }, 1000);
-              }
-            });
-        } else if (res?.length == 0) {
+      if (!res || res.length === 0) {
+        this.notificacionService.warn('No se encontró ninguna nota con ese número para este proveedor');
+        setTimeout(() => {
+          this.numeroNotaInput?.setFocus();
+        }, 1000);
+        return;
+      }
+
+      // CASO 1: Una sola nota - procesar normalmente
+      if (res.length === 1) {
+        await this.procesarNotaUnica(res[0]);
+        return;
+      }
+
+      // CASO 2: Múltiples notas - aplicar lógica inteligente
+      // El backend ya debería haber filtrado las completamente recibidas,
+      // pero por seguridad verificamos aquí también
+      const notasPendientes = res.filter(nota => {
+        // Verificar estado de la nota
+        const estado = nota.estado;
+        const estadosCompletos = ['RECEPCION_COMPLETA', 'CERRADA'];
+        
+        // Si está en estado completo, asumir que está completa (el backend ya filtró)
+        if (estadosCompletos.includes(estado)) {
+          return false; // Asumir que está completa si el backend la retornó
+        }
+        
+        return true; // Tiene recepción pendiente
+      });
+
+      if (notasPendientes.length === 0) {
+        this.notificacionService.warn(
+          `Se encontraron ${res.length} nota(s) con el número ${this.numeroNotaControl.value}, ` +
+          `pero todas ya han sido completamente recibidas.`
+        );
+        setTimeout(() => {
+          this.numeroNotaInput?.setFocus();
+        }, 1000);
+        return;
+      }
+
+      if (notasPendientes.length === 1) {
+        // Solo una tiene recepción pendiente - cargar automáticamente
+        this.notificacionService.toast(
+          `Se encontraron ${res.length} nota(s) con el número ${this.numeroNotaControl.value}. ` +
+          `Cargando la nota con recepción pendiente.`
+        );
+        await this.procesarNotaUnica(notasPendientes[0]);
+        return;
+      }
+
+      // CASO 3: Múltiples notas con recepción pendiente
+      // Mostrar diálogo para que el usuario elija
+      this.mostrarDialogoSeleccionNota(notasPendientes);
+    }
+  }
+
+  private async procesarNotaUnica(nota: NotaRecepcion): Promise<void> {
+    // Verificar si la nota ya está en la lista actual
+    const notaYaAgregada = this.notaRecepcionList.find(n => n.id === nota.id);
+    if (notaYaAgregada) {
+      this.notificacionService.warn(
+        `La nota ${nota.numero || nota.id} ya está incluida en la lista actual.`
+      );
+      setTimeout(() => {
+        this.numeroNotaInput?.setFocus();
+      }, 1000);
+      return;
+    }
+
+    // Verificar si ya existe una recepción activa para esta nota en esta sucursal
+    try {
+      const recepcionActivaObs = await this.recepcionMercaderiaService.onVerificarRecepcionActivaPorNotaYSucursal(
+        nota.id,
+        this.selectedSucursal.id
+      );
+      const recepcionActiva = await recepcionActivaObs.pipe(first()).toPromise();
+      
+      if (recepcionActiva) {
+        // Ya existe una recepción (activa o finalizada)
+        let mensaje: string;
+        if (recepcionActiva.estado === 'FINALIZADA') {
+          mensaje = `Esta nota ya fue recibida y finalizada (Recepción ID: ${recepcionActiva.id}) en ${this.selectedSucursal.nombre}. ` +
+                    `Si necesita hacer correcciones, use la opción 'Reabrir recepción' en lugar de agregar esta nota. ` +
+                    `Crear una nueva recepción duplicaría movimientos de stock y costos.`;
+        } else {
+          mensaje = `Esta nota ya tiene una recepción en proceso (ID: ${recepcionActiva.id}, Estado: ${recepcionActiva.estado}) en ${this.selectedSucursal.nombre}. ` +
+                    `Debe finalizar o cancelar la recepción existente antes de agregar esta nota.`;
+        }
+        this.notificacionService.warn(mensaje);
+        setTimeout(() => {
+          this.numeroNotaInput?.setFocus();
+        }, 1000);
+        return;
+      }
+    } catch (error) {
+      console.error('Error al verificar recepción activa:', error);
+      // Continuar con el flujo normal si hay error en la verificación
+    }
+
+    // No hay recepción activa, proceder con el diálogo
+    this.modalService
+      .openModal(
+        NotaRecepcionInfoDialogComponent,
+        {
+          notaRecepcion: nota
+        },
+        ModalSize.MEDIUM
+      )
+      .then((dialogRes) => {
+        if (dialogRes?.data?.agregar) {
+          this.notaRecepcionList.push(nota);
+          this.numeroNotaControl.setValue(null);
           setTimeout(() => {
-            this.numeroNotaInput.setFocus();
+            this.numeroNotaInput?.setFocus();
           }, 1000);
         }
       });
-    }
+  }
+
+  private mostrarDialogoSeleccionNota(notas: NotaRecepcion[]): void {
+    // Crear datos para el diálogo de selección
+    const tableData: TableData[] = [
+      {
+        id: 'id',
+        nombre: 'ID',
+        width: 80,
+        nested: false
+      },
+      {
+        id: 'pedido',
+        nombre: 'Pedido',
+        width: 100,
+        nested: true,
+        nestedId: 'id'
+      },
+      {
+        id: 'fecha',
+        nombre: 'Fecha',
+        width: 120,
+        nested: false
+      },
+      {
+        id: 'estado',
+        nombre: 'Estado',
+        width: 150,
+        nested: false
+      },
+      {
+        id: 'timbrado',
+        nombre: 'Timbrado',
+        width: 100,
+        nested: false
+      }
+    ];
+
+    // Formatear notas para mostrar información relevante
+    const notasFormateadas = notas.map(nota => ({
+      ...nota,
+      fechaFormatted: nota.fecha ? new Date(nota.fecha).toLocaleDateString('es-PY') : 'N/A',
+      pedidoId: nota.pedido?.id || 'N/A'
+    }));
+
+    const data: GenericListDialogData = {
+      tableData: tableData,
+      titulo: `Seleccionar Nota (${notas.length} encontradas)`,
+      search: false,
+      texto: null,
+      query: null,
+      paginator: false,
+      inicialData: notasFormateadas
+    };
+
+    this.modalService
+      .openModal(GenericListDialogComponent, data, ModalSize.LARGE)
+      .then((res) => {
+        if (res?.data != null) {
+          // Procesar la nota seleccionada
+          const notaSeleccionada = notas.find(n => n.id === res.data.id);
+          if (notaSeleccionada) {
+            this.procesarNotaUnica(notaSeleccionada);
+          }
+        } else {
+          // Usuario canceló, volver a enfocar el input
+          setTimeout(() => {
+            this.numeroNotaInput?.setFocus();
+          }, 1000);
+        }
+      });
   }
 
   delelteNotaFromList(nota, i) {

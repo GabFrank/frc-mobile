@@ -27,6 +27,7 @@ export const pedidoRecepcionProductoPorRecepcionMercaderiaQuery = gql`
         }
         totalCantidadARecibirPorUnidad
         totalCantidadRecibidaPorUnidad
+        totalCantidadRechazadaPorUnidad
         estado
       }
     }
@@ -51,6 +52,7 @@ export const pedidoRecepcionProductoPorRecepcionMercaderiaAndProductoQuery = gql
       }
       totalCantidadARecibirPorUnidad
       totalCantidadRecibidaPorUnidad
+      totalCantidadRechazadaPorUnidad
       estado
     }
   }

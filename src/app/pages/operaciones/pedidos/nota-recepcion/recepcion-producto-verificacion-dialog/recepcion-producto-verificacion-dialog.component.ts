@@ -10,7 +10,7 @@ import { Location } from '@angular/common';
 import { ModalService } from 'src/app/services/modal.service';
 import { RecepcionMercaderia } from '../../recepcion-mercaderia/recepcion-mercaderia.model';
 import { RecepcionMercaderiaService } from '../../recepcion-mercaderia/recepcion-mercaderia.service';
-import { RecepcionMercaderiaItemInput, MetodoVerificacion } from '../../recepcion-mercaderia/recepcion-mercaderia-item.model';
+import { RecepcionMercaderiaItemInput, MetodoVerificacion, MotivoRechazoFisico, MotivoRechazoFisicoLabels } from '../../recepcion-mercaderia/recepcion-mercaderia-item.model';
 import { MainService } from 'src/app/services/main.service';
 import { first } from 'rxjs/operators';
 
@@ -23,6 +23,12 @@ export class RecepcionProductoVerificacionDialogData {
 class ItemRecepcion {
   cantidad: number;
   presentacion: Presentacion;
+}
+
+class ItemRechazo {
+  cantidad: number;
+  presentacion: Presentacion;
+  motivoRechazo: MotivoRechazoFisico;
 }
 
 @UntilDestroy({ checkProperties: true })
@@ -41,13 +47,22 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
   cantidadControl = new FormControl();
   cantidadPorUnidadControl = new FormControl();
   presentacionControl = new FormControl();
+  esRechazoControl = new FormControl(false);
+  motivoRechazoControl = new FormControl();
   selectedItem: PedidoRecepcionProductoDto;
   selectedPresentacion: Presentacion;
   itemRecepcionList: ItemRecepcion[] = [];
+  itemRechazoList: ItemRechazo[] = [];
   isEditMode = false;
+  isEditRechazoMode = false;
   selectedItemToEdit: ItemRecepcion;
+  selectedItemRechazoToEdit: ItemRechazo;
   selectedItemIndexToEdit: number;
+  selectedItemRechazoIndexToEdit: number;
   nuevaCantidadRecibida: number = 0;
+  nuevaCantidadRechazada: number = 0;
+  motivoRechazoFisicoOptions = Object.values(MotivoRechazoFisico);
+  motivoRechazoFisicoLabels = MotivoRechazoFisicoLabels;
 
   constructor(
     private notificacionService: NotificacionService,
@@ -80,6 +95,13 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
         value?.cantidad * this.cantidadControl.value
       );
     });
+
+    this.esRechazoControl.valueChanges.subscribe((value) => {
+      if (!value) {
+        // Si se desactiva el toggle, limpiar el motivo
+        this.motivoRechazoControl.setValue(null);
+      }
+    });
   }
 
   onAdicionarRecepcion() {
@@ -95,50 +117,94 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
       this.notificacionService.warn('Debe seleccionar una presentación');
       return;
     }
+
+    const esRechazo = this.esRechazoControl.value === true;
+    
+    if (esRechazo && !this.motivoRechazoControl.value) {
+      this.notificacionService.warn('Debe seleccionar un motivo de rechazo');
+      return;
+    }
     
     let cantidadPorUnidad = cantidad * cantidadPresentacion;
-    let itemRecepcion = new ItemRecepcion();
-    itemRecepcion.cantidad = cantidad;
-    itemRecepcion.presentacion = this.presentacionControl.value;
     
-    // Calcular cantidad total ya agregada en la lista (excluyendo el item que se está editando)
-    let cantidadYaAgregada = 0;
+    // Calcular cantidades ya agregadas (excluyendo el item que se está editando)
+    let cantidadRecibidaYaAgregada = 0;
+    let cantidadRechazadaYaAgregada = 0;
+    
     if (this.isEditMode) {
-      // Si está en modo edición, calcular sin el item que se está editando
-      cantidadYaAgregada = this.itemRecepcionList
+      cantidadRecibidaYaAgregada = this.itemRecepcionList
         .filter((item, index) => index !== this.selectedItemIndexToEdit)
         .reduce((sum, item) => sum + (item.cantidad * item.presentacion.cantidad), 0);
     } else {
-      // Si no está en modo edición, calcular toda la lista
-      cantidadYaAgregada = this.itemRecepcionList
+      cantidadRecibidaYaAgregada = this.itemRecepcionList
         .reduce((sum, item) => sum + (item.cantidad * item.presentacion.cantidad), 0);
     }
     
-    // Calcular cantidad faltante
+    if (this.isEditRechazoMode) {
+      cantidadRechazadaYaAgregada = this.itemRechazoList
+        .filter((item, index) => index !== this.selectedItemRechazoIndexToEdit)
+        .reduce((sum, item) => sum + (item.cantidad * item.presentacion.cantidad), 0);
+    } else {
+      cantidadRechazadaYaAgregada = this.itemRechazoList
+        .reduce((sum, item) => sum + (item.cantidad * item.presentacion.cantidad), 0);
+    }
+    
+    // Calcular cantidad faltante (considerando recibido y rechazado)
     let cantidadFaltante = this.selectedItem.totalCantidadARecibirPorUnidad - 
                           (this.selectedItem.totalCantidadRecibidaPorUnidad || 0) - 
-                          cantidadYaAgregada;
+                          cantidadRecibidaYaAgregada - 
+                          cantidadRechazadaYaAgregada;
     
-    if (cantidadPorUnidad <= cantidadFaltante) {
+    if (cantidadPorUnidad > cantidadFaltante) {
+      this.notificacionService.warn('La suma de recibido y rechazado no puede exceder la cantidad esperada');
+      this.cantidadInputRef.setFocus();
+      return;
+    }
+    
+    if (esRechazo) {
+      // Procesar como rechazo
+      let itemRechazo = new ItemRechazo();
+      itemRechazo.cantidad = cantidad;
+      itemRechazo.presentacion = this.presentacionControl.value;
+      itemRechazo.motivoRechazo = this.motivoRechazoControl.value;
+      
+      if (this.isEditRechazoMode) {
+        this.onDeleteRechazo(this.selectedItemRechazoToEdit);
+      }
+      
+      this.nuevaCantidadRechazada = cantidadRechazadaYaAgregada + cantidadPorUnidad;
+      
+      this.cantidadControl.setValue(null);
+      this.motivoRechazoControl.setValue(null);
+      this.esRechazoControl.setValue(false);
+      
+      if (this.isEditRechazoMode) {
+        this.itemRechazoList[this.selectedItemRechazoIndexToEdit] = itemRechazo;
+      } else {
+        this.itemRechazoList.push(itemRechazo);
+      }
+      this.isEditRechazoMode = false;
+    } else {
+      // Procesar como recepción normal
+      let itemRecepcion = new ItemRecepcion();
+      itemRecepcion.cantidad = cantidad;
+      itemRecepcion.presentacion = this.presentacionControl.value;
+      
       if (this.isEditMode) {
-        // Eliminar el item anterior antes de agregar el nuevo
         this.onDelete(this.selectedItemToEdit);
       }
       
-      // Actualizar nuevaCantidadRecibida sumando la nueva cantidad
-      this.nuevaCantidadRecibida = cantidadYaAgregada + cantidadPorUnidad;
+      this.nuevaCantidadRecibida = cantidadRecibidaYaAgregada + cantidadPorUnidad;
       
       this.cantidadControl.setValue(null);
+      
       if (this.isEditMode) {
         this.itemRecepcionList[this.selectedItemIndexToEdit] = itemRecepcion;
       } else {
         this.itemRecepcionList.push(itemRecepcion);
       }
-    } else {
-      this.notificacionService.warn('Cantidad es mayor al faltante');
-      this.cantidadInputRef.setFocus();
+      this.isEditMode = false;
     }
-    this.isEditMode = false;
   }
 
   onSelectCantidadInput() {}
@@ -151,7 +217,10 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
     // Load item info into the form
     this.presentacionControl.setValue(itemRecepcion.presentacion);
     this.cantidadControl.setValue(itemRecepcion.cantidad);
+    this.esRechazoControl.setValue(false);
+    this.motivoRechazoControl.setValue(null);
     this.isEditMode = true;
+    this.isEditRechazoMode = false;
     this.selectedItemToEdit = itemRecepcion;
     this.selectedItemIndexToEdit = this.itemRecepcionList.indexOf(itemRecepcion);
   }
@@ -165,6 +234,35 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
 
     // Recalcular nuevaCantidadRecibida sumando todos los items restantes
     this.nuevaCantidadRecibida = this.itemRecepcionList
+      .reduce((sum, item) => sum + (item.cantidad * item.presentacion.cantidad), 0);
+  }
+
+  onEditRechazo(itemRechazo: ItemRechazo): void {
+    // Load item rechazo info into the form
+    this.presentacionControl.setValue(itemRechazo.presentacion);
+    this.cantidadControl.setValue(itemRechazo.cantidad);
+    this.esRechazoControl.setValue(true);
+    this.motivoRechazoControl.setValue(itemRechazo.motivoRechazo);
+    this.isEditMode = false;
+    this.isEditRechazoMode = true;
+    this.selectedItemRechazoToEdit = itemRechazo;
+    this.selectedItemRechazoIndexToEdit = this.itemRechazoList.indexOf(itemRechazo);
+  }
+
+  onDeleteRechazo(itemRechazo: ItemRechazo): void {
+    // Remove the item from the list
+    const index = this.itemRechazoList.indexOf(itemRechazo);
+    if (index > -1) {
+      this.itemRechazoList.splice(index, 1);
+    }
+
+    // Recalcular nuevaCantidadRechazada sumando todos los items restantes
+    this.nuevaCantidadRechazada = this.itemRechazoList
+      .reduce((sum, item) => sum + (item.cantidad * item.presentacion.cantidad), 0);
+  }
+
+  calcularCantidadRechazada(): number {
+    return this.itemRechazoList
       .reduce((sum, item) => sum + (item.cantidad * item.presentacion.cantidad), 0);
   }
 
@@ -186,7 +284,16 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
         return;
       }
 
-      // 2. Construir RecepcionMercaderiaItemInput completo
+      // 2. Calcular cantidad rechazada total
+      const cantidadRechazadaTotal = this.calcularCantidadRechazada();
+      
+      // 3. Determinar motivo de rechazo (usar el primero si hay múltiples)
+      let motivoRechazoFinal: string = null;
+      if (cantidadRechazadaTotal > 0 && this.itemRechazoList.length > 0) {
+        motivoRechazoFinal = this.itemRechazoList[0].motivoRechazo;
+      }
+
+      // 4. Construir RecepcionMercaderiaItemInput completo
       const input: RecepcionMercaderiaItemInput = {
         id: null,
         recepcionMercaderiaId: this.data.recepcionMercaderia.id,
@@ -197,11 +304,11 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
         sucursalEntregaId: this.data.recepcionMercaderia.sucursalRecepcion.id,
         usuarioId: this.mainService.usuarioActual.id,
         cantidadRecibida: this.nuevaCantidadRecibida,
-        cantidadRechazada: 0,
+        cantidadRechazada: cantidadRechazadaTotal,
         vencimientoRecibido: null,
         lote: null,
         esBonificacion: false,
-        motivoRechazo: null,
+        motivoRechazo: motivoRechazoFinal,
         observaciones: null,
         metodoVerificacion: MetodoVerificacion.MANUAL,
         motivoVerificacionManual: null,
@@ -209,11 +316,15 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
         variaciones: []
       };
 
-      // 3. Llamar saveRecepcionMercaderiaItem
+      // 5. Llamar saveRecepcionMercaderiaItem
       (await this.recepcionMercaderiaService.onSaveRecepcionMercaderiaItem(input)).subscribe(
         res => {
           if (res) {
-            this.modalService.closeModal(this.nuevaCantidadRecibida);
+            // Retornar objeto con ambos valores para que el componente padre pueda actualizar correctamente
+            this.modalService.closeModal({
+              cantidadRecibida: this.nuevaCantidadRecibida,
+              cantidadRechazada: cantidadRechazadaTotal
+            });
           } else {
             this.notificacionService.warn('Error al guardar la recepción');
           }
