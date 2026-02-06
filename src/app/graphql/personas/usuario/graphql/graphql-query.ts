@@ -51,6 +51,7 @@ export const usuarioQuery = gql`
         telefono
         email
         nacimiento
+        imagenes
       }
       password
       creadoEn

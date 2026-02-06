@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { ActionSheetController, NavController } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import { Filesystem, Directory } from '@capacitor/filesystem';
 import { MainService } from 'src/app/services/main.service';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
 import { UsuarioService } from 'src/app/services/usuario.service';
@@ -18,7 +17,7 @@ export class InformacionesPersonalesDashboardComponent implements OnInit {
   emailControl = new UntypedFormControl('', [Validators.email]);
   phoneControl = new UntypedFormControl('', [
     Validators.required,
-    Validators.pattern(/^\d{4}-?\d{3}-?\d{3}$/), // Paraguayan phone number pattern
+    Validators.pattern(/^\d{4}-?\d{3}-?\d{3}$/),
   ]);
   birthDateControl = new UntypedFormControl('', [Validators.required]);
   selectedUsuario: Usuario;
@@ -28,16 +27,22 @@ export class InformacionesPersonalesDashboardComponent implements OnInit {
     private actionSheetController: ActionSheetController,
     private mainService: MainService,
     private usuarioService: UsuarioService
-    ) { }
+  ) { }
 
   ngOnInit() {
     if (this.mainService.usuarioActual != null) {
-      (this.usuarioService.onGetUsuario(this.mainService.usuarioActual.id)).subscribe(res => {
+      (this.usuarioService.onGetUsuario(this.mainService.usuarioActual.id)).subscribe(async res => {
         this.selectedUsuario = res;
         this.fullNameControl.setValue(this.selectedUsuario?.persona?.nombre)
         this.emailControl.setValue(this.selectedUsuario?.email)
         this.phoneControl.setValue(this.selectedUsuario?.persona?.telefono)
-        this.birthDateControl.setValue(this.selectedUsuario?.persona?.nacimiento)
+        this.birthDateControl.setValue(this.selectedUsuario?.persona?.nacimiento);
+
+        (await this.usuarioService.onGetUsuarioImages(this.selectedUsuario.id, 'perfil')).subscribe(imgs => {
+          if (imgs && imgs.length > 0) {
+            this.src = imgs[0];
+          }
+        })
       })
     }
   }
@@ -69,8 +74,12 @@ export class InformacionesPersonalesDashboardComponent implements OnInit {
     this.navCtrl.back();
   }
 
-  saveProfile() {
+  async saveProfile() {
+    if (this.src != null && this.src != "") {
+      (await this.usuarioService.onSaveUsuarioImage(this.selectedUsuario.id, 'perfil', this.src)).subscribe(res => {
 
+      })
+    }
   }
 
   async captureImage(source: CameraSource) {
@@ -78,11 +87,10 @@ export class InformacionesPersonalesDashboardComponent implements OnInit {
       const image = await Camera.getPhoto({
         quality: 90,
         allowEditing: false,
-        resultType: CameraResultType.DataUrl, // Change this to DataUrl
+        resultType: CameraResultType.DataUrl,
         source,
       });
 
-      // Update the avatar image src with the local URL of the saved image
       this.src = image.dataUrl;
 
     } catch (error) {
