@@ -17,6 +17,7 @@ import { ReabrirRecepcionMercaderiaGQL } from './graphql/reabrirRecepcionMercade
 import { IniciarRecepcionGQL } from './graphql/iniciarRecepcion';
 import { NotaRecepcionItemListPorNotaRecepcionIdGQL, NotaRecepcionItem } from './graphql/notaRecepcionItemListPorNotaRecepcionId';
 import { VerificarRecepcionActivaPorNotaYSucursalGQL } from './graphql/verificarRecepcionActivaPorNotaYSucursal';
+import { DeshacerVerificacionPorProductoGQL } from './graphql/deshacerVerificacionPorProducto';
 import { MainService } from 'src/app/services/main.service';
 
 @Injectable({
@@ -35,6 +36,7 @@ export class RecepcionMercaderiaService {
     private iniciarRecepcion: IniciarRecepcionGQL,
     private getNotaRecepcionItemListPorNotaRecepcionId: NotaRecepcionItemListPorNotaRecepcionIdGQL,
     private verificarRecepcionActivaPorNotaYSucursal: VerificarRecepcionActivaPorNotaYSucursalGQL,
+    private deshacerVerificacionPorProducto: DeshacerVerificacionPorProductoGQL,
     private mainService: MainService
   ) {}
 
@@ -129,11 +131,43 @@ export class RecepcionMercaderiaService {
   /**
    * Helper: Busca NotaRecepcionItem por productoId y recepcionMercaderiaId
    * Obtiene todas las notas asociadas a la recepción y busca el item por productoId
+   * RETORNA SOLO EL PRIMER ITEM ENCONTRADO (para compatibilidad con código existente)
+   * @deprecated Use onBuscarNotaRecepcionItemsPorProductoYRecepcion para obtener todos los items
    */
   async onBuscarNotaRecepcionItemPorProductoYRecepcion(
     recepcionMercaderiaId: number,
     productoId: number
   ): Promise<Observable<NotaRecepcionItem>> {
+    return new Observable((obs) => {
+      this.onBuscarNotaRecepcionItemsPorProductoYRecepcion(recepcionMercaderiaId, productoId).then((itemsObs) => {
+        itemsObs
+          .pipe(first())
+          .subscribe(
+            (items) => {
+              if (items && items.length > 0) {
+                obs.next(items[0]); // Retornar solo el primero para compatibilidad
+                obs.complete();
+              } else {
+                obs.error(new Error('NotaRecepcionItem no encontrado para el producto especificado'));
+              }
+            },
+            (error) => {
+              obs.error(error);
+            }
+          );
+      });
+    });
+  }
+
+  /**
+   * Helper: Busca TODOS los NotaRecepcionItem por productoId y recepcionMercaderiaId
+   * Obtiene todas las notas asociadas a la recepción y busca todos los items del mismo producto
+   * Esto es necesario cuando múltiples notas tienen el mismo producto para mantener trazabilidad
+   */
+  async onBuscarNotaRecepcionItemsPorProductoYRecepcion(
+    recepcionMercaderiaId: number,
+    productoId: number
+  ): Promise<Observable<NotaRecepcionItem[]>> {
     return new Observable((obs) => {
       // 1. Obtener recepcion con notas
       this.onGetRecepcionMercaderiaPorId(recepcionMercaderiaId).then((recepcionObs) => {
@@ -145,6 +179,8 @@ export class RecepcionMercaderiaService {
                 obs.error(new Error('No se encontraron notas asociadas a la recepción'));
                 return;
               }
+
+              const itemsEncontrados: NotaRecepcionItem[] = [];
 
               // 2. Para cada nota, obtener items
               for (const nota of recepcion.notas) {
@@ -160,19 +196,20 @@ export class RecepcionMercaderiaService {
                     )
                     .toPromise();
 
-                  // 3. Filtrar items por productoId
-                  const item = items.find((i: NotaRecepcionItem) => i.producto?.id === productoId);
-                  if (item) {
-                    obs.next(item);
-                    obs.complete();
-                    return;
-                  }
+                  // 3. Filtrar items por productoId y agregar a la lista
+                  const itemsProducto = items.filter((i: NotaRecepcionItem) => i.producto?.id === productoId);
+                  itemsEncontrados.push(...itemsProducto);
                 } catch (error) {
                   console.error('Error al obtener items de nota:', error);
                 }
               }
 
-              obs.error(new Error('NotaRecepcionItem no encontrado para el producto especificado'));
+              if (itemsEncontrados.length === 0) {
+                obs.error(new Error('NotaRecepcionItem no encontrado para el producto especificado'));
+              } else {
+                obs.next(itemsEncontrados);
+                obs.complete();
+              }
             },
             (error) => {
               obs.error(error);
@@ -192,6 +229,20 @@ export class RecepcionMercaderiaService {
     return await this.genericService.onCustomGet(
       this.verificarRecepcionActivaPorNotaYSucursal,
       { notaRecepcionId, sucursalRecepcionId }
+    );
+  }
+
+  /**
+   * Deshace la verificación de todos los items de un producto en una recepción
+   * Útil cuando el producto proviene de múltiples notas (distribución automática)
+   */
+  async onDeshacerVerificacionPorProducto(
+    recepcionMercaderiaId: number,
+    productoId: number
+  ): Promise<Observable<boolean>> {
+    return await this.genericService.onCustomSave(
+      this.deshacerVerificacionPorProducto,
+      { recepcionMercaderiaId, productoId }
     );
   }
 }

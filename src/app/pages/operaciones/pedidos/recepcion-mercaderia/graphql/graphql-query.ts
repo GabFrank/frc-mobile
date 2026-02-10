@@ -97,6 +97,14 @@ export const notaRecepcionItemListPorNotaRecepcionIdQuery = gql`
         id
         descripcion
       }
+      notaRecepcion {
+        id
+        numero
+      }
+      cantidadEnNota
+      cantidadRecibida
+      cantidadRechazada
+      cantidadPendiente
     }
   }
 `;
@@ -266,5 +274,12 @@ export const verificarRecepcionActivaPorNotaYSucursalQuery = gql`
         nombre
       }
     }
+  }
+`;
+
+// Mutation: Deshacer verificación por producto
+export const deshacerVerificacionPorProductoMutation = gql`
+  mutation deshacerVerificacionPorProducto($recepcionMercaderiaId: ID!, $productoId: ID!) {
+    data: deshacerVerificacionPorProducto(recepcionMercaderiaId: $recepcionMercaderiaId, productoId: $productoId)
   }
 `;

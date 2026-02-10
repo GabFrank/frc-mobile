@@ -6,6 +6,46 @@
       </ion-col>
     </ion-row>
   </ion-header>
+  <!-- Selector de NotaRecepcionItem cuando hay múltiples items del mismo producto Y hay rechazos -->
+  <ion-card *ngIf="mostrarSelectorNotaItem && nuevaCantidadRechazada > 0" style="background-color: #252525; margin: 10px;">
+    <ion-card-header>
+      <ion-card-title class="center" style="padding: 10px">
+        Seleccionar Item de Nota para Rechazo
+      </ion-card-title>
+      <ion-card-subtitle class="center" style="padding: 5px; font-size: 12px;">
+        Hay múltiples items de nota para este producto. Seleccione cuál recibirá el rechazo para mantener la trazabilidad.
+      </ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label position="stacked">Item de Nota</ion-label>
+        <ion-select [formControl]="notaRecepcionItemControl" placeholder="Seleccionar item">
+          <ion-select-option *ngFor="let item of notaRecepcionItemsDisponibles" [value]="item">
+            {{ getDisplayTextForNotaItem(item) }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-row>
+        <ion-col size="6">
+          <ion-button expand="block" fill="outline" (click)="onCancelarSeleccionNotaItem()">
+            Cancelar
+          </ion-button>
+        </ion-col>
+        <ion-col size="6">
+          <ion-button expand="block" (click)="onSeleccionarNotaRecepcionItem()" [disabled]="!notaRecepcionItemControl.value">
+            Continuar
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-card-content>
+  </ion-card>
+  <!-- Mensaje informativo cuando se distribuirá automáticamente -->
+  <ion-row *ngIf="nuevaCantidadRechazada === 0 && nuevaCantidadRecibida > 0 && (selectedItem?.totalCantidadARecibirPorUnidad - (selectedItem?.totalCantidadRecibidaPorUnidad || 0) - (selectedItem?.totalCantidadRechazadaPorUnidad || 0) - nuevaCantidadRecibida === 0)">
+    <ion-col size="12" class="center" style="padding: 10px; font-size: 12px; color: #4CAF50;">
+      <ion-icon name="information-circle-outline" style="margin-right: 5px;"></ion-icon>
+      La cantidad recibida se distribuirá automáticamente entre todas las notas pendientes
+    </ion-col>
+  </ion-row>
   <ion-row>
     <ion-col size="12" class="title center" style="padding: 10px">Producto</ion-col>
     <ion-col size="12" class="center">{{ selectedItem?.producto?.id }} -
