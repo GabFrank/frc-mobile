@@ -5,11 +5,17 @@ import { RecepcionMercaderiaService } from '../../recepcion-mercaderia/recepcion
 import { PageInfo } from 'src/app/app.component';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { QrGeneratorComponent } from 'src/app/components/qr-generator/qr-generator.component';
+import { PopOverService, PopoverSize } from 'src/app/services/pop-over.service';
+import { codificarQr, QrData } from 'src/app/generic/utils/qrUtils';
+import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
 
 @Component({
   selector: 'app-historico-nota-recepcion',
   templateUrl: './historico-nota-recepcion.component.html',
-  styleUrls: ['./historico-nota-recepcion.component.scss']
+  styleUrls: ['./historico-nota-recepcion.component.scss'],
+  providers: [BarcodeScanner]
 })
 export class HistoricoNotaRecepcionComponent implements OnInit {
   recepcionMercaderiaList: RecepcionMercaderia[];
@@ -21,7 +27,8 @@ export class HistoricoNotaRecepcionComponent implements OnInit {
     private recepcionMercaderiaService: RecepcionMercaderiaService,
     private _location: Location,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private popoverService: PopOverService
   ) {}
 
   ngOnInit() {
@@ -63,5 +70,18 @@ export class HistoricoNotaRecepcionComponent implements OnInit {
   handlePagination(e) {
     this.pageIndex = e - 1;
     this.onSearchRecepcionMercaderia();
+  }
+
+  onShare(recepcionMercaderia: RecepcionMercaderia) {
+    let codigo = new QrData();
+    codigo.tipoEntidad = TipoEntidad.RECEPCION_MERCADERIA;
+    codigo.idCentral = recepcionMercaderia?.id;
+    codigo.idOrigen = recepcionMercaderia?.id;
+    codigo.sucursalId = recepcionMercaderia?.sucursalRecepcion?.id;
+    this.popoverService.open(
+      QrGeneratorComponent,
+      codificarQr(codigo),
+      PopoverSize.XS
+    );
   }
 }

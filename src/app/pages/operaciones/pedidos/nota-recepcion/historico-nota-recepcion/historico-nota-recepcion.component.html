@@ -36,17 +36,19 @@
           }}</ion-col>
         </ion-row> -->
         <ion-row>
-          <ion-col size="4" class="title center">Fecha</ion-col>
-          <ion-col size="4" class="title center">Cant. notas</ion-col>
-          <ion-col size="4" class="title center">Estado</ion-col>
+          <ion-col size="3" class="title center">ID</ion-col>
+          <ion-col size="3" class="title center">Fecha</ion-col>
+          <ion-col size="3" class="title center">Cant. notas</ion-col>
+          <ion-col size="3" class="title center">Estado</ion-col>
         </ion-row>
         <ion-row style="text-align: center; font-size: small">
-          <ion-col size="4">{{
+          <ion-col size="3">{{ recepcionMercaderia?.id }}</ion-col>
+          <ion-col size="3">{{
             recepcionMercaderia?.fecha | date : 'short'
           }}</ion-col>
-          <ion-col size="4">{{ recepcionMercaderia?.cantNotas }}</ion-col>
+          <ion-col size="3">{{ recepcionMercaderia?.cantNotas }}</ion-col>
           <ion-col
-            size="4"
+            size="3"
             [class.en_proceso]="
               recepcionMercaderia.estado == 'EN_PROCESO'
             "
@@ -56,7 +58,17 @@
           >
         </ion-row>
         <ion-row style="text-align: center; align-items: center">
-          <ion-col size="6" offset="3">
+          <ion-col size="6">
+            <ion-button
+              (click)="onShare(recepcionMercaderia)"
+              expand="block"
+              fill="outline"
+            >
+              <ion-icon name="share-outline" slot="start"></ion-icon>
+              Compartir
+            </ion-button>
+          </ion-col>
+          <ion-col size="6">
             <ion-button
               (click)="onItemClick(recepcionMercaderia)"
               expand="block"
