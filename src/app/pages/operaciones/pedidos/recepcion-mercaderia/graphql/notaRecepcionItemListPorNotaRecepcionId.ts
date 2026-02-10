@@ -8,6 +8,14 @@ export interface NotaRecepcionItem {
     id: number;
     descripcion: string;
   };
+  notaRecepcion?: {
+    id: number;
+    numero?: number;
+  };
+  cantidadEnNota?: number;
+  cantidadRecibida?: number;
+  cantidadRechazada?: number;
+  cantidadPendiente?: number;
 }
 
 export interface Response {

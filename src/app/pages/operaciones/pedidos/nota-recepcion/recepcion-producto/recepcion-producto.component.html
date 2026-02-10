@@ -85,10 +85,10 @@
         </ion-col>
       </ion-row> 
     </ion-list-header>
-    <ion-card *ngFor="let pedidoItem of itemList; let i = index" (click)="onItemClick(pedidoItem, i)">
+    <ion-card *ngFor="let pedidoItem of itemList; let i = index">
       <ion-grid fixed>
         <ion-row>
-          <ion-col size="10">
+          <ion-col size="10" (click)="onItemClick(pedidoItem, i)">
             <ion-row>
               <ion-col size="12" class="title">Producto</ion-col>
               <ion-col size="12">{{ pedidoItem.producto.descripcion }}</ion-col>
@@ -103,12 +103,22 @@
           </ion-col>
         </ion-row>
         <ion-row>
-          <ion-col size="12" [ngClass]="{
-            'estado-pendiente': pedidoItem.estado === 'PENDIENTE',
-            'estado-recibido': pedidoItem.estado === 'RECIBIDO',
-            'estado-recibido-parcialmente': pedidoItem.estado === 'RECIBIDO_PARCIALMENTE'
-          }" style="font-size: 12px; width: 100%; text-align: center;">Estado: {{
-            pedidoItem.estado | enumToString }}
+          <ion-col size="12" (click)="onItemClick(pedidoItem, i)">
+            <ion-col size="12" [ngClass]="{
+              'estado-pendiente': pedidoItem.estado === 'PENDIENTE',
+              'estado-recibido': pedidoItem.estado === 'RECIBIDO',
+              'estado-recibido-parcialmente': pedidoItem.estado === 'RECIBIDO_PARCIALMENTE'
+            }" style="font-size: 12px; width: 100%; text-align: center;">Estado: {{
+              pedidoItem.estado | enumToString }}
+            </ion-col>
+          </ion-col>
+        </ion-row>
+        <ion-row *ngIf="((pedidoItem.estado === 'RECIBIDO' || pedidoItem.estado === 'RECIBIDO_PARCIALMENTE') || (selectedRecepcionMercaderia?.estado === 'EN_PROCESO' && (pedidoItem.totalCantidadRecibidaPorUnidad > 0 || pedidoItem.totalCantidadRechazadaPorUnidad > 0))) && selectedRecepcionMercaderia?.estado !== 'CANCELADA'">
+          <ion-col size="12" style="text-align: center;">
+            <ion-button fill="clear" color="danger" (click)="onDeshacerVerificacion(pedidoItem, $event)" style="margin-top: 8px; width: 45%; font-size: 10px; --padding-start: 8px; --padding-end: 8px;">
+              <ion-icon name="arrow-undo-outline" slot="start" style="font-size: 14px;"></ion-icon>
+              Deshacer verificación
+            </ion-button>
           </ion-col>
         </ion-row>
       </ion-grid>

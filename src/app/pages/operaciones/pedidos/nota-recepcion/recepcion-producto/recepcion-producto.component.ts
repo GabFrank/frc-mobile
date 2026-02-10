@@ -19,6 +19,8 @@ import { ProductoVerificacionDialogComponent } from 'src/app/pages/producto/prod
 import { Presentacion } from 'src/app/domains/productos/presentacion.model';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { CargandoService } from 'src/app/services/cargando.service';
+import { NotificacionService } from 'src/app/services/notificacion.service';
+import { first } from 'rxjs/operators';
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -47,7 +49,8 @@ export class RecepcionProductoComponent implements OnInit {
     private productoService: ProductoService,
     private codigoService: CodigoService,
     private dialogoService: DialogoService,
-    private cargandoService: CargandoService
+    private cargandoService: CargandoService,
+    private notificacionService: NotificacionService
   ) { }
 
   ngOnInit() {
@@ -83,10 +86,24 @@ export class RecepcionProductoComponent implements OnInit {
           this.pageSize
         )
       ).subscribe((res2) => {
-        console.log(res2);
+        console.log('Items recibidos:', res2);
 
         this.selectedPageInfo = res2;
         this.itemList = this.selectedPageInfo.getContent;
+        
+        // Debug: Verificar datos de items para deshacer verificación
+        this.itemList.forEach((item, index) => {
+          console.log(`Item ${index}:`, {
+            producto: item.producto?.descripcion,
+            estado: item.estado,
+            totalCantidadRecibidaPorUnidad: item.totalCantidadRecibidaPorUnidad,
+            totalCantidadRechazadaPorUnidad: item.totalCantidadRechazadaPorUnidad,
+            recepcionEstado: this.selectedRecepcionMercaderia?.estado,
+            puedeDeshacer: (item.estado === 'RECIBIDO' || item.estado === 'RECIBIDO_PARCIALMENTE') || 
+                          (this.selectedRecepcionMercaderia?.estado === 'EN_PROCESO' && 
+                           (item.totalCantidadRecibidaPorUnidad > 0 || item.totalCantidadRechazadaPorUnidad > 0))
+          });
+        });
       });
     }
   }
@@ -237,6 +254,89 @@ export class RecepcionProductoComponent implements OnInit {
         // TODO: Adaptar ruta de solicitar pago cuando se migre ese componente
         // Por ahora mantener la ruta original pero con el ID de recepcionMercaderia
         this.router.navigate(['/operaciones/pedidos/solicitar-pago-nota-recepcion/', this.selectedRecepcionMercaderia.id]);
+      }
+    });
+  }
+
+  async onDeshacerVerificacion(item: PedidoRecepcionProductoDto, event: Event) {
+    event.stopPropagation(); // Evitar que se abra el diálogo de verificación
+    
+    // Verificar si se puede deshacer la verificación
+    const puedeDeshacer = 
+      item.estado === PedidoRecepcionProductoEstado.RECIBIDO || 
+      item.estado === PedidoRecepcionProductoEstado.RECIBIDO_PARCIALMENTE ||
+      (this.selectedRecepcionMercaderia?.estado === RecepcionMercaderiaEstado.EN_PROCESO &&
+       (item.totalCantidadRecibidaPorUnidad > 0 || item.totalCantidadRechazadaPorUnidad > 0));
+
+    if (!puedeDeshacer) {
+      this.notificacionService.warn('Solo se puede deshacer la verificación de productos que fueron verificados previamente');
+      return;
+    }
+
+    this.dialogoService.open(
+      'Atención!', 
+      '¿Realmente desea deshacer la verificación de este producto? Esta acción eliminará todos los items de recepción asociados a este producto.'
+    ).then(async res => {
+      if (res.role === 'aceptar') {
+        const loading = await this.cargandoService.open();
+        try {
+          // Detectar si hay múltiples notas para este producto
+          const notaRecepcionItemsObs = await this.recepcionMercaderiaService
+            .onBuscarNotaRecepcionItemsPorProductoYRecepcion(
+              this.selectedRecepcionMercaderia.id,
+              item.producto.id
+            );
+          
+          const notaRecepcionItems = await notaRecepcionItemsObs
+            .pipe(first())
+            .toPromise();
+
+          if (notaRecepcionItems && notaRecepcionItems.length > 1) {
+            // Múltiples notas: usar deshacerVerificacionPorProducto
+            const resultObs = await this.recepcionMercaderiaService.onDeshacerVerificacionPorProducto(
+              this.selectedRecepcionMercaderia.id,
+              item.producto.id
+            );
+            
+            const result = await resultObs.pipe(first()).toPromise();
+            
+            if (result === true) {
+              this.notificacionService.success('Verificación deshecha correctamente');
+              // Recargar la lista
+              this.onGetPedidoItem();
+              // Recargar la recepción para actualizar el estado
+              this.onBuscarRecepcionMercaderia(this.selectedRecepcionMercaderia.id);
+            } else {
+              this.notificacionService.warn('No se pudo deshacer la verificación');
+            }
+          } else {
+            // Un solo item: usar resetearVerificacion (si está disponible)
+            // Por ahora, también usar deshacerVerificacionPorProducto para consistencia
+            const resultObs = await this.recepcionMercaderiaService.onDeshacerVerificacionPorProducto(
+              this.selectedRecepcionMercaderia.id,
+              item.producto.id
+            );
+            
+            const result = await resultObs.pipe(first()).toPromise();
+            
+            if (result === true) {
+              this.notificacionService.success('Verificación deshecha correctamente');
+              // Recargar la lista
+              this.onGetPedidoItem();
+              // Recargar la recepción para actualizar el estado
+              this.onBuscarRecepcionMercaderia(this.selectedRecepcionMercaderia.id);
+            } else {
+              this.notificacionService.warn('No se pudo deshacer la verificación');
+            }
+          }
+        } catch (error) {
+          console.error('Error al deshacer verificación:', error);
+          this.notificacionService.danger(
+            error?.message || 'Error al deshacer la verificación. Verifique que la recepción no haya sido finalizada hace más de 24 horas.'
+          );
+        } finally {
+          this.cargandoService.close(loading);
+        }
       }
     });
   }
