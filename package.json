@@ -57,6 +57,7 @@
     "@ionic/pwa-elements": "^3.3.0",
     "@ngneat/until-destroy": "^9.0.1",
     "@techiediaries/ngx-qrcode": "^9.1.0",
+    "@vladmandic/human": "^3.3.6",
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.18.6",
     "@zxing/ngx-scanner": "^3.9.1",
