@@ -90,11 +90,12 @@ export class RecepcionMercaderiaService {
   }
 
   async onFinalizarRecepcionMercaderia(
-    id: number
+    id: number,
+    rechazoPendientes?: { motivoRechazo: string }
   ): Promise<Observable<RecepcionMercaderia>> {
     return await this.genericService.onCustomSave(
       this.finalizarRecepcionMercaderia,
-      { recepcionId: id }
+      { recepcionId: id, rechazoPendientes: rechazoPendientes || null }
     );
   }
 

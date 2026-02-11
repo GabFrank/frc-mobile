@@ -1,8 +1,8 @@
-# Procedimiento: Reabrir Recepciones y Deshacer Verificaciones
+# Procedimiento: Reabrir Recepciones, Deshacer Verificaciones y Finalizar con Pendientes
 
 ## Resumen Ejecutivo
 
-Este documento describe el procedimiento completo para **reabrir recepciones finalizadas** y **deshacer verificaciones de items ya verificados**, incluyendo todas las validaciones, restricciones y lo que se puede y no se puede hacer.
+Este documento describe el procedimiento completo para **reabrir recepciones finalizadas**, **deshacer verificaciones de items ya verificados** y **finalizar recepciones con items pendientes marcándolos como rechazados**, incluyendo todas las validaciones, restricciones y lo que se puede y no se puede hacer.
 
 ---
 
@@ -59,7 +59,7 @@ Elimina completamente la verificación de un producto en una recepción, incluye
 - Todos los `RecepcionMercaderiaItem` del producto
 - Todas las variaciones asociadas (cascade delete)
 - Todos los movimientos de stock generados (TipoMovimiento.COMPRA)
-- Si la recepción queda vacía, elimina también la recepción y sus asociaciones
+- La recepción se mantiene aunque quede vacía
 
 ### 2.2 Procedimiento
 
@@ -77,8 +77,8 @@ Elimina completamente la verificación de un producto en una recepción, incluye
    - Busca todos los `RecepcionMercaderiaItem` del producto en la recepción
    - Para cada item:
      - Busca y elimina movimientos de stock (TipoMovimiento.COMPRA)
-     - Elimina el item (cascade elimina variaciones)
-   - Si la recepción queda vacía, elimina la recepción completa
+     - **Resetea el item a pendiente** (cantidadRecibida=0, cantidadRechazada=0, motivoRechazo=null, estadoVerificacion=PENDIENTE, limpia variaciones) — **no elimina el item**, para permitir re-verificar o finalizar marcando como rechazado
+   - La recepción se mantiene aunque quede vacía
 6. **Frontend recarga** la lista de items y la recepción
 
 ### 2.3 Validaciones
@@ -118,7 +118,7 @@ Cuando se deshace una verificación:
 1. **Elimina movimientos de stock**: Los movimientos de tipo `COMPRA` asociados al item se eliminan
 2. **Elimina items de recepción**: Los `RecepcionMercaderiaItem` se eliminan (cascade elimina variaciones)
 3. **Reabre recepción automáticamente**: Si estaba `FINALIZADA`, cambia a `EN_PROCESO` (si pasa validación de 24h)
-4. **Elimina recepción si queda vacía**: Si después de eliminar items no quedan más items, elimina la recepción completa
+4. **Mantiene la recepción**: La recepción se conserva aunque quede vacía, permitiendo agregar más items sin crear una nueva
 
 ### 2.6 Código de Referencia
 
@@ -137,7 +137,7 @@ Cuando se deshace una verificación:
 | **Movimientos de stock** | ❌ NO se eliminan | ✅ SÍ se eliminan |
 | **Validación de 24h** | ❌ NO valida | ✅ SÍ valida (si está FINALIZADA) |
 | **Reabre automáticamente** | ❌ No aplica | ✅ SÍ (si está FINALIZADA y pasa validación) |
-| **Elimina recepción vacía** | ❌ No aplica | ✅ SÍ (si no quedan items) |
+| **Elimina recepción vacía** | ❌ No aplica | ❌ No (se mantiene para agregar más items) |
 | **Cuándo usar** | Para permitir modificaciones sin eliminar datos | Para corregir errores eliminando verificaciones incorrectas |
 
 ---
@@ -186,7 +186,7 @@ FINALIZADA (todos los items verificados, movimientos de stock creados)
 **Solución**: 
 - Click en "Deshacer verificación" de cada producto incorrecto
 - Cada deshacer elimina los items y movimientos de stock
-- Si todos los items se eliminan, la recepción se elimina automáticamente
+- La recepción se mantiene aunque no queden items, permitiendo agregar más
 
 ---
 
@@ -209,13 +209,49 @@ FINALIZADA (todos los items verificados, movimientos de stock creados)
 
 ---
 
+## 3. FINALIZAR CON ITEMS PENDIENTES COMO RECHAZADOS
+
+### 3.1 ¿Qué hace?
+
+Cuando existen items pendientes (cantidad a recibir > cantidad recibida + cantidad rechazada) y el usuario desea finalizar la recepción, esos items pendientes se marcan como rechazados con un motivo general. Esto evita finalizar una recepción dejando cantidades "a medias" que no generan stock.
+
+### 3.2 Procedimiento
+
+1. **Usuario hace click en "Finalizar Recepción"**
+2. **Frontend obtiene items pendientes** (cantidadPendiente > 0)
+3. **Si hay items pendientes**:
+   - Muestra diálogo: "Hay X item(s) pendiente(s) que serán marcados como rechazados: [lista]. ¿Desea continuar?"
+   - Usuario puede **Cancelar** (no hace nada) o **Continuar**
+4. **Si continúa**:
+   - Muestra ActionSheet con opciones de **Motivo de rechazo** (PRODUCTO_DANADO, PRODUCTO_VENCIDO, CANTIDAD_INCORRECTA, PRODUCTO_DIFERENTE, EMBALAJE_DANADO, OTRO)
+   - Usuario selecciona motivo
+5. **Backend ejecuta** (operación atómica):
+   - Para cada `RecepcionMercaderiaItem` con cantidad pendiente > 0: actualiza `cantidadRechazada` y `motivoRechazo`
+   - Genera movimientos de stock para items con cantidadRecibida > 0
+   - Marca recepción como FINALIZADA
+6. **Si no hay items pendientes**: Flujo normal de confirmación y finalización.
+
+### 3.3 Validaciones
+
+- Los items pendientes se identifican por: `cantidadEsperada - cantidadRecibida - cantidadRechazada > 0`
+- La cantidad esperada viene de `NotaRecepcionItemDistribucion.cantidad` o `NotaRecepcionItem.cantidadEnNota`
+- El motivo de rechazo es obligatorio cuando hay pendientes
+
+### 3.4 Código de Referencia
+
+**Frontend**: `recepcion-producto.component.ts` - métodos `onFinalizarRecepcion()`, `obtenerItemsPendientes()`, `mostrarDialogoMotivoYFinalizar()`
+**Backend**: `RecepcionMercaderiaService.finalizarRecepcion(recepcionId, motivoRechazoPendientes)`, `aplicarRechazoPendientes()`
+**GraphQL**: `finalizarRecepcionMercaderia(recepcionId, rechazoPendientes: RechazoPendientesInput)`
+
+---
+
 ## 7. PREGUNTAS FRECUENTES
 
 **P: ¿Por qué no se puede deshacer verificación después de 24 horas?**
 R: Para proteger la integridad de los datos históricos y evitar que se modifiquen movimientos de stock antiguos que pueden haber afectado otros procesos (ventas, transferencias, etc.).
 
 **P: ¿Qué pasa si deshago la verificación de todos los productos?**
-R: Si eliminas todos los items de una recepción, el sistema elimina automáticamente la recepción completa y todas sus asociaciones con notas.
+R: La recepción se mantiene aunque no queden items, permitiendo agregar más productos sin crear una nueva recepción.
 
 **P: ¿Los movimientos de stock se eliminan físicamente o se marcan como eliminados?**
 R: Se eliminan físicamente usando `movimientoStockService.delete()`, lo que también actualiza el stock en tiempo real.
