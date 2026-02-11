@@ -21,6 +21,11 @@ import { DialogoService } from 'src/app/services/dialogo.service';
 import { CargandoService } from 'src/app/services/cargando.service';
 import { NotificacionService } from 'src/app/services/notificacion.service';
 import { first } from 'rxjs/operators';
+import { QrGeneratorComponent } from 'src/app/components/qr-generator/qr-generator.component';
+import { PopOverService, PopoverSize } from 'src/app/services/pop-over.service';
+import { codificarQr, QrData } from 'src/app/generic/utils/qrUtils';
+import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
+import { MotivoRechazoFisico, MotivoRechazoFisicoLabels } from '../../recepcion-mercaderia/recepcion-mercaderia-item.model';
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -50,7 +55,8 @@ export class RecepcionProductoComponent implements OnInit {
     private codigoService: CodigoService,
     private dialogoService: DialogoService,
     private cargandoService: CargandoService,
-    private notificacionService: NotificacionService
+    private notificacionService: NotificacionService,
+    private popoverService: PopOverService
   ) { }
 
   ngOnInit() {
@@ -71,6 +77,7 @@ export class RecepcionProductoComponent implements OnInit {
       if (res != null) {
         this.selectedRecepcionMercaderia = new RecepcionMercaderia();
         Object.assign(this.selectedRecepcionMercaderia, res);
+        this.selectedRecepcionMercaderia.cantNotas = res.notas?.length || 0;
         this.onGetPedidoItem();
       }
     });
@@ -216,18 +223,84 @@ export class RecepcionProductoComponent implements OnInit {
     return result?.data; // will be true if confirmed, false if cancelled
   }
 
-  onFinalizarRecepcion() {
-    this.dialogoService.open('Atención!', '¿Realmente desea finalizar esta recepción?').then(async res => {
-      if (res.role === 'aceptar') {
-        (await this.recepcionMercaderiaService.onFinalizarRecepcionMercaderia(this.selectedRecepcionMercaderia.id))
-          .pipe(untilDestroyed(this))
-          .subscribe(res => {
-            if (res != null) {
-              this.selectedRecepcionMercaderia = res;
-            }
-          });
-      }
+  async onFinalizarRecepcion() {
+    const itemsPendientes = await this.obtenerItemsPendientes();
+    if (itemsPendientes.length > 0) {
+      const nombresProductos = itemsPendientes
+        .map(i => i.producto?.descripcion || 'Producto')
+        .slice(0, 5)
+        .join(', ');
+      const textoAdicional = itemsPendientes.length > 5
+        ? ` y ${itemsPendientes.length - 5} más`
+        : '';
+      const mensaje = `Hay ${itemsPendientes.length} item(s) pendiente(s) que serán marcados como rechazados: ${nombresProductos}${textoAdicional}. ¿Desea continuar?`;
+      this.dialogoService.open('Atención', mensaje, true).then(async res => {
+        if (res.role === 'aceptar') {
+          await this.mostrarDialogoMotivoYFinalizar(itemsPendientes);
+        }
+      });
+    } else {
+      this.dialogoService.open('Atención!', '¿Realmente desea finalizar esta recepción?', true).then(async res => {
+        if (res.role === 'aceptar') {
+          await this.ejecutarFinalizar(null);
+        }
+      });
+    }
+  }
+
+  private async obtenerItemsPendientes(): Promise<PedidoRecepcionProductoDto[]> {
+    const pageObs = await this.recepcionMercaderiaService.onGetPedidoRecepcionProductoPorRecepcionMercaderia(
+      this.selectedRecepcionMercaderia.id,
+      null,
+      0,
+      500
+    );
+    const page = await pageObs.pipe(first()).toPromise();
+    if (!page?.getContent) return [];
+    return page.getContent.filter(item => {
+      const aRecibir = item.totalCantidadARecibirPorUnidad ?? 0;
+      const recibido = item.totalCantidadRecibidaPorUnidad ?? 0;
+      const rechazado = item.totalCantidadRechazadaPorUnidad ?? 0;
+      return (aRecibir - recibido - rechazado) > 0;
     });
+  }
+
+  private async mostrarDialogoMotivoYFinalizar(itemsPendientes: PedidoRecepcionProductoDto[]) {
+    const motivoOpciones = Object.values(MotivoRechazoFisico).map(m => ({
+      text: MotivoRechazoFisicoLabels[m] || m,
+      role: m
+    }));
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Seleccione el motivo de rechazo para los items pendientes',
+      buttons: [
+        ...motivoOpciones.map(o => ({ text: o.text, role: o.role })),
+        { text: 'Cancelar', role: 'cancel', cssClass: 'cancelar-btn' }
+      ],
+      mode: 'ios'
+    });
+    await actionSheet.present();
+    const res = await actionSheet.onDidDismiss();
+    const role = res?.role as string | undefined;
+    if (role && role !== 'cancel' && Object.values(MotivoRechazoFisico).includes(role as MotivoRechazoFisico)) {
+      await this.ejecutarFinalizar({ motivoRechazo: role });
+    }
+  }
+
+  private async ejecutarFinalizar(rechazoPendientes: { motivoRechazo: string } | null) {
+    (await this.recepcionMercaderiaService.onFinalizarRecepcionMercaderia(
+      this.selectedRecepcionMercaderia.id,
+      rechazoPendientes ?? undefined
+    ))
+      .pipe(untilDestroyed(this))
+      .subscribe(
+        res => {
+          if (res != null) {
+            this.selectedRecepcionMercaderia = res;
+            this.notificacionService.success('Recepción finalizada correctamente');
+          }
+        },
+        err => this.notificacionService.danger(err?.message || 'Error al finalizar')
+      );
   }
 
   onReabrirRecepcion() {
@@ -246,6 +319,29 @@ export class RecepcionProductoComponent implements OnInit {
 
   onNuevaRecepcion() {
     this.router.navigate(['/operaciones/pedidos/recibir-nota-recepcion/']);
+  }
+
+  /**
+   * Actualiza la vista después de deshacer verificación.
+   * La recepción se mantiene aunque quede vacía, permitiendo agregar más items.
+   */
+  private actualizarVistaDespuesDeshacer() {
+    this.onGetPedidoItem();
+    this.onBuscarRecepcionMercaderia(this.selectedRecepcionMercaderia.id);
+  }
+
+  onShare() {
+    if (!this.selectedRecepcionMercaderia?.id) return;
+    const codigo = new QrData();
+    codigo.tipoEntidad = TipoEntidad.RECEPCION_MERCADERIA;
+    codigo.idCentral = this.selectedRecepcionMercaderia.id;
+    codigo.idOrigen = this.selectedRecepcionMercaderia.id;
+    codigo.sucursalId = this.selectedRecepcionMercaderia.sucursalRecepcion?.id;
+    this.popoverService.open(
+      QrGeneratorComponent,
+      codificarQr(codigo),
+      PopoverSize.XS
+    );
   }
 
   onSolicitarPago() {
@@ -302,10 +398,7 @@ export class RecepcionProductoComponent implements OnInit {
             
             if (result === true) {
               this.notificacionService.success('Verificación deshecha correctamente');
-              // Recargar la lista
-              this.onGetPedidoItem();
-              // Recargar la recepción para actualizar el estado
-              this.onBuscarRecepcionMercaderia(this.selectedRecepcionMercaderia.id);
+              this.actualizarVistaDespuesDeshacer();
             } else {
               this.notificacionService.warn('No se pudo deshacer la verificación');
             }
@@ -321,10 +414,7 @@ export class RecepcionProductoComponent implements OnInit {
             
             if (result === true) {
               this.notificacionService.success('Verificación deshecha correctamente');
-              // Recargar la lista
-              this.onGetPedidoItem();
-              // Recargar la recepción para actualizar el estado
-              this.onBuscarRecepcionMercaderia(this.selectedRecepcionMercaderia.id);
+              this.actualizarVistaDespuesDeshacer();
             } else {
               this.notificacionService.warn('No se pudo deshacer la verificación');
             }

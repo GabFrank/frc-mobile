@@ -112,7 +112,9 @@ export enum MotivoRechazoFisico {
   PRODUCTO_VENCIDO = 'PRODUCTO_VENCIDO',
   CANTIDAD_INCORRECTA = 'CANTIDAD_INCORRECTA',
   PRODUCTO_DIFERENTE = 'PRODUCTO_DIFERENTE',
-  EMBALAJE_DANADO = 'EMBALAJE_DANADO'
+  EMBALAJE_DANADO = 'EMBALAJE_DANADO',
+  PRODUCTO_FALTANTE = 'PRODUCTO_FALTANTE',
+  OTRO = 'OTRO'
 }
 
 export const MotivoRechazoFisicoLabels: { [key in MotivoRechazoFisico]: string } = {
@@ -120,5 +122,7 @@ export const MotivoRechazoFisicoLabels: { [key in MotivoRechazoFisico]: string }
   [MotivoRechazoFisico.PRODUCTO_VENCIDO]: 'Producto Vencido',
   [MotivoRechazoFisico.CANTIDAD_INCORRECTA]: 'Cantidad Incorrecta',
   [MotivoRechazoFisico.PRODUCTO_DIFERENTE]: 'Producto Diferente',
-  [MotivoRechazoFisico.EMBALAJE_DANADO]: 'Embalaje Dañado'
+  [MotivoRechazoFisico.EMBALAJE_DANADO]: 'Embalaje Dañado',
+  [MotivoRechazoFisico.PRODUCTO_FALTANTE]: 'Producto Faltante',
+  [MotivoRechazoFisico.OTRO]: 'Otro'
 };

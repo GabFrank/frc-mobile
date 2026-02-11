@@ -127,8 +127,8 @@ export const saveRecepcionMercaderiaItemMutation = gql`
 
 // Mutation: Finalizar RecepcionMercaderia
 export const finalizarRecepcionMercaderiaMutation = gql`
-  mutation finalizarRecepcionMercaderia($recepcionId: ID!) {
-    data: finalizarRecepcionMercaderia(recepcionId: $recepcionId) {
+  mutation finalizarRecepcionMercaderia($recepcionId: ID!, $rechazoPendientes: RechazoPendientesInput) {
+    data: finalizarRecepcionMercaderia(recepcionId: $recepcionId, rechazoPendientes: $rechazoPendientes) {
       id
       estado
       proveedor {
