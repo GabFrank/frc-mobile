@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Query } from 'apollo-angular';
+import { Mutation } from 'apollo-angular';
 import { saveUsuarioImageQuery } from './graphql-query';
 
 @Injectable({
   providedIn: 'root'
 })
-export class SaveUsuarioImageGQL extends Query<Boolean> {
+export class SaveUsuarioImageGQL extends Mutation<Boolean> {
   document = saveUsuarioImageQuery;
 }

@@ -5,6 +5,7 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { MainService } from 'src/app/services/main.service';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
 import { UsuarioService } from 'src/app/services/usuario.service';
+import { FaceRecognitionService } from 'src/app/services/face-recognition.service';
 
 @Component({
   selector: 'app-informaciones-personales-dashboard',
@@ -26,10 +27,12 @@ export class InformacionesPersonalesDashboardComponent implements OnInit {
     private navCtrl: NavController,
     private actionSheetController: ActionSheetController,
     private mainService: MainService,
-    private usuarioService: UsuarioService
+    private usuarioService: UsuarioService,
+    private faceRecognitionService: FaceRecognitionService
   ) { }
 
   ngOnInit() {
+    this.faceRecognitionService.init();
     if (this.mainService.usuarioActual != null) {
       (this.usuarioService.onGetUsuario(this.mainService.usuarioActual.id)).subscribe(async res => {
         this.selectedUsuario = res;
@@ -76,7 +79,17 @@ export class InformacionesPersonalesDashboardComponent implements OnInit {
 
   async saveProfile() {
     if (this.src != null && this.src != "") {
-      (await this.usuarioService.onSaveUsuarioImage(this.selectedUsuario.id, 'perfil', this.src)).subscribe(res => {
+      let embedding: number[] = null;
+      try {
+        const descriptor = await this.faceRecognitionService.getDescriptor(this.src);
+        if (descriptor) {
+          embedding = descriptor;
+        }
+      } catch (e) {
+        console.error("Error generating embedding", e);
+      }
+
+      (await this.usuarioService.onSaveUsuarioImage(this.selectedUsuario.id, 'perfil', this.src, embedding)).subscribe(res => {
 
       })
     }
