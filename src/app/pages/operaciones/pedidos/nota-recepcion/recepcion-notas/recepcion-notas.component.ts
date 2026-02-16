@@ -128,7 +128,7 @@ export class RecepcionNotasComponent implements OnInit {
           return false || this.mainService.isDev;
         });
     } else {
-      (await this.sucursalService.onGetSucursal(1)).subscribe((sucRes) => {
+            (await this.sucursalService.onGetSucursal(1)).subscribe((sucRes) => {
         if (sucRes != null) {
           this.selectedSucursal = sucRes;
         }

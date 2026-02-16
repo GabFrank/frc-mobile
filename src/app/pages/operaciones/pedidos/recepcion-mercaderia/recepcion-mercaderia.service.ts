@@ -18,6 +18,7 @@ import { IniciarRecepcionGQL } from './graphql/iniciarRecepcion';
 import { NotaRecepcionItemListPorNotaRecepcionIdGQL, NotaRecepcionItem } from './graphql/notaRecepcionItemListPorNotaRecepcionId';
 import { VerificarRecepcionActivaPorNotaYSucursalGQL } from './graphql/verificarRecepcionActivaPorNotaYSucursal';
 import { DeshacerVerificacionPorProductoGQL } from './graphql/deshacerVerificacionPorProducto';
+import { VerificarProductoMobileGQL } from './graphql/verificarProductoMobile';
 import { MainService } from 'src/app/services/main.service';
 
 @Injectable({
@@ -37,6 +38,7 @@ export class RecepcionMercaderiaService {
     private getNotaRecepcionItemListPorNotaRecepcionId: NotaRecepcionItemListPorNotaRecepcionIdGQL,
     private verificarRecepcionActivaPorNotaYSucursal: VerificarRecepcionActivaPorNotaYSucursalGQL,
     private deshacerVerificacionPorProducto: DeshacerVerificacionPorProductoGQL,
+    private verificarProductoMobile: VerificarProductoMobileGQL,
     private mainService: MainService
   ) {}
 
@@ -230,6 +232,35 @@ export class RecepcionMercaderiaService {
     return await this.genericService.onCustomGet(
       this.verificarRecepcionActivaPorNotaYSucursal,
       { notaRecepcionId, sucursalRecepcionId }
+    );
+  }
+
+  /**
+   * Verifica un producto en una recepción (mobile).
+   * El backend distribuye automáticamente las cantidades entre las distribuciones.
+   */
+  async onVerificarProductoMobile(
+    recepcionMercaderiaId: number,
+    productoId: number,
+    cantidadRecibida: number,
+    cantidadRechazada: number,
+    notaRecepcionItemIdParaRechazo: number | null,
+    motivoRechazo: string | null,
+    metodoVerificacion: string,
+    usuarioId: number
+  ): Promise<Observable<boolean>> {
+    return await this.genericService.onCustomSave(
+      this.verificarProductoMobile,
+      {
+        recepcionMercaderiaId,
+        productoId,
+        cantidadRecibida,
+        cantidadRechazada: cantidadRechazada || 0,
+        notaRecepcionItemIdParaRechazo: notaRecepcionItemIdParaRechazo || null,
+        motivoRechazo: motivoRechazo || null,
+        metodoVerificacion,
+        usuarioId
+      }
     );
   }
 

@@ -10,7 +10,7 @@ import { Location } from '@angular/common';
 import { ModalService } from 'src/app/services/modal.service';
 import { RecepcionMercaderia } from '../../recepcion-mercaderia/recepcion-mercaderia.model';
 import { RecepcionMercaderiaService } from '../../recepcion-mercaderia/recepcion-mercaderia.service';
-import { RecepcionMercaderiaItemInput, MetodoVerificacion, MotivoRechazoFisico, MotivoRechazoFisicoLabels } from '../../recepcion-mercaderia/recepcion-mercaderia-item.model';
+import { MetodoVerificacion, MotivoRechazoFisico, MotivoRechazoFisicoLabels } from '../../recepcion-mercaderia/recepcion-mercaderia-item.model';
 import { MainService } from 'src/app/services/main.service';
 import { first } from 'rxjs/operators';
 import { NotaRecepcionItem } from '../../recepcion-mercaderia/graphql/notaRecepcionItemListPorNotaRecepcionId';
@@ -273,146 +273,6 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
       .reduce((sum, item) => sum + (item.cantidad * item.presentacion.cantidad), 0);
   }
 
-  /**
-   * Distribuye cantidad recibida y rechazada entre notas cuando hay rechazos en una nota específica.
-   * El rechazo se asigna íntegramente a la nota seleccionada; lo recibido se reparte entre todas.
-   *
-   * @param notaRecepcionItems Lista de NotaRecepcionItem del mismo producto
-   * @param cantidadRecibidaTotal Cantidad total recibida en esta sesión
-   * @param cantidadRechazadaTotal Cantidad total rechazada (va toda a la nota seleccionada)
-   * @param notaRecepcionItemConRechazo Nota donde se registra el rechazo
-   * @param motivoRechazo Motivo del rechazo
-   * @returns Lista con notaRecepcionItemId, cantidadRecibida, cantidadRechazada y motivoRechazo
-   */
-  distribuirCantidadConRechazo(
-    notaRecepcionItems: NotaRecepcionItem[],
-    cantidadRecibidaTotal: number,
-    cantidadRechazadaTotal: number,
-    notaRecepcionItemConRechazo: NotaRecepcionItem,
-    motivoRechazo: string | null
-  ): Array<{
-    notaRecepcionItemId: number;
-    cantidadRecibida: number;
-    cantidadRechazada: number;
-    motivoRechazo: string | null;
-  }> {
-    const cantidadPendiente = (item: NotaRecepcionItem) =>
-      Math.max(0, (item.cantidadEnNota || 0) - (item.cantidadRecibida || 0) - (item.cantidadRechazada || 0));
-
-    const pendienteSelected = cantidadPendiente(notaRecepcionItemConRechazo);
-    if (pendienteSelected < cantidadRechazadaTotal) {
-      return [];
-    }
-
-    const resultado: Array<{
-      notaRecepcionItemId: number;
-      cantidadRecibida: number;
-      cantidadRechazada: number;
-      motivoRechazo: string | null;
-    }> = [];
-
-    const otrasNotas = notaRecepcionItems.filter(n => n.id !== notaRecepcionItemConRechazo.id);
-
-    const capacidadRecibidoSelected = pendienteSelected - cantidadRechazadaTotal;
-    const cantidadRecibidaSelected = Math.min(capacidadRecibidoSelected, cantidadRecibidaTotal);
-    const cantidadRecibidaRestante = cantidadRecibidaTotal - cantidadRecibidaSelected;
-
-    resultado.push({
-      notaRecepcionItemId: notaRecepcionItemConRechazo.id,
-      cantidadRecibida: cantidadRecibidaSelected,
-      cantidadRechazada: cantidadRechazadaTotal,
-      motivoRechazo
-    });
-
-    if (cantidadRecibidaRestante > 0 && otrasNotas.length > 0) {
-      const distribucionOtras = this.distribuirCantidadEntreItems(otrasNotas, cantidadRecibidaRestante);
-      for (const d of distribucionOtras) {
-        resultado.push({
-          notaRecepcionItemId: d.notaRecepcionItemId,
-          cantidadRecibida: d.cantidadRecibida,
-          cantidadRechazada: 0,
-          motivoRechazo: null
-        });
-      }
-    }
-
-    return resultado;
-  }
-
-  /**
-   * Distribuye la cantidad recibida proporcionalmente entre todos los NotaRecepcionItem pendientes
-   * @param notaRecepcionItems Lista de todos los NotaRecepcionItem del mismo producto
-   * @param cantidadTotalRecibida Cantidad total recibida a distribuir
-   * @returns Lista de objetos con notaRecepcionItemId y cantidadRecibida para cada item
-   */
-  distribuirCantidadEntreItems(
-    notaRecepcionItems: NotaRecepcionItem[],
-    cantidadTotalRecibida: number
-  ): Array<{ notaRecepcionItemId: number; cantidadRecibida: number }> {
-    // Calcular cantidad pendiente por item
-    const itemsConPendiente = notaRecepcionItems.map(item => {
-      const cantidadRecibidaActual = item.cantidadRecibida || 0;
-      const cantidadEnNota = item.cantidadEnNota || 0;
-      const cantidadPendiente = cantidadEnNota - cantidadRecibidaActual;
-      return {
-        item,
-        cantidadPendiente: Math.max(0, cantidadPendiente)
-      };
-    }).filter(item => item.cantidadPendiente > 0); // Solo items con cantidad pendiente
-
-    if (itemsConPendiente.length === 0) {
-      return [];
-    }
-
-    // Calcular total de cantidad pendiente
-    const totalPendiente = itemsConPendiente.reduce(
-      (sum, item) => sum + item.cantidadPendiente,
-      0
-    );
-
-    if (totalPendiente === 0) {
-      return [];
-    }
-
-    // Distribuir proporcionalmente
-    const distribucion: Array<{ notaRecepcionItemId: number; cantidadRecibida: number }> = [];
-    let cantidadDistribuida = 0;
-
-    for (let i = 0; i < itemsConPendiente.length; i++) {
-      const { item, cantidadPendiente } = itemsConPendiente[i];
-      
-      let cantidadParaEsteItem: number;
-      
-      if (i === itemsConPendiente.length - 1) {
-        // Último item: asignar el resto para evitar errores de redondeo
-        cantidadParaEsteItem = cantidadTotalRecibida - cantidadDistribuida;
-      } else {
-        // Distribución proporcional
-        cantidadParaEsteItem = (cantidadPendiente / totalPendiente) * cantidadTotalRecibida;
-        // Redondear a 2 decimales
-        cantidadParaEsteItem = Math.round(cantidadParaEsteItem * 100) / 100;
-      }
-
-      // Asegurar que no exceda la cantidad pendiente del item
-      cantidadParaEsteItem = Math.min(cantidadParaEsteItem, cantidadPendiente);
-      
-      // Asegurar que no exceda la cantidad total disponible
-      cantidadParaEsteItem = Math.min(
-        cantidadParaEsteItem,
-        cantidadTotalRecibida - cantidadDistribuida
-      );
-
-      distribucion.push({
-        notaRecepcionItemId: item.id,
-        cantidadRecibida: cantidadParaEsteItem
-      });
-
-      cantidadDistribuida += cantidadParaEsteItem;
-    }
-
-    return distribucion;
-  }
-
   async onGuardar() {
     try {
       // 1. Calcular cantidades totales
@@ -440,29 +300,24 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
         return;
       }
 
-      // 4. Buscar TODOS los NotaRecepcionItem por productoId y recepcionMercaderiaId
-      const notaRecepcionItemsObs = await this.recepcionMercaderiaService
-        .onBuscarNotaRecepcionItemsPorProductoYRecepcion(
-          this.data.recepcionMercaderia.id,
-          this.selectedItem.producto.id
-        );
-      
-      const notaRecepcionItems = await notaRecepcionItemsObs
-        .pipe(first())
-        .toPromise();
-
-      if (!notaRecepcionItems || notaRecepcionItems.length === 0) {
-        this.notificacionService.warn('No se encontró el item de nota de recepción');
-        return;
-      }
-
-      // 5. Determinar si hay rechazos
+      // 4. Si hay rechazos y múltiples notas: mostrar selector para elegir cuál recibe el rechazo
       const hayRechazos = cantidadRechazadaTotal > 0;
-      const cantidadCompleta = this.nuevaCantidadRecibida + cantidadRechazadaTotal === cantidadPendienteParaSesion;
+      let notaRecepcionItemIdParaRechazo: number | null = null;
+      let motivoRechazoFinal: string | null = null;
 
-      // 6. Lógica de distribución automática vs selector
       if (hayRechazos) {
-        // CASO: Hay rechazos - mostrar selector para elegir qué nota tiene el rechazo
+        const notaRecepcionItemsObs = await this.recepcionMercaderiaService
+          .onBuscarNotaRecepcionItemsPorProductoYRecepcion(
+            this.data.recepcionMercaderia.id,
+            this.selectedItem.producto.id
+          );
+        const notaRecepcionItems = await notaRecepcionItemsObs.pipe(first()).toPromise();
+
+        if (!notaRecepcionItems || notaRecepcionItems.length === 0) {
+          this.notificacionService.warn('No se encontró el item de nota de recepción');
+          return;
+        }
+
         if (notaRecepcionItems.length > 1 && !this.notaRecepcionItemSeleccionado) {
           this.notaRecepcionItemsDisponibles = notaRecepcionItems;
           this.mostrarSelectorNotaItem = true;
@@ -473,216 +328,39 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
           return;
         }
 
-        // Determinar qué item usar para el rechazo
-        let notaRecepcionItem: NotaRecepcionItem;
-        if (this.notaRecepcionItemSeleccionado) {
-          notaRecepcionItem = this.notaRecepcionItemSeleccionado;
-        } else if (notaRecepcionItems.length === 1) {
-          notaRecepcionItem = notaRecepcionItems[0];
-        } else {
-          // Si hay múltiples pero no se seleccionó, usar el primero
-          notaRecepcionItem = notaRecepcionItems[0];
-          this.notificacionService.warn(
-            'Se usará el primer item de nota encontrado. Para mantener trazabilidad, seleccione el item correcto.'
-          );
-        }
-
-        // Determinar motivo de rechazo
-        let motivoRechazoFinal: string = null;
+        const notaRecepcionItem = this.notaRecepcionItemSeleccionado || notaRecepcionItems[0];
+        notaRecepcionItemIdParaRechazo = notaRecepcionItem.id;
         if (this.itemRechazoList.length > 0) {
           motivoRechazoFinal = this.itemRechazoList[0].motivoRechazo;
         }
+      }
 
-        // Distribuir recibido y rechazado por nota (rechazo solo en la nota seleccionada)
-        const distribucionConRechazo = this.distribuirCantidadConRechazo(
-          notaRecepcionItems,
+      // 5. Llamada única al backend: verificarProductoMobile distribuye entre distribuciones
+      try {
+        const result = await (await this.recepcionMercaderiaService.onVerificarProductoMobile(
+          this.data.recepcionMercaderia.id,
+          this.selectedItem.producto.id,
           this.nuevaCantidadRecibida,
           cantidadRechazadaTotal,
-          notaRecepcionItem,
-          motivoRechazoFinal
-        );
+          notaRecepcionItemIdParaRechazo,
+          motivoRechazoFinal,
+          MetodoVerificacion.MANUAL,
+          this.mainService.usuarioActual.id
+        ))
+          .pipe(first())
+          .toPromise();
 
-        if (distribucionConRechazo.length === 0) {
-          this.notificacionService.warn(
-            'La nota seleccionada no tiene cantidad pendiente suficiente para el rechazo indicado. ' +
-            'Seleccione otra nota o verifique las cantidades.'
-          );
-          return;
-        }
-
-        let itemsGuardados = 0;
-        let errores = 0;
-
-        for (const itemDistribucion of distribucionConRechazo) {
-          const input: RecepcionMercaderiaItemInput = {
-            id: null,
-            recepcionMercaderiaId: this.data.recepcionMercaderia.id,
-            notaRecepcionItemId: itemDistribucion.notaRecepcionItemId,
-            notaRecepcionItemDistribucionId: null,
-            productoId: this.selectedItem.producto.id,
-            presentacionRecibidaId: this.selectedPresentacion?.id,
-            sucursalEntregaId: this.data.recepcionMercaderia.sucursalRecepcion.id,
-            usuarioId: this.mainService.usuarioActual.id,
-            cantidadRecibida: itemDistribucion.cantidadRecibida,
-            cantidadRechazada: itemDistribucion.cantidadRechazada,
-            vencimientoRecibido: null,
-            lote: null,
-            esBonificacion: false,
-            motivoRechazo: itemDistribucion.motivoRechazo,
-            observaciones: null,
-            metodoVerificacion: MetodoVerificacion.MANUAL,
-            motivoVerificacionManual: null,
-            estadoVerificacion: null,
-            variaciones: []
-          };
-
-          try {
-            const result = await (await this.recepcionMercaderiaService.onSaveRecepcionMercaderiaItem(input))
-              .pipe(first())
-              .toPromise();
-            if (result) {
-              itemsGuardados++;
-            } else {
-              errores++;
-            }
-          } catch (error) {
-            console.error('Error al guardar recepción:', error);
-            errores++;
-          }
-        }
-
-        if (errores === 0) {
-          this.notificacionService.success(
-            itemsGuardados > 1
-              ? `Se distribuyó la recepción entre ${itemsGuardados} nota(s) con trazabilidad de rechazo`
-              : 'Recepción guardada correctamente'
-          );
+        if (result) {
           this.modalService.closeModal({
             cantidadRecibida: this.nuevaCantidadRecibida,
             cantidadRechazada: cantidadRechazadaTotal
           });
         } else {
-          this.notificacionService.warn(
-            `Se guardaron ${itemsGuardados} item(s), pero hubo ${errores} error(es)`
-          );
+          this.notificacionService.warn('Error al guardar la recepción');
         }
-      } else if (cantidadCompleta && !hayRechazos) {
-        // CASO: Sin rechazos y cantidad completa - distribución automática
-        if (notaRecepcionItems.length === 1) {
-          // Solo un item: guardar directamente
-          const notaRecepcionItem = notaRecepcionItems[0];
-          const input: RecepcionMercaderiaItemInput = {
-            id: null,
-            recepcionMercaderiaId: this.data.recepcionMercaderia.id,
-            notaRecepcionItemId: notaRecepcionItem.id,
-            notaRecepcionItemDistribucionId: null,
-            productoId: this.selectedItem.producto.id,
-            presentacionRecibidaId: this.selectedPresentacion?.id,
-            sucursalEntregaId: this.data.recepcionMercaderia.sucursalRecepcion.id,
-            usuarioId: this.mainService.usuarioActual.id,
-            cantidadRecibida: this.nuevaCantidadRecibida,
-            cantidadRechazada: 0,
-            vencimientoRecibido: null,
-            lote: null,
-            esBonificacion: false,
-            motivoRechazo: null,
-            observaciones: null,
-            metodoVerificacion: MetodoVerificacion.MANUAL,
-            motivoVerificacionManual: null,
-            estadoVerificacion: null,
-            variaciones: []
-          };
-
-          (await this.recepcionMercaderiaService.onSaveRecepcionMercaderiaItem(input)).subscribe(
-            res => {
-              if (res) {
-                this.modalService.closeModal({
-                  cantidadRecibida: this.nuevaCantidadRecibida,
-                  cantidadRechazada: 0
-                });
-              } else {
-                this.notificacionService.warn('Error al guardar la recepción');
-              }
-            },
-            error => {
-              console.error('Error al guardar recepción:', error);
-              this.notificacionService.warn('Error al guardar la recepción: ' + (error.message || 'Error desconocido'));
-            }
-          );
-        } else {
-          // Múltiples items: distribuir automáticamente
-          const distribucion = this.distribuirCantidadEntreItems(
-            notaRecepcionItems,
-            this.nuevaCantidadRecibida
-          );
-
-          if (distribucion.length === 0) {
-            this.notificacionService.warn('No hay items pendientes para distribuir la cantidad recibida');
-            return;
-          }
-
-          // Guardar cada item en secuencia
-          let itemsGuardados = 0;
-          let errores = 0;
-
-          for (const itemDistribucion of distribucion) {
-            const input: RecepcionMercaderiaItemInput = {
-              id: null,
-              recepcionMercaderiaId: this.data.recepcionMercaderia.id,
-              notaRecepcionItemId: itemDistribucion.notaRecepcionItemId,
-              notaRecepcionItemDistribucionId: null,
-              productoId: this.selectedItem.producto.id,
-              presentacionRecibidaId: this.selectedPresentacion?.id,
-              sucursalEntregaId: this.data.recepcionMercaderia.sucursalRecepcion.id,
-              usuarioId: this.mainService.usuarioActual.id,
-              cantidadRecibida: itemDistribucion.cantidadRecibida,
-              cantidadRechazada: 0,
-              vencimientoRecibido: null,
-              lote: null,
-              esBonificacion: false,
-              motivoRechazo: null,
-              observaciones: null,
-              metodoVerificacion: MetodoVerificacion.MANUAL,
-              motivoVerificacionManual: null,
-              estadoVerificacion: null,
-              variaciones: []
-            };
-
-            try {
-              const result = await (await this.recepcionMercaderiaService.onSaveRecepcionMercaderiaItem(input))
-                .pipe(first())
-                .toPromise();
-              
-              if (result) {
-                itemsGuardados++;
-              } else {
-                errores++;
-              }
-            } catch (error) {
-              console.error('Error al guardar item de recepción:', error);
-              errores++;
-            }
-          }
-
-          if (errores === 0) {
-            this.notificacionService.success(
-              `Se distribuyó automáticamente la recepción entre ${itemsGuardados} nota(s)`
-            );
-            this.modalService.closeModal({
-              cantidadRecibida: this.nuevaCantidadRecibida,
-              cantidadRechazada: 0
-            });
-          } else {
-            this.notificacionService.warn(
-              `Se guardaron ${itemsGuardados} items, pero hubo ${errores} error(es)`
-            );
-          }
-        }
-      } else {
-        // CASO: Cantidad incompleta sin rechazo (no debería llegar aquí por la validación anterior)
-        this.notificacionService.warn(
-          'La cantidad recibida no coincide con la esperada. Debe agregar un rechazo para la cantidad faltante.'
-        );
+      } catch (error) {
+        console.error('Error al guardar recepción:', error);
+        this.notificacionService.warn('Error al guardar la recepción: ' + (error?.message || 'Error desconocido'));
       }
     } catch (error) {
       console.error('Error al buscar NotaRecepcionItem:', error);
