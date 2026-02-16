@@ -283,3 +283,28 @@ export const deshacerVerificacionPorProductoMutation = gql`
     data: deshacerVerificacionPorProducto(recepcionMercaderiaId: $recepcionMercaderiaId, productoId: $productoId)
   }
 `;
+
+// Mutation: Verificar producto (mobile - distribuye entre distribuciones)
+export const verificarProductoMobileMutation = gql`
+  mutation verificarProductoMobile(
+    $recepcionMercaderiaId: ID!
+    $productoId: ID!
+    $cantidadRecibida: Float!
+    $cantidadRechazada: Float
+    $notaRecepcionItemIdParaRechazo: ID
+    $motivoRechazo: String
+    $metodoVerificacion: String
+    $usuarioId: ID!
+  ) {
+    data: verificarProductoMobile(
+      recepcionMercaderiaId: $recepcionMercaderiaId
+      productoId: $productoId
+      cantidadRecibida: $cantidadRecibida
+      cantidadRechazada: $cantidadRechazada
+      notaRecepcionItemIdParaRechazo: $notaRecepcionItemIdParaRechazo
+      motivoRechazo: $motivoRechazo
+      metodoVerificacion: $metodoVerificacion
+      usuarioId: $usuarioId
+    )
+  }
+`;
