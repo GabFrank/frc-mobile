@@ -62,11 +62,12 @@ export class NotaRecepcionService {
 
   async onGetNotaRecepcionPorProveedorAndNumero(
     id,
-    numero
+    numero,
+    sucursalId?: number
   ): Promise<Observable<NotaRecepcion[]>> {
     const obs = await this.genericService.onCustomGet(
       this.getNotaRecepcionPorProveedorAndNumero,
-      { id, numero }, true
+      { id, numero, sucursalId }, true
     );
     // Mapear valorTotal a valor para compatibilidad con el modelo del frontend
     return obs.pipe(

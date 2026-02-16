@@ -56,8 +56,8 @@ export const notaRecepcionQuery = gql`
 `;
 
 export const findByProveedorAndNumeroQuery = gql`
-  query ($id: ID!, $numero: Int!) {
-    data: findByProveedorAndNumero(id: $id, numero: $numero) {
+  query ($id: ID!, $numero: Int!, $sucursalId: ID) {
+    data: findByProveedorAndNumero(id: $id, numero: $numero, sucursalId: $sucursalId) {
       id
       pedido {
         id
