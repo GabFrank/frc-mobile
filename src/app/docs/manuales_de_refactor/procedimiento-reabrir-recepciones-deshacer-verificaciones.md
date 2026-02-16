@@ -261,7 +261,37 @@ R: No. Solo se pueden reabrir recepciones con estado `FINALIZADA`. Las recepcion
 
 ---
 
-## 8. NOTAS TÉCNICAS
+## 8. VERIFICACIÓN PARCIAL CON RECHAZOS Y MÚLTIPLES NOTAS
+
+### 8.1 Problema
+
+Cuando un mismo producto está en varias notas (p. ej. producto 5567 en notas 50, 51 y 52 con 10, 2 y 3 unidades) y el usuario hace verificación parcial con rechazos (12 recibidos, 3 rechazados) eligiendo una nota para el rechazo, **debe mantenerse la trazabilidad por nota**: el rechazo se registra solo en la nota seleccionada; lo recibido se reparte entre todas las notas según su cantidad pendiente.
+
+### 8.2 Lógica correcta
+
+Si el usuario elige la nota con 10 unidades para el rechazo (3 unidades):
+- **Nota 10 uds**: 7 recibidas + 3 rechazadas = 10
+- **Nota 2 uds**: 2 recibidas
+- **Nota 3 uds**: 3 recibidas  
+- **Total**: 12 recibidas + 3 rechazadas ✓
+
+### 8.3 Implementación (Frontend Mobile)
+
+- **Archivo**: `recepcion-producto-verificacion-dialog.component.ts`
+- **Método**: `distribuirCantidadConRechazo()` – distribuye recibido y rechazado por nota
+- **Flujo**: Al guardar con rechazos y múltiples notas:
+  1. Se solicita al usuario que seleccione en qué nota va el rechazo (selector de NotaRecepcionItem)
+  2. Se calcula la distribución: rechazo solo en la nota seleccionada; lo recibido se reparte (incluyendo la nota seleccionada hasta su capacidad restante)
+  3. Se llama `saveRecepcionMercaderiaItem` una vez por cada nota afectada (varias llamadas en secuencia)
+
+### 8.4 Validaciones
+
+- La nota seleccionada debe tener `cantidadPendiente >= cantidadRechazadaTotal`
+- Si no hay espacio suficiente, se muestra: "La nota seleccionada no tiene cantidad pendiente suficiente para el rechazo indicado"
+
+---
+
+## 9. NOTAS TÉCNICAS
 
 - Todos los métodos son `@Transactional` para garantizar consistencia
 - Los movimientos de stock se buscan por `TipoMovimiento.COMPRA` y `referencia = item.id`
