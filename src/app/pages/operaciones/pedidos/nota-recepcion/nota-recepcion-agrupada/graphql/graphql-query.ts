@@ -149,6 +149,13 @@ export const pedidoRecepcionProductoPorNotaRecepcionAgrupadaQuery = gql`
         totalCantidadARecibirPorUnidad
         totalCantidadRecibidaPorUnidad
         totalCantidadRechazadaPorUnidad
+        cantidadPendientePorUnidad
+        mostrarEnUnidadBase
+        presentacionInicialSugerida {
+          id
+          cantidad
+        }
+        cantidadInicialPorPresentacion
         estado
       }
     }
@@ -174,6 +181,13 @@ export const pedidoRecepcionProductoPorNotaRecepcionAgrupadaAndProductoQuery = g
       totalCantidadARecibirPorUnidad
       totalCantidadRecibidaPorUnidad
       totalCantidadRechazadaPorUnidad
+      cantidadPendientePorUnidad
+      mostrarEnUnidadBase
+      presentacionInicialSugerida {
+        id
+        cantidad
+      }
+      cantidadInicialPorPresentacion
       estado
     }
   }

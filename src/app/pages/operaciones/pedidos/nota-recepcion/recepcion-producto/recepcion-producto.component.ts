@@ -121,7 +121,10 @@ export class RecepcionProductoComponent implements OnInit {
       {
         recepcionMercaderia: this.selectedRecepcionMercaderia,
         pedidoRecepcionProducto: item,
-        presentacion: this.selectedPresentacion || item.producto.presentaciones[0]
+        presentacion:
+          item.presentacionInicialSugerida ||
+          this.selectedPresentacion ||
+          item.producto.presentaciones[0]
       }
     ).then(res => {
       if (res?.data != null) {
@@ -188,6 +191,7 @@ export class RecepcionProductoComponent implements OnInit {
         const codigo = codigos[0];
         const presentacion = codigo.presentacion;
         const producto = presentacion.producto;
+        this.selectedPresentacion = presentacion;
 
         this.modalService.openModal(
           ProductoVerificacionDialogComponent,
