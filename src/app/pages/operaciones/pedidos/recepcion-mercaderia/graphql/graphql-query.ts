@@ -28,6 +28,13 @@ export const pedidoRecepcionProductoPorRecepcionMercaderiaQuery = gql`
         totalCantidadARecibirPorUnidad
         totalCantidadRecibidaPorUnidad
         totalCantidadRechazadaPorUnidad
+        cantidadPendientePorUnidad
+        mostrarEnUnidadBase
+        presentacionInicialSugerida {
+          id
+          cantidad
+        }
+        cantidadInicialPorPresentacion
         estado
       }
     }
@@ -53,6 +60,13 @@ export const pedidoRecepcionProductoPorRecepcionMercaderiaAndProductoQuery = gql
       totalCantidadARecibirPorUnidad
       totalCantidadRecibidaPorUnidad
       totalCantidadRechazadaPorUnidad
+      cantidadPendientePorUnidad
+      mostrarEnUnidadBase
+      presentacionInicialSugerida {
+        id
+        cantidad
+      }
+      cantidadInicialPorPresentacion
       estado
     }
   }
