@@ -1,0 +1,80 @@
+<ion-content>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Nueva solicitud de pago</ion-title>
+  </ion-toolbar>
+
+  <form [formGroup]="form">
+    <ion-list lines="full">
+      <ion-item>
+        <ion-label position="stacked">Proveedor</ion-label>
+        <ion-note *ngIf="proveedorNombreDisplay" slot="end">{{ proveedorNombreDisplay }}</ion-note>
+        <ion-button *ngIf="!desdeRecepcion" slot="end" fill="outline" (click)="onBuscarProveedor()">Buscar</ion-button>
+        <ion-button *ngIf="desdeRecepcion" slot="end" fill="clear" (click)="onBuscarProveedor()">
+          <ion-icon name="search"></ion-icon>
+        </ion-button>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Moneda</ion-label>
+        <ion-select formControlName="monedaId" interface="action-sheet">
+          <ion-select-option *ngFor="let m of monedaList" [value]="m.id">{{ m.denominacion }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Forma de pago</ion-label>
+        <ion-select formControlName="formaPagoId" interface="action-sheet">
+          <ion-select-option *ngFor="let f of formaPagoList" [value]="f.id">{{ f.descripcion }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Fecha pago propuesta</ion-label>
+        <ion-input formControlName="fechaPagoPropuesta" type="date"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Observaciones</ion-label>
+        <ion-input formControlName="observaciones"></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-list lines="full">
+      <ion-item>
+        <ion-label position="stacked">Número de nota</ion-label>
+        <ion-input [formControl]="numeroNotaControl" type="number" placeholder="Nº"></ion-input>
+        <ion-button slot="end" (click)="onAgregarNota()" [disabled]="!numeroNotaControl.value || !selectedProveedor">
+          Agregar
+        </ion-button>
+      </ion-item>
+    </ion-list>
+
+    <ion-list *ngIf="notasAgregadas?.length > 0">
+      <ion-item>
+        <ion-label>Notas agregadas ({{ notasAgregadas.length }}) · Total: {{ montoTotalDisplay | number:'1.0-0' }}</ion-label>
+      </ion-item>
+      <ion-item *ngFor="let nota of notasAgregadas; let i = index">
+        <ion-label>
+          <h3>Nota {{ nota.numero }}</h3>
+          <p>{{ nota.valorTotal | number:'1.0-0' }}</p>
+        </ion-label>
+        <ion-button fill="clear" slot="end" (click)="onQuitarNota(i)">
+          <ion-icon name="close-circle" color="danger"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+  </form>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-button expand="block" (click)="onGuardar()" [disabled]="saving || !selectedProveedor || notasAgregadas?.length < 1">
+      {{ saving ? 'Guardando...' : 'Guardar solicitud' }}
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

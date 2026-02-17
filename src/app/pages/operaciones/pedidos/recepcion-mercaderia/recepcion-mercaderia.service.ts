@@ -19,6 +19,7 @@ import { NotaRecepcionItemListPorNotaRecepcionIdGQL, NotaRecepcionItem } from '.
 import { VerificarRecepcionActivaPorNotaYSucursalGQL } from './graphql/verificarRecepcionActivaPorNotaYSucursal';
 import { DeshacerVerificacionPorProductoGQL } from './graphql/deshacerVerificacionPorProducto';
 import { VerificarProductoMobileGQL } from './graphql/verificarProductoMobile';
+import { GenerarConstanciaRecepcionPDFGQL, ConstanciaRecepcionPDFResult } from './graphql/generarConstanciaRecepcionPDF';
 import { MainService } from 'src/app/services/main.service';
 
 @Injectable({
@@ -39,8 +40,19 @@ export class RecepcionMercaderiaService {
     private verificarRecepcionActivaPorNotaYSucursal: VerificarRecepcionActivaPorNotaYSucursalGQL,
     private deshacerVerificacionPorProducto: DeshacerVerificacionPorProductoGQL,
     private verificarProductoMobile: VerificarProductoMobileGQL,
+    private generarConstanciaRecepcionPDF: GenerarConstanciaRecepcionPDFGQL,
     private mainService: MainService
   ) {}
+
+  /**
+   * Genera PDF de constancia de recepción (a demanda). Retorna observable con pdfBase64, nombreArchivo, etc.
+   */
+  async onGenerarConstanciaRecepcionPDF(recepcionId: number): Promise<Observable<ConstanciaRecepcionPDFResult>> {
+    return this.genericService.onCustomGet(
+      this.generarConstanciaRecepcionPDF,
+      { recepcionId }
+    ) as Promise<Observable<ConstanciaRecepcionPDFResult>>;
+  }
 
   async onGetRecepcionMercaderiaListPorUsuarioId(
     id: number,

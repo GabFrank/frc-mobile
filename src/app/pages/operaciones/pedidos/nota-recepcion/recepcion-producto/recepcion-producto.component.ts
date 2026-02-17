@@ -26,6 +26,7 @@ import { PopOverService, PopoverSize } from 'src/app/services/pop-over.service';
 import { codificarQr, QrData } from 'src/app/generic/utils/qrUtils';
 import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
 import { MotivoRechazoFisico, MotivoRechazoFisicoLabels } from '../../recepcion-mercaderia/recepcion-mercaderia-item.model';
+import { ConstanciaRecepcionPdfDialogComponent } from '../constancia-recepcion-pdf-dialog/constancia-recepcion-pdf-dialog.component';
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -348,12 +349,42 @@ export class RecepcionProductoComponent implements OnInit {
     );
   }
 
+  async onGenerarConstancia() {
+    if (!this.selectedRecepcionMercaderia?.id) return;
+    try {
+      const obs = await this.recepcionMercaderiaService.onGenerarConstanciaRecepcionPDF(this.selectedRecepcionMercaderia.id);
+      obs.pipe(first(), untilDestroyed(this)).subscribe(
+        (res: any) => {
+          const data = res?.data ?? res;
+          if (data?.pdfBase64) {
+            this.modalService.openModal(ConstanciaRecepcionPdfDialogComponent, {
+              pdfBase64: data.pdfBase64,
+              nombreArchivo: data.nombreArchivo || `constancia-recepcion-${this.selectedRecepcionMercaderia.id}.pdf`
+            }, ModalSize.LARGE);
+          } else {
+            this.notificacionService.danger('No se recibió el PDF');
+          }
+        },
+        (err) => {
+          this.notificacionService.danger(err?.message || 'Error al generar constancia');
+        }
+      );
+    } catch (e) {
+      this.notificacionService.danger(e?.message || 'Error al generar constancia');
+    }
+  }
+
   onSolicitarPago() {
     this.dialogoService.open('Atención!', '¿Realmente desea solicitar el pago de esta recepción?').then(async res => {
       if (res.role === 'aceptar') {
-        // TODO: Adaptar ruta de solicitar pago cuando se migre ese componente
-        // Por ahora mantener la ruta original pero con el ID de recepcionMercaderia
-        this.router.navigate(['/operaciones/pedidos/solicitar-pago-nota-recepcion/', this.selectedRecepcionMercaderia.id]);
+        const recepcionId = this.selectedRecepcionMercaderia?.id ?? null;
+        const proveedorId = this.selectedRecepcionMercaderia?.proveedor?.id ?? null;
+        this.router.navigate(['/operaciones/solicitud-pago/crear'], {
+          queryParams: {
+            ...(recepcionId != null && { recepcionMercaderiaId: recepcionId }),
+            ...(proveedorId != null && { proveedorId })
+          }
+        });
       }
     });
   }

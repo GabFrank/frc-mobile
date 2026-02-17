@@ -1,5 +1,9 @@
 import { Usuario } from 'src/app/domains/personas/usuario.model';
 import { dateToString } from 'src/app/generic/utils/dateUtils';
+import { Proveedor } from 'src/app/pages/personas/proveedor/proveedor.model';
+import { Moneda } from 'src/app/pages/operaciones/moneda/moneda.model';
+import { FormaPago } from 'src/app/domains/forma-pago/forma-pago.model';
+import { NotaRecepcion } from 'src/app/pages/operaciones/pedidos/nota-recepcion/nota-recepcion.model';
 
 export enum SolicitudPagoEstado {
   PENDIENTE = 'PENDIENTE',
@@ -8,37 +12,52 @@ export enum SolicitudPagoEstado {
   CANCELADO = 'CANCELADO'
 }
 
-export enum TipoSolicitudPago {
-  COMPRA = 'COMPRA',
-  GASTO = 'GASTO',
-  RRHH = 'RRHH'
+export interface SolicitudPago {
+  id?: number;
+  proveedor?: Proveedor;
+  numeroSolicitud?: string;
+  fechaSolicitud?: string;
+  fechaPagoPropuesta?: string;
+  montoTotal?: number;
+  moneda?: Moneda;
+  formaPago?: FormaPago;
+  estado?: SolicitudPagoEstado;
+  observaciones?: string;
+  creadoEn?: string;
+  usuario?: Usuario;
+  pago?: any;
+  notasRecepcion?: SolicitudPagoNotaRecepcion[];
 }
 
-export class SolicitudPago {
-  id: number;
-  usuario: Usuario;
-  creadoEn: Date;
-  estado: SolicitudPagoEstado;
-  tipo: TipoSolicitudPago;
-  referenciaId: number;
-
-  toInput(): SolicitudPagoInput {
-    let input = new SolicitudPagoInput();
-    input.id = this.id;
-    input.usuarioId = this.usuario?.id;
-    input.creadoEn = dateToString(this.creadoEn);
-    input.estado = this.estado;
-    input.tipo = this.tipo;
-    input.referenciaId = this.referenciaId;
-    return input;
-  }
+export interface SolicitudPagoNotaRecepcion {
+  id?: number;
+  solicitudPago?: SolicitudPago;
+  notaRecepcion?: NotaRecepcion;
+  montoIncluido?: number;
+  creadoEn?: string;
 }
 
-export class SolicitudPagoInput {
-  id: number;
-  usuarioId: number;
-  creadoEn: string;
+export interface SolicitudPagoInput {
+  id?: number;
+  proveedorId: number;
+  numeroSolicitud?: string;
+  fechaSolicitud?: string;
+  fechaPagoPropuesta?: string;
+  montoTotal: number;
+  monedaId: number;
+  formaPagoId: number;
   estado: SolicitudPagoEstado;
-  tipo: TipoSolicitudPago;
-  referenciaId: number;
-} 
+  observaciones?: string;
+  notaRecepcionIds: number[];
+}
+
+export interface SolicitudPagoPage {
+  getTotalPages?: number;
+  getTotalElements?: number;
+  getNumberOfElements?: number;
+  isFirst?: boolean;
+  isLast?: boolean;
+  hasNext?: boolean;
+  hasPrevious?: boolean;
+  getContent?: SolicitudPago[];
+}

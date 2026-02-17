@@ -139,6 +139,9 @@
       <ion-button *ngIf="selectedRecepcionMercaderia?.usuario != null && selectedRecepcionMercaderia?.estado == 'EN_PROCESO'" (click)="onBuscarProducto()" expand="block">
         Buscar producto
       </ion-button>
+      <ion-button *ngIf="selectedRecepcionMercaderia?.estado == 'FINALIZADA'" (click)="onGenerarConstancia()" expand="block" fill="outline">
+        Generar constancia
+      </ion-button>
       <ion-button *ngIf="selectedRecepcionMercaderia?.estado == 'FINALIZADA'" (click)="onSolicitarPago()" expand="block">
         Solicitar pago
       </ion-button>
