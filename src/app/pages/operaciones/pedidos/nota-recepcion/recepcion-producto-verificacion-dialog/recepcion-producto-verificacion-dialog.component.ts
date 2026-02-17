@@ -14,6 +14,8 @@ import { MetodoVerificacion, MotivoRechazoFisico, MotivoRechazoFisicoLabels } fr
 import { MainService } from 'src/app/services/main.service';
 import { first } from 'rxjs/operators';
 import { NotaRecepcionItem } from '../../recepcion-mercaderia/graphql/notaRecepcionItemListPorNotaRecepcionId';
+import { SeleccionarNotaItemRechazoDialogComponent, SeleccionarNotaItemRechazoDialogData } from '../seleccionar-nota-item-rechazo-dialog/seleccionar-nota-item-rechazo-dialog.component';
+import { ModalSize } from 'src/app/services/modal.service';
 
 export class RecepcionProductoVerificacionDialogData {
   recepcionMercaderia: RecepcionMercaderia;
@@ -68,8 +70,6 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
   // Para manejar múltiples NotaRecepcionItem del mismo producto
   notaRecepcionItemsDisponibles: NotaRecepcionItem[] = [];
   notaRecepcionItemSeleccionado: NotaRecepcionItem | null = null;
-  notaRecepcionItemControl = new FormControl();
-  mostrarSelectorNotaItem = false;
 
   constructor(
     private notificacionService: NotificacionService,
@@ -319,13 +319,23 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
         }
 
         if (notaRecepcionItems.length > 1 && !this.notaRecepcionItemSeleccionado) {
-          this.notaRecepcionItemsDisponibles = notaRecepcionItems;
-          this.mostrarSelectorNotaItem = true;
-          this.notificacionService.warn(
-            `Hay ${notaRecepcionItems.length} items de nota para este producto. ` +
-            'Por favor seleccione cuál recibirá el rechazo para mantener la trazabilidad.'
+          const dialogData: SeleccionarNotaItemRechazoDialogData = {
+            notaRecepcionItemsDisponibles: notaRecepcionItems,
+            selectedItem: this.selectedItem,
+            presentacion: this.presentacionControl.value,
+            nuevaCantidadRecibida: this.nuevaCantidadRecibida,
+            nuevaCantidadRechazada: cantidadRechazadaTotal
+          };
+          const modalResult = await this.modalService.openModal(
+            SeleccionarNotaItemRechazoDialogComponent,
+            dialogData,
+            ModalSize.MEDIUM
           );
-          return;
+          const itemSeleccionado = modalResult?.data;
+          if (!itemSeleccionado) {
+            return;
+          }
+          this.notaRecepcionItemSeleccionado = itemSeleccionado;
         }
 
         const notaRecepcionItem = this.notaRecepcionItemSeleccionado || notaRecepcionItems[0];
@@ -368,26 +378,4 @@ export class RecepcionProductoVerificacionDialogComponent implements OnInit {
     }
   }
 
-  onSeleccionarNotaRecepcionItem() {
-    const itemSeleccionado = this.notaRecepcionItemControl.value;
-    if (itemSeleccionado) {
-      this.notaRecepcionItemSeleccionado = itemSeleccionado;
-      this.mostrarSelectorNotaItem = false;
-      // Continuar con el guardado
-      this.onGuardar();
-    }
-  }
-
-  onCancelarSeleccionNotaItem() {
-    this.mostrarSelectorNotaItem = false;
-    this.notaRecepcionItemSeleccionado = null;
-    this.notaRecepcionItemControl.setValue(null);
-  }
-
-  getDisplayTextForNotaItem(item: NotaRecepcionItem): string {
-    if (!item) return '';
-    const notaNumero = item.notaRecepcion?.numero || item.notaRecepcion?.id || 'N/A';
-    const cantidad = item.cantidadEnNota || 0;
-    return `Nota ${notaNumero} - ${cantidad} unidades`;
-  }
 }

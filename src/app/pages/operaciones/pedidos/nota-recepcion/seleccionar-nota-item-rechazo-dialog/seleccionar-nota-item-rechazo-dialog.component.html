@@ -1,0 +1,73 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onCancelar()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title class="ion-text-center">Seleccionar Item de Nota para Rechazo</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <p class="ion-text-center ion-margin-bottom" style="color: #999; font-size: 14px;">
+    Hay múltiples items de nota para este producto. Seleccione cuál recibirá el rechazo para mantener la trazabilidad.
+  </p>
+
+  <ion-item>
+    <ion-label position="stacked">Item de Nota</ion-label>
+    <ion-select [formControl]="notaRecepcionItemControl" placeholder="Seleccionar item" interface="action-sheet">
+      <ion-select-option *ngFor="let opt of notaItemsConDisplayText" [value]="opt.item">
+        {{ opt.displayText }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-row class="ion-margin-top">
+    <ion-col size="6">
+      <ion-button expand="block" fill="outline" (click)="onCancelar()">
+        Cancelar
+      </ion-button>
+    </ion-col>
+    <ion-col size="6">
+      <ion-button expand="block" (click)="onContinuar()" [disabled]="!notaRecepcionItemControl.value">
+        Continuar
+      </ion-button>
+    </ion-col>
+  </ion-row>
+
+  <ion-row class="ion-margin-top" style="border-top: 1px solid var(--ion-color-primary); padding-top: 16px;">
+    <ion-col size="12">
+      <ion-label color="primary" style="font-weight: 600;">Producto</ion-label>
+    </ion-col>
+    <ion-col size="12" class="ion-margin-bottom">
+      {{ data?.selectedItem?.producto?.id }} - {{ data?.selectedItem?.producto?.descripcion }}
+    </ion-col>
+    <ion-col size="8">
+      <ion-label color="primary">Cant. a recibir:</ion-label>
+    </ion-col>
+    <ion-col size="4" class="ion-text-end">
+      {{ cantidadPorPresentacionRecibir | number: '1.0-2' }}
+    </ion-col>
+    <ion-col size="8">
+      <ion-label color="primary">Cant. recibida:</ion-label>
+    </ion-col>
+    <ion-col size="4" class="ion-text-end">
+      {{ cantidadPorPresentacionRecibida | number: '1.0-2' }}
+    </ion-col>
+    <ion-col size="8">
+      <ion-label color="primary">Falta:</ion-label>
+    </ion-col>
+    <ion-col size="4" class="ion-text-end">
+      {{ cantidadPorPresentacionFalta | number: '1.0-2' }}
+    </ion-col>
+    <ion-col size="8">
+      <ion-label color="primary">Cant. a rechazar:</ion-label>
+    </ion-col>
+    <ion-col size="4" class="ion-text-end">
+      {{ cantidadPorPresentacionRechazar | number: '1.0-2' }}
+    </ion-col>
+    <ion-col size="12">
+      <p style="font-size: 12px; color: #666; margin-top: 8px;">Las cantidades se muestran por presentación</p>
+    </ion-col>
+  </ion-row>
+</ion-content>

@@ -11,6 +11,7 @@ import { NotaRecepcionInfoDialogComponent } from './nota-recepcion/nota-recepcio
 import { HistoricoNotaRecepcionComponent } from './nota-recepcion/historico-nota-recepcion/historico-nota-recepcion.component';
 import { RecepcionProductoComponent } from './nota-recepcion/recepcion-producto/recepcion-producto.component';
 import { RecepcionProductoVerificacionDialogComponent } from './nota-recepcion/recepcion-producto-verificacion-dialog/recepcion-producto-verificacion-dialog.component';
+import { SeleccionarNotaItemRechazoDialogComponent } from './nota-recepcion/seleccionar-nota-item-rechazo-dialog/seleccionar-nota-item-rechazo-dialog.component';
 import { SolicitarPagoNotaRecepcionComponent } from './nota-recepcion/solicitar-pago-nota-recepcion/solicitar-pago-nota-recepcion.component';
 
 @NgModule({
@@ -21,6 +22,7 @@ import { SolicitarPagoNotaRecepcionComponent } from './nota-recepcion/solicitar-
     HistoricoNotaRecepcionComponent, 
     RecepcionProductoComponent, 
     RecepcionProductoVerificacionDialogComponent,
+    SeleccionarNotaItemRechazoDialogComponent,
     SolicitarPagoNotaRecepcionComponent
   ],
   imports: [
