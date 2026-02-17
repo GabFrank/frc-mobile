@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Solicitud de pago</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onCerrar()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div class="pdf-container" *ngIf="pdfUrl">
+    <iframe [src]="pdfUrl" class="pdf-iframe" title="Solicitud de pago"></iframe>
+  </div>
+  <div *ngIf="!pdfUrl" class="no-pdf">
+    No se pudo cargar el PDF.
+  </div>
+</ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="onDescargar()" [disabled]="downloading || !data?.pdfBase64">
+        <ion-icon name="download-outline" slot="start"></ion-icon>
+        {{ downloading ? 'Guardando...' : 'Descargar' }}
+      </ion-button>
+      <ion-button (click)="onCerrar()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

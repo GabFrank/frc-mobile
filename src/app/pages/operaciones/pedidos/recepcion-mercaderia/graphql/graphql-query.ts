@@ -298,6 +298,18 @@ export const deshacerVerificacionPorProductoMutation = gql`
   }
 `;
 
+// Query: Generar PDF constancia de recepción (a demanda)
+export const generarConstanciaRecepcionPDFQuery = gql`
+  query ($recepcionId: ID!) {
+    data: generarConstanciaRecepcionPDF(recepcionId: $recepcionId) {
+      pdfBase64
+      nombreArchivo
+      tamanioBytes
+      fechaGeneracion
+    }
+  }
+`;
+
 // Mutation: Verificar producto (mobile - distribuye entre distribuciones)
 export const verificarProductoMobileMutation = gql`
   mutation verificarProductoMobile(

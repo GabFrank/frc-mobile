@@ -1,33 +1,63 @@
 import gql from "graphql-tag";
 
 export const solicitudPagoQuery = gql`
-  query ($id: ID!) {
+  query solicitudPago($id: ID!) {
     data: solicitudPago(id: $id) {
       id
-      usuario {
-        id
-        persona {
-          nombre
-        }
-      }
-      creadoEn
+      proveedor { id persona { nombre } }
+      numeroSolicitud
+      fechaSolicitud
+      fechaPagoPropuesta
+      montoTotal
+      moneda { id denominacion simbolo }
+      formaPago { id descripcion }
       estado
+      observaciones
+      creadoEn
+      usuario { id persona { nombre } }
+      notasRecepcion {
+        id
+        notaRecepcion { id numero valorTotal fecha }
+        montoIncluido
+      }
     }
   }
 `;
 
-export const solicitudPagoPorUsuarioIdQuery = gql`
-  query ($id: ID!) {
-    data: solicitudPagoPorUsuarioId(id: $id) {
-      id
-      usuario {
+export const solicitudesPagoPaginatedQuery = gql`
+  query solicitudesPagoPaginated($page: Int, $size: Int, $proveedorId: ID, $estado: SolicitudPagoEstado) {
+    data: solicitudesPagoPaginated(page: $page, size: $size, proveedorId: $proveedorId, estado: $estado) {
+      getTotalPages
+      getTotalElements
+      getNumberOfElements
+      isFirst
+      isLast
+      hasNext
+      hasPrevious
+      getContent {
         id
-        persona {
-          nombre
-        }
+        proveedor { id persona { nombre } }
+        numeroSolicitud
+        fechaSolicitud
+        montoTotal
+        moneda { id denominacion simbolo }
+        formaPago { id descripcion }
+        estado
+        notasRecepcion { id }
       }
-      creadoEn
+    }
+  }
+`;
+
+export const notaRecepcionDisponibleParaPagoPorNumeroQuery = gql`
+  query notaRecepcionDisponibleParaPagoPorNumero($numero: Int!, $proveedorId: ID!) {
+    data: notaRecepcionDisponibleParaPagoPorNumero(numero: $numero, proveedorId: $proveedorId) {
+      id
+      numero
+      valorTotal
+      fecha
       estado
+      pedido { id proveedor { id persona { nombre } } }
     }
   }
 `;
@@ -36,11 +66,36 @@ export const saveSolicitudPagoMutation = gql`
   mutation saveSolicitudPago($entity: SolicitudPagoInput!) {
     data: saveSolicitudPago(entity: $entity) {
       id
-      usuario {
-        id
-      }
-      creadoEn
+      proveedor { id persona { nombre } }
+      numeroSolicitud
+      fechaSolicitud
+      montoTotal
+      moneda { id denominacion }
+      formaPago { id descripcion }
       estado
+      creadoEn
+    }
+  }
+`;
+
+export const imprimirSolicitudPagoPDFMutation = gql`
+  mutation imprimirSolicitudPagoPDF($solicitudPagoId: ID!) {
+    data: imprimirSolicitudPagoPDF(solicitudPagoId: $solicitudPagoId)
+  }
+`;
+
+export const datosInicialesSolicitudPagoPorRecepcionQuery = gql`
+  query datosInicialesSolicitudPagoPorRecepcion($recepcionMercaderiaId: ID!) {
+    data: datosInicialesSolicitudPagoPorRecepcion(recepcionMercaderiaId: $recepcionMercaderiaId) {
+      notas {
+        id
+        numero
+        valorTotal
+        fecha
+      }
+      monedaId
+      formaPagoId
+      fechaPagoPropuesta
     }
   }
 `; 

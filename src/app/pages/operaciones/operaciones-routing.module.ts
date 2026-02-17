@@ -20,6 +20,10 @@ const routes: Routes = [
   {
     path: 'pedidos',
     loadChildren: () => import('./pedidos/pedidos.module').then(m => m.PedidosModule)
+  },
+  {
+    path: 'solicitud-pago',
+    loadChildren: () => import('./solicitud-pago/solicitud-pago.module').then(m => m.SolicitudPagoModule)
   }
 ];
 

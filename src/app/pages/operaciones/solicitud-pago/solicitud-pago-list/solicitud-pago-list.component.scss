@@ -1,0 +1,31 @@
+ion-toolbar ion-title {
+  font-weight: 500;
+}
+ion-note {
+  font-size: 0.9em;
+}
+
+.proveedor-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+  min-height: 40px;
+  .proveedor-text {
+    flex: 1;
+    font-size: 0.9em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  ion-button {
+    margin: 0;
+    flex-shrink: 0;
+  }
+}
+
+.botones-fila {
+  padding: 8px 16px 16px;
+  ion-col {
+    padding: 4px;
+  }
+}

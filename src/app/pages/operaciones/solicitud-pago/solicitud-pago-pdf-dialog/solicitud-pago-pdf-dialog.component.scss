@@ -1,0 +1,16 @@
+.pdf-container {
+  width: 100%;
+  height: 100%;
+  min-height: 60vh;
+}
+.pdf-iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 60vh;
+  border: none;
+}
+.no-pdf {
+  padding: 1rem;
+  text-align: center;
+  color: var(--ion-color-medium);
+}

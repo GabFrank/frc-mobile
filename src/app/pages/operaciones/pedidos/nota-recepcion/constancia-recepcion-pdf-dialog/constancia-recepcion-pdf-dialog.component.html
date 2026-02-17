@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Constancia de recepción</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onCerrar()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div class="pdf-container" *ngIf="pdfUrl">
+    <iframe [src]="pdfUrl" class="pdf-iframe" title="Constancia de recepción"></iframe>
+  </div>
+  <div *ngIf="!pdfUrl" class="no-pdf">
+    No se pudo cargar el PDF.
+  </div>
+</ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="onCerrar()">Cerrar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

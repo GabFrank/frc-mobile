@@ -13,6 +13,7 @@ import { RecepcionProductoComponent } from './nota-recepcion/recepcion-producto/
 import { RecepcionProductoVerificacionDialogComponent } from './nota-recepcion/recepcion-producto-verificacion-dialog/recepcion-producto-verificacion-dialog.component';
 import { SeleccionarNotaItemRechazoDialogComponent } from './nota-recepcion/seleccionar-nota-item-rechazo-dialog/seleccionar-nota-item-rechazo-dialog.component';
 import { SolicitarPagoNotaRecepcionComponent } from './nota-recepcion/solicitar-pago-nota-recepcion/solicitar-pago-nota-recepcion.component';
+import { ConstanciaRecepcionPdfDialogComponent } from './nota-recepcion/constancia-recepcion-pdf-dialog/constancia-recepcion-pdf-dialog.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { SolicitarPagoNotaRecepcionComponent } from './nota-recepcion/solicitar-
     RecepcionProductoComponent, 
     RecepcionProductoVerificacionDialogComponent,
     SeleccionarNotaItemRechazoDialogComponent,
-    SolicitarPagoNotaRecepcionComponent
+    SolicitarPagoNotaRecepcionComponent,
+    ConstanciaRecepcionPdfDialogComponent
   ],
   imports: [
     CommonModule,
