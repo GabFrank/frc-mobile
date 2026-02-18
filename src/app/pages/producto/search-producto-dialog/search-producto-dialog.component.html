@@ -47,10 +47,10 @@
                 class="btn-success-flat">
                 Ver Stock
               </ion-text>
-              <ion-text *ngIf="producto.stockPorProducto != null"
+              <!-- <ion-text *ngIf="producto.stockPorProducto != null"
                 style="font-size: 90%; color: var(--ion-color-success);">
                 Stock: {{ producto.stockPorProducto | number: '1.0-2' }}
-              </ion-text>
+              </ion-text> -->
             </ion-col>
           </ion-row>
         </ion-label>
@@ -134,8 +134,8 @@
                 </ion-label>
               </ion-item>
 
-              <div slot="content" class="dark2" style="padding: 8px 12px;">
-                <ion-item>
+              <div slot="content" class="dark2" style="padding: 8px 12px; border-radius: 10px;">
+                <ion-item style="border-radius: 10px 10px 0 0;">
                   <ion-label position="floating">Cantidad</ion-label>
                   <ion-input type="number" [(ngModel)]="cantidadById[presentacion.id]"></ion-input>
                 </ion-item>
@@ -152,7 +152,7 @@
                     <ion-select-option *ngFor="let e of estadosList" [value]="e">{{e}}</ion-select-option>
                   </ion-select>
                 </ion-item>
-                <ion-list *ngIf="displayedItemsByPresentacionId[presentacion.id]?.length > 0">
+                <ion-list *ngIf="displayedItemsByPresentacionId[presentacion.id]?.length > 0" style="border-radius: 0 0 10px 10px;">
                   <ion-item>
                     <ion-label>
                       <p class="title">Vencimientos</p>
