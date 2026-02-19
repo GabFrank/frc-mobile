@@ -374,6 +374,7 @@ export class RecepcionProductoComponent implements OnInit {
     }
   }
 
+  /** TODO: Se implementará futuramente. Navega a crear solicitud de pago con recepción y proveedor pre-cargados. */
   onSolicitarPago() {
     this.dialogoService.open('Atención!', '¿Realmente desea solicitar el pago de esta recepción?').then(async res => {
       if (res.role === 'aceptar') {

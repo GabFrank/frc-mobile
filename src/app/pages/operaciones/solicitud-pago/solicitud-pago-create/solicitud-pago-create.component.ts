@@ -234,13 +234,24 @@ export class SolicitudPagoCreateComponent implements OnInit {
           this.notificacionService.success('Solicitud de pago creada');
           this.router.navigate(['/operaciones/solicitud-pago']);
         },
-        error: () => {
+        error: (err) => {
           this.saving = false;
+          const msg = this.getErrorMessage(err);
+          this.notificacionService.danger(msg || 'Error al guardar la solicitud de pago');
         }
       });
     } catch (e) {
       this.saving = false;
-      this.notificacionService.danger('Error al guardar');
+      const msg = this.getErrorMessage(e);
+      this.notificacionService.danger(msg || 'Error al guardar');
     }
+  }
+
+  private getErrorMessage(err: any): string | null {
+    if (!err) return null;
+    const gql = err?.graphQLErrors as Array<{ message?: string }> | undefined;
+    if (gql?.length && gql[0]?.message) return gql[0].message;
+    if (typeof err?.message === 'string' && err.message) return err.message;
+    return null;
   }
 }

@@ -1,3 +1,12 @@
 ion-toolbar ion-title {
   font-weight: 500;
 }
+
+.notas-resumen {
+  font-weight: 600;
+
+  .total-resumen {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+}

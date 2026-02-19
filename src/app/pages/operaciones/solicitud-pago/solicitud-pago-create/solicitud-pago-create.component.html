@@ -55,8 +55,9 @@
     </ion-list>
 
     <ion-list *ngIf="notasAgregadas?.length > 0">
-      <ion-item>
-        <ion-label>Notas agregadas ({{ notasAgregadas.length }}) · Total: {{ montoTotalDisplay | number:'1.0-0' }}</ion-label>
+      <ion-item class="notas-resumen">
+        <ion-label>Notas agregadas ({{ notasAgregadas.length }})</ion-label>
+        <ion-note slot="end" class="total-resumen">Total: {{ montoTotalDisplay | number:'1.0-0' }}</ion-note>
       </ion-item>
       <ion-item *ngFor="let nota of notasAgregadas; let i = index">
         <ion-label>
