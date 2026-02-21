@@ -10,6 +10,7 @@ import { FormaPago } from 'src/app/domains/forma-pago/forma-pago.model';
 import { NotaRecepcion } from 'src/app/pages/operaciones/pedidos/nota-recepcion/nota-recepcion.model';
 import { MonedaService } from 'src/app/pages/operaciones/moneda/moneda.service';
 import { GenericCrudService } from 'src/app/generic/generic-crud.service';
+import { MainService } from 'src/app/services/main.service';
 import { FormasPagoGQL } from '../graphql/formasPago';
 import { ModalService } from 'src/app/services/modal.service';
 import {
@@ -52,7 +53,8 @@ export class SolicitudPagoCreateComponent implements OnInit {
     private modalService: ModalService,
     private proveedorSearchPage: ProveedoresSearchByPersonaPageGQL,
     private proveedorService: ProveedorService,
-    private notificacionService: NotificacionService
+    private notificacionService: NotificacionService,
+    private mainService: MainService
   ) {
     this.form = new FormGroup({
       monedaId: new FormControl(null),
@@ -217,7 +219,8 @@ export class SolicitudPagoCreateComponent implements OnInit {
       formaPagoId,
       estado: SolicitudPagoEstado.PENDIENTE,
       notaRecepcionIds: this.notasAgregadas.map(n => n.id),
-      observaciones: (this.form.get('observaciones').value || '').toString().trim().toUpperCase() || undefined
+      observaciones: (this.form.get('observaciones').value || '').toString().trim().toUpperCase() || undefined,
+      usuarioId: this.mainService?.usuarioActual?.id
     };
     const fp = this.form.get('fechaPagoPropuesta').value;
     if (fp) {
