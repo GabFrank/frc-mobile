@@ -49,6 +49,7 @@ export interface SolicitudPagoInput {
   estado: SolicitudPagoEstado;
   observaciones?: string;
   notaRecepcionIds: number[];
+  usuarioId?: number;
 }
 
 export interface SolicitudPagoPage {
