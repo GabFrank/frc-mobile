@@ -34,11 +34,8 @@
     "@azure/cognitiveservices-face": "^5.0.0",
     "@azure/ms-rest-js": "^2.7.0",
     "@capacitor-community/fcm": "^5.0.2",
-<<<<<<< HEAD
-=======
     "@capacitor-community/file-opener": "^8.0.0",
     "@capacitor-mlkit/barcode-scanning": "5.3.0",
->>>>>>> 555ada6 (imprimir transferencia de forma nativa)
     "@capacitor/android": "^5.0.0",
     "@capacitor/app": "^5.0.0",
     "@capacitor/camera": "^5.0.0",

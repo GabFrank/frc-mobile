@@ -240,7 +240,8 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
 
   onMenuClick() {
     let menu: ActionMenuData[] = [
-      { texto: 'Actualizar datos', role: 'actualizar' }
+      { texto: 'Actualizar datos', role: 'actualizar' },
+      { texto: 'Imprimir', role: 'imprimir' }
     ];
     if (
       this.selectedTransferencia?.estado === TransferenciaEstado.ABIERTA &&
@@ -260,6 +261,8 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
         this.onCambiarSucursales();
       } else if (role == 'finalizar') {
         this.onFinalizar();
+      } else if (role === 'imprimir') {
+        this.onImprimir();
       }
     });
   }
