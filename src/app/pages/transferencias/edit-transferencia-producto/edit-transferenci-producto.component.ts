@@ -240,7 +240,6 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
 
   onMenuClick() {
     let menu: ActionMenuData[] = [
-      { texto: 'Imprimir', role: 'imprimir' },
       { texto: 'Actualizar datos', role: 'actualizar' }
     ];
     if (
@@ -255,9 +254,7 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
 
     this.menuActionService.presentActionSheet(menu).then((res) => {
       let role = res.role;
-      if (role == 'imprimir') {
-        this.onImprimir();
-      } else if (role == 'actualizar') {
+      if (role == 'actualizar') {
         this.onRefresh();
       } else if (role === 'cambiar-sucursales') {
         this.onCambiarSucursales();
@@ -266,7 +263,6 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
       }
     });
   }
-
   async onImprimir() {
     (await this.transferenciaService.onImprimirTransferencia(this.transferenciaId))
       .pipe(untilDestroyed(this))
@@ -276,7 +272,6 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
         }
       });
   }
-
   onFinalizar() {
     if (this.selectedTransferencia?.estado === TransferenciaEstado.ABIERTA) {
       this.transferenciaService.onFinalizar(this.selectedTransferencia)
