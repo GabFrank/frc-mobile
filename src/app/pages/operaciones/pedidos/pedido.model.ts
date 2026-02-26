@@ -22,6 +22,7 @@ export class Pedido {
   estado: PedidoEstado;
   moneda: Moneda;
   plazoCredito: number;
+  observacionFormaPago?: string;
   creadoEn: Date;
   usuario: Usuario;
   descuento: number;
@@ -51,6 +52,7 @@ export class Pedido {
     input.formaPagoId = this.formaPago?.id
     input.monedaId = this.moneda?.id
     input.plazoCredito = this.plazoCredito;
+    input.observacionFormaPago = this?.observacionFormaPago;
     input.valorTotal = this.valorTotal;
     input.usuarioId = this.usuario?.id
     input.pedidoItemInputList = []
@@ -74,6 +76,7 @@ export class PedidoInput {
   estado: PedidoEstado;
   monedaId: number;
   plazoCredito: number;
+  observacionFormaPago?: string;
   creadoEn: Date;
   usuarioId: number;
   valorTotal: number;

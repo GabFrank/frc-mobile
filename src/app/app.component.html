@@ -90,9 +90,6 @@
         </ion-item>
 
         <ion-item
-          *ngIf="
-            loginService.usuarioActual?.roles?.includes('RECIBIR PEDIDOS')
-          "
           [routerLink]="['/operaciones/pedidos']"
           (click)="closeMenu()"
         >
