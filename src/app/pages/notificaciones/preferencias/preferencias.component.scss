@@ -1,0 +1,22 @@
+ion-header {
+    ion-toolbar {
+        --background: #000000;
+        --color: #ffffff;
+        --border-style: none;
+        padding: 8px 4px;
+
+        ion-title {
+            font-weight: 600;
+        }
+
+        ion-back-button {
+            --color: white !important;
+            color: white !important;
+            display: block;
+        }
+    }
+}
+
+ion-content {
+    --background: #000000;
+}

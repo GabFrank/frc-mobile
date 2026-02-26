@@ -1,0 +1,702 @@
+:host {
+    --background-dark: #1e2023;
+    --input-bg: #2b2d31;
+    --text-main: #ffffff;
+    --text-secondary: #949ba4;
+    --accent-color: #5865f2;
+}
+
+.dark-toolbar {
+    --background: var(--background-dark);
+    --color: var(--text-main);
+
+    .header-title {
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    .join-btn {
+        --color: var(--text-main);
+        background: #3f4147;
+        border-radius: 16px;
+        font-size: 12px;
+        height: 28px;
+        text-transform: none;
+        font-weight: 600;
+        margin-right: 10px;
+    }
+}
+
+.dark-content {
+    --background: var(--background-dark);
+}
+
+.recipient-bar {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #2f3136;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .label {
+        color: var(--text-secondary);
+        font-size: 15px;
+        margin-right: 4px;
+        padding-top: 4px;
+    }
+
+    .chips-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        flex: 1;
+    }
+
+    .user-chip {
+        display: flex;
+        align-items: center;
+        background: #2b2d31;
+        padding: 2px 8px 2px 2px;
+        border-radius: 4px;
+        gap: 6px;
+
+        img {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        span {
+            color: var(--text-main);
+            font-size: 13px;
+        }
+    }
+
+    .add-recipient-icon {
+        color: var(--text-secondary);
+        font-size: 20px;
+        margin-left: auto;
+    }
+}
+
+.hero-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    margin-top: 40px;
+
+    .avatar-group {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 24px;
+        position: relative;
+        height: 80px;
+        width: 100%;
+
+        .avatar-wrapper {
+            position: relative;
+            margin-left: -20px;
+            transition: transform 0.2s;
+
+            &:first-child {
+                margin-left: 0;
+            }
+
+            &:hover {
+                transform: translateY(-5px);
+                z-index: 20 !important;
+            }
+
+            img {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                border: 4px solid var(--background-dark);
+                background: #333;
+            }
+        }
+    }
+
+    .group-title {
+        color: var(--text-main);
+        font-size: 24px;
+        font-weight: 800;
+        text-align: center;
+        line-height: 1.2;
+        margin-bottom: 12px;
+    }
+
+    .welcome-text {
+        color: var(--text-secondary);
+        text-align: center;
+        font-size: 14px;
+        max-width: 80%;
+        line-height: 1.4;
+    }
+}
+
+ion-footer {
+    background: var(--background-dark);
+    padding: 10px 16px;
+    padding-bottom: 20px;
+
+    .preview-area {
+        margin-bottom: 12px;
+        background: #2b2d31;
+        border-radius: 12px;
+        padding: 8px;
+        animation: slideUp 0.2s ease-out;
+
+        .file-preview-card,
+        .audio-preview-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            background: #36393f;
+            border-radius: 8px;
+
+            .preview-content {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                overflow: hidden;
+
+                img {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 4px;
+                    object-fit: cover;
+                }
+
+                ion-icon {
+                    font-size: 24px;
+                    color: var(--accent-color);
+                }
+
+                .file-name {
+                    font-size: 13px;
+                    color: var(--text-main);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 200px;
+                }
+            }
+
+            .remove-btn {
+                color: #ef5350;
+                font-size: 20px;
+                cursor: pointer;
+                padding: 4px;
+            }
+        }
+
+        .upload-progress {
+            margin-top: 8px;
+            height: 4px;
+            background: #40444b;
+            border-radius: 2px;
+            overflow: hidden;
+
+            .bar {
+                height: 100%;
+                background: var(--accent-color);
+                transition: width 0.3s ease;
+            }
+        }
+    }
+
+    .recording-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #eb4034;
+        border-radius: 24px;
+        padding: 8px 16px;
+        color: white;
+        height: 50px;
+        animation: fadeIn 0.2s ease-out;
+
+        .recording-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+
+            .recording-dot {
+                width: 10px;
+                height: 10px;
+                background: white;
+                border-radius: 50%;
+                animation: pulse 1s infinite;
+            }
+        }
+
+        .recording-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+
+            ion-icon {
+                font-size: 24px;
+                cursor: pointer;
+            }
+
+            .stop-btn {
+                font-size: 28px;
+            }
+        }
+    }
+
+    .message-input-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .action-btn,
+        .mic-btn {
+            color: var(--text-secondary);
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transition: background 0.2s;
+
+            &:active {
+                background: rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        .action-btn {
+            color: var(--text-main);
+            background: #3f4147;
+            width: 36px;
+            height: 36px;
+            font-size: 20px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            background: var(--input-bg);
+            border-radius: 20px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 4px 12px;
+            gap: 8px;
+
+            .native-input {
+                background: transparent;
+                border: none;
+                color: var(--text-main);
+                flex: 1;
+                outline: none;
+                font-size: 15px;
+                padding: 8px 0;
+
+                &::placeholder {
+                    color: #6d6f78;
+                }
+            }
+
+            .send-btn {
+                color: var(--accent-color);
+                font-size: 24px;
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+            }
+
+            .loading-spinner {
+                width: 24px;
+                height: 24px;
+                --color: var(--accent-color);
+            }
+        }
+
+        .mic-btn {
+            background: var(--accent-color);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+            &:active {
+                transform: scale(0.95);
+            }
+        }
+    }
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.comments-list {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 80px;
+
+    .comment-item {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        animation: fadeIn 0.3s ease-in-out;
+
+        &.highlight-comment {
+            animation: highlightPulse 2s ease-in-out;
+        }
+
+        .comment-avatar {
+            img {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+        }
+
+        .comment-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-width: 80%;
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            .comment-author {
+                color: #e0e0e0;
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
+
+            .comment-time {
+                color: #9e9e9e;
+                font-size: 0.75rem;
+            }
+        }
+
+        .whatsapp-audio {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #2b2d31;
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 300px;
+            cursor: pointer;
+
+            .audio-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+
+            .play-btn {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: transparent;
+                border: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+
+                ion-icon {
+                    font-size: 24px;
+                }
+            }
+
+            .audio-track {
+                flex: 1;
+                height: 24px;
+                position: relative;
+                display: flex;
+                align-items: center;
+
+                .waveform {
+                    display: flex;
+                    align-items: center;
+                    gap: 2px;
+                    width: 100%;
+                    height: 100%;
+
+                    .bar {
+                        flex: 1;
+                        background: rgba(255, 255, 255, 0.5);
+                        border-radius: 1px;
+                        min-width: 2px;
+                    }
+                }
+
+                .progress-dot {
+                    position: absolute;
+                    width: 10px;
+                    height: 10px;
+                    background: #34b7f1;
+                    border-radius: 50%;
+                    top: 50%;
+                    transform: translateY(-50%);
+                }
+            }
+
+            .duration {
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.8);
+                min-width: 32px;
+            }
+        }
+
+        .comment-bubble {
+            background-color: #2b2d31;
+            color: #e0e0e0;
+            padding: 10px 14px;
+            border-radius: 0px 16px 16px 16px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+
+            &:active {
+                background-color: #35373c;
+                transform: scale(0.98);
+            }
+
+            .media-attachment {
+                margin-bottom: 8px;
+                border-radius: 8px;
+                overflow: hidden;
+
+                img,
+                video {
+                    width: 100%;
+                    max-width: 300px;
+                    border-radius: 8px;
+                    display: block;
+                }
+
+                audio {
+                    width: 100%;
+                    max-width: 250px;
+                    margin-top: 4px;
+                }
+
+                .media-file {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    background: rgba(0, 0, 0, 0.2);
+                    padding: 8px;
+                    border-radius: 8px;
+
+                    ion-icon {
+                        font-size: 24px;
+                        color: var(--accent-color);
+                    }
+
+                    a {
+                        color: var(--accent-color);
+                        text-decoration: none;
+                        font-size: 14px;
+                        font-weight: 500;
+
+                        &:hover {
+                            text-decoration: underline;
+                        }
+                    }
+                }
+            }
+
+            .reply-reference {
+                background: rgba(255, 255, 255, 0.08); // Más visible
+                border-left: 3px solid var(--ion-color-primary);
+                padding: 8px 12px;
+                border-radius: 6px;
+                margin-bottom: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                position: relative;
+                backdrop-filter: blur(4px);
+
+                span {
+                    font-size: 11px;
+                    font-weight: 800;
+                    color: var(--ion-color-primary);
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
+                p {
+                    margin: 0;
+                    font-size: 12.5px;
+                    color: #b9bbbe;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
+        }
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.reply-bar {
+    background: #2b2d31;
+    border-top: 1px solid #3d3d3d;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+
+    .reply-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        border-left: 3px solid var(--ion-color-primary);
+        padding-left: 12px;
+
+        ion-icon {
+            font-size: 18px;
+            color: var(--ion-color-primary);
+            opacity: 0.8;
+        }
+
+        .reply-text {
+            display: flex;
+            flex-direction: column;
+
+            span {
+                font-size: 11px;
+                font-weight: 800;
+                color: var(--ion-color-primary);
+                text-transform: uppercase;
+            }
+
+            p {
+                margin: 0;
+                font-size: 13px;
+                color: #dcddde;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 200px;
+            }
+        }
+    }
+
+    .close-reply {
+        font-size: 24px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+
+        &:active {
+            opacity: 1;
+        }
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.suggestions-container {
+    background-color: #2c2c2c;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+    border-bottom: 1px solid #3d3d3d;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+
+    .suggestion-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #3d3d3d;
+        cursor: pointer;
+
+        &:active {
+            background-color: #3d3d3d;
+        }
+
+        img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        span {
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+    }
+}
+
+@keyframes highlightPulse {
+    0% {
+        background-color: transparent;
+    }
+
+    30% {
+        background-color: rgba(62, 161, 219, 0.3);
+    }
+
+    100% {
+        background-color: transparent;
+    }
+}

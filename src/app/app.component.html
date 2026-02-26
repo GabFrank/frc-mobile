@@ -1,11 +1,7 @@
 <ion-app>
   <ion-menu side="start" content-id="main-content">
     <ion-header>
-      <ion-toolbar
-        translucent
-        [class.online]="online"
-        [class.offline]="!online"
-      >
+      <ion-toolbar translucent [class.online]="online" [class.offline]="!online">
         <ion-row class="ion-align-items-center">
           <ion-col size="6">
             <ion-title>Menu</ion-title>
@@ -16,25 +12,16 @@
         </ion-row>
       </ion-toolbar>
     </ion-header>
-    <ion-content
-      *ngIf="loginService?.usuarioActual?.id !== null"
-      style="background-color: rgb(32, 32, 32)"
-    >
+    <ion-content *ngIf="loginService?.usuarioActual?.id !== null" style="background-color: rgb(32, 32, 32)">
       <ion-list>
-        <ion-item
-          (click)="onAvatarClick()"
-          [hidden]="loginService.usuarioActual === null"
-          style="text-align: center"
-        >
+        <ion-item (click)="onAvatarClick()" [hidden]="loginService.usuarioActual === null" style="text-align: center">
           <ion-avatar>
             <img alt="" [src]="'/assets/avatar.svg'" />
           </ion-avatar>
-          <ion-label
-            >{{ loginService.usuarioActual?.persona?.id }} -
+          <ion-label>{{ loginService.usuarioActual?.persona?.id }} -
             {{
-              loginService.usuarioActual?.persona?.nombre | titlecase
-            }}</ion-label
-          >
+            loginService.usuarioActual?.persona?.nombre | titlecase
+            }}</ion-label>
         </ion-item>
         <ion-accordion-group>
           <ion-accordion value="first">
@@ -42,63 +29,43 @@
               <ion-icon name="person-outline" slot="start"></ion-icon>
               <ion-label>Mi cuenta</ion-label>
             </ion-item>
-            <ion-item
-              slot="content"
-              (click)="closeMenu()"
-              style="padding-left: 10%"
-              [routerLink]="['/informaciones-personales']"
-            >
+            <ion-item slot="content" (click)="closeMenu()" style="padding-left: 10%"
+              [routerLink]="['/informaciones-personales']">
               <ion-icon name="id-card-outline" slot="start"></ion-icon>
               <ion-label>Informaciones personales</ion-label>
             </ion-item>
-            <ion-item
-              slot="content"
-              [routerLink]="['/mis-finanzas']"
-              (click)="closeMenu()"
-              style="padding-left: 10%"
-            >
+            <ion-item slot="content" [routerLink]="['/mis-finanzas']" (click)="closeMenu()" style="padding-left: 10%">
               <ion-icon name="wallet-outline" slot="start"></ion-icon>
               <ion-label>Mis finanzas</ion-label>
             </ion-item>
           </ion-accordion>
-      
-        <ion-item [routerLink]="['/producto']" (click)="closeMenu()">
-          <ion-icon name="beer-outline" slot="start"></ion-icon>
-          <ion-label>Producto</ion-label>
-        </ion-item>
-        <ion-item
-          *ngIf="loginService.usuarioActual?.roles?.includes('VER INVENTARIO')"
-          [routerLink]="['/inventario']"
-          (click)="closeMenu()"
-        >
-          <ion-icon name="newspaper-outline" slot="start"></ion-icon>
-          <ion-label>Inventario</ion-label>
-        </ion-item>
-        <!--<ion-item [routerLink]="['/scanner']" (click)="closeMenu()">
+
+          <ion-item [routerLink]="['/producto']" (click)="closeMenu()">
+            <ion-icon name="beer-outline" slot="start"></ion-icon>
+            <ion-label>Producto</ion-label>
+          </ion-item>
+          <ion-item *ngIf="loginService.usuarioActual?.roles?.includes('VER INVENTARIO')" [routerLink]="['/inventario']"
+            (click)="closeMenu()">
+            <ion-icon name="newspaper-outline" slot="start"></ion-icon>
+            <ion-label>Inventario</ion-label>
+          </ion-item>
+          <!--<ion-item [routerLink]="['/scanner']" (click)="closeMenu()">
           <ion-icon name="clipboard" slot="start"></ion-icon>
           <ion-label>Scanner</ion-label>
         </ion-item> -->
-        <ion-item
-          *ngIf="
+          <ion-item *ngIf="
             loginService.usuarioActual?.roles?.includes('VER TRANSFERENCIA')
-          "
-          [routerLink]="['/transferencias']"
-          (click)="closeMenu()"
-        >
-          <ion-icon name="git-compare-outline" slot="start"></ion-icon>
-          <ion-label>Transferencia</ion-label>
-        </ion-item>
+          " [routerLink]="['/transferencias']" (click)="closeMenu()">
+            <ion-icon name="git-compare-outline" slot="start"></ion-icon>
+            <ion-label>Transferencia</ion-label>
+          </ion-item>
 
-        <ion-item
-          *ngIf="
+          <ion-item *ngIf="
             loginService.usuarioActual?.roles?.includes('RECIBIR PEDIDOS')
-          "
-          [routerLink]="['/operaciones/pedidos']"
-          (click)="closeMenu()"
-        >
-          <ion-icon name="git-compare-outline" slot="start"></ion-icon>
-          <ion-label>Pedidos</ion-label>
-        </ion-item>
+          " [routerLink]="['/operaciones/pedidos']" (click)="closeMenu()">
+            <ion-icon name="git-compare-outline" slot="start"></ion-icon>
+            <ion-label>Pedidos</ion-label>
+          </ion-item>
 
 
           <ion-accordion value="second">
@@ -106,27 +73,19 @@
               <ion-icon name="barbell-outline" slot="start"></ion-icon>
               <ion-label>Operaciones</ion-label>
             </ion-item>
-            <ion-item
-              slot="content"
-              [routerLink]="['/operaciones/caja']"
-              (click)="closeMenu()"
-              style="padding-left: 10%"
-            >
+            <ion-item slot="content" [routerLink]="['/operaciones/caja']" (click)="closeMenu()"
+              style="padding-left: 10%">
               <ion-icon name="cash-outline" slot="start"></ion-icon>
               <ion-label>Caja</ion-label>
             </ion-item>
           </ion-accordion>
-  
+
           <ion-accordion value="third">
             <ion-item slot="header">
               <ion-icon name="settings-outline" slot="start"></ion-icon>
               <ion-label>Configuración</ion-label>
             </ion-item>
-            <ion-item
-              slot="content"
-              (click)="onIpChange(); closeMenu()"
-              style="padding-left: 10%"
-            >
+            <ion-item slot="content" (click)="onIpChange(); closeMenu()" style="padding-left: 10%">
               <ion-icon name="globe-outline" slot="start"></ion-icon>
               <ion-label>Configuración del servidor</ion-label>
             </ion-item>
@@ -136,6 +95,11 @@
         <ion-item [routerLink]="['/marcacion']" (click)="closeMenu()">
           <ion-icon name="checkbox-outline" slot="start"></ion-icon>
           <ion-label>Marcar horario</ion-label>
+        </ion-item>
+
+        <ion-item [routerLink]="['/notificacion']" (click)="closeMenu()">
+          <ion-icon name="notifications-outline" slot="start"></ion-icon>
+          <ion-label>Notificaciones</ion-label>
         </ion-item>
 
         <ion-item (click)="onSalir()">
@@ -183,23 +147,15 @@
         </ion-buttons>
         <ion-buttons slot="primary">
           <ion-button>
-            <ion-icon
-              [hidden]="true"
-              slot="icon-only"
-              ios="ellipsis-horizontal"
-              md="ellipsis-vertical"
-            ></ion-icon>
+            <ion-icon [hidden]="true" slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical"></ion-icon>
           </ion-button>
         </ion-buttons>
 
         <!-- <ion-title style="text-align: center">BODEGA FRANCO</ion-title> -->
         <ion-row>
           <ion-col size="12" class="center">
-            <img
-              [src]="isFarma ? '/assets/logof.png' : '/assets/logo.png'"
-              alt=""
-              style="width: auto; max-height: 45px; object-fit: contain"
-            />
+            <img [src]="isFarma ? '/assets/logof.png' : '/assets/logo.png'" alt=""
+              style="width: auto; max-height: 45px; object-fit: contain" />
           </ion-col>
         </ion-row>
       </ion-toolbar>

@@ -1,0 +1,112 @@
+<ion-header class="ion-no-border">
+    <ion-toolbar>
+
+
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="/notificacion"></ion-back-button>
+        </ion-buttons>
+        <ion-title>Notificaciones</ion-title>
+        <ion-buttons slot="end">
+            <ion-button (click)="alReiniciarFiltro()">
+                <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+    <ion-refresher slot="fixed" (ionRefresh)="alRefrescar($event)">
+        <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
+
+    <div class="filter-section">
+        <div *ngIf="seleccionadoRango.fechaInicio && seleccionadoRango.fechaFin" class="date-range-display">
+            <p>
+                <span>Fecha inicio:</span> {{ seleccionadoRango.fechaInicio | date: 'dd/MM/yyyy' }}
+                <span class="spacer">Fecha fin:</span> {{ seleccionadoRango.fechaFin | date: 'dd/MM/yyyy' }}
+            </p>
+        </div>
+
+        <div class="filter-actions">
+            <ion-button class="search-btn" (click)="alBuscar()">
+                BUSCAR
+            </ion-button>
+            <ion-button class="calendar-btn" (click)="abrirCalendario()">
+                <ion-icon name="calendar-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+        </div>
+
+        <form [formGroup]="formulario">
+            <ion-item lines="none" class="toggle-item">
+                <ion-label>Ver solo no leídas</ion-label>
+                <ion-toggle formControlName="leidas" (ionChange)="alBuscar()"></ion-toggle>
+            </ion-item>
+        </form>
+    </div>
+
+    <div class="header-container">
+        <h1 class="title">Recientes</h1>
+    </div>
+
+    <ng-container *ngIf="notificaciones$ | async as notificaciones; else cargandoTemplate">
+        <ion-list lines="none" class="notification-list" *ngIf="notificaciones.length > 0; else vacioTemplate">
+            <ion-item *ngFor="let notificacion of notificaciones; trackBy: identificarPorId" class="notification-item"
+                detail="false" [button]="true" (click)="marcarComoLeida(notificacion)">
+                <div slot="start" [class]="'icon-container ' + notificacion.color">
+                    <ion-icon [name]="notificacion.icono + '-outline'"></ion-icon>
+                </div>
+                <ion-label class="ion-text-wrap">
+                    <div class="notification-header">
+                        <h2>{{ notificacion.titulo }}</h2>
+                        <div class="unread-dot" *ngIf="!notificacion.leida"></div>
+                    </div>
+                    <p>{{ notificacion.descripcion }}</p>
+                    <span class="tiempo">{{ notificacion.tiempo }}</span>
+                </ion-label>
+                <ion-buttons slot="end">
+                    <ion-button fill="clear" color="primary" *ngIf="notificacion.esMencion"
+                        (click)="verMencion($event, notificacion)">
+                        <ion-icon name="eye-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                    <ion-button fill="clear" color="success" *ngIf="!notificacion.leida"
+                        (click)="$event.stopPropagation(); marcarComoLeida(notificacion)">
+                        <ion-icon name="checkmark-done-outline" slot="icon-only"></ion-icon>
+                    </ion-button>
+                    <ion-button fill="clear" (click)="irAComentarios($event, notificacion)" class="comment-button">
+                        <ion-icon name="chatbox-ellipses-outline" slot="icon-only"></ion-icon>
+                        <ion-badge color="danger" *ngIf="notificacion.conteoComentarios > 0" class="comment-badge">
+                            {{ notificacion.conteoComentarios }}
+                        </ion-badge>
+                    </ion-button>
+                </ion-buttons>
+            </ion-item>
+        </ion-list>
+    </ng-container>
+
+    <ng-template #cargandoTemplate>
+        <ion-list lines="none" class="notification-list">
+            <ion-item *ngFor="let i of [1,2,3,4,5]" class="notification-item">
+                <ion-thumbnail slot="start" style="width: 48px; height: 48px; border-radius: 50%;">
+                    <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+                </ion-thumbnail>
+                <ion-label>
+                    <h2><ion-skeleton-text [animated]="true" style="width: 60%;"></ion-skeleton-text></h2>
+                    <p><ion-skeleton-text [animated]="true" style="width: 80%;"></ion-skeleton-text></p>
+                    <span class="tiempo"><ion-skeleton-text [animated]="true"
+                            style="width: 30%;"></ion-skeleton-text></span>
+                </ion-label>
+            </ion-item>
+        </ion-list>
+    </ng-template>
+
+    <ng-template #vacioTemplate>
+        <div class="empty-container">
+            <ion-icon name="notifications-off-outline"></ion-icon>
+            <p>No tienes notificaciones en este rango</p>
+        </div>
+    </ng-template>
+</ion-content>
+<ion-footer *ngIf="datosPagina">
+    <app-paginacion [pageData]="datosPagina" [pageIndex]="indicePagina" (pageChange)="alCambiarPagina($event)">
+    </app-paginacion>
+</ion-footer>

@@ -1,0 +1,40 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/notificacion" style="--color: white; color: white"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Preferencias</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <div *ngIf="loading" class="ion-text-center ion-padding" style="margin-top: 2rem;">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p style="color: #cccccc; margin-top: 1rem;">Cargando preferencias...</p>
+  </div>
+
+  <ion-list *ngIf="!loading && configuraciones.length > 0" lines="none" style="background: transparent;">
+    <ion-item *ngFor="let config of configuraciones"
+      style="--background: #1a1a1a; --color: white; margin-bottom: 10px; border-radius: 10px;">
+      <ion-label class="ion-text-wrap">
+        <h2 style="font-weight: 500; font-size: 1rem;">{{ config.descripcion }}</h2>
+        <p *ngIf="config.esObligatorio" style="color: #ffc409; font-size: 0.8em; margin-top: 4px;">
+          <ion-icon name="lock-closed-outline" style="vertical-align: middle;"></ion-icon> Obligatorio
+        </p>
+        <p *ngIf="!config.esObligatorio && config.habilitado"
+          style="color: #2dd36f; font-size: 0.8em; margin-top: 4px;">Activado</p>
+        <p *ngIf="!config.esObligatorio && !config.habilitado"
+          style="color: #eb445a; font-size: 0.8em; margin-top: 4px;">Desactivado</p>
+      </ion-label>
+      <ion-toggle slot="end" [checked]="config.habilitado" [disabled]="config.esObligatorio"
+        (ionChange)="onToggleChange($event, config)" color="success" mode="ios"></ion-toggle>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="!loading && configuraciones.length === 0" class="ion-text-center ion-padding" style="margin-top: 2rem;">
+    <ion-icon name="notifications-off-outline" style="font-size: 4rem; color: #555;"></ion-icon>
+    <p style="color: #888; font-size: 1.1rem; margin-top: 1rem;">No tienes notificaciones configurables.</p>
+  </div>
+
+</ion-content>
