@@ -5,25 +5,24 @@
         <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title 
-      style="
-      text-align: center; 
-      padding-left: 0; 
-      padding-right: 48px;"
-    >
+    <ion-title style="text-align: center; padding-left: 0;">
       Detalles de Inventario
     </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onSearchStock()">
+        <ion-icon slot="icon-only" name="search"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 <ion-content>
   <ion-card>
-    <ion-row>
+    <!-- <ion-row>
       <ion-col size="2">
         <ion-icon name="arrow-back" style="font-size: 1.5em" (click)="onBack()"></ion-icon>
       </ion-col>
       <ion-col size="8" style="text-align: center">Detalles de inventario</ion-col>
-    </ion-row>
-    <!-- primera linea -->
+    </ion-row> -->
     <ion-row>
       <ion-col size="3">
         <div class="title" fxFlex="50">Id</div>
@@ -44,7 +43,6 @@
         </div>
       </ion-col>
     </ion-row>
-    <!-- segunda linea -->
     <ion-row>
       <ion-col size="3">
         <div class="title" fxFlex="50">Tipo</div>
@@ -65,7 +63,6 @@
         </div>
       </ion-col>
     </ion-row>
-    <!-- tercera linea -->
     <ion-row>
       <ion-col size="8">
         <div class="title" fxFlex="50">Responsable</div>
@@ -77,13 +74,6 @@
         <ion-button class="btn-success-flat" fill="clear" (click)="onMenuClick()">MENU</ion-button>
       </ion-col>
     </ion-row>
-    <!-- <ion-row>
-      <ion-col size="12" style="text-align: center">
-        <ion-button class="btn-success-flat" fill="clear" (click)="onRefresh()"
-          >Actualizar</ion-button
-        >
-      </ion-col>
-    </ion-row> -->
   </ion-card>
 
   <ion-row>
@@ -234,9 +224,4 @@
       </ion-col>
     </ion-row>
   </ion-accordion-group>
-  <!-- <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-    <ion-fab-button class="btn-success">
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-  </ion-fab> -->
 </ion-content>
