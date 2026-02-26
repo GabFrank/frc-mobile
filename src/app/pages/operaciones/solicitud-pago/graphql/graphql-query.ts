@@ -57,7 +57,7 @@ export const notaRecepcionDisponibleParaPagoPorNumeroQuery = gql`
       valorTotal
       fecha
       estado
-      pedido { id proveedor { id persona { nombre } } }
+      pedido { id proveedor { id persona { nombre } } moneda { id denominacion simbolo } formaPago { id descripcion } plazoCredito observacionFormaPago }
     }
   }
 `;
