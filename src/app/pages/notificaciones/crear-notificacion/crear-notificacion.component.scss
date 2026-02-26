@@ -1,0 +1,143 @@
+ion-content {
+    --background: #121212;
+}
+
+.container {
+    padding: 16px;
+}
+
+ion-list {
+    background: transparent;
+    padding: 0;
+}
+
+ion-item {
+    --background: #1e1e1e;
+    --color: #ffffff;
+    --border-color: #333;
+    margin-bottom: 8px;
+    border-radius: 8px;
+
+    &.radio-item {
+        --padding-start: 16px;
+        --inner-padding-end: 16px;
+    }
+}
+
+.usuarios-section {
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #333;
+
+    .search-container {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding-bottom: 10px;
+
+        ion-searchbar {
+            --background: #2c2c2c;
+            --color: #fff;
+            --placeholder-color: #aaa;
+            --icon-color: #aaa;
+            padding-top: 0;
+            padding-bottom: 0;
+            padding-inline-end: 0;
+            flex: 1;
+        }
+
+        .search-btn {
+            margin: 0;
+            height: 42px;
+            --border-radius: 4px;
+        }
+    }
+
+    .user-list-container {
+        max-height: 200px;
+        overflow-y: auto;
+
+        ion-item {
+            --background: transparent;
+            margin-bottom: 0;
+
+            h2 {
+                font-size: 14px;
+                font-weight: bold;
+            }
+
+            p {
+                font-size: 12px;
+                color: #aaa;
+            }
+        }
+    }
+
+    .selected-count {
+        text-align: right;
+        font-size: 12px;
+        color: var(--ion-color-primary);
+        padding: 8px;
+        border-top: 1px solid #333;
+        margin-top: 5px;
+    }
+}
+
+.divider {
+    height: 1px;
+    background-color: #333;
+    margin: 20px 0;
+}
+
+.input-item {
+    --background: transparent;
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    margin-bottom: 20px;
+
+    ion-label {
+        color: var(--ion-color-primary) !important;
+        font-weight: bold;
+        font-size: 12px;
+        margin-bottom: 10px;
+        letter-spacing: 1px;
+    }
+
+    ion-input,
+    ion-textarea {
+        --background: #1e1e1e;
+        --padding-start: 15px;
+        --padding-end: 15px;
+        --padding-top: 15px;
+        --padding-bottom: 15px;
+        border-radius: 8px;
+        border: 1px solid #333;
+        color: white;
+    }
+
+    .uppercase-input {
+        input {
+            text-transform: uppercase;
+        }
+
+        /* For Ionic 7+ shadow dom */
+        &::part(native) {
+            text-transform: uppercase;
+        }
+    }
+}
+
+.actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 30px;
+
+    ion-button {
+        flex: 1;
+        margin: 0;
+        height: 48px;
+        font-weight: bold;
+    }
+}
