@@ -51,6 +51,7 @@ export const usuarioQuery = gql`
         telefono
         email
         nacimiento
+        imagenes
       }
       password
       creadoEn
@@ -211,8 +212,8 @@ export const saveInicioSesionGQL = gql`
 `;
 
 export const saveUsuarioImageQuery = gql`
-  query ($id: ID!, $type: String!, $image: String!) {
-    data: saveUsuarioImage(id: $id, type: $type, image: $image)
+  mutation ($id: ID!, $type: String!, $image: String!, $embedding: [Float]) {
+    data: saveUsuarioImage(id: $id, type: $type, image: $image, embedding: $embedding)
   }
 `;
 

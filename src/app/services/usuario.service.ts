@@ -36,7 +36,7 @@ export class UsuarioService {
     private saveUsuarioImage: SaveUsuarioImageGQL,
     private getUsuarioImages: GetUsuarioImagesGQL,
     private isUserFaceAuth: IsUserFaceAuthGQL // private mainService: MainService
-  ) {}
+  ) { }
 
   onGetUsuario(id: number): Observable<any> {
     return new Observable((obs) => {
@@ -145,11 +145,12 @@ export class UsuarioService {
     return this.genericService.onSave(this.saveInicioSesion, entity);
   }
 
-  async onSaveUsuarioImage(id: number, type: string, image: string) {
-    return await this.genericService.onCustomGet(this.saveUsuarioImage, {
+  async onSaveUsuarioImage(id: number, type: string, image: string, embedding?: number[]) {
+    return await this.genericService.onCustomSave(this.saveUsuarioImage, {
       id,
       type,
-      image
+      image,
+      embedding
     });
   }
 
