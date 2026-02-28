@@ -193,8 +193,8 @@ export const prepararTransferencia = gql`
 `;
 
 export const imprimirTransferencia = gql`
-  query imprimirTransferencia($id: ID!) {
-    imprimirTransferencia(id: $id)
+  query imprimirTransferencia($id: ID!, $printerName: String!, $ticket: Boolean) {
+    data: imprimirTransferencia(id: $id, printerName: $printerName, ticket: $ticket)
   }
 `;
 

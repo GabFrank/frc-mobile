@@ -20,6 +20,7 @@ import { ProductoService } from '../../producto/producto.service';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
 import { GenericListDialogComponent, TableData, GenericListDialogData } from 'src/app/components/generic-list-dialog/generic-list-dialog.component';
+import { PdfViewerService } from 'src/app/services/pdf-viewer.service';
 
 enum OpcionesMostrar {
   TODOS = 'TODOS',
@@ -58,7 +59,8 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
     private router: Router,
     private productoService: ProductoService,
     private cdr: ChangeDetectorRef,
-    private sucursalService: SucursalService
+    private sucursalService: SucursalService,
+    private pdfViewerService: PdfViewerService
   ) { }
 
   ngOnInit() {
@@ -238,7 +240,8 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
 
   onMenuClick() {
     let menu: ActionMenuData[] = [
-      { texto: 'Actualizar datos', role: 'actualizar' }
+      { texto: 'Actualizar datos', role: 'actualizar' },
+      { texto: 'Imprimir', role: 'imprimir' }
     ];
     if (
       this.selectedTransferencia?.estado === TransferenciaEstado.ABIERTA &&
@@ -258,10 +261,20 @@ export class EditTransferenciaProductoComponent implements OnInit, ViewWillEnter
         this.onCambiarSucursales();
       } else if (role == 'finalizar') {
         this.onFinalizar();
+      } else if (role === 'imprimir') {
+        this.onImprimir();
       }
     });
   }
-
+  async onImprimir() {
+    (await this.transferenciaService.onImprimirTransferencia(this.transferenciaId))
+      .pipe(untilDestroyed(this))
+      .subscribe(async (res) => {
+        if (res) {
+          await this.pdfViewerService.openPdfFromBase64(res, `transferencia_${this.transferenciaId}.pdf`);
+        }
+      });
+  }
   onFinalizar() {
     if (this.selectedTransferencia?.estado === TransferenciaEstado.ABIERTA) {
       this.transferenciaService.onFinalizar(this.selectedTransferencia)

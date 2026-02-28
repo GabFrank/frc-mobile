@@ -1,0 +1,175 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="dark-toolbar">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/notificacion" style="color: white; display: block;" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title class="header-title">Comentarios</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="dark-content">
+  <ng-container *ngIf="usuariosConAcceso$ | async as usuarios">
+    <div class="recipient-bar" *ngIf="usuarios.length > 0">
+      <div class="chips-container">
+        <div class="user-chip" *ngFor="let user of fichasUsuarios$ | async">
+          <img [src]="user.avatarUrl" alt="">
+          <span>{{ user.nickname }}</span>
+        </div>
+      </div>
+      <ion-icon name="eye-outline" class="add-recipient-icon" (click)="alternarMostrarTodos()"></ion-icon>
+    </div>
+
+    <ng-container *ngIf="comentariosProcesados$ | async as comentarios">
+      <div class="hero-section" *ngIf="comentarios.length === 0 && (portadaData$ | async) as portada">
+        <div class="avatar-group">
+          <div class="avatar-wrapper" *ngFor="let user of portada.usuarios; let i = index" [style.z-index]="10 - i">
+            <img [src]="user.avatarUrl">
+          </div>
+        </div>
+
+        <h2 class="group-title">
+          <ng-container *ngFor="let user of portada.usuarios; let isLast = last">
+            {{ user.nickname }}<span *ngIf="!isLast">, </span>
+          </ng-container>
+          <ng-container *ngIf="portada.conteoOcultos > 0">
+            y {{ portada.conteoOcultos }} más
+          </ng-container>
+        </h2>
+
+        <p class="welcome-text">
+          Bienvenido a los comentarios. Empieza la conversación cuando estés listo.
+        </p>
+      </div>
+
+      <div class="comments-list" *ngIf="comentarios.length > 0">
+        <div class="comment-item" *ngFor="let comentario of comentarios; trackBy: identificarPorId"
+          [id]="'comentario-' + comentario.id">
+          <ng-container *ngIf="comentario.usuario && comentario.comentario">
+            <div class="comment-avatar">
+              <img [src]="comentario.avatarUrl" alt="">
+            </div>
+            <div class="comment-content">
+              <div class="comment-header">
+                <span class="comment-author">{{ comentario.usuario.nickname }}</span>
+                <span class="comment-time">{{ comentario.creadoEn | date:'shortTime' }}</span>
+              </div>
+
+              <div *ngIf="comentario.tipoMedia === 'audio'" class="whatsapp-audio"
+                (click)="responderAComentario(comentario)">
+                <img [src]="comentario.avatarUrl" class="audio-avatar" alt="">
+                <button class="play-btn" (click)="toggleAudio($event, comentario)">
+                  <ion-icon [name]="comentario.isPlaying ? 'pause' : 'play'"></ion-icon>
+                </button>
+                <div class="audio-track">
+                  <div class="waveform">
+                    <span *ngFor="let h of [35,50,70,45,80,55,90,40,75,60,85,50,65,40,55,70,45,60,35,50]" class="bar"
+                      [style.height.%]="h"></span>
+                  </div>
+                  <div class="progress-dot" [style.left.%]="comentario.audioProgress || 0"></div>
+                </div>
+                <span class="duration">{{ comentario.audioDuration || '0:00' }}</span>
+                <audio [src]="comentario.mediaUrl" (timeupdate)="onAudioTime($event, comentario)"
+                  (loadedmetadata)="onAudioLoad($event, comentario)" (ended)="onAudioEnd(comentario)" hidden></audio>
+              </div>
+              <div class="comment-bubble" *ngIf="comentario.tipoMedia !== 'audio'"
+                (click)="responderAComentario(comentario)">
+                <div class="reply-reference" *ngIf="comentario.comentarioPadre && comentario.comentarioPadre.usuario">
+                  <span>{{ comentario.comentarioPadre.usuario?.nickname }}:</span>
+                  <p>{{ comentario.comentarioPadre.comentario }}</p>
+                </div>
+
+                <div class="media-attachment" *ngIf="comentario.mediaUrl" [ngSwitch]="comentario.tipoMedia">
+                  <img *ngSwitchCase="'imagen'" [src]="comentario.mediaUrl" class="media-img" loading="lazy">
+                  <video *ngSwitchCase="'video'" [src]="comentario.mediaUrl" controls class="media-video"></video>
+                  <div *ngSwitchDefault class="media-file">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                    <a [href]="comentario.mediaUrl" target="_blank">Ver archivo adjunto</a>
+                  </div>
+                </div>
+
+                <div [innerHTML]="comentario.textoFormateado"></div>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <div class="reply-bar" *ngIf="respuestaActiva$ | async as respuesta">
+    <div class="reply-info">
+      <ion-icon name="return-up-back-outline"></ion-icon>
+      <div class="reply-text">
+        <span>Respondiendo a {{ respuesta.usuario?.nickname }}</span>
+        <p>{{ respuesta.comentario }}</p>
+      </div>
+    </div>
+    <ion-icon name="close-circle" class="close-reply" (click)="cancelarRespuesta()"></ion-icon>
+  </div>
+
+  <div class="suggestions-container" *ngIf="sugerenciasProcesadas$ | async as sugerencias">
+    <div class="suggestion-item" *ngFor="let usuario of sugerencias" (click)="seleccionarUsuario(usuario)">
+      <img [src]="usuario.avatarUrl" alt="">
+      <span>{{ usuario.nickname }}</span>
+    </div>
+  </div>
+
+  <div class="preview-area" *ngIf="selectedFile || (estadoGrabacion$ | async)?.audioGrabado">
+    <div class="file-preview-card" *ngIf="selectedFile">
+      <div class="preview-content">
+        <img *ngIf="filePreview && selectedFile.type.startsWith('image/')" [src]="filePreview">
+        <ion-icon *ngIf="!selectedFile.type.startsWith('image/')" name="document-attach-outline"></ion-icon>
+        <span class="file-name">{{ selectedFile.name }}</span>
+      </div>
+      <ion-icon name="close-circle" class="remove-btn" (click)="removeFile()"></ion-icon>
+    </div>
+    <div class="audio-preview-card"
+      *ngIf="(estadoGrabacion$ | async)?.audioGrabado && !(estadoGrabacion$ | async)?.grabando">
+      <ion-icon name="mic"></ion-icon>
+      <span>Audio grabado</span>
+      <ion-icon name="trash-outline" class="remove-btn" (click)="removeRecordedAudio()"></ion-icon>
+    </div>
+
+    <div class="upload-progress" *ngIf="isUploading">
+      <div class="bar" [style.width.%]="uploadProgress"></div>
+    </div>
+  </div>
+  <div class="recording-bar" *ngIf="(estadoGrabacion$ | async)?.grabando">
+    <div class="recording-info">
+      <div class="recording-dot"></div>
+      <span>Grabando... {{ duracionFormateada$ | async }}</span>
+    </div>
+    <div class="recording-actions">
+      <ion-icon name="close-outline" (click)="cancelRecording()"></ion-icon>
+      <ion-icon name="stop-circle-outline" class="stop-btn" (click)="stopRecording()"></ion-icon>
+    </div>
+  </div>
+
+  <div class="message-input-bar" *ngIf="!(estadoGrabacion$ | async)?.grabando">
+    <input type="file" #fileInput hidden (change)="onFileSelected($event)">
+    <input type="file" #cameraInput hidden accept="image/*" capture="environment" (change)="onFileSelected($event)">
+
+    <div class="action-btn" (click)="triggerCamera()">
+      <ion-icon name="camera-outline"></ion-icon>
+    </div>
+    <div class="action-btn" (click)="triggerFileInput()">
+      <ion-icon name="attach-outline"></ion-icon>
+    </div>
+
+    <div class="input-wrapper">
+      <input [formControl]="comentarioInput" id="commentInput" type="text" placeholder="Mensaje" class="native-input"
+        (keyup.enter)="enviarComentario()">
+
+      <div class="send-btn" (click)="enviarComentario()" *ngIf="!enviando && !isUploading">
+        <ion-icon name="send"></ion-icon>
+      </div>
+      <ion-spinner *ngIf="enviando || isUploading" name="crescent" class="loading-spinner"></ion-spinner>
+    </div>
+
+    <div class="mic-btn" (click)="startRecording()">
+      <ion-icon name="mic-outline"></ion-icon>
+    </div>
+  </div>
+</ion-footer>
