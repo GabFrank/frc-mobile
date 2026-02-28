@@ -102,7 +102,7 @@
           </ion-accordion>
         </ion-accordion-group>
 
-        <ion-item [routerLink]="['/marcacion']" (click)="closeMenu()">
+        <ion-item [routerLink]="['/marcacion']" (click)="closeMenu()" [hidden]="true">
           <ion-icon name="checkbox-outline" slot="start"></ion-icon>
           <ion-label>Marcar horario</ion-label>
         </ion-item>
