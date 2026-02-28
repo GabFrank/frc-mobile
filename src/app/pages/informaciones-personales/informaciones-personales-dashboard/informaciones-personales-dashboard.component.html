@@ -16,7 +16,6 @@
   <div class="container" style="text-align: center;">
     <div class="avatar-container">
       <ion-avatar class="avatar">
-        <!-- Add [src] attribute with the user's avatar URL -->
         <img [src]="src === '' ? '/assets/avatar.svg' : src " />
       </ion-avatar>
       <ion-icon class="camera-icon" name="camera" (click)="presentActionSheet()"></ion-icon>
@@ -26,11 +25,7 @@
     <ion-list>
       <ion-item>
         <ion-label position="floating">Nombre Completo</ion-label>
-        <ion-input
-          type="text"
-          [formControl]="fullNameControl"
-          required
-        ></ion-input>
+        <ion-input type="text" [formControl]="fullNameControl" required></ion-input>
       </ion-item>
 
       <ion-item>
@@ -45,11 +40,8 @@
 
       <ion-item>
         <ion-label position="floating">Fecha de nacimiento</ion-label>
-        <ion-input
-          type="date"
-          [formControl]="birthDateControl"
-          value="{{ birthDateControl?.value | date: 'yyyy-MM-dd' }}"
-        ></ion-input>
+        <ion-input type="date" [formControl]="birthDateControl"
+          value="{{ birthDateControl?.value | date: 'yyyy-MM-dd' }}"></ion-input>
       </ion-item>
     </ion-list>
   </div>
