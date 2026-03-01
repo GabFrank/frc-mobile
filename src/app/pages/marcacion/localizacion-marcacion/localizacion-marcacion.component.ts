@@ -1,8 +1,5 @@
-/// <reference types="@types/googlemaps" />
-
 import { Location } from '@angular/common';
 import {
-  AfterViewInit,
   Component,
   ElementRef,
   OnInit,
@@ -13,6 +10,15 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
 import { GeoLocationService } from 'src/app/services/geo-location.service';
+import * as L from 'leaflet';
+
+// Fix para el icono por defecto de Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'assets/marker-icon-2x.png',
+  iconUrl: 'assets/marker-icon.png',
+  shadowUrl: 'assets/marker-shadow.png',
+});
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -24,11 +30,19 @@ export class LocalizacionMarcacionComponent implements OnInit {
 
   @ViewChild('mapContainer', { static: false }) mapContainer: ElementRef;
 
-  map: any;
+  map: L.Map;
   userPosition: { lat: number; lng: number };
   isLoading = null;
   isInBodega = false;
   selectedBodega: Sucursal;
+
+  // Icono personalizado para la posición del usuario
+  private userIcon = L.divIcon({
+    className: 'custom-div-icon',
+    html: `<div style='background-color: #4285F4; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);'></div>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10]
+  });
 
   constructor(
     private route: ActivatedRoute,
@@ -36,7 +50,7 @@ export class LocalizacionMarcacionComponent implements OnInit {
     private geoLocation: GeoLocationService,
     private sucursalService: SucursalService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.route.paramMap.pipe(untilDestroyed(this)).subscribe((res) => {
@@ -45,21 +59,36 @@ export class LocalizacionMarcacionComponent implements OnInit {
         .getCurrentLocation()
         .then((res2: { latitude: number; longitude: number }) => {
           this.isLoading = false;
-          this.userPosition = { lat: res2.latitude, lng: res2.longitude }; // Replace with actual position
-          const mapOptions = {
-            center: this.userPosition,
-            zoom: 19
-          };
-          this.map = new google.maps.Map(
-            this.mapContainer.nativeElement,
-            mapOptions
-          );
-          new google.maps.Marker({
-            position: this.userPosition,
-            map: this.map,
-            title: 'You are here!'
+          this.userPosition = { lat: res2.latitude, lng: res2.longitude };
+
+          // Inicializar mapa con Leaflet + Google Maps tiles
+          this.map = L.map(this.mapContainer.nativeElement, {
+            center: [this.userPosition.lat, this.userPosition.lng],
+            zoom: 19,
+            zoomControl: true
           });
+
+          // Google Maps tiles (muestra nombres de comercios)
+          L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            attribution: '&copy; Google Maps',
+            maxZoom: 21
+          }).addTo(this.map);
+
+          // Marcador de posición del usuario
+          L.marker([this.userPosition.lat, this.userPosition.lng], {
+            icon: this.userIcon
+          }).addTo(this.map)
+            .bindPopup('Estás aquí')
+            .openPopup();
+
           console.log('mostrando mapa');
+
+          // Forzar recálculo del tamaño del mapa
+          setTimeout(() => {
+            if (this.map) {
+              this.map.invalidateSize();
+            }
+          }, 300);
         })
         .then(async () => {
           (await this.sucursalService.onGetAllSucursales()).subscribe(
@@ -96,14 +125,20 @@ export class LocalizacionMarcacionComponent implements OnInit {
   }
 
   onTryAgain() {
+    // Destruir mapa anterior si existe
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
     this.ngOnInit();
   }
 
   onConfirmar() {
-    this.router.navigate(['identificacion/'+this.selectedBodega?.id], { relativeTo: this.route });
+    this.router.navigate(['identificacion/' + this.selectedBodega?.id], { relativeTo: this.route });
   }
 
   onBack() {
     this.location.back();
   }
 }
+
