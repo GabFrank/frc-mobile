@@ -157,11 +157,14 @@ export class AudioRecordingService {
     obtenerEstadoActual(): EstadoGrabacion {
         return this._estado$.value;
     }
-    destruir(): void {
+    resetear(): void {
         this.cancelarGrabacion();
-        this._estado$.complete();
-        this._duracion$.complete();
-        this._audioCompletado$.complete();
+        this._estado$.next({
+            grabando: false,
+            audioGrabado: null,
+            urlAudio: null
+        });
+        this._duracion$.next(0);
     }
 
     private detenerTemporizador(): void {
