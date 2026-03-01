@@ -68,7 +68,7 @@
                   <div class="progress-dot" [style.left.%]="comentario.audioProgress || 0"></div>
                 </div>
                 <span class="duration">{{ comentario.audioDuration || '0:00' }}</span>
-                <audio [src]="comentario.mediaUrl" (timeupdate)="onAudioTime($event, comentario)"
+                <audio [src]="comentario.mediaUrl" preload="none" (timeupdate)="onAudioTime($event, comentario)"
                   (loadedmetadata)="onAudioLoad($event, comentario)" (ended)="onAudioEnd(comentario)" hidden></audio>
               </div>
               <div class="comment-bubble" *ngIf="comentario.tipoMedia !== 'audio'"
