@@ -6,19 +6,86 @@ import { Geolocation } from '@capacitor/geolocation';
 })
 export class GeoLocationService {
 
-  constructor() {}
+  constructor() { }
 
-  async getCurrentLocation() {
-    try {
-      const coordinates = await Geolocation.getCurrentPosition({enableHighAccuracy: true});
-      return {
-        latitude: coordinates.coords.latitude,
-        longitude: coordinates.coords.longitude
-      };
-    } catch (e) {
-      console.error('Error getting location', e);
-      return null;
-    }
+  async getCurrentLocation(): Promise<{ latitude: number; longitude: number } | null> {
+    return new Promise(async (resolve) => {
+      let bestResult: { latitude: number; longitude: number; accuracy: number } | null = null;
+      let watchId: string | null = null;
+      const DESIRED_ACCURACY = 50; // metros
+      const TIMEOUT = 15000; // 15 segundos máximo de espera
+
+      // Timeout: si no se consigue la precisión deseada, devolver la mejor lectura disponible
+      const timeoutId = setTimeout(async () => {
+        if (watchId) {
+          await Geolocation.clearWatch({ id: watchId });
+        }
+        if (bestResult) {
+          console.log(`Timeout alcanzado. Mejor precisión obtenida: ${bestResult.accuracy}m`);
+          resolve({ latitude: bestResult.latitude, longitude: bestResult.longitude });
+        } else {
+          // Fallback: intentar getCurrentPosition como último recurso
+          try {
+            const coords = await Geolocation.getCurrentPosition({ enableHighAccuracy: true });
+            resolve({
+              latitude: coords.coords.latitude,
+              longitude: coords.coords.longitude
+            });
+          } catch (e) {
+            console.error('Error getting location (fallback)', e);
+            resolve(null);
+          }
+        }
+      }, TIMEOUT);
+
+      try {
+        watchId = await Geolocation.watchPosition(
+          { enableHighAccuracy: true },
+          (position, err) => {
+            if (err) {
+              console.error('watchPosition error:', err);
+              return;
+            }
+            if (position) {
+              const accuracy = position.coords.accuracy;
+              console.log(`Lectura GPS - Lat: ${position.coords.latitude}, Lng: ${position.coords.longitude}, Precisión: ${accuracy}m`);
+
+              // Guardar si es la mejor lectura hasta ahora
+              if (!bestResult || accuracy < bestResult.accuracy) {
+                bestResult = {
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude,
+                  accuracy: accuracy
+                };
+              }
+
+              // Si la precisión es suficiente, resolver inmediatamente
+              if (accuracy <= DESIRED_ACCURACY) {
+                clearTimeout(timeoutId);
+                Geolocation.clearWatch({ id: watchId }).then(() => {
+                  console.log(`Ubicación precisa obtenida: ${accuracy}m`);
+                  resolve({ latitude: bestResult.latitude, longitude: bestResult.longitude });
+                });
+              }
+            }
+          }
+        );
+      } catch (e) {
+        clearTimeout(timeoutId);
+        console.error('Error starting watchPosition', e);
+        // Fallback a getCurrentPosition
+        try {
+          const coords = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 10000 });
+          resolve({
+            latitude: coords.coords.latitude,
+            longitude: coords.coords.longitude
+          });
+        } catch (e2) {
+          console.error('Error getting location (fallback 2)', e2);
+          resolve(null);
+        }
+      }
+    });
   }
 
   checkIfLocationMatches(targetLat: number, targetLng: number, currentLat: number, currentLng: number, radius: number): boolean {
@@ -30,9 +97,9 @@ export class GeoLocationService {
     const lat1 = this.degreesToRadians(targetLat);
     const lat2 = this.degreesToRadians(currentLat);
 
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.sin(dLng/2) * Math.sin(dLng/2) * Math.cos(lat1) * Math.cos(lat2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.sin(dLng / 2) * Math.sin(dLng / 2) * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = earthRadiusKm * c;
 
     return distance <= radius;
@@ -40,4 +107,5 @@ export class GeoLocationService {
 
   private degreesToRadians(degrees: number) {
     return degrees * Math.PI / 180;
-  }}
+  }
+}
