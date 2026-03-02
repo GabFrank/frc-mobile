@@ -32,5 +32,46 @@ video {
 }
 
 .identification-container {
-    padding: 10px;
+  padding: 10px;
+}
+
+.similarity-indicator {
+  padding: 10px 20px;
+  text-align: center;
+}
+
+.similarity-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #333;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.similarity-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.similarity-success {
+  background-color: #4caf50;
+}
+
+.similarity-fail {
+  background-color: #f44336;
+}
+
+.similarity-text {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.text-success {
+  color: #4caf50;
+}
+
+.text-fail {
+  color: #f44336;
 }
