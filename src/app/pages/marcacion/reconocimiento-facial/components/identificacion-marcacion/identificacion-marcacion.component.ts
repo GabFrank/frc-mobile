@@ -2,14 +2,13 @@ import { Location } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
-import { DialogoService } from 'src/app/services/dialogo.service';
+import { NotificacionService } from 'src/app/services/notificacion.service';
 import { GeoLocationService } from 'src/app/services/geo-location.service';
 import { MainService } from 'src/app/services/main.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { FaceRecognitionService } from 'src/app/services/face-recognition.service';
 import { MarcacionService } from '../../../marcar-horario/service/marcacion.service';
-import { Marcacion, MarcacionInput, TipoMarcacion, Jornada } from '../../../marcar-horario/models/marcacion.model';
+import { Jornada, MarcacionInput, TipoMarcacion } from '../../../marcar-horario/models/marcacion.model';
 import { Result } from '@vladmandic/human';
 
 @UntilDestroy({ checkProperties: true })
@@ -24,18 +23,23 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   sucursalId: number;
   tipo: TipoMarcacion = TipoMarcacion.ENTRADA;
   esSalidaAlmuerzo = false;
-  jornadaActual: Jornada | null = null;
+
   isLoading = false;
   detection: Result | null = null;
   cameraActive = false;
   videoElement: HTMLVideoElement;
+
+  // Verificación facial
+  similarityPercent: number | null = null;
+  isVerified = false;
+  verificationMessage = '';
 
   constructor(
     private usuarioService: UsuarioService,
     private route: ActivatedRoute,
     private mainService: MainService,
     private location: Location,
-    private dialog: DialogoService,
+    private notificacionService: NotificacionService,
     private faceRecognitionService: FaceRecognitionService,
     private marcacionService: MarcacionService,
     private geoLocation: GeoLocationService,
@@ -45,10 +49,8 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.route.paramMap.pipe(untilDestroyed(this)).subscribe(async (res) => {
       this.sucursalId = +res.get('sucId');
-      // Obtener el tipo de marcación de los parámetros de consulta o estado
       this.tipo = (this.route.snapshot.queryParamMap.get('tipo') as TipoMarcacion) || TipoMarcacion.ENTRADA;
       this.esSalidaAlmuerzo = this.route.snapshot.queryParamMap.get('esSalidaAlmuerzo') === 'true';
-      this.verificarMarcacionActiva();
     });
 
     await this.faceRecognitionService.init();
@@ -71,7 +73,6 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
               this.userImageList = [...userImageList];
             });
           } else {
-            // Si ya tiene las imágenes registradas, activamos la cámara para verificación
             this.startCamera();
           }
         }
@@ -79,25 +80,12 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     }, 500);
   }
 
-  async verificarMarcacionActiva() {
-    const hoy = new Date();
-    const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()).toISOString();
-    const fin = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59).toISOString();
-
-    (await this.marcacionService.onGetJornadasPorUsuario(this.mainService.usuarioActual.id, inicio, fin))
-      .pipe(untilDestroyed(this))
-      .subscribe({
-        next: (jornadas) => {
-          if (jornadas && jornadas.length > 0) {
-            this.jornadaActual = [...jornadas].sort((a, b) => a.id - b.id)[jornadas.length - 1];
-          }
-        },
-        error: (err) => console.error('Error al verificar jornada', err)
-      });
-  }
-
   async startCamera() {
     this.cameraActive = true;
+    this.isVerified = false;
+    this.similarityPercent = null;
+    this.verificationMessage = '';
+
     setTimeout(() => {
       this.videoElement = document.getElementById('camera-feed') as HTMLVideoElement;
       if (this.videoElement) {
@@ -106,17 +94,17 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
           .then((stream) => {
             this.videoElement.srcObject = stream;
             this.videoElement.play();
-            this.detectFace();
+            this.detectAndVerify();
           })
           .catch((err) => {
             console.error('Error al acceder a la cámara:', err);
-            this.dialog.open('Error', 'No se pudo acceder a la cámara.');
+            this.notificacionService.danger('No se pudo acceder a la cámara.');
           });
       }
     }, 100);
   }
 
-  async detectFace() {
+  async detectAndVerify() {
     if (!this.cameraActive || !this.videoElement) return;
 
     try {
@@ -124,23 +112,137 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       this.detection = result;
 
       if (result.face && result.face.length > 0 && result.face[0].score > 0.6) {
+        // Obtener embedding actual del rostro detectado
+        const currentEmbedding = result.face[0].embedding as unknown as number[];
+
+        if (currentEmbedding && currentEmbedding.length > 0) {
+          // Obtener el embedding almacenado del usuario
+          const storedEmbedding = await this.getStoredEmbedding();
+
+          if (storedEmbedding) {
+            // Calcular similitud localmente
+            const similarity = this.faceRecognitionService.similarity(currentEmbedding, storedEmbedding);
+            this.similarityPercent = Math.round(similarity * 100);
+
+            if (similarity >= 0.6) {
+              this.isVerified = true;
+              this.verificationMessage = `✅ Identidad verificada (${this.similarityPercent}% similitud)`;
+            } else {
+              this.isVerified = false;
+              this.verificationMessage = `❌ No coincide (${this.similarityPercent}% similitud)`;
+            }
+          } else {
+            this.isVerified = true;
+            this.similarityPercent = 100;
+            this.verificationMessage = '✅ Primer registro facial - se guardará su rostro';
+          }
+        }
+      } else {
+        this.isVerified = false;
+        this.similarityPercent = null;
+        this.verificationMessage = 'Posicione su rostro frente a la cámara';
       }
     } catch (e) {
       console.error('Error en detección:', e);
     }
 
     if (this.cameraActive) {
-      requestAnimationFrame(() => this.detectFace());
+      requestAnimationFrame(() => this.detectAndVerify());
+    }
+  }
+
+  private storedEmbeddingCache: number[] | null = null;
+  private storedEmbeddingLoaded = false;
+
+  async getStoredEmbedding(): Promise<number[] | null> {
+    if (this.storedEmbeddingLoaded) {
+      return this.storedEmbeddingCache;
+    }
+
+    try {
+      const perfilImages = await new Promise<string[]>((resolve, reject) => {
+        this.usuarioService.onGetUsuarioImages(
+          this.mainService.usuarioActual.id,
+          'perfil'
+        ).then(obs => {
+          obs.subscribe({
+            next: imgs => resolve(imgs),
+            error: err => reject(err)
+          });
+        });
+      });
+
+      if (perfilImages && perfilImages.length > 0) {
+        const descriptor = await this.faceRecognitionService.getDescriptor(perfilImages[0]);
+        if (descriptor) {
+          this.storedEmbeddingCache = descriptor;
+          this.storedEmbeddingLoaded = true;
+          console.log('Descriptor de referencia obtenido de imagen de perfil');
+          return descriptor;
+        }
+      }
+    } catch (e) {
+      console.warn('No se encontró imagen de perfil, buscando en auth...', e);
+    }
+
+    try {
+      const authImages = await new Promise<string[]>((resolve, reject) => {
+        this.usuarioService.onGetUsuarioImages(
+          this.mainService.usuarioActual.id,
+          'auth'
+        ).then(obs => {
+          obs.subscribe({
+            next: imgs => resolve(imgs),
+            error: err => reject(err)
+          });
+        });
+      });
+
+      if (authImages && authImages.length > 0) {
+        const descriptor = await this.faceRecognitionService.getDescriptor(authImages[0]);
+        if (descriptor) {
+          this.storedEmbeddingCache = descriptor;
+          this.storedEmbeddingLoaded = true;
+          console.log('Descriptor de referencia obtenido de imagen auth');
+          return descriptor;
+        }
+      }
+    } catch (e) {
+      console.error('Error obteniendo embedding almacenado:', e);
+    }
+
+    this.storedEmbeddingLoaded = true;
+    return null;
+  }
+
+  getTipoLabel(): string {
+    if (this.tipo === TipoMarcacion.ENTRADA) {
+      if (this.esSalidaAlmuerzo) return 'ENTRADA ALMUERZO';
+      return 'ENTRADA';
+    } else {
+      if (this.esSalidaAlmuerzo) return 'SALIDA ALMUERZO';
+      return 'SALIDA';
     }
   }
 
   async onMarcar() {
-    if (!this.validarMarcacion()) return;
+    if (!this.isVerified) {
+      this.notificacionService.warn('Debe verificar su identidad primero.');
+      return;
+    }
+
+    if (!this.detection || !this.detection.face || this.detection.face.length === 0) {
+      this.notificacionService.warn('No se detectó ningún rostro.');
+      return;
+    }
 
     this.isLoading = true;
     try {
       const embedding = this.detection.face[0].embedding as unknown as number[];
       const location = await this.geoLocation.getCurrentLocation();
+
+      const now = new Date();
+      const fechaLocal = this.toLocalIsoString(now);
 
       const input: MarcacionInput = {
         usuarioId: this.mainService.usuarioActual.id,
@@ -151,67 +253,47 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
         longitud: location.longitude,
         precisionGps: location.accuracy,
         distanciaSucursalMetros: 0,
-        esSalidaAlmuerzo: this.esSalidaAlmuerzo
+        esSalidaAlmuerzo: this.esSalidaAlmuerzo,
+        sucursalEntradaId: this.sucursalId
       };
+
+      if (this.tipo === TipoMarcacion.ENTRADA) {
+        input.fechaEntrada = fechaLocal;
+      } else {
+        input.fechaSalida = fechaLocal;
+        input.sucursalSalidaId = this.sucursalId;
+      }
 
       (await this.marcacionService.onSaveMarcacion(input)).subscribe({
         next: (res) => {
           this.isLoading = false;
           this.stopCamera();
-          this.dialog.open('Éxito', 'Marcación realizada correctamente.').then(() => {
-            this.router.navigate(['/home']);
-          });
+
+          const tipoLabel = this.getTipoLabel();
+          this.notificacionService.success(`${tipoLabel} registrada correctamente`);
+
+          setTimeout(() => {
+            this.router.navigate(['/marcacion']);
+          }, 1500);
         },
         error: (err) => {
           this.isLoading = false;
           console.error('Error al marcar:', err);
-          this.dialog.open('Error', 'Error al realizar la marcación: ' + (err.message || 'Error desconocido'));
+
+          let errorMsg = 'Error al realizar la marcación';
+          if (err?.message) {
+            errorMsg = err.message;
+          } else if (err?.graphQLErrors?.length > 0) {
+            errorMsg = err.graphQLErrors[0].message;
+          }
+          this.notificacionService.danger(errorMsg);
         }
       });
 
     } catch (e) {
       this.isLoading = false;
-      this.dialog.open('Error', 'Error obteniendo ubicación o procesando marcación.');
+      this.notificacionService.danger('Error obteniendo ubicación o procesando marcación.');
     }
-  }
-
-  validarMarcacion(): boolean {
-    if (!this.detection || !this.detection.face || this.detection.face.length === 0) {
-      this.dialog.open('Atención', 'No se detectó ningún rostro. Por favor, asegúrese de estar frente a la cámara.');
-      return false;
-    }
-
-    if (this.tipo === TipoMarcacion.SALIDA) {
-      if (!this.jornadaActual || !this.jornadaActual.marcacionEntrada) {
-        this.dialog.open('Atención', 'No puede registrar una salida sin haber registrado una entrada.');
-        return false;
-      }
-      if (this.jornadaActual.marcacionSalida) {
-        this.dialog.open('Atención', 'Ya ha registrado su salida definitiva del día.');
-        return false;
-      }
-      if (this.esSalidaAlmuerzo && this.jornadaActual.marcacionSalidaAlmuerzo) {
-        this.dialog.open('Atención', 'Ya ha registrado su salida al almuerzo.');
-        return false;
-      }
-    } else if (this.tipo === TipoMarcacion.ENTRADA) {
-      if (this.jornadaActual) {
-        if (this.jornadaActual.marcacionSalida) {
-          this.dialog.open('Atención', 'Ya ha registrado su salida definitiva del día.');
-          return false;
-        }
-        if (this.jornadaActual.marcacionEntrada && !this.jornadaActual.marcacionSalidaAlmuerzo) {
-          this.dialog.open('Atención', 'Ya tiene una entrada activa.');
-          return false;
-        }
-        if (this.jornadaActual.marcacionEntradaAlmuerzo) {
-          this.dialog.open('Atención', 'Ya ha registrado su retorno del almuerzo.');
-          return false;
-        }
-      }
-    }
-
-    return true;
   }
 
   stopCamera() {
@@ -252,14 +334,15 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   }
 
   deleteImage(index: number) {
-    this.dialog
-      .open('Atención!!', 'Estas seguro que queres eliminar esta imagen?', true)
-      .then((res) => {
-        if (res?.role == 'aceptar') {
-          this.userImageList.splice(index, 1);
-        }
-      });
+    this.notificacionService.warn('¿Estás seguro que quieres eliminar esta imagen?');
+    this.userImageList.splice(index, 1);
   }
 
   onCargarImagen() { }
+
+  private toLocalIsoString(date: Date): string {
+    const tzOffset = date.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(date.getTime() - tzOffset)).toISOString().slice(0, -1);
+    return localISOTime;
+  }
 }

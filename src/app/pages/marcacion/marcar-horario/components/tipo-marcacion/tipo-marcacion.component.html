@@ -1,24 +1,48 @@
 <ion-content class="center-content">
   <div style="text-align: center; font-size: large; padding: 20px;">Elegir tipo de marcación</div>
 
-  <ion-card class="card" (click)="onLocalizacion('ENTRADA')">
-    <ion-card-header style="color: white">
-      <ion-card-title>Entrada</ion-card-title>
-    </ion-card-header>
-  </ion-card>
-  <ion-card class="card" (click)="onLocalizacion('SALIDA', true)">
-    <ion-card-header style="color: white">
-      <ion-card-title>Salida Almuerzo</ion-card-title>
-    </ion-card-header>
-  </ion-card>
-  <ion-card class="card" (click)="onLocalizacion('ENTRADA')">
-    <ion-card-header style="color: white">
-      <ion-card-title>Entrada Almuerzo</ion-card-title>
-    </ion-card-header>
-  </ion-card>
-  <ion-card class="card" (click)="onLocalizacion('SALIDA')">
-    <ion-card-header style="color: white">
-      <ion-card-title>Salida</ion-card-title>
-    </ion-card-header>
-  </ion-card>
+  <div *ngIf="isLoading" style="text-align: center; padding: 40px;">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Verificando estado de marcaciones...</p>
+  </div>
+
+  <div *ngIf="!isLoading">
+    <ion-card class="card" [class.card-disabled]="entradaDisabled"
+      (click)="!entradaDisabled && onLocalizacion('ENTRADA')">
+      <ion-card-header style="color: white">
+        <ion-card-title>
+          Entrada
+          <ion-icon *ngIf="entradaDisabled" name="checkmark-circle" style="float: right; font-size: 1.2em;"></ion-icon>
+        </ion-card-title>
+      </ion-card-header>
+    </ion-card>
+    <ion-card class="card" [class.card-disabled]="salidaAlmuerzoDisabled"
+      (click)="!salidaAlmuerzoDisabled && onLocalizacion('SALIDA', true)">
+      <ion-card-header style="color: white">
+        <ion-card-title>
+          Salida Almuerzo
+          <ion-icon *ngIf="salidaAlmuerzoDisabled" name="checkmark-circle"
+            style="float: right; font-size: 1.2em;"></ion-icon>
+        </ion-card-title>
+      </ion-card-header>
+    </ion-card>
+    <ion-card class="card" [class.card-disabled]="entradaAlmuerzoDisabled"
+      (click)="!entradaAlmuerzoDisabled && onLocalizacion('ENTRADA')">
+      <ion-card-header style="color: white">
+        <ion-card-title>
+          Entrada Almuerzo
+          <ion-icon *ngIf="entradaAlmuerzoDisabled" name="checkmark-circle"
+            style="float: right; font-size: 1.2em;"></ion-icon>
+        </ion-card-title>
+      </ion-card-header>
+    </ion-card>
+    <ion-card class="card" [class.card-disabled]="salidaDisabled" (click)="!salidaDisabled && onLocalizacion('SALIDA')">
+      <ion-card-header style="color: white">
+        <ion-card-title>
+          Salida
+          <ion-icon *ngIf="salidaDisabled" name="checkmark-circle" style="float: right; font-size: 1.2em;"></ion-icon>
+        </ion-card-title>
+      </ion-card-header>
+    </ion-card>
+  </div>
 </ion-content>

@@ -8,14 +8,13 @@ import { Marcacion } from '../models/marcacion.model';
 })
 export class SaveMarcacionGQL extends Mutation<{ data: Marcacion }> {
   document = gql`
-    mutation saveMarcacion($entity: MarcacionInput!, $sucId: ID) {
+    mutation saveMarcacion($entity: MarcacionInput!) {
       data: saveMarcacion(marcacion: $entity) {
         id
         sucursalId
         tipo
         fechaEntrada
         fechaSalida
-        esSalidaAlmuerzo
       }
     }
   `;
