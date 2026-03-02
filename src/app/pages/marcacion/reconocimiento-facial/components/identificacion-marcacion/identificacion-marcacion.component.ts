@@ -29,10 +29,10 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   cameraActive = false;
   videoElement: HTMLVideoElement;
 
-  // Verificación facial
   similarityPercent: number | null = null;
   isVerified = false;
   verificationMessage = '';
+  snapshotUrl: string | null = null;
 
   constructor(
     private usuarioService: UsuarioService,
@@ -85,6 +85,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     this.isVerified = false;
     this.similarityPercent = null;
     this.verificationMessage = '';
+    this.snapshotUrl = null;
 
     setTimeout(() => {
       this.videoElement = document.getElementById('camera-feed') as HTMLVideoElement;
@@ -104,6 +105,22 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     }, 100);
   }
 
+  captureSnapshot() {
+    if (!this.videoElement) return;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = this.videoElement.videoWidth;
+      canvas.height = this.videoElement.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(this.videoElement, 0, 0, canvas.width, canvas.height);
+      this.snapshotUrl = canvas.toDataURL('image/jpeg', 0.9);
+      this.videoElement.pause();
+      this.stopCamera();
+    } catch (e) {
+      console.error('Error al capturar snapshot:', e);
+    }
+  }
+
   async detectAndVerify() {
     if (!this.cameraActive || !this.videoElement) return;
 
@@ -112,29 +129,30 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       this.detection = result;
 
       if (result.face && result.face.length > 0 && result.face[0].score > 0.6) {
-        // Obtener embedding actual del rostro detectado
         const currentEmbedding = result.face[0].embedding as unknown as number[];
 
         if (currentEmbedding && currentEmbedding.length > 0) {
-          // Obtener el embedding almacenado del usuario
           const storedEmbedding = await this.getStoredEmbedding();
 
           if (storedEmbedding) {
-            // Calcular similitud localmente
             const similarity = this.faceRecognitionService.similarity(currentEmbedding, storedEmbedding);
             this.similarityPercent = Math.round(similarity * 100);
 
             if (similarity >= 0.6) {
               this.isVerified = true;
-              this.verificationMessage = `✅ Identidad verificada (${this.similarityPercent}% similitud)`;
+              this.verificationMessage = `Identidad verificada (${this.similarityPercent}% similitud)`;
+              this.captureSnapshot();
+              return;
             } else {
               this.isVerified = false;
-              this.verificationMessage = `❌ No coincide (${this.similarityPercent}% similitud)`;
+              this.verificationMessage = `No coincide (${this.similarityPercent}% similitud)`;
             }
           } else {
             this.isVerified = true;
             this.similarityPercent = 100;
-            this.verificationMessage = '✅ Primer registro facial - se guardará su rostro';
+            this.verificationMessage = 'Primer registro facial - se guardará su rostro';
+            this.captureSnapshot();
+            return;
           }
         }
       } else {
