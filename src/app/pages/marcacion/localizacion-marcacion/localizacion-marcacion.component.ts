@@ -59,6 +59,10 @@ export class LocalizacionMarcacionComponent implements OnInit {
         .getCurrentLocation()
         .then((res2: { latitude: number; longitude: number }) => {
           this.isLoading = false;
+          if (!res2) {
+            console.error('No se pudo obtener la ubicación');
+            return;
+          }
           this.userPosition = { lat: res2.latitude, lng: res2.longitude };
 
           // Inicializar mapa con Leaflet + Google Maps tiles
@@ -90,10 +94,17 @@ export class LocalizacionMarcacionComponent implements OnInit {
             }
           }, 300);
         })
-        .then(async () => {
+        .catch(err => {
+          this.isLoading = false;
+          console.error('Error obteniendo ubicación:', err);
+        })
+        .finally(async () => {
           (await this.sucursalService.onGetAllSucursales()).subscribe(
             sucRes => {
               if (sucRes?.length > 0) {
+                if (!this.userPosition) {
+                  return;
+                }
                 console.log(sucRes);
                 this.selectedBodega = sucRes.find((s) => {
                   if (s.localizacion != null) {
