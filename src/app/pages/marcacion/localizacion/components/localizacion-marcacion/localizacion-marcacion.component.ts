@@ -145,7 +145,10 @@ export class LocalizacionMarcacionComponent implements OnInit {
   }
 
   onConfirmar() {
-    this.router.navigate(['identificacion/' + this.selectedBodega?.id], { relativeTo: this.route });
+    this.router.navigate(['identificacion/' + this.selectedBodega?.id], {
+      relativeTo: this.route,
+      queryParamsHandling: 'preserve'
+    });
   }
 
   onBack() {

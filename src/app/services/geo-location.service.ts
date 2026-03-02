@@ -8,7 +8,7 @@ export class GeoLocationService {
 
   constructor() { }
 
-  async getCurrentLocation(): Promise<{ latitude: number; longitude: number } | null> {
+  async getCurrentLocation(): Promise<{ latitude: number; longitude: number; accuracy: number } | null> {
     return new Promise(async (resolve) => {
       let bestResult: { latitude: number; longitude: number; accuracy: number } | null = null;
       let watchId: string | null = null;
@@ -22,14 +22,15 @@ export class GeoLocationService {
         }
         if (bestResult) {
           console.log(`Timeout alcanzado. Mejor precisión obtenida: ${bestResult.accuracy}m`);
-          resolve({ latitude: bestResult.latitude, longitude: bestResult.longitude });
+          resolve(bestResult);
         } else {
           // Fallback: intentar getCurrentPosition como último recurso
           try {
             const coords = await Geolocation.getCurrentPosition({ enableHighAccuracy: true });
             resolve({
               latitude: coords.coords.latitude,
-              longitude: coords.coords.longitude
+              longitude: coords.coords.longitude,
+              accuracy: coords.coords.accuracy
             });
           } catch (e) {
             console.error('Error getting location (fallback)', e);
@@ -64,7 +65,7 @@ export class GeoLocationService {
                 clearTimeout(timeoutId);
                 Geolocation.clearWatch({ id: watchId }).then(() => {
                   console.log(`Ubicación precisa obtenida: ${accuracy}m`);
-                  resolve({ latitude: bestResult.latitude, longitude: bestResult.longitude });
+                  resolve(bestResult);
                 });
               }
             }
@@ -78,7 +79,8 @@ export class GeoLocationService {
           const coords = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 10000 });
           resolve({
             latitude: coords.coords.latitude,
-            longitude: coords.coords.longitude
+            longitude: coords.coords.longitude,
+            accuracy: coords.coords.accuracy
           });
         } catch (e2) {
           console.error('Error getting location (fallback 2)', e2);
