@@ -18,8 +18,6 @@ import { Result } from '@vladmandic/human';
   styleUrls: ['./identificacion-marcacion.component.scss']
 })
 export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
-  cantidadImagenes = 3;
-  userImageList: string[];
   sucursalId: number;
   tipo: TipoMarcacion = TipoMarcacion.ENTRADA;
   esSalidaAlmuerzo = false;
@@ -56,28 +54,10 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
 
     await this.faceRecognitionService.init();
 
-    setTimeout(async () => {
-      (
-        await this.usuarioService.getIsUserFaceAuth(
-          this.mainService.usuarioActual.id
-        )
-      ).subscribe(async (res) => {
-        if (res != null) {
-          this.cantidadImagenes = res;
-          if (this.cantidadImagenes < 3) {
-            (
-              await this.usuarioService.onGetUsuarioImages(
-                this.mainService.usuarioActual.id,
-                'auth'
-              )
-            ).subscribe((userImageList) => {
-              this.userImageList = [...userImageList];
-            });
-          } else {
-            this.startCamera();
-          }
-        }
-      });
+    // Siempre ir directo a la cámara. Si no tiene foto de perfil,
+    // el flujo de "primer registro facial" se encarga de guardarla.
+    setTimeout(() => {
+      this.startCamera();
     }, 500);
   }
 
@@ -202,33 +182,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
         }
       }
     } catch (e) {
-      console.warn('No se encontró imagen de perfil, buscando en auth...', e);
-    }
-
-    try {
-      const authImages = await new Promise<string[]>((resolve, reject) => {
-        this.usuarioService.onGetUsuarioImages(
-          this.mainService.usuarioActual.id,
-          'auth'
-        ).then(obs => {
-          obs.subscribe({
-            next: imgs => resolve(imgs),
-            error: err => reject(err)
-          });
-        });
-      });
-
-      if (authImages && authImages.length > 0) {
-        const descriptor = await this.faceRecognitionService.getDescriptor(authImages[0]);
-        if (descriptor) {
-          this.storedEmbeddingCache = descriptor;
-          this.storedEmbeddingLoaded = true;
-          console.log('Descriptor de referencia obtenido de imagen auth');
-          return descriptor;
-        }
-      }
-    } catch (e) {
-      console.error('Error obteniendo embedding almacenado:', e);
+      console.warn('No se encontró imagen de perfil:', e);
     }
 
     this.storedEmbeddingLoaded = true;
@@ -263,6 +217,8 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
 
       const now = new Date();
       const fechaLocal = this.toLocalIsoString(now);
+
+      // Si es primer registro facial, guardar la foto como perfil con embedding
       if (this.isPrimerRegistro && this.snapshotUrl) {
         try {
           (await this.usuarioService.onSaveUsuarioImage(
@@ -351,33 +307,6 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.stopCamera();
   }
-
-  async onFileChange(event) {
-    if (event.target.files && event.target.files.length > 0) {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = async () => {
-        let base64String: string = reader.result as string;
-        (
-          await this.usuarioService.onSaveUsuarioImage(
-            this.mainService.usuarioActual.id,
-            'auth',
-            base64String
-          )
-        ).subscribe((res) => {
-          console.log(res);
-        });
-      };
-    }
-  }
-
-  deleteImage(index: number) {
-    this.notificacionService.warn('¿Estás seguro que quieres eliminar esta imagen?');
-    this.userImageList.splice(index, 1);
-  }
-
-  onCargarImagen() { }
 
   private toLocalIsoString(date: Date): string {
     const tzOffset = date.getTimezoneOffset() * 60000;
