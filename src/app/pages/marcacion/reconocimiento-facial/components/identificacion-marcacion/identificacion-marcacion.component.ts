@@ -7,6 +7,7 @@ import { GeoLocationService } from 'src/app/services/geo-location.service';
 import { MainService } from 'src/app/services/main.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { FaceRecognitionService } from 'src/app/services/face-recognition.service';
+import { HoraServidorService } from 'src/app/services/hora-servidor.service';
 import { MarcacionService } from '../../../marcar-horario/service/marcacion.service';
 import { Jornada, MarcacionInput, TipoMarcacion } from '../../../marcar-horario/models/marcacion.model';
 import { Result } from '@vladmandic/human';
@@ -32,6 +33,8 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   verificationMessage = '';
   isPrimerRegistro = false;
   snapshotUrl: string | null = null;
+  currentTime: Date;
+  private timeInterval: any;
 
   constructor(
     private usuarioService: UsuarioService,
@@ -42,7 +45,8 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     private faceRecognitionService: FaceRecognitionService,
     private marcacionService: MarcacionService,
     private geoLocation: GeoLocationService,
-    private router: Router
+    private router: Router,
+    private horaServidorService: HoraServidorService
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -59,6 +63,11 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.startCamera();
     }, 500);
+
+    this.currentTime = this.horaServidorService.obtenerHoraActual();
+    this.timeInterval = setInterval(() => {
+      this.currentTime = this.horaServidorService.obtenerHoraActual();
+    }, 1000);
   }
 
   async startCamera() {
@@ -215,7 +224,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       const embedding = this.detection.face[0].embedding as unknown as number[];
       const location = await this.geoLocation.getCurrentLocation();
 
-      const now = new Date();
+      const now = this.horaServidorService.obtenerHoraActual();
       const fechaLocal = this.toLocalIsoString(now);
 
       // Si es primer registro facial, guardar la foto como perfil con embedding
@@ -306,6 +315,9 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.stopCamera();
+    if (this.timeInterval) {
+      clearInterval(this.timeInterval);
+    }
   }
 
   private toLocalIsoString(date: Date): string {
