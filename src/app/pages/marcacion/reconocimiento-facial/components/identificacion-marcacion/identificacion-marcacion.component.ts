@@ -32,6 +32,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   similarityPercent: number | null = null;
   isVerified = false;
   verificationMessage = '';
+  isPrimerRegistro = false;
   snapshotUrl: string | null = null;
 
   constructor(
@@ -149,6 +150,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
             }
           } else {
             this.isVerified = true;
+            this.isPrimerRegistro = true;
             this.similarityPercent = 100;
             this.verificationMessage = 'Primer registro facial - se guardará su rostro';
             this.captureSnapshot();
@@ -261,6 +263,25 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
 
       const now = new Date();
       const fechaLocal = this.toLocalIsoString(now);
+      if (this.isPrimerRegistro && this.snapshotUrl) {
+        try {
+          (await this.usuarioService.onSaveUsuarioImage(
+            this.mainService.usuarioActual.id,
+            'perfil',
+            this.snapshotUrl,
+            embedding
+          )).subscribe({
+            next: (res) => {
+              console.log('Foto de perfil guardada con embedding en primer registro facial');
+            },
+            error: (err) => {
+              console.error('Error al guardar foto de perfil:', err);
+            }
+          });
+        } catch (e) {
+          console.error('Error al guardar foto de perfil en primer registro:', e);
+        }
+      }
 
       const input: MarcacionInput = {
         usuarioId: this.mainService.usuarioActual.id,
