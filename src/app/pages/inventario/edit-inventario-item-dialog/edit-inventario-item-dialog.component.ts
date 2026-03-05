@@ -131,8 +131,6 @@ export class EditInventarioItemDialogComponent implements OnInit {
       this.selectedInventarioProductoItem = new InventarioProductoItem();
       this.selectedInventarioProductoItem.cantidadFisica = this.cantidadOriginalDelItem;
       this.selectedInventarioProductoItem.cantidadAnterior = this.cantidadOriginalDelItem;
-      this.selectedInventarioProductoItem.revisado = true;
-      this.selectedInventarioProductoItem.verificado = false;
       // In case of new item, take the IDs from data
       this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
       this.selectedInventarioProductoItem.presentacion = this.data.presentacion;
@@ -147,9 +145,19 @@ export class EditInventarioItemDialogComponent implements OnInit {
       this.selectedInventarioProductoItem.inventarioProducto = this.data.inventarioProducto;
     }
 
+    if (this.cantidadControl.value === this.cantidadOriginalDelItem) {
+      this.selectedInventarioProductoItem.verificado = true;
+      this.selectedInventarioProductoItem.revisado = false;
+    } else {
+      this.selectedInventarioProductoItem.verificado = false;
+      this.selectedInventarioProductoItem.revisado = true;
+    }
+
     if (this.isEditingFromPreviousInventory) {
       this.selectedInventarioProductoItem.id = null;
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
+      this.selectedInventarioProductoItem.cantidadFisica = this.cantidadOriginalDelItem;
+      this.selectedInventarioProductoItem.cantidadAnterior = this.cantidadOriginalDelItem;
       this.selectedInventarioProductoItem.vencimiento = fechaDate;
       this.selectedInventarioProductoItem.estado = this.estadoControl.value;
       this.selectedInventarioProductoItem.zona = this.data.inventarioProducto?.zona;
@@ -162,8 +170,6 @@ export class EditInventarioItemDialogComponent implements OnInit {
       this.selectedInventarioProductoItem.cantidadAnterior = this.cantidadOriginalDelItem;
       this.selectedInventarioProductoItem.cantidad = this.cantidadControl.value;
       this.selectedInventarioProductoItem.cantidadFisica = this.cantidadOriginalDelItem;
-      this.selectedInventarioProductoItem.revisado = true;
-      this.selectedInventarioProductoItem.verificado = false;
       this.selectedInventarioProductoItem.vencimiento = fechaDate;
       this.selectedInventarioProductoItem.estado = this.estadoControl.value;
     }
