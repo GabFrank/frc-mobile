@@ -127,8 +127,8 @@ export class LocalizacionMarcacionComponent implements OnInit {
                   // Si la más cercana está dentro del radio de 0.03 (aprox 3km en el check original)
                   // Pero para "En sucursal" usualmente se usa algo más corto.
                   // Respetaré el 0.03 original del usuario para isInBodega
-                  // Reducir tolerancia a 100 metros (configurable según requerimiento)
-                  if (masCercana.distancia <= 100) {
+                  // Reducir tolerancia a 30 metros (antes 100 metros)
+                  if (masCercana.distancia <= 30) {
                     this.selectedBodega = masCercana.sucursal;
                     this.isInBodega = true;
                   } else {
