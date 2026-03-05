@@ -36,6 +36,14 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   currentTime: Date;
   private timeInterval: any;
 
+  // Liveness detection state
+  livenessStep: 'BLINK' | 'SMILE' | 'DONE' = 'BLINK';
+  livenessInstruction = 'Parpadee para verificar';
+  livenessIcon = 'eye-outline';
+  livenessColor = 'primary';
+  private hasBlinked = false;
+  private hasSmiled = false;
+
   constructor(
     private usuarioService: UsuarioService,
     private route: ActivatedRoute,
@@ -76,6 +84,12 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     this.similarityPercent = null;
     this.verificationMessage = '';
     this.snapshotUrl = null;
+    this.livenessStep = 'BLINK';
+    this.livenessInstruction = 'Parpadee para verificar';
+    this.livenessIcon = 'eye-outline';
+    this.livenessColor = 'primary';
+    this.hasBlinked = false;
+    this.hasSmiled = false;
 
     setTimeout(() => {
       this.videoElement = document.getElementById('camera-feed') as HTMLVideoElement;
@@ -129,21 +143,71 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
             this.similarityPercent = Math.round(similarity * 100);
 
             if (similarity >= 0.6) {
-              this.isVerified = true;
-              this.verificationMessage = `Identidad verificada (${this.similarityPercent}% similitud)`;
-              this.captureSnapshot();
-              return;
+              // Liveness Detection
+              if (this.livenessStep === 'BLINK') {
+                const leftEye = result.face[0].mesh.filter((m: any) => m.label === 'leftEye')[0];
+                const rightEye = result.face[0].mesh.filter((m: any) => m.label === 'rightEye')[0];
+
+                // Human liveness metadata for blinks
+                const liveness = (result.face[0] as any).liveness;
+                if (liveness && liveness < 0.2) { // Low liveness often means eyes closed/blink during capture
+                  this.hasBlinked = true;
+                  this.livenessStep = 'SMILE';
+                  this.livenessInstruction = 'Ahora sonría';
+                  this.livenessIcon = 'happy-outline';
+                  this.livenessColor = 'warning';
+                }
+              } else if (this.livenessStep === 'SMILE') {
+                const gesture = result.gesture.find((g: any) => g.gesture === 'smile');
+                if (gesture) {
+                  this.hasSmiled = true;
+                  this.livenessStep = 'DONE';
+                  this.livenessInstruction = 'Verificación completa';
+                  this.livenessIcon = 'checkmark-done-outline';
+                  this.livenessColor = 'success';
+                }
+              }
+
+              if (this.livenessStep === 'DONE') {
+                this.isVerified = true;
+                this.verificationMessage = `Identidad verificada (${this.similarityPercent}% similitud)`;
+                this.captureSnapshot();
+                return;
+              } else {
+                this.verificationMessage = this.livenessInstruction;
+              }
             } else {
               this.isVerified = false;
               this.verificationMessage = `No coincide (${this.similarityPercent}% similitud)`;
             }
           } else {
-            this.isVerified = true;
-            this.isPrimerRegistro = true;
-            this.similarityPercent = 100;
-            this.verificationMessage = 'Primer registro facial - se guardará su rostro';
-            this.captureSnapshot();
-            return;
+            if (this.livenessStep === 'BLINK') {
+              const liveness = (result.face[0] as any).liveness;
+              if (liveness && liveness < 0.2) {
+                this.hasBlinked = true;
+                this.livenessStep = 'SMILE';
+                this.livenessInstruction = 'Ahora sonría';
+                this.livenessIcon = 'happy-outline';
+                this.livenessColor = 'warning';
+              }
+            } else if (this.livenessStep === 'SMILE') {
+              const gesture = result.gesture.find((g: any) => g.gesture === 'smile');
+              if (gesture) {
+                this.hasSmiled = true;
+                this.livenessStep = 'DONE';
+              }
+            }
+
+            if (this.livenessStep === 'DONE') {
+              this.isVerified = true;
+              this.isPrimerRegistro = true;
+              this.similarityPercent = 100;
+              this.verificationMessage = 'Primer registro facial - verificado';
+              this.captureSnapshot();
+              return;
+            } else {
+              this.verificationMessage = this.livenessInstruction;
+            }
           }
         }
       } else {

@@ -35,6 +35,7 @@ export class LocalizacionMarcacionComponent implements OnInit {
   isLoading = null;
   isInBodega = false;
   selectedBodega: Sucursal;
+  distanciaMetros: number | null = null;
 
   // Icono personalizado para la posición del usuario
   private userIcon = L.divIcon({
@@ -105,28 +106,34 @@ export class LocalizacionMarcacionComponent implements OnInit {
                 if (!this.userPosition) {
                   return;
                 }
-                console.log(sucRes);
-                this.selectedBodega = sucRes.find((s) => {
-                  if (s.localizacion != null) {
-                    let sucLoc = s.localizacion.split(',');
-                    console.log(sucLoc);
-
-                    let match = this.geoLocation.checkIfLocationMatches(
-                      +sucLoc[0],
-                      +sucLoc[1],
-                      this.userPosition.lat,
-                      this.userPosition.lng,
-                      0.03
-                    );
-                    console.log(match);
-                    return match;
-
-                  }
+                let sucursalesConDistancia = sucRes.filter(s => s.localizacion != null).map(s => {
+                  let sucLoc = s.localizacion.split(',');
+                  let d = this.geoLocation.calculateDistance(
+                    +sucLoc[0],
+                    +sucLoc[1],
+                    this.userPosition.lat,
+                    this.userPosition.lng
+                  );
+                  return { sucursal: s, distancia: d * 1000 }; // metros
                 });
-                if (this.selectedBodega != null) {
-                  this.isInBodega = true;
-                } else {
-                  this.isInBodega = false;
+
+                // Ordenar por distancia para encontrar la más cercana
+                sucursalesConDistancia.sort((a, b) => a.distancia - b.distancia);
+
+                if (sucursalesConDistancia.length > 0) {
+                  const masCercana = sucursalesConDistancia[0];
+                  this.distanciaMetros = Math.round(masCercana.distancia);
+
+                  // Si la más cercana está dentro del radio de 0.03 (aprox 3km en el check original)
+                  // Pero para "En sucursal" usualmente se usa algo más corto.
+                  // Respetaré el 0.03 original del usuario para isInBodega
+                  // Reducir tolerancia a 100 metros (configurable según requerimiento)
+                  if (masCercana.distancia <= 100) {
+                    this.selectedBodega = masCercana.sucursal;
+                    this.isInBodega = true;
+                  } else {
+                    this.isInBodega = false;
+                  }
                 }
               }
             }

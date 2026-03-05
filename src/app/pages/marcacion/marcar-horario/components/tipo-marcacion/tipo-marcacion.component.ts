@@ -110,6 +110,24 @@ export class TipoMarcacionComponent implements OnInit {
     }
   }
 
+  getHoraMarcacion(tipo: 'ENTRADA' | 'SALIDA_ALMUERZO' | 'ENTRADA_ALMUERZO' | 'SALIDA'): string | null {
+    if (!this.ultimaJornada) return null;
+    let marcacion = null;
+    switch (tipo) {
+      case 'ENTRADA': marcacion = this.ultimaJornada.marcacionEntrada; break;
+      case 'SALIDA_ALMUERZO': marcacion = this.ultimaJornada.marcacionSalidaAlmuerzo; break;
+      case 'ENTRADA_ALMUERZO': marcacion = this.ultimaJornada.marcacionEntradaAlmuerzo; break;
+      case 'SALIDA': marcacion = this.ultimaJornada.marcacionSalida; break;
+    }
+
+    if (!marcacion) return null;
+    const fecha = marcacion.tipo === 'ENTRADA' ? marcacion.fechaEntrada : marcacion.fechaSalida;
+    if (!fecha) return null;
+
+    const date = new Date(fecha);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
   resetearBotones() {
     this.entradaDisabled = false;
     this.salidaAlmuerzoDisabled = false;

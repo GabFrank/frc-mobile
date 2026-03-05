@@ -18,8 +18,8 @@ export class FaceRecognitionService {
             iris: { enabled: true },
             description: { enabled: true },
             emotion: { enabled: false },
-            antispoof: { enabled: false },
-            liveness: { enabled: false }
+            antispoof: { enabled: true },
+            liveness: { enabled: true }
         },
         body: { enabled: false },
         hand: { enabled: false },
