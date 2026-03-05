@@ -333,6 +333,14 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
           return;
         }
         input.cantidadFisica = stockResponse;
+        input.cantidadAnterior = stockResponse;
+        if (input.cantidad === stockResponse) {
+          input.verificado = true;
+          input.revisado = false;
+        } else {
+          input.verificado = false;
+          input.revisado = true;
+        }
         (await this.inventarioService.onSaveInventarioProductoItem(input))
           .pipe(untilDestroyed(this))
           .subscribe((res) => {

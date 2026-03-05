@@ -320,6 +320,14 @@ export class EditInventarioComponent implements OnInit {
                     delete (invProItemAux as any)['productoId'];
                   }
                   invProItemAux.cantidadFisica = stockResponse;
+                  invProItemAux.cantidadAnterior = stockResponse;
+                  if (invProItemAux.cantidad === stockResponse) {
+                    invProItemAux.verificado = true;
+                    invProItemAux.revisado = false;
+                  } else {
+                    invProItemAux.verificado = false;
+                    invProItemAux.revisado = true;
+                  }
                   (
                     await this.inventarioService.onSaveInventarioProductoItem(
                       invProItemAux
@@ -363,6 +371,14 @@ export class EditInventarioComponent implements OnInit {
                     .subscribe(async (stockResponse) => {
                       if (stockResponse != null) {
                         invProItemAux.cantidadFisica = stockResponse;
+                        invProItemAux.cantidadAnterior = stockResponse;
+                        if (invProItemAux.cantidad === stockResponse) {
+                          invProItemAux.verificado = true;
+                          invProItemAux.revisado = false;
+                        } else {
+                          invProItemAux.verificado = false;
+                          invProItemAux.revisado = true;
+                        }
                         (
                           await this.inventarioService.onSaveInventarioProductoItem(
                             invProItemAux
