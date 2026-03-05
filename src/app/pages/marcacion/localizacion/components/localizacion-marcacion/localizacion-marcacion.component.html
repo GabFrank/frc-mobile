@@ -19,24 +19,34 @@
       </div>
     </ion-col>
   </ion-row>
-  <div *ngIf="isInBodega" style="text-align: center; font-size: medium; padding: 10px">
-    Estas en:
-  </div>
-  <div *ngIf="isInBodega" style="text-align: center; font-size: large; padding: 10px">
-    {{selectedBodega?.nombre}}
-  </div>
-  <ion-row>
-    <ion-col size="12">
-      <ion-button *ngIf="isInBodega" (click)="onConfirmar()" expand="block" shape="round">
-        Confirmar
+  <div class="location-info-container" *ngIf="!isLoading && userPosition">
+    <div class="status-badge" [class.success]="isInBodega" [class.warning]="!isInBodega">
+      <ion-icon [name]="isInBodega ? 'business' : 'location'"></ion-icon>
+      <span>{{ isInBodega ? 'Dentro del rango de sucursal' : 'Fuera de rango' }}</span>
+    </div>
+
+    <div class="distance-info" *ngIf="distanciaMetros !== null">
+      <p class="label">Distancia a la sucursal más cercana:</p>
+      <p class="value">{{ distanciaMetros >= 1000 ? (distanciaMetros/1000).toFixed(2) + ' km' : distanciaMetros + ' m'
+        }}</p>
+    </div>
+
+    <div *ngIf="isInBodega" class="selected-branch">
+      <span class="branch-label">Sucursal detectada:</span>
+      <h2 class="branch-name">{{selectedBodega?.nombre}}</h2>
+    </div>
+
+    <div class="actions">
+      <ion-button *ngIf="isInBodega" (click)="onConfirmar()" expand="block" shape="round" color="success"
+        class="main-btn">
+        Continuar a Identificación
+        <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
       </ion-button>
-    </ion-col>
-  </ion-row>
-  <ion-row>
-    <ion-col size="12">
-      <ion-button *ngIf="userPosition !== null" (click)="onTryAgain()" expand="block" shape="round" color="accent">
-        Intentar nuevamente
+
+      <ion-button (click)="onTryAgain()" expand="block" fill="clear" color="medium" class="retry-btn">
+        <ion-icon name="refresh-outline" slot="start"></ion-icon>
+        Actualizar ubicación
       </ion-button>
-    </ion-col>
-  </ion-row>
+    </div>
+  </div>
 </ion-content>

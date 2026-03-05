@@ -6,43 +6,81 @@
     <p>Verificando estado de marcaciones...</p>
   </div>
 
-  <div *ngIf="!isLoading">
-    <ion-card class="card" [class.card-disabled]="entradaDisabled"
+  <div *ngIf="!isLoading" class="cards-container">
+    <ion-card class="marking-card" [class.disabled]="entradaDisabled"
       (click)="!entradaDisabled && onLocalizacion('ENTRADA')">
-      <ion-card-header style="color: white">
-        <ion-card-title>
-          Entrada
-          <ion-icon *ngIf="entradaDisabled" name="checkmark-circle" style="float: right; font-size: 1.2em;"></ion-icon>
-        </ion-card-title>
-      </ion-card-header>
+      <div class="card-content">
+        <div class="icon-section bg-success">
+          <ion-icon name="log-in-outline"></ion-icon>
+        </div>
+        <div class="info-section">
+          <h3>Entrada</h3>
+          <p *ngIf="getHoraMarcacion('ENTRADA')" class="status-recorded">
+            Marcado a las {{ getHoraMarcacion('ENTRADA') }}
+          </p>
+          <p *ngIf="!getHoraMarcacion('ENTRADA')" class="status-pending">Pendiente</p>
+        </div>
+        <div class="check-section" *ngIf="entradaDisabled">
+          <ion-icon name="checkmark-circle" color="success"></ion-icon>
+        </div>
+      </div>
     </ion-card>
-    <ion-card class="card" [class.card-disabled]="salidaAlmuerzoDisabled"
+
+    <ion-card class="marking-card" [class.disabled]="salidaAlmuerzoDisabled"
       (click)="!salidaAlmuerzoDisabled && onLocalizacion('SALIDA', true)">
-      <ion-card-header style="color: white">
-        <ion-card-title>
-          Salida Almuerzo
-          <ion-icon *ngIf="salidaAlmuerzoDisabled" name="checkmark-circle"
-            style="float: right; font-size: 1.2em;"></ion-icon>
-        </ion-card-title>
-      </ion-card-header>
+      <div class="card-content">
+        <div class="icon-section bg-warning">
+          <ion-icon name="restaurant-outline"></ion-icon>
+        </div>
+        <div class="info-section">
+          <h3>Salida Almuerzo</h3>
+          <p *ngIf="getHoraMarcacion('SALIDA_ALMUERZO')" class="status-recorded">
+            Marcado a las {{ getHoraMarcacion('SALIDA_ALMUERZO') }}
+          </p>
+          <p *ngIf="!getHoraMarcacion('SALIDA_ALMUERZO')" class="status-pending">Pendiente</p>
+        </div>
+        <div class="check-section" *ngIf="salidaAlmuerzoDisabled">
+          <ion-icon name="checkmark-circle" color="success"></ion-icon>
+        </div>
+      </div>
     </ion-card>
-    <ion-card class="card" [class.card-disabled]="entradaAlmuerzoDisabled"
+
+    <ion-card class="marking-card" [class.disabled]="entradaAlmuerzoDisabled"
       (click)="!entradaAlmuerzoDisabled && onLocalizacion('ENTRADA')">
-      <ion-card-header style="color: white">
-        <ion-card-title>
-          Entrada Almuerzo
-          <ion-icon *ngIf="entradaAlmuerzoDisabled" name="checkmark-circle"
-            style="float: right; font-size: 1.2em;"></ion-icon>
-        </ion-card-title>
-      </ion-card-header>
+      <div class="card-content">
+        <div class="icon-section bg-info">
+          <ion-icon name="walk-outline"></ion-icon>
+        </div>
+        <div class="info-section">
+          <h3>Entrada Almuerzo</h3>
+          <p *ngIf="getHoraMarcacion('ENTRADA_ALMUERZO')" class="status-recorded">
+            Marcado a las {{ getHoraMarcacion('ENTRADA_ALMUERZO') }}
+          </p>
+          <p *ngIf="!getHoraMarcacion('ENTRADA_ALMUERZO')" class="status-pending">Pendiente</p>
+        </div>
+        <div class="check-section" *ngIf="entradaAlmuerzoDisabled">
+          <ion-icon name="checkmark-circle" color="success"></ion-icon>
+        </div>
+      </div>
     </ion-card>
-    <ion-card class="card" [class.card-disabled]="salidaDisabled" (click)="!salidaDisabled && onLocalizacion('SALIDA')">
-      <ion-card-header style="color: white">
-        <ion-card-title>
-          Salida
-          <ion-icon *ngIf="salidaDisabled" name="checkmark-circle" style="float: right; font-size: 1.2em;"></ion-icon>
-        </ion-card-title>
-      </ion-card-header>
+
+    <ion-card class="marking-card" [class.disabled]="salidaDisabled"
+      (click)="!salidaDisabled && onLocalizacion('SALIDA')">
+      <div class="card-content">
+        <div class="icon-section bg-danger">
+          <ion-icon name="log-out-outline"></ion-icon>
+        </div>
+        <div class="info-section">
+          <h3>Salida</h3>
+          <p *ngIf="getHoraMarcacion('SALIDA')" class="status-recorded">
+            Marcado a las {{ getHoraMarcacion('SALIDA') }}
+          </p>
+          <p *ngIf="!getHoraMarcacion('SALIDA')" class="status-pending">Pendiente</p>
+        </div>
+        <div class="check-section" *ngIf="salidaDisabled">
+          <ion-icon name="checkmark-circle" color="success"></ion-icon>
+        </div>
+      </div>
     </ion-card>
   </div>
 </ion-content>

@@ -107,6 +107,21 @@ export class GeoLocationService {
     return distance <= radius;
   }
 
+  calculateDistance(targetLat: number, targetLng: number, currentLat: number, currentLng: number): number {
+    const earthRadiusKm = 6371;
+
+    const dLat = this.degreesToRadians(currentLat - targetLat);
+    const dLng = this.degreesToRadians(currentLng - targetLng);
+
+    const lat1 = this.degreesToRadians(targetLat);
+    const lat2 = this.degreesToRadians(currentLat);
+
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.sin(dLng / 2) * Math.sin(dLng / 2) * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadiusKm * c;
+  }
+
   private degreesToRadians(degrees: number) {
     return degrees * Math.PI / 180;
   }

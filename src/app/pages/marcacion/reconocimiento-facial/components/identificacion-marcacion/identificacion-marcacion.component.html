@@ -23,10 +23,19 @@
         {{ verificationMessage }}
       </div>
     </div>
+    <div class="liveness-instruction" *ngIf="cameraActive && !isVerified">
+      <ion-icon [name]="livenessIcon" [color]="livenessColor"></ion-icon>
+      <span [style.color]="'var(--ion-color-' + livenessColor + ')'">{{ livenessInstruction }}</span>
+    </div>
 
     <div class="camera-container">
       <video *ngIf="!snapshotUrl" id="camera-feed" autoplay playsinline muted
         style="width: 100%; max-width: 400px; border-radius: 10px; transform: scaleX(-1);"></video>
+      <div *ngIf="!snapshotUrl && cameraActive" class="camera-mask">
+        <div class="mask-overlay"></div>
+        <div class="mask-hole" [class.verified]="isVerified"></div>
+      </div>
+
       <img *ngIf="snapshotUrl" [src]="snapshotUrl" alt="Foto verificada"
         style="width: 100%; max-width: 400px; border-radius: 10px; transform: scaleX(-1);" />
       <div *ngIf="isLoading" class="loading-overlay">
