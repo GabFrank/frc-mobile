@@ -14,21 +14,26 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 4px auto;
+  margin: 2px auto; // Reducido de 4px
   position: relative;
   width: 90%;
-  max-width: 400px;
-  min-height: 250px;
+  max-width: 320px; // Reducido de 400px
+  height: 320px; // Altura fija cuadrada para mejor control
+  min-height: auto; // Eliminado min-height grande
   background-color: #000;
   border-radius: 10px;
   overflow: hidden;
 }
 
 video,
-.camera-container img {
+.camera-container img,
+.camera-feed,
+.camera-snapshot {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   display: block;
+  transform: scaleX(-1); // Efecto espejo
 }
 
 .loading-overlay {
@@ -66,8 +71,8 @@ video,
   }
 
   .mask-hole {
-    width: 250px;
-    height: 250px;
+    width: 200px; // Reducido de 250px
+    height: 200px; // Reducido de 250px
     border: 3px solid rgba(255, 255, 255, 0.6);
     border-radius: 50%;
     box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0);
@@ -131,9 +136,9 @@ video,
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 12px;
-  margin: 10px auto;
+  gap: 8px;
+  padding: 8px; // Reducido de 12px
+  margin: 6px auto; // Reducido de 10px
   width: 90%;
   background: rgba(var(--ion-color-light-rgb), 0.8);
   border-radius: 12px;

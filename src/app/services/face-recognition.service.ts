@@ -24,7 +24,7 @@ export class FaceRecognitionService {
         body: { enabled: false },
         hand: { enabled: false },
         object: { enabled: false },
-        gesture: { enabled: false }
+        gesture: { enabled: true }
     };
 
     async init(): Promise<void> {

@@ -7,8 +7,8 @@
       </span>
     </div>
 
-    <div style="text-align: center; margin-bottom: 10px;">
-      <span style="font-size: 1.5em; font-weight: bold; color: var(--ion-color-dark);">
+    <div style="text-align: center; margin-bottom: 5px;">
+      <span style="font-size: 1.3em; font-weight: bold; color: var(--ion-color-dark);">
         {{ currentTime | date:'dd/MM/yyyy HH:mm:ss' }}
       </span>
     </div>
@@ -29,15 +29,13 @@
     </div>
 
     <div class="camera-container">
-      <video *ngIf="!snapshotUrl" id="camera-feed" autoplay playsinline muted
-        style="width: 100%; max-width: 400px; border-radius: 10px; transform: scaleX(-1);"></video>
+      <video *ngIf="!snapshotUrl" id="camera-feed" autoplay playsinline muted class="camera-feed"></video>
       <div *ngIf="!snapshotUrl && cameraActive" class="camera-mask">
         <div class="mask-overlay"></div>
         <div class="mask-hole" [class.verified]="isVerified"></div>
       </div>
 
-      <img *ngIf="snapshotUrl" [src]="snapshotUrl" alt="Foto verificada"
-        style="width: 100%; max-width: 400px; border-radius: 10px; transform: scaleX(-1);" />
+      <img *ngIf="snapshotUrl" [src]="snapshotUrl" alt="Foto verificada" class="camera-snapshot" />
       <div *ngIf="isLoading" class="loading-overlay">
         <ion-spinner name="crescent"></ion-spinner>
       </div>

@@ -37,12 +37,11 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   private timeInterval: any;
 
   // Liveness detection state
-  livenessStep: 'BLINK' | 'SMILE' | 'DONE' = 'BLINK';
+  livenessStep: 'BLINK' | 'DONE' = 'BLINK';
   livenessInstruction = 'Parpadee para verificar';
   livenessIcon = 'eye-outline';
   livenessColor = 'primary';
   private hasBlinked = false;
-  private hasSmiled = false;
 
   constructor(
     private usuarioService: UsuarioService,
@@ -89,7 +88,6 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     this.livenessIcon = 'eye-outline';
     this.livenessColor = 'primary';
     this.hasBlinked = false;
-    this.hasSmiled = false;
 
     setTimeout(() => {
       this.videoElement = document.getElementById('camera-feed') as HTMLVideoElement;
@@ -145,22 +143,12 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
             if (similarity >= 0.6) {
               // Liveness Detection
               if (this.livenessStep === 'BLINK') {
-                const leftEye = result.face[0].mesh.filter((m: any) => m.label === 'leftEye')[0];
-                const rightEye = result.face[0].mesh.filter((m: any) => m.label === 'rightEye')[0];
-
-                // Human liveness metadata for blinks
+                const blinkGesture = result.gesture.find((g: any) => g.gesture.toLowerCase().includes('blink'));
                 const liveness = (result.face[0] as any).liveness;
-                if (liveness && liveness < 0.2) { // Low liveness often means eyes closed/blink during capture
+
+                // Detectamos parpadeo por gesto o por baja liveness (ojos cerrados)
+                if (blinkGesture || (liveness !== undefined && liveness < 0.15)) {
                   this.hasBlinked = true;
-                  this.livenessStep = 'SMILE';
-                  this.livenessInstruction = 'Ahora sonría';
-                  this.livenessIcon = 'happy-outline';
-                  this.livenessColor = 'warning';
-                }
-              } else if (this.livenessStep === 'SMILE') {
-                const gesture = result.gesture.find((g: any) => g.gesture === 'smile');
-                if (gesture) {
-                  this.hasSmiled = true;
                   this.livenessStep = 'DONE';
                   this.livenessInstruction = 'Verificación completa';
                   this.livenessIcon = 'checkmark-done-outline';
@@ -182,18 +170,11 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
             }
           } else {
             if (this.livenessStep === 'BLINK') {
+              const blinkGesture = result.gesture.find((g: any) => g.gesture.toLowerCase().includes('blink'));
               const liveness = (result.face[0] as any).liveness;
-              if (liveness && liveness < 0.2) {
+
+              if (blinkGesture || (liveness !== undefined && liveness < 0.15)) {
                 this.hasBlinked = true;
-                this.livenessStep = 'SMILE';
-                this.livenessInstruction = 'Ahora sonría';
-                this.livenessIcon = 'happy-outline';
-                this.livenessColor = 'warning';
-              }
-            } else if (this.livenessStep === 'SMILE') {
-              const gesture = result.gesture.find((g: any) => g.gesture === 'smile');
-              if (gesture) {
-                this.hasSmiled = true;
                 this.livenessStep = 'DONE';
               }
             }
