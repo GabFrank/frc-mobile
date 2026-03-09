@@ -205,7 +205,7 @@
           <ion-icon name="home-outline"></ion-icon>
         </ion-tab-button>
 
-        <ion-tab-button [routerLink]="['/inventario']" routerLinkActive="active-link">
+        <ion-tab-button *ngIf="loginService.usuarioActual?.roles?.includes('VER INVENTARIO')" [routerLink]="['/inventario']" routerLinkActive="active-link">
           <ion-icon name="newspaper-outline"></ion-icon>
         </ion-tab-button>
 
