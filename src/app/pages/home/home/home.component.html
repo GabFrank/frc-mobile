@@ -2,29 +2,29 @@
     <div class="header-greeting" style="min-height: 56px;">
     </div>
 
-    <ion-card class="credit-card">
+    <ion-card class="credit-card" (click)="goToListaConvenios()" style="cursor: pointer;">
         <ion-card-header>
             <ion-card-subtitle>Crédito Disponible</ion-card-subtitle>
-            <ion-card-title>Gs. 1.500.000</ion-card-title>
+            <ion-card-title>Gs. {{ (creditoDisponible || 0) | number: '1.0-0' }}</ion-card-title>
         </ion-card-header>
 
         <ion-card-content>
             <div class="progress-bar-container">
-                <div class="progress-bar" style="width: 25%;"></div>
+                <div class="progress-bar" [style.width.%]="porcentajeGastado"></div>
             </div>
             <div class="credit-details">
                 <div class="detail-item">
                     <span class="dot spent"></span>
                     <div class="info">
                         <span class="label">Gastado</span>
-                        <span class="amount">Gs. 500.000</span>
+                        <span class="amount">Gs. {{ (totalAbiertos || 0) | number: '1.0-0' }}</span>
                     </div>
                 </div>
                 <div class="detail-item">
                     <span class="dot limit"></span>
                     <div class="info">
                         <span class="label">Límite Total</span>
-                        <span class="amount">Gs. 2.000.000</span>
+                        <span class="amount">Gs. {{ (cliente?.credito || 0) | number: '1.0-0' }}</span>
                     </div>
                 </div>
             </div>
