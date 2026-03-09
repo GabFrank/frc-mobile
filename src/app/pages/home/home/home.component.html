@@ -1,5 +1,5 @@
 <div class="home-container">
-    <div class="header-greeting" style="min-height: 56px;">
+    <div class="header-greeting" style="min-height: 20px;">
     </div>
 
     <ion-card class="credit-card" (click)="goToListaConvenios()" style="cursor: pointer;">
@@ -36,7 +36,6 @@
     </div>
 
     <div class="quick-actions-grid">
-
         <div class="action-card" [routerLink]="['/producto/buscar', 'false']">
             <div class="icon-wrapper default-red">
                 <ion-icon name="barcode-outline"></ion-icon>
@@ -57,12 +56,12 @@
             </div>
             <span>Control<br>Inventario</span>
         </div>
+
         <div class="action-card" [routerLink]="['/producto/productos-vencidos']">
             <div class="icon-wrapper danger-orange">
                 <ion-icon name="alert-circle-outline"></ion-icon>
             </div>
             <span>Productos<br>Vencidos</span>
         </div>
-
     </div>
 </div>
