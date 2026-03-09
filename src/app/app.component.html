@@ -168,6 +168,12 @@
     </ion-content>
 
     <ion-footer *ngIf="loginService?.usuarioActual?.id !== null">
+      <div class="fab-main-container">
+        <div class="fab-circle">
+          <ion-icon name="add"></ion-icon>
+        </div>
+      </div>
+
       <ion-tab-bar>
 
         <ion-tab-button [routerLink]="['/']" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
@@ -177,6 +183,8 @@
         <ion-tab-button [routerLink]="['/inventario']" routerLinkActive="active-link">
           <ion-icon name="newspaper-outline"></ion-icon>
         </ion-tab-button>
+
+        <ion-tab-button class="spacer-button" disabled></ion-tab-button>
 
         <ion-tab-button [routerLink]="['/producto']" routerLinkActive="active-link">
           <ion-icon name="beer-outline"></ion-icon>

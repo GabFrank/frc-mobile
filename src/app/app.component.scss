@@ -32,6 +32,51 @@ ion-accordion {
 }
 
 ion-footer {
+  position: relative;
+  overflow: visible !important;
+  background: transparent;
+  contain: none !important; /* Evita que Ionic recorte el contenido que sobresale */
+
+  &::before {
+    display: none !important; /* Elimina cualquier pseudo-elemento que pueda tapar */
+  }
+
+  .fab-main-container {
+    position: absolute;
+    width: 100%;
+    height: 0;
+    display: flex;
+    justify-content: center;
+    z-index: 100;
+    pointer-events: none;
+    top: -32px; /* Sube exactamente la mitad del círculo (64px / 2) */
+
+    .fab-circle {
+      pointer-events: auto;
+      width: 64px;
+      height: 64px;
+      background: #f44336;
+      border-radius: 50% !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      border: 3px solid #1a1a1a; /* Borde oscuro para que se integre con la barra */
+      transition: all 0.2s ease-in-out;
+
+      ion-icon {
+        color: #ffffff;
+        font-size: 34px;
+        margin: 0;
+      }
+
+      &:active {
+        transform: scale(0.9);
+        background: #d32f2f;
+      }
+    }
+  }
+
   ion-toolbar {
     --padding-top: 0;
     --padding-bottom: 0;
@@ -45,6 +90,7 @@ ion-footer {
     height: 56px;
     padding-bottom: 0;
     --padding-bottom: 0;
+    overflow: visible;
 
     ion-tab-button {
       --color: rgba(255, 255, 255, 0.7);
@@ -55,6 +101,11 @@ ion-footer {
       align-items: center;
       padding: 0;
       margin: 0;
+
+      &.spacer-button {
+        --background: transparent;
+        pointer-events: none;
+      }
 
       ion-icon {
         font-size: 32px;

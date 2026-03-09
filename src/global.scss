@@ -347,4 +347,15 @@ zxing-scanner video {
 .myCalendar-class .md.title-default.hydrated {
   display: grid;
   justify-content: center;
-} 
+}
+
+/* Asegura que el FAB flotante del footer no se recorte */
+ion-footer {
+  overflow: visible !important;
+  contain: none !important;
+}
+
+ion-footer::part(native) {
+  overflow: visible !important;
+  contain: none !important;
+}
