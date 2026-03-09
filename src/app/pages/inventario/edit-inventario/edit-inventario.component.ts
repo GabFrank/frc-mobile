@@ -93,6 +93,7 @@ export class EditInventarioComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+    this.paginationStateService.setPaginationVisible(true);
     this.selectedResponsable = this.mainService.usuarioActual;
     this.inventarioService.inventarioItemSaved$
       .pipe(untilDestroyed(this))
@@ -575,11 +576,8 @@ export class EditInventarioComponent implements OnInit, OnDestroy {
             this.selectedInventario.inventarioProductoList[
               index
             ].inventarioProductoItemList = res;
-            this.updatePaginationVisibility(invPro.inventarioProductoItemList);
           }
         });
-    } else {
-       this.updatePaginationVisibility(invPro.inventarioProductoItemList);
     }
   }
 
@@ -597,7 +595,6 @@ export class EditInventarioComponent implements OnInit, OnDestroy {
             this.selectedInventario.inventarioProductoList[
               index
             ].inventarioProductoItemList.concat(res);
-          this.updatePaginationVisibility(this.selectedInventario.inventarioProductoList[index].inventarioProductoItemList);
         }
       });
   }
@@ -610,11 +607,6 @@ export class EditInventarioComponent implements OnInit, OnDestroy {
     this.selectedInventario.inventarioProductoList[
       index
     ].inventarioProductoItemList.splice(length - sobra, sobra - 1);
-    this.updatePaginationVisibility(this.selectedInventario.inventarioProductoList[index].inventarioProductoItemList);
-  }
-
-  updatePaginationVisibility(itemList: any[]) {
-      this.paginationStateService.setPaginationVisible(itemList?.length > 0 && itemList.length >= 4);
   }
 
   ngOnDestroy(): void {
