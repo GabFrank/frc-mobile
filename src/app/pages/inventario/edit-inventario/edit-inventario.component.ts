@@ -32,7 +32,7 @@ import { CargandoService } from './../../../services/cargando.service';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { untilDestroyed } from '@ngneat/until-destroy';
 import { InventarioService } from './../inventario.service';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Inventario } from '../inventario.model';
 import { SectorService } from 'src/app/domains/sector/sector.service';
@@ -41,6 +41,7 @@ import { Usuario } from 'src/app/domains/personas/usuario.model';
 import { ProductoService } from '../../producto/producto.service';
 import { TransferenciaService } from '../../transferencias/transferencia.service';
 import { EtapaTransferencia } from '../../transferencias/transferencia.model';
+import { PaginationStateService } from 'src/app/services/pagination-state.service';
 
 export class InventarioData {
   sector: Sector;
@@ -59,7 +60,7 @@ enum OpcionesMostrar {
   templateUrl: './edit-inventario.component.html',
   styleUrls: ['./edit-inventario.component.scss']
 })
-export class EditInventarioComponent implements OnInit {
+export class EditInventarioComponent implements OnInit, OnDestroy {
   selectedInventario: Inventario;
   sectorList: Sector[] = [];
   inventarioDataList: InventarioData[] = [];
@@ -87,7 +88,8 @@ export class EditInventarioComponent implements OnInit {
     private router: Router,
     private productoService: ProductoService,
     private cdr: ChangeDetectorRef,
-    private transferenciaService: TransferenciaService
+    private transferenciaService: TransferenciaService,
+    private paginationStateService: PaginationStateService
   ) { }
 
   ngOnInit() {
@@ -573,8 +575,11 @@ export class EditInventarioComponent implements OnInit {
             this.selectedInventario.inventarioProductoList[
               index
             ].inventarioProductoItemList = res;
+            this.updatePaginationVisibility(invPro.inventarioProductoItemList);
           }
         });
+    } else {
+       this.updatePaginationVisibility(invPro.inventarioProductoItemList);
     }
   }
 
@@ -592,6 +597,7 @@ export class EditInventarioComponent implements OnInit {
             this.selectedInventario.inventarioProductoList[
               index
             ].inventarioProductoItemList.concat(res);
+          this.updatePaginationVisibility(this.selectedInventario.inventarioProductoList[index].inventarioProductoItemList);
         }
       });
   }
@@ -604,5 +610,15 @@ export class EditInventarioComponent implements OnInit {
     this.selectedInventario.inventarioProductoList[
       index
     ].inventarioProductoItemList.splice(length - sobra, sobra - 1);
+    this.updatePaginationVisibility(this.selectedInventario.inventarioProductoList[index].inventarioProductoItemList);
+  }
+
+  updatePaginationVisibility(itemList: any[]) {
+      this.paginationStateService.setPaginationVisible(itemList?.length > 0 && itemList.length >= 4);
+  }
+
+  ngOnDestroy(): void {
+    this.paginationStateService.setPaginationVisible(false);
   }
 }
+
