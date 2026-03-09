@@ -42,6 +42,7 @@ import { FuncionarioModule } from './pages/funcionario/funcionario.module';
 import { InventarioModule } from './pages/inventario/inventario.module';
 import { StockPorSucursalDialogComponent } from './pages/operaciones/movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component';
 import { ProductoModule } from './pages/producto/producto.module';
+import { HomeComponent } from './pages/home/home/home.component';
 import { TransferenciasModule } from './pages/transferencias/transferencias.module';
 import { MainService } from './services/main.service';
 import { NgxCurrencyModule } from 'ngx-currency';
@@ -112,7 +113,8 @@ export class HammerConfig extends HammerGestureConfig {
     AppComponent,
     LoginComponent,
     CambiarContrasenhaDialogComponent,
-    StockPorSucursalDialogComponent
+    StockPorSucursalDialogComponent,
+    HomeComponent
   ],
   imports: [
     BrowserModule,
