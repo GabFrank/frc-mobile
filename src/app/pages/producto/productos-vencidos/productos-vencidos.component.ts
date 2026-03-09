@@ -889,6 +889,10 @@ export class ProductosVencidosComponent implements OnInit {
   }
 
   onBack() {
-    this._location.back();
+    if (this.router.url.includes('/producto/productos-vencidos')) {
+      this.router.navigate(['/producto']);
+    } else {
+      this._location.back();
+    }
   }
 }
