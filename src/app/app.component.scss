@@ -56,6 +56,84 @@ ion-footer {
       top: 5px; /* Baja para no interferir con la paginación */
     }
 
+    .fab-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 10;
+      pointer-events: auto;
+    }
+
+    .fab-actions {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 11;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+
+      &.show {
+        opacity: 1;
+        pointer-events: auto;
+
+        .fab-action-item {
+          transform: translate(-30px, -70px) scale(1); /* Posicionado arriba a la izquierda */
+          opacity: 1;
+        }
+      }
+
+      .fab-action-item {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        transform: translate(0, 0) scale(0);
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+
+        .fab-action-button {
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          background: #1a1a1a;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+          border: 2px solid rgba(255,255,255,0.1);
+
+          ion-icon {
+            font-size: 26px;
+            color: #ffffff;
+            margin: 0;
+          }
+        }
+
+        .fab-action-label {
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 500;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+        }
+        
+        &:active .fab-action-button {
+          transform: scale(0.95);
+          background: #333;
+        }
+      }
+    }
+
     .fab-circle {
       pointer-events: auto;
       width: 64px;
@@ -68,11 +146,19 @@ ion-footer {
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
       border: 3px solid #1a1a1a; /* Borde oscuro para que se integre con la barra */
       transition: all 0.2s ease-in-out;
+      z-index: 12;
 
       ion-icon {
         color: #ffffff;
         font-size: 34px;
         margin: 0;
+        transition: transform 0.3s ease;
+      }
+
+      &.open {
+        ion-icon {
+          transform: rotate(45deg);
+        }
       }
 
       &:active {
