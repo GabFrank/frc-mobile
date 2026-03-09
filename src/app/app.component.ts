@@ -25,7 +25,7 @@ import { PaginationStateService } from './services/pagination-state.service';
 import { descodificarQr } from './generic/utils/qrUtils';
 import { stringToInteger } from './generic/utils/numbersUtils';
 import { VentaCreditoService } from './graphql/financiero/venta-credito/venta-credito.service';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { BarcodeScannerService } from './services/barcode-scanner.service';
 
 export class Pageable {
   getPageNumber: number;
@@ -86,7 +86,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private fingerprintService: FingerprintAuthService,
     private pushNotificacionService: PushNotificationsService,
     private paginationStateService: PaginationStateService,
-    private barcodeScanner: BarcodeScanner,
+    private barcodeScannerService: BarcodeScannerService,
     private ventaCreditoService: VentaCreditoService
   ) {
     this.isDev = isDevMode();
@@ -244,10 +244,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   openPagarScanner() {
     this.toggleFabMenu();
-    if (this.platfform.is("mobileweb")) {
-    } else if (this.platfform.is("android") || this.platfform.is("iphone")) {
-      this.barcodeScanner.scan().then(async res => {
-        let data = descodificarQr(res['text']);
+    this.barcodeScannerService.scan().subscribe(async res => {
+      if (!res.cancelled && res.text) {
+        let data = descodificarQr(res.text);
         let idCliente = data.idOrigen
         let timestamp = stringToInteger(data.timestamp);
         let sucursalId = data.sucursalId;
@@ -261,9 +260,7 @@ export class AppComponent implements OnInit, OnDestroy {
             this.notificacionService.warn('Error al confirmar');
           }
         })
-      }).catch(err => {
-        console.error('Error scanning code', err);
-      });
-    }
+      }
+    });
   }
 }

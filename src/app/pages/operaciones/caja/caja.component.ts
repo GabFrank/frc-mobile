@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { UntilDestroy } from '@ngneat/until-destroy';
 
 @UntilDestroy({ checkProperties: true })
@@ -7,7 +6,7 @@ import { UntilDestroy } from '@ngneat/until-destroy';
   selector: 'app-caja',
   templateUrl: './caja.component.html',
   styleUrls: ['./caja.component.scss'],
-  providers: [BarcodeScanner]
+  providers: []
 })
 export class CajaComponent implements OnInit {
 
@@ -176,25 +175,8 @@ export class CajaComponent implements OnInit {
   //   })
   // }
 
-  // async verificarMaletin(maletin: Maletin) {
-  //   (await this.maletinService
-  //     .onGetPorDescripcion(maletin.descripcion, this.cajaService.selectedCaja.sucursal.id)).pipe(untilDestroyed(this))
-  //     .subscribe((res) => {
-  //       if (res != null) {
-  //         let maletinEncontrado: Maletin = res;
-  //         if (maletinEncontrado.abierto == true) {
-  //           this.notificacionService.warn('Este maletín está siendo utilizado')
-  //           this.seleccionarMaletin(null);
-  //         } else {
-  //           this.notificacionService.success('Verificado con éxito')
-  //           this.seleccionarMaletin(maletinEncontrado);
-  //         }
-  //       } else {
-  //         this.notificacionService.danger('Maletín no encontrado')
-  //         this.seleccionarMaletin(null);
-  //       }
-  //     });
-  // }":true,"valor":1,"moneda":{"id":"2","denominacion":"REAL","__typename":"Moneda"},"__typename":"MonedaBilletes"}},{"cantidad":1,"monedaBilletes":{"id":"16","flotante":true,"papel":true,"activo":true,"valor":10,"moneda":{"id":"2","denominacion":"REAL","__typename":"Moneda"},"__typename":"MonedaBilletes"}},{"cantidad":1,"monedaBilletes":{"id":"24","flotante":true,"papel":true,"activo":true,"valor":20,"moneda":{"id":"3","denominacion":"DOLAR","__typename":"Moneda"},"__typename":"MonedaBilletes"}},{"cantidad":1,"monedaBilletes":{"id":"25","flotante":true,"papel":true,"activo":true,"valor":50,"moneda":{"id":"3","denominacion":"DOLAR","__typename":"Moneda"},"__typename":"MonedaBilletes"}},{"cantidad":1,"monedaBilletes":{"id":"26","flotante":true,"papel":true,"activo":true,"valor":100,"moneda":{"id":"3","denominacion":"DOLAR","__typename":"Moneda"},"__typename":"MonedaBilletes"}}]}-undefined
-
+  //       });
+  //   });
+  // }
 }
 
