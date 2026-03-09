@@ -6,7 +6,7 @@ import { Inventario, InventarioEstado, TipoInventario } from './../inventario.mo
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { descodificarQr, QrData } from './../../../generic/utils/qrUtils';
 import { ModalService } from './../../../services/modal.service';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
 import { InventarioService } from './../inventario.service';
 import { Component, Input, OnInit } from '@angular/core';
 import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
@@ -19,9 +19,7 @@ import { Platform } from '@ionic/angular';
   selector: 'app-nuevo-inventario',
   templateUrl: './nuevo-inventario.component.html',
   styleUrls: ['./nuevo-inventario.component.scss'],
-  providers: [
-    BarcodeScanner
-  ]
+  providers: []
 })
 export class NuevoInventarioComponent implements OnInit {
 
@@ -34,7 +32,7 @@ export class NuevoInventarioComponent implements OnInit {
 
   constructor(
     private inventarioService: InventarioService,
-    private barcodeScanner: BarcodeScanner,
+    private barcodeScannerService: BarcodeScannerService,
     private modalService: ModalService,
     private notificacionService: NotificacionService,
     private router: Router,
@@ -74,20 +72,16 @@ export class NuevoInventarioComponent implements OnInit {
     if (this.data != null) {
       this.cargarDatos(this.data.data.data?.id)
     } else {
-      this.barcodeScanner.scan().then(async barcodeData => {
-        if (barcodeData.text != null) {
+      this.barcodeScannerService.scan().subscribe(async barcodeData => {
+        if (!barcodeData.cancelled && barcodeData.text != null) {
           let qrData: QrData;
           qrData = descodificarQr(barcodeData.text)
           if (qrData.tipoEntidad == TipoEntidad.SUCURSAL && qrData.sucursalId != null) {
             this.cargarDatos(qrData.sucursalId)
           }
-
-        } else {
-
         }
       });
     }
-
   }
 
   onBack() {

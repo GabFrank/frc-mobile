@@ -2,7 +2,7 @@ import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
 import { Platform } from '@ionic/angular';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { PageInfo } from 'src/app/app.component';
@@ -45,7 +45,7 @@ import { getEnumValueByValue } from 'src/app/generic/utils/enumUtils';
   selector: 'app-info-transferencia',
   templateUrl: './info-transferencia.component.html',
   styleUrls: ['./info-transferencia.component.scss'],
-  providers: [BarcodeScanner]
+  providers: []
 })
 export class InfoTransferenciaComponent implements OnInit {
   selectedTransferencia: Transferencia;
@@ -86,7 +86,7 @@ export class InfoTransferenciaComponent implements OnInit {
     private mainService: MainService,
     private menuActionService: MenuActionService,
     private popoverService: PopOverService,
-    private barcodeScanner: BarcodeScanner,
+    private barcodeScannerService: BarcodeScannerService,
     private cargandoService: CargandoService,
     private plf: Platform,
     private notificacionService: NotificacionService,
@@ -665,38 +665,37 @@ export class InfoTransferenciaComponent implements OnInit {
     setTimeout(() => {
       this.cargandoService.close(loading);
     }, 1000);
-    return this.barcodeScanner
-      .scan()
-      .then(async (barcodeData) => {
-        this.notificacionService.open(
-          'Escaneado con éxito!',
-          TipoNotificacion.SUCCESS,
-          1
-        );
-        let codigo: string = barcodeData.text;
-        let arr = codigo.split('-');
-        let prefix = arr[2];
-        let sucId: number = +arr[1];
-        if (prefix == TipoEntidad.SUCURSAL && sucId != null) {
-          if (this.selectedTransferencia?.sucursalDestino?.id == sucId) {
-            return true;
+    return new Promise((resolve) => {
+      this.barcodeScannerService.scan().subscribe((barcodeData) => {
+        if (!barcodeData.cancelled && barcodeData.text) {
+          this.notificacionService.open(
+            'Escaneado con éxito!',
+            TipoNotificacion.SUCCESS,
+            1
+          );
+          let codigo: string = barcodeData.text;
+          let arr = codigo.split('-');
+          let prefix = arr[2];
+          let sucId: number = +arr[1];
+          if (prefix == TipoEntidad.SUCURSAL && sucId != null) {
+            if (this.selectedTransferencia?.sucursalDestino?.id == sucId) {
+              resolve(true);
+              return;
+            }
+          } else {
+            this.notificacionService.openItemNoEncontrado();
           }
-        } else {
-          this.notificacionService.openItemNoEncontrado();
-          return false || this.mainService.isDev;
         }
-      })
-      .catch((err) => {
-        this.notificacionService.openAlgoSalioMal();
-        return false || this.mainService.isDev;
+        resolve(false || this.mainService.isDev);
       });
+    });
   }
 
   onVerificarProducto(item: TransferenciaItem) {
     let producto = item?.presentacionPreTransferencia?.producto;
     if (producto?.id != null) {
-      this.barcodeScanner.scan().then(async (res) => {
-        if (res.text != null) {
+      this.barcodeScannerService.scan().subscribe(async (res) => {
+        if (!res.cancelled && res.text != null) {
           (await this.codigoService.onGetCodigoPorCodigo(res.text)).subscribe(
             (codigoRes) => {
               if (codigoRes.length > 0) {
@@ -714,7 +713,7 @@ export class InfoTransferenciaComponent implements OnInit {
               }
             }
           );
-        } else {
+        } else if (!res.cancelled) {
           this.notificacionService.danger('Error en leer código');
         }
       });

@@ -46,9 +46,6 @@ import { HomeComponent } from './pages/home/home/home.component';
 import { TransferenciasModule } from './pages/transferencias/transferencias.module';
 import { MainService } from './services/main.service';
 import { NgxCurrencyModule } from 'ngx-currency';
-import { MarcacionModule } from './pages/marcacion/marcacion.module';
-import { EnumToStringPipe } from './generic/utils/pipes/enum-to-string';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { BarcodeScannerService } from './services/barcode-scanner.service';
 
 registerLocaleData(localePY);
@@ -77,7 +74,7 @@ const wUri = `ws://${localStorage.getItem('serverIp')}:${localStorage.getItem(
   'serverPort'
 )}/subscriptions`;
 
-const errorLink = onError(({ graphQLErrors, networkError }) => {});
+const errorLink = onError(({ graphQLErrors, networkError }) => { });
 
 const wsClient = new SubscriptionClient(wUri, {
   reconnect: true
@@ -133,10 +130,9 @@ export class HammerConfig extends HammerGestureConfig {
     NgxQRCodeModule,
     HttpClientModule,
     CommonModule
-    ],
+  ],
   exports: [],
   providers: [
-    BarcodeScanner,
     FingerprintAIO,
     {
       provide: HAMMER_GESTURE_CONFIG,
@@ -207,12 +203,11 @@ export class HammerConfig extends HammerGestureConfig {
         multi: true
       }
     ],
-    BarcodeScanner,
     BarcodeScannerService
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule { }
 
 export function appInit(appConfigService: MainService) {
   return () => appConfigService.load();
