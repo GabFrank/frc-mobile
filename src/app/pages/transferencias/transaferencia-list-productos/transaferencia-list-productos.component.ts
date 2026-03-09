@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { untilDestroyed } from '@ngneat/until-destroy';
@@ -18,6 +18,7 @@ import { ProductoService } from '../../producto/producto.service';
 import { MainService } from 'src/app/services/main.service';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 import { TransferenciaItemInput } from '../transferencia.model';
+import { PaginationStateService } from 'src/app/services/pagination-state.service';
 
 @UntilDestroy()
 @Component({
@@ -26,7 +27,7 @@ import { TransferenciaItemInput } from '../transferencia.model';
   styleUrls: ['./transaferencia-list-productos.component.scss'],
   providers: [PhotoViewer]
 })
-export class TransaferenciaListProductosComponent implements OnInit, AfterViewInit {
+export class TransaferenciaListProductosComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('content', { static: false }) content: IonContent;
   @ViewChild('buscarInput') buscarInput: any;
@@ -70,7 +71,8 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     private notificacionService: NotificacionService,
     private transferenciaService: TransferenciaService,
     private mainService: MainService,
-    private router: Router
+    private router: Router,
+    private paginationStateService: PaginationStateService
   ) {
     this.isWeb = this.platform.platforms().includes('mobileweb');
   }
@@ -95,6 +97,10 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     if (!this.isWeb) {
       this.onCameraClick();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.paginationStateService.setPaginationVisible(false);
   }
 
   private async obtenerDatosSucursales() {
@@ -238,6 +244,7 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
                   this.productosList = res || [];
                   if (this.productosList.length === 0) {
                     this.notificacionService.warn('Producto no encontrado');
+                    this.paginationStateService.setPaginationVisible(false);
                   } else {
                     this.notificacionService.open(`Encontrados ${this.productosList.length} productos`, TipoNotificacion.SUCCESS, 2);
                   }
@@ -248,6 +255,7 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
                     this.productosList = [...this.productosList, ...res];
                   }
                 }
+                this.paginationStateService.setPaginationVisible(this.showCargarMas && this.productosList.length > 0);
                 this.isSearching = false;
               },
               error: (error) => {
@@ -271,6 +279,7 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
 
   onMasProductos() {
     this.showCargarMas = false;
+    this.paginationStateService.setPaginationVisible(false);
     this.onSearchProducto(this.buscarControl.value, this.productosList?.length);
   }
 

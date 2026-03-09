@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
@@ -39,6 +39,8 @@ import {
 } from './../transferencia.model';
 import { TransferenciaService } from './../transferencia.service';
 import { getEnumValueByValue } from 'src/app/generic/utils/enumUtils';
+import { PaginationStateService } from 'src/app/services/pagination-state.service';
+
 
 @UntilDestroy()
 @Component({
@@ -47,7 +49,7 @@ import { getEnumValueByValue } from 'src/app/generic/utils/enumUtils';
   styleUrls: ['./info-transferencia.component.scss'],
   providers: []
 })
-export class InfoTransferenciaComponent implements OnInit {
+export class InfoTransferenciaComponent implements OnInit, OnDestroy {
   selectedTransferencia: Transferencia;
   selectedResponsable: Usuario;
   selectedEstado: string = null;
@@ -92,7 +94,8 @@ export class InfoTransferenciaComponent implements OnInit {
     private notificacionService: NotificacionService,
     private codigoService: CodigoService,
     private dialogoService: DialogoService,
-    private notificacionPushService: NotificacionPushService
+    private notificacionPushService: NotificacionPushService,
+    private paginationStateService: PaginationStateService
   ) {
     this.isWeb = this.plf.platforms().includes('mobileweb');
   }
@@ -145,6 +148,7 @@ export class InfoTransferenciaComponent implements OnInit {
             this.selectedTransferencia.transferenciaItemList = res.getContent;
             this.filteredTransferenciaItemList =
               this.selectedTransferencia.transferenciaItemList;
+            this.updatePaginationVisibility();
             resolve(true);
           } else {
             rejects();
@@ -167,6 +171,7 @@ export class InfoTransferenciaComponent implements OnInit {
       this.selectedTransferencia.transferenciaItemList = res.getContent;
       this.filteredTransferenciaItemList =
         this.selectedTransferencia.transferenciaItemList;
+      this.updatePaginationVisibility();
       this.onVerificarConfirmados();
     });
   }
@@ -730,6 +735,13 @@ export class InfoTransferenciaComponent implements OnInit {
     this.onFilterTransferenciaItem();
   }
 
+  updatePaginationVisibility() {
+      // Check if there are more than 4 items to show the load more/less buttons or adjust based on your logic:
+      // Note: `size` acts as pagination size.
+      let hasEnoughItemsToShowButtons = this.filteredTransferenciaItemList?.length >= 5;
+      this.paginationStateService.setPaginationVisible(hasEnoughItemsToShowButtons || this.page > 0);
+  }
+
   onShare() {
     let codigo = new QrData();
     codigo.tipoEntidad = TipoEntidad.TRANSFERENCIA;
@@ -790,4 +802,8 @@ export class InfoTransferenciaComponent implements OnInit {
   }
 
   onCameraClick() { }
+
+  ngOnDestroy(): void {
+    this.paginationStateService.setPaginationVisible(false);
+  }
 }
