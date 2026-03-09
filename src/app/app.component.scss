@@ -1,8 +1,10 @@
-.new-background-color{
+.new-background-color {
   --background: #f44336 !important;
 }
 
-.contact-popover .popover-content{ width: 320px; }
+.contact-popover .popover-content {
+  width: 320px;
+}
 
 .online {
   --background: #43a047;
@@ -27,4 +29,46 @@ ion-menu {
 
 ion-accordion {
   background-color: rgb(30, 30, 30);
+}
+
+ion-footer {
+  ion-toolbar {
+    --padding-top: 0;
+    --padding-bottom: 0;
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+
+  ion-tab-bar {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    --background: #1a1a1a;
+    height: 56px;
+    padding-bottom: 0;
+    --padding-bottom: 0;
+
+    ion-tab-button {
+      --color: rgba(255, 255, 255, 0.7);
+      --color-selected: #ffffff;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      margin: 0;
+
+      ion-icon {
+        font-size: 32px;
+        margin: 0;
+      }
+
+      &.active-link {
+        --color: #ffffff;
+
+        ion-icon {
+          transform: translateY(-2px);
+          transition: transform 0.2s ease;
+        }
+      }
+    }
+  }
 }
