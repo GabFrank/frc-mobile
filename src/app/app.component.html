@@ -172,11 +172,25 @@
         <div class="fab-overlay" *ngIf="fabMenuOpen" (click)="toggleFabMenu()"></div>
         
         <div class="fab-actions" [class.show]="fabMenuOpen">
-          <div class="fab-action-item" (click)="openPagarScanner()">
+          <div class="fab-action-item action-pagar" (click)="openPagarScanner()">
             <div class="fab-action-button">
               <ion-icon name="qr-code-outline"></ion-icon>
             </div>
             <span class="fab-action-label">Pagar</span>
+          </div>
+          
+          <div class="fab-action-item action-transferencia" *ngIf="loginService.usuarioActual?.roles?.includes('VER TRANSFERENCIA')" [routerLink]="['/transferencias']" (click)="toggleFabMenu()">
+            <div class="fab-action-button">
+              <ion-icon name="git-compare-outline"></ion-icon>
+            </div>
+            <span class="fab-action-label">Transf.</span>
+          </div>
+
+          <div class="fab-action-item action-marcar" [routerLink]="['/marcacion']" (click)="toggleFabMenu()">
+            <div class="fab-action-button">
+              <ion-icon name="time-outline"></ion-icon>
+            </div>
+            <span class="fab-action-label">Marcar</span>
           </div>
         </div>
 
