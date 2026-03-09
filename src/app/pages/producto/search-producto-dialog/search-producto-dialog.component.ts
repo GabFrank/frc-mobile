@@ -1,4 +1,4 @@
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
 import { Presentacion } from 'src/app/domains/productos/presentacion.model';
 import { DialogoService } from 'src/app/services/dialogo.service';
@@ -77,8 +77,8 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit, OnD
     private photoViewer: PhotoViewer,
     private notificacionService: NotificacionService,
     private inventarioService: InventarioService,
-    private paginationStateService: PaginationStateService
-
+    private paginationStateService: PaginationStateService,
+    private router: Router
   ) {
     this.isWeb = plf.platforms().includes('mobileweb');
   }
@@ -361,10 +361,10 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit, OnD
   }
 
   onBack() {
-    if (this.modalService?.currentModal != null) {
-      this.modalService.closeModal(null)
+    if (this.router.url.includes('/producto/buscar')) {
+      this.router.navigate(['/producto'])
     } else {
-      this._location.back()
+      this.modalService.closeModal(null)
     }
   }
 
