@@ -1,0 +1,68 @@
+<div class="home-container">
+    <div class="header-greeting" style="min-height: 56px;">
+    </div>
+
+    <ion-card class="credit-card">
+        <ion-card-header>
+            <ion-card-subtitle>Crédito Disponible</ion-card-subtitle>
+            <ion-card-title>Gs. 1.500.000</ion-card-title>
+        </ion-card-header>
+
+        <ion-card-content>
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: 25%;"></div>
+            </div>
+            <div class="credit-details">
+                <div class="detail-item">
+                    <span class="dot spent"></span>
+                    <div class="info">
+                        <span class="label">Gastado</span>
+                        <span class="amount">Gs. 500.000</span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <span class="dot limit"></span>
+                    <div class="info">
+                        <span class="label">Límite Total</span>
+                        <span class="amount">Gs. 2.000.000</span>
+                    </div>
+                </div>
+            </div>
+        </ion-card-content>
+    </ion-card>
+
+    <div class="section-header">
+        <h2 class="section-title">Accesos Rápidos</h2>
+    </div>
+
+    <div class="quick-actions-grid">
+
+        <div class="action-card" [routerLink]="['/producto/buscar', 'false']">
+            <div class="icon-wrapper default-red">
+                <ion-icon name="barcode-outline"></ion-icon>
+            </div>
+            <span>Ver<br>Producto</span>
+        </div>
+
+        <div class="action-card" [routerLink]="['/producto/consultar-precio']">
+            <div class="icon-wrapper warn-yellow">
+                <ion-icon name="pricetag-outline"></ion-icon>
+            </div>
+            <span>Consultar<br>Precio</span>
+        </div>
+
+        <div class="action-card" [routerLink]="['/inventario/control-inventario']">
+            <div class="icon-wrapper info-blue">
+                <ion-icon name="clipboard-outline"></ion-icon>
+            </div>
+            <span>Control<br>Inventario</span>
+        </div>
+        <div class="action-card" [routerLink]="['/producto/productos-vencidos']">
+            <div class="icon-wrapper danger-orange">
+                <ion-icon name="alert-circle-outline"></ion-icon>
+            </div>
+            <span>Productos<br>Vencidos</span>
+        </div>
+
+    </div>
+</div>
