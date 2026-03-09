@@ -50,6 +50,11 @@ ion-footer {
     z-index: 100;
     pointer-events: none;
     top: -32px; /* Sube exactamente la mitad del círculo (64px / 2) */
+    transition: top 0.3s ease;
+
+    &.with-pagination {
+      top: 5px; /* Baja para no interferir con la paginación */
+    }
 
     .fab-circle {
       pointer-events: auto;
