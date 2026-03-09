@@ -168,7 +168,7 @@
     </ion-content>
 
     <ion-footer *ngIf="loginService?.usuarioActual?.id !== null">
-      <div class="fab-main-container">
+      <div class="fab-main-container" [class.with-pagination]="hasPagination">
         <div class="fab-circle">
           <ion-icon name="add"></ion-icon>
         </div>

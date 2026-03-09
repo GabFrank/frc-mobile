@@ -21,6 +21,7 @@ import {
   performImmediateUpdate
 } from './services/update-service.service';
 import { PushNotificationsService } from './services/push-notifications.service';
+import { PaginationStateService } from './services/pagination-state.service';
 
 export class Pageable {
   getPageNumber: number;
@@ -59,6 +60,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   isDev = false;
 
+  hasPagination = false;
+
   loadingOpen = false; // track loading dialog state
   dialog: any;
   intervalID;
@@ -75,7 +78,8 @@ export class AppComponent implements OnInit, OnDestroy {
     public appVersion: AppVersion,
     private platfform: Platform,
     private fingerprintService: FingerprintAuthService,
-    private pushNotificacionService: PushNotificationsService
+    private pushNotificacionService: PushNotificationsService,
+    private paginationStateService: PaginationStateService
   ) {
     this.isDev = isDevMode();
 
@@ -119,6 +123,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.pushNotificacionService.initPush();
+
+    this.paginationStateService.hasPagination$
+      .pipe(untilDestroyed(this))
+      .subscribe(val => this.hasPagination = val);
 
     this.showLoginPop();
 
