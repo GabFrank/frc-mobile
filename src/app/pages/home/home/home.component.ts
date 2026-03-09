@@ -6,6 +6,7 @@ import { EstadoVentaCredito } from 'src/app/domains/venta-credito/venta-credito.
 import { VentaCreditoService } from 'src/app/graphql/financiero/venta-credito/venta-credito.service';
 import { ClienteService } from 'src/app/graphql/personas/cliente/graphql/cliente.service';
 import { MainService } from 'src/app/services/main.service';
+import { LoginService } from 'src/app/services/login.service';
 
 @Component({
   selector: 'app-home',
@@ -23,7 +24,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private mainService: MainService,
     private clienteService: ClienteService,
     private ventaCreditoService: VentaCreditoService,
-    private router: Router
+    private router: Router,
+    public loginService: LoginService
   ) { }
 
   private intervalId: any;

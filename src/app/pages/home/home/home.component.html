@@ -51,7 +51,7 @@
             <span>Consultar<br>Precio</span>
         </div>
 
-        <div class="action-card" [routerLink]="['/inventario/control-inventario']">
+        <div class="action-card" *ngIf="loginService.usuarioActual?.roles?.includes('VER INVENTARIO')" [routerLink]="['/inventario/control-inventario']">
             <div class="icon-wrapper info-blue">
                 <ion-icon name="clipboard-outline"></ion-icon>
             </div>
