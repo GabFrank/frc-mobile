@@ -22,7 +22,10 @@ import {
 } from './services/update-service.service';
 import { PushNotificationsService } from './services/push-notifications.service';
 import { PaginationStateService } from './services/pagination-state.service';
-import { QrScannerDialogComponent } from './components/qr-scanner-dialog/qr-scanner-dialog.component';
+import { descodificarQr } from './generic/utils/qrUtils';
+import { stringToInteger } from './generic/utils/numbersUtils';
+import { VentaCreditoService } from './graphql/financiero/venta-credito/venta-credito.service';
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 
 export class Pageable {
   getPageNumber: number;
@@ -82,7 +85,9 @@ export class AppComponent implements OnInit, OnDestroy {
     private platfform: Platform,
     private fingerprintService: FingerprintAuthService,
     private pushNotificacionService: PushNotificationsService,
-    private paginationStateService: PaginationStateService
+    private paginationStateService: PaginationStateService,
+    private barcodeScanner: BarcodeScanner,
+    private ventaCreditoService: VentaCreditoService
   ) {
     this.isDev = isDevMode();
 
@@ -239,11 +244,26 @@ export class AppComponent implements OnInit, OnDestroy {
 
   openPagarScanner() {
     this.toggleFabMenu();
-    this.modalService.openModal(QrScannerDialogComponent).then((res) => {
-      if (res) {
-        console.log('Pago de convenio QR code:', res);
-        this.notificacionService.success('Código escaneado: ' + res);
-      }
-    });
+    if (this.platfform.is("mobileweb")) {
+    } else if (this.platfform.is("android") || this.platfform.is("iphone")) {
+      this.barcodeScanner.scan().then(async res => {
+        let data = descodificarQr(res['text']);
+        let idCliente = data.idOrigen
+        let timestamp = stringToInteger(data.timestamp);
+        let sucursalId = data.sucursalId;
+        let secretKey = data.data;
+        (await this.ventaCreditoService.onVentaCreditoQrAuth(this.mainService.usuarioActual?.persona?.id, timestamp, sucursalId, secretKey)).subscribe({
+          next: () => {
+            this.notificacionService.success('Convenio confirmado con éxito');
+          },
+          error: (err) => {
+            console.error(err);
+            this.notificacionService.warn('Error al confirmar');
+          }
+        })
+      }).catch(err => {
+        console.error('Error scanning code', err);
+      });
+    }
   }
 }
