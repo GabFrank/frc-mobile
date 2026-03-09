@@ -22,6 +22,7 @@ import {
 } from './services/update-service.service';
 import { PushNotificationsService } from './services/push-notifications.service';
 import { PaginationStateService } from './services/pagination-state.service';
+import { QrScannerDialogComponent } from './components/qr-scanner-dialog/qr-scanner-dialog.component';
 
 export class Pageable {
   getPageNumber: number;
@@ -61,6 +62,8 @@ export class AppComponent implements OnInit, OnDestroy {
   isDev = false;
 
   hasPagination = false;
+
+  fabMenuOpen = false;
 
   loadingOpen = false; // track loading dialog state
   dialog: any;
@@ -226,6 +229,20 @@ export class AppComponent implements OnInit, OnDestroy {
     this.modalService.openModal(ChangeServerIpDialogComponent).then((res) => {
       if (res == true) {
         window.location.reload();
+      }
+    });
+  }
+
+  toggleFabMenu() {
+    this.fabMenuOpen = !this.fabMenuOpen;
+  }
+
+  openPagarScanner() {
+    this.toggleFabMenu();
+    this.modalService.openModal(QrScannerDialogComponent).then((res) => {
+      if (res) {
+        console.log('Pago de convenio QR code:', res);
+        this.notificacionService.success('Código escaneado: ' + res);
       }
     });
   }

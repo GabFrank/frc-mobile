@@ -169,8 +169,19 @@
 
     <ion-footer *ngIf="loginService?.usuarioActual?.id !== null">
       <div class="fab-main-container" [class.with-pagination]="hasPagination">
-        <div class="fab-circle">
-          <ion-icon name="add"></ion-icon>
+        <div class="fab-overlay" *ngIf="fabMenuOpen" (click)="toggleFabMenu()"></div>
+        
+        <div class="fab-actions" [class.show]="fabMenuOpen">
+          <div class="fab-action-item" (click)="openPagarScanner()">
+            <div class="fab-action-button">
+              <ion-icon name="qr-code-outline"></ion-icon>
+            </div>
+            <span class="fab-action-label">Pagar</span>
+          </div>
+        </div>
+
+        <div class="fab-circle" (click)="toggleFabMenu()" [class.open]="fabMenuOpen">
+          <ion-icon name="add" [class.rotate]="fabMenuOpen"></ion-icon>
         </div>
       </div>
 
