@@ -86,8 +86,19 @@ ion-footer {
         pointer-events: auto;
 
         .fab-action-item {
-          transform: translate(-30px, -70px) scale(1); /* Posicionado arriba a la izquierda */
           opacity: 1;
+          
+          &.action-pagar {
+            transform: translate(-70px, -45px) scale(1); /* Posicionado a la izquierda */
+          }
+
+          &.action-transferencia {
+            transform: translate(0px, -85px) scale(1); /* Posicionado al centro arriba */
+          }
+
+          &.action-marcar {
+            transform: translate(70px, -45px) scale(1); /* Posicionado a la derecha */
+          }
         }
       }
 
@@ -101,6 +112,7 @@ ion-footer {
         opacity: 0;
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         cursor: pointer;
+        text-decoration: none; /* In case it's used as a link */
 
         .fab-action-button {
           width: 50px;
