@@ -1,5 +1,4 @@
 import { PreRegistroFuncionarioComponent } from './../../pages/funcionario/pre-registro-funcionario/pre-registro-funcionario.component';
-import { PreRegistroFuncionario } from './../../pages/funcionario/funcionario.model';
 import { ModalService } from './../../services/modal.service';
 import { Router } from '@angular/router';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
@@ -11,6 +10,7 @@ import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { LoginService } from 'src/app/services/login.service';
 import { ChangeServerIpDialogComponent } from 'src/app/components/change-server-ip-dialog/change-server-ip-dialog.component';
+import { NativeBiometric } from '@capgo/capacitor-native-biometric';
 
 @UntilDestroy()
 @Component({
@@ -31,6 +31,7 @@ export class LoginComponent implements OnInit {
   subscription;
   error = null;
   activateDev = 0;
+  isBiometricAvailable = false;
 
   constructor(private loginService: LoginService,
     private popoverController: PopoverController,
@@ -43,18 +44,63 @@ export class LoginComponent implements OnInit {
   ) { }
 
   async ngOnInit() {
+    NativeBiometric.isAvailable().then(res => {
+      this.isBiometricAvailable = res.isAvailable;
+    }).catch(() => {
+      this.isBiometricAvailable = false;
+    });
+
     this.formGroup = new UntypedFormGroup({
       'usuario': this.usuarioControl,
       'password': this.passwordControl
     })
 
-    this.loginService.isAuthenticated()
-      .pipe(untilDestroyed(this))
-      .subscribe(async res => {
-        if (res != null) {
-          this.onSelectUsuarioAndDismiss(res)
+    const justLoggedOut = sessionStorage.getItem('justLoggedOut');
+    if (justLoggedOut) {
+      sessionStorage.removeItem('justLoggedOut');
+    } else {
+      this.performBiometricLogin();
+    }
+  }
+
+  async performBiometricLogin() {
+    try {
+      const isAvailable = await NativeBiometric.isAvailable();
+      if (isAvailable.isAvailable) {
+        const credentials = await NativeBiometric.getCredentials({ server: 'franco-system' });
+        if (credentials && credentials.username && credentials.password) {
+          await NativeBiometric.verifyIdentity({
+            reason: 'Inicia sesión con tu huella',
+            title: 'Inicio de sesión biométrico',
+            subtitle: 'Autenticación requerida',
+            description: 'Usa tu biometría para ingresar a la aplicación',
+          });
+
+          const storedToken = credentials.password;
+          const storedUsuarioId = credentials.username;
+
+          if (!isNaN(+storedUsuarioId)) {
+            localStorage.setItem('token', storedToken);
+            localStorage.setItem('usuarioId', storedUsuarioId);
+            this.loginService.isAuthenticated()
+              .pipe(untilDestroyed(this))
+              .subscribe(res => {
+                if (res) {
+                  this.onSelectUsuarioAndDismiss(res);
+                } else {
+                  this.error = "Token biométrico expirado o no válido.";
+                  this.notificacionService.open(this.error, TipoNotificacion.DANGER, 5);
+                }
+              });
+          } else {
+            this.error = "Sesión biométrica antigua. Inicia manualmente.";
+            this.notificacionService.open(this.error, TipoNotificacion.DANGER, 5);
+          }
         }
-      })
+      }
+    } catch (error) {
+      console.log('Biometric login not possible or cancelled:', error);
+    }
   }
 
   async onLogin() {
@@ -67,6 +113,12 @@ export class LoginComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         if (res.error == null) {
+          NativeBiometric.setCredentials({
+            username: res.usuario.id.toString(),
+            password: localStorage.getItem('token'),
+            server: 'franco-system'
+          }).catch(err => console.log('Error saving credentials:', err));
+
           this.onSelectUsuarioAndDismiss(res.usuario)
         } else {
           this.error = res.error['message'];
