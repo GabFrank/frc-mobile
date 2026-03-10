@@ -73,7 +73,6 @@ export class LoginComponent implements OnInit {
             reason: 'Inicia sesión con tu huella',
             title: 'Inicio de sesión biométrico',
             subtitle: 'Autenticación requerida',
-            description: 'Usa tu biometría para ingresar a la aplicación',
           });
 
           const storedToken = credentials.password;
@@ -98,8 +97,15 @@ export class LoginComponent implements OnInit {
           }
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log('Biometric login not possible or cancelled:', error);
+      const errStr = (JSON.stringify(error) + (error.message || '')).toLowerCase();
+      // Si el sensor se bloquea por muchos intentos (iOS/Android)
+      if (errStr.includes('too many') || errStr.includes('lockout') || errStr.includes('intentos') || errStr.includes('bloquea')) {
+        this.isBiometricAvailable = false;
+        this.error = "Sensor bloqueado por múltiples intentos fallidos.";
+        this.notificacionService.open(this.error, TipoNotificacion.DANGER, 5);
+      }
     }
   }
 
