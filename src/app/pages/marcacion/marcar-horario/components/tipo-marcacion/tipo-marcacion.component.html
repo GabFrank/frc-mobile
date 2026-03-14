@@ -7,7 +7,7 @@
   </div>
 
   <div *ngIf="!isLoading" class="cards-container">
-    <ion-card class="marking-card" [class.disabled]="entradaDisabled"
+    <ion-card class="marking-card card-entrada" [class.disabled]="entradaDisabled"
       (click)="!entradaDisabled && onLocalizacion('ENTRADA')">
       <div class="card-content">
         <div class="icon-section bg-success">
@@ -26,7 +26,7 @@
       </div>
     </ion-card>
 
-    <ion-card class="marking-card" [class.disabled]="salidaAlmuerzoDisabled"
+    <ion-card class="marking-card card-salida" [class.disabled]="salidaAlmuerzoDisabled"
       (click)="!salidaAlmuerzoDisabled && onLocalizacion('SALIDA', true)">
       <div class="card-content">
         <div class="icon-section bg-warning">
@@ -45,7 +45,7 @@
       </div>
     </ion-card>
 
-    <ion-card class="marking-card" [class.disabled]="entradaAlmuerzoDisabled"
+    <ion-card class="marking-card card-entrada" [class.disabled]="entradaAlmuerzoDisabled"
       (click)="!entradaAlmuerzoDisabled && onLocalizacion('ENTRADA')">
       <div class="card-content">
         <div class="icon-section bg-info">
@@ -64,7 +64,7 @@
       </div>
     </ion-card>
 
-    <ion-card class="marking-card" [class.disabled]="salidaDisabled"
+    <ion-card class="marking-card card-salida" [class.disabled]="salidaDisabled"
       (click)="!salidaDisabled && onLocalizacion('SALIDA')">
       <div class="card-content">
         <div class="icon-section bg-danger">

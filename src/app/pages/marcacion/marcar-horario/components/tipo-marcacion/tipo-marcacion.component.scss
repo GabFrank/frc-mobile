@@ -8,48 +8,96 @@
 .marking-card {
     margin: 0;
     border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    background: var(--ion-color-light);
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--ion-card-background, #1e1e1e);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    position: relative;
 
     &:active {
-        transform: scale(0.98);
+        transform: scale(0.96);
     }
 
     &.disabled {
-        opacity: 0.8;
-        background: #f8f9fa;
+        opacity: 0.6;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1);
         pointer-events: none;
         
         .icon-section {
-            filter: grayscale(0.5);
-            opacity: 0.7;
+            filter: grayscale(1);
+            opacity: 0.4;
+            background: #444 !important;
         }
+
+        h3 { color: #8a8a8a !important; }
+        p { color: #707070 !important; }
+
+        .check-section {
+            color: #707070 !important;
+        }
+
+        .status-recorded {
+            color: #707070 !important;
+        }
+    }
+
+    // Active Entrance Style (Classic Green)
+    &.card-entrada:not(.disabled) {
+        background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+        border: none;
+
+        .icon-section {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        h3 { color: white !important; font-weight: 700; }
+        p { color: rgba(255, 255, 255, 0.9) !important; }
+        .status-pending { font-weight: 600; font-style: normal; }
+    }
+
+    // Active Exit Style (Classic Red)
+    &.card-salida:not(.disabled) {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+        border: none;
+
+        .icon-section {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        h3 { color: white !important; font-weight: 700; }
+        p { color: rgba(255, 255, 255, 0.9) !important; }
+        .status-pending { font-weight: 600; font-style: normal; }
     }
 
     .card-content {
         display: flex;
         align-items: center;
-        padding: 16px;
+        padding: 18px;
         gap: 16px;
     }
 
     .icon-section {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
+        font-size: 1.6rem;
         color: white;
         flex-shrink: 0;
+        transition: all 0.3s ease;
 
         &.bg-success { background: linear-gradient(135deg, #28a745, #20c997); }
-        &.bg-warning { background: linear-gradient(135deg, #ffc107, #fd7e14); }
-        &.bg-info    { background: linear-gradient(135deg, #17a2b8, #007bff); }
-        &.bg-danger  { background: linear-gradient(135deg, #dc3545, #f86c6b); }
+        &.bg-warning { background: linear-gradient(135deg, #fd7e14, #f39c12); }
+        &.bg-info    { background: linear-gradient(135deg, #3498db, #2980b9); }
+        &.bg-danger  { background: linear-gradient(135deg, #e74c3c, #c0392b); }
     }
 
     .info-section {
@@ -57,30 +105,32 @@
 
         h3 {
             margin: 0;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             font-weight: 600;
-            color: #2d3436;
+            color: var(--ion-text-color, #ffffff);
+            transition: color 0.3s ease;
         }
 
         p {
             margin: 4px 0 0 0;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             
             &.status-recorded {
-                color: var(--ion-color-success);
+                color: #2fdf75;
                 font-weight: 500;
             }
 
             &.status-pending {
-                color: #636e72;
+                color: #a0a0a0;
                 font-style: italic;
             }
         }
     }
 
     .check-section {
-        font-size: 1.4rem;
+        font-size: 1.6rem;
         display: flex;
         align-items: center;
+        color: #2dd36f;
     }
 }
