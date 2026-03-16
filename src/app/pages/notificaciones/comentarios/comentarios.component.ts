@@ -7,6 +7,7 @@ import { BehaviorSubject, Observable, combineLatest, merge, Subject, timer } fro
 import { map, switchMap, debounceTime, startWith, takeUntil, shareReplay } from 'rxjs/operators';
 import { Usuario } from '../models/usuario.model';
 import { NotificacionComentario } from '../models/notificacion-comentario.model';
+import { UsuarioService } from '../../../services/usuario.service';
 import { FormControl } from '@angular/forms';
 
 interface ComentarioProcesado extends NotificacionComentario {
@@ -34,6 +35,7 @@ export class ComentariosComponent implements OnInit, OnDestroy {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly mediaUploadService = inject(MediaUploadService);
   private readonly audioRecordingService = inject(AudioRecordingService);
+  private readonly usuarioService = inject(UsuarioService);
 
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
   @ViewChild('cameraInput') cameraInput?: ElementRef<HTMLInputElement>;
@@ -61,6 +63,7 @@ export class ComentariosComponent implements OnInit, OnDestroy {
   private readonly comentarioParaResponder$ = new BehaviorSubject<ComentarioProcesado | null>(null);
   public respuestaActiva$ = this.comentarioParaResponder$.asObservable();
   private idComentarioScrolleado: string | null = null;
+  private avatarCache = new Map<number, string>();
 
   ngOnInit() {
     this.notificacionId$ = this.ruta.paramMap.pipe(
@@ -69,7 +72,13 @@ export class ComentariosComponent implements OnInit, OnDestroy {
 
     this.usuariosConAcceso$ = this.notificacionId$.pipe(
       switchMap(id => this.notificacionService.usuariosConAcceso(id)),
-      map(usuarios => usuarios.map(u => ({ ...u, avatarUrl: this.obtenerAvatar(u) }))),
+      switchMap(async usuarios => {
+        const result: UsuarioProcesado[] = [];
+        for (const u of usuarios) {
+          result.push({ ...u, avatarUrl: await this.obtenerAvatarAsync(u) });
+        }
+        return result;
+      }),
       shareReplay(1)
     );
 
@@ -97,14 +106,18 @@ export class ComentariosComponent implements OnInit, OnDestroy {
       servidor$,
       this.comentariosPendientes$
     ]).pipe(
-      map(([servidor, pendientes]) => {
+      switchMap(async ([servidor, pendientes]) => {
         const todos = [...servidor, ...pendientes];
-        return todos.map(c => ({
-          ...c,
-          avatarUrl: this.obtenerAvatar(c.usuario),
-          textoFormateado: this.formatearTexto(c.comentario),
-          tipoMedia: this.obtenerTipoMedia(c.mediaUrl)
-        }));
+        const result: ComentarioProcesado[] = [];
+        for (const c of todos) {
+          result.push({
+            ...c,
+            avatarUrl: await this.obtenerAvatarAsync(c.usuario),
+            textoFormateado: this.formatearTexto(c.comentario),
+            tipoMedia: this.obtenerTipoMedia(c.mediaUrl)
+          });
+        }
+        return result;
       })
     );
     this.sugerenciasProcesadas$ = combineLatest([
@@ -147,7 +160,18 @@ export class ComentariosComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.audioRecordingService.destruir();
+    // Detener cualquier audio en reproducción
+    if (this.audioActual) {
+      this.audioActual.pause();
+      this.audioActual.currentTime = 0;
+      this.audioActual = null;
+    }
+    if (this.comentarioActual) {
+      this.comentarioActual.isPlaying = false;
+      this.comentarioActual = null;
+    }
+    // Resetear el servicio sin destruir los subjects (es singleton)
+    this.audioRecordingService.resetear();
     this.destruir$.next();
     this.destruir$.complete();
   }
@@ -201,7 +225,9 @@ export class ComentariosComponent implements OnInit, OnDestroy {
     if (this.selectedFile) {
       this.subirMediaYEnviar(this.selectedFile, texto);
     } else if (estadoGrabacion.audioGrabado) {
-      const audioFile = new File([estadoGrabacion.audioGrabado], `audio_${Date.now()}.webm`, { type: 'audio/webm' });
+      const mimetype = estadoGrabacion.audioGrabado.type || 'audio/webm';
+      const extension = mimetype.includes('mp4') ? 'm4a' : 'webm';
+      const audioFile = new File([estadoGrabacion.audioGrabado], `audio_${Date.now()}.${extension}`, { type: mimetype });
       this.subirMediaYEnviar(audioFile, 'Mensaje de voz');
     } else {
       this.procesarEnvio(texto);
@@ -215,7 +241,6 @@ export class ComentariosComponent implements OnInit, OnDestroy {
 
     this.mediaUploadService.subirArchivo(archivo).subscribe({
       next: (url) => {
-        this.isUploading = false;
         this.procesarEnvio(texto, url);
       },
       error: (err) => {
@@ -226,13 +251,90 @@ export class ComentariosComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.mediaUploadService.progreso$.pipe(takeUntil(this.destruir$)).subscribe(p => {
+    const sub = this.mediaUploadService.progreso$.pipe(takeUntil(this.destruir$)).subscribe(p => {
       this.uploadProgress = p.progreso;
       this.cdr.markForCheck();
+      if (p.estado === 'completado' || p.estado === 'error' || p.estado === 'inactivo') {
+        if (p.progreso === 100 || p.estado === 'error') {
+          this.isUploading = false;
+          this.cdr.markForCheck();
+        }
+        setTimeout(() => sub.unsubscribe(), 500);
+      }
     });
   }
 
+
+  triggerFileInput(): void {
+    this.fileInput?.nativeElement.click();
+  }
+
+  triggerCamera(): void {
+    this.cameraInput?.nativeElement.click();
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.filePreview = reader.result as string;
+        this.cdr.markForCheck();
+      };
+      reader.readAsDataURL(this.selectedFile);
+    }
+  }
+
+  removeFile(): void {
+    this.selectedFile = null;
+    this.filePreview = null;
+    if (this.fileInput) this.fileInput.nativeElement.value = '';
+    if (this.cameraInput) this.cameraInput.nativeElement.value = '';
+    this.cdr.markForCheck();
+  }
+
+  async startRecording(): Promise<void> {
+    try {
+      if (this.audioActual) {
+        this.audioActual.pause();
+        this.audioActual.currentTime = 0;
+        if (this.comentarioActual) this.comentarioActual.isPlaying = false;
+        this.audioActual = null;
+        this.comentarioActual = null;
+      }
+
+      document.querySelectorAll('audio').forEach(a => {
+        a.pause();
+        a.currentTime = 0;
+      });
+      await new Promise(r => setTimeout(r, 200));
+
+      await this.audioRecordingService.iniciarGrabacion();
+      this.cdr.markForCheck();
+    } catch (error) {
+      alert('No se pudo iniciar la grabación. Verifique los permisos de micrófono. ' + (error?.toString() || ''));
+      console.error('Error startRecording:', error);
+    }
+  }
+
+  stopRecording(): void {
+    this.audioRecordingService.detenerGrabacion();
+    this.cdr.markForCheck();
+  }
+
+  cancelRecording(): void {
+    this.audioRecordingService.cancelarGrabacion();
+    this.cdr.markForCheck();
+  }
+
+  removeRecordedAudio(): void {
+    this.audioRecordingService.eliminarAudioGrabado();
+    this.cdr.markForCheck();
+  }
+
   private procesarEnvio(texto: string, mediaUrl?: string) {
+    this.isUploading = false;
     const comentarioFinal = texto || (mediaUrl ? 'Archivo adjunto' : '');
     const padre = this.comentarioParaResponder$.value;
     const idTemporal = -Date.now();
@@ -268,62 +370,41 @@ export class ComentariosComponent implements OnInit, OnDestroy {
     });
   }
 
-  triggerFileInput(): void {
-    this.fileInput?.nativeElement.click();
-  }
-
-  triggerCamera(): void {
-    this.cameraInput?.nativeElement.click();
-  }
-
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.filePreview = reader.result as string;
-        this.cdr.markForCheck();
-      };
-      reader.readAsDataURL(this.selectedFile);
-    }
-  }
-
-  removeFile(): void {
-    this.selectedFile = null;
-    this.filePreview = null;
-    if (this.fileInput) this.fileInput.nativeElement.value = '';
-    if (this.cameraInput) this.cameraInput.nativeElement.value = '';
-    this.cdr.markForCheck();
-  }
-
-  async startRecording(): Promise<void> {
-    await this.audioRecordingService.iniciarGrabacion();
-    this.cdr.markForCheck();
-  }
-
-  stopRecording(): void {
-    this.audioRecordingService.detenerGrabacion();
-    this.cdr.markForCheck();
-  }
-
-  cancelRecording(): void {
-    this.audioRecordingService.cancelarGrabacion();
-    this.cdr.markForCheck();
-  }
-
-  removeRecordedAudio(): void {
-    this.audioRecordingService.eliminarAudioGrabado();
-    this.cdr.markForCheck();
-  }
-
-
   private limpiarPendiente(id: number) {
     const restantes = this.comentariosPendientes$.value.filter(c => c.id !== id);
     this.comentariosPendientes$.next(restantes);
   }
-  private obtenerAvatar(usuario: any): string {
-    return usuario?.persona?.imagenes || `https://ui-avatars.com/api/?name=${usuario?.nickname}&background=random`;
+
+  private async obtenerAvatarAsync(usuario: any): Promise<string> {
+    const avatarStr = usuario?.persona?.imagenes;
+    if (avatarStr && avatarStr.trim().length > 0) {
+      if (avatarStr.startsWith('http') || avatarStr.startsWith('data:')) return avatarStr;
+
+      if (this.avatarCache.has(usuario.id)) {
+        return this.avatarCache.get(usuario.id)!;
+      }
+
+      try {
+        const obs = await this.usuarioService.onGetUsuarioImages(usuario.id, 'perfil');
+        return new Promise<string>(resolve => {
+          const sub = obs.subscribe((imgs: string[]) => {
+            if (imgs && imgs.length > 0) {
+              const url = imgs[0];
+              this.avatarCache.set(usuario.id, url);
+              resolve(url);
+            } else {
+              const dec = `https://ui-avatars.com/api/?name=${usuario?.nickname}&background=random`;
+              this.avatarCache.set(usuario.id, dec);
+              resolve(dec);
+            }
+            if (sub) sub.unsubscribe();
+          });
+        });
+      } catch (e) {
+        return `https://ui-avatars.com/api/?name=${usuario?.nickname}&background=random`;
+      }
+    }
+    return `https://ui-avatars.com/api/?name=${usuario?.nickname}&background=random`;
   }
 
   private obtenerTipoMedia(url?: string): string {
@@ -331,7 +412,7 @@ export class ComentariosComponent implements OnInit, OnDestroy {
     const ext = url.split('.').pop()?.toLowerCase().split('?')[0] || '';
     if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return 'imagen';
     if (['mp4', 'mov', 'avi'].includes(ext)) return 'video';
-    if (['mp3', 'wav', 'm4a', 'ogg', 'webm'].includes(ext)) return 'audio';
+    if (['mp3', 'wav', 'm4a', 'ogg', 'webm', 'aac'].includes(ext)) return 'audio';
     if (['pdf'].includes(ext)) return 'pdf';
     return 'archivo';
   }
@@ -360,43 +441,83 @@ export class ComentariosComponent implements OnInit, OnDestroy {
 
   toggleAudio(event: Event, c: ComentarioProcesado): void {
     event.stopPropagation();
+    event.preventDefault();
     const audio = (event.target as HTMLElement).closest('.whatsapp-audio')?.querySelector('audio') as HTMLAudioElement;
     if (!audio) return;
+
+    // Si hay otro audio sonando, detenerlo completamente
     if (this.audioActual && this.audioActual !== audio) {
       this.audioActual.pause();
-      if (this.comentarioActual) this.comentarioActual.isPlaying = false;
+      this.audioActual.currentTime = 0;
+      if (this.comentarioActual) {
+        this.comentarioActual.isPlaying = false;
+        this.comentarioActual.audioProgress = 0;
+      }
+      this.audioActual = null;
+      this.comentarioActual = null;
     }
+
     if (audio.paused) {
-      audio.play(); c.isPlaying = true;
-      this.audioActual = audio; this.comentarioActual = c;
+      // Asegurar que empiece desde el inicio si ya terminó
+      if (audio.ended) {
+        audio.currentTime = 0;
+      }
+      audio.play().catch(e => console.error('Error reproduciendo audio', e));
+      c.isPlaying = true;
+      this.audioActual = audio;
+      this.comentarioActual = c;
     } else {
-      audio.pause(); c.isPlaying = false;
+      audio.pause();
+      c.isPlaying = false;
     }
     this.cdr.markForCheck();
   }
 
   onAudioTime(e: Event, c: ComentarioProcesado): void {
     const a = e.target as HTMLAudioElement;
-    if (a.duration) {
+    if (a.duration && a.duration !== Infinity && !isNaN(a.duration)) {
       c.audioProgress = (a.currentTime / a.duration) * 100;
       c.audioDuration = this.formatTime(a.duration - a.currentTime);
-      this.cdr.markForCheck();
+    } else {
+      // Si la duración falla, mostramos el tiempo progresivo de reproducción (común webm)
+      c.audioProgress = 50;
+      c.audioDuration = this.formatTime(a.currentTime);
     }
+
+    // Auto-fix: a veces webm no lanza "ended" apropiadamente en moviles al finalizar
+    if (a.currentTime > 0 && Math.abs(a.duration - a.currentTime) < 0.2) {
+      this.onAudioEnd(c);
+      a.pause();
+      a.currentTime = 0;
+    }
+
+    this.cdr.markForCheck();
   }
 
   onAudioLoad(e: Event, c: ComentarioProcesado): void {
-    c.audioDuration = this.formatTime((e.target as HTMLAudioElement).duration);
+    const a = e.target as HTMLAudioElement;
+    if (a.duration && a.duration !== Infinity && !isNaN(a.duration)) {
+      c.audioDuration = this.formatTime(a.duration);
+    } else {
+      c.audioDuration = '0:00';
+    }
     this.cdr.markForCheck();
   }
 
   onAudioEnd(c: ComentarioProcesado): void {
-    c.isPlaying = false; c.audioProgress = 0;
-    this.audioActual = null; this.comentarioActual = null;
+    c.isPlaying = false;
+    c.audioProgress = 0;
+    if (this.audioActual) {
+      this.audioActual.pause();
+      this.audioActual.currentTime = 0;
+    }
+    this.audioActual = null;
+    this.comentarioActual = null;
     this.cdr.markForCheck();
   }
 
   private formatTime(s: number): string {
-    if (!s || isNaN(s)) return '0:00';
+    if (!s || isNaN(s) || s === Infinity) return '0:00';
     return `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
   }
 }
