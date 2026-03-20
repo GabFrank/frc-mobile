@@ -103,7 +103,7 @@ export class PreRegistroFuncionarioComponent implements OnInit {
       this.habilidades.setValue([...this.habilidadesGenerales.value])
     }
     let entity = new PreRegistroFuncionario;
-    entity.apodo = this.apodo.value;
+    entity.apodo = this.apodo.value?.trim();
     entity.ciudad = this.ciudad.value;
     entity.direccion = this.direccion.value;
     entity.documento = this.documento.value;
