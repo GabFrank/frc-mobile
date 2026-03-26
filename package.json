@@ -8,6 +8,7 @@
     "url": "git+https://github.com/GabFrank/frc-mobile.git"
   },
   "scripts": {
+    "prepare": "husky",
     "ng": "ng",
     "start": "ng serve --port 4300",
     "build": "ng build",
@@ -94,6 +95,8 @@
     "@angular/compiler": "^15.2.10",
     "@angular/compiler-cli": "^15.2.10",
     "@angular/language-service": "^15.2.10",
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
     "@ionic/angular-toolkit": "^6.1.0",
     "@types/googlemaps": "^3.43.3",
     "@types/jasmine": "~3.6.0",
@@ -108,6 +111,7 @@
     "eslint-plugin-jsdoc": "30.7.6",
     "eslint-plugin-prefer-arrow": "1.2.2",
     "eslint-plugin-prettier": "^4.0.0",
+    "husky": "^9.1.7",
     "jasmine-core": "~3.8.0",
     "jasmine-spec-reporter": "~5.0.0",
     "karma": "~6.3.2",
