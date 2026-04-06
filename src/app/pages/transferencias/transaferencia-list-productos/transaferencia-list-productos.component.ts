@@ -363,7 +363,7 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     this.vencimientoById[presentacionId] = event.target.value;
   }
 
-  onAccordionChangeProducto(event: any, producto: Producto) {
+  onAccordionChangeProducto(event: any, producto?: Producto) {
   }
 
   onAccordionChangePresentacion(event: any, producto: Producto) {
