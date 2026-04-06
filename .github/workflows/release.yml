@@ -39,6 +39,10 @@ jobs:
       - name: Install semantic-release plugins
         run: npm install -g semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/exec @semantic-release/github
 
+      - name: Calculate version code
+        id: version
+        run: echo "code=$(( ${{ github.run_number }} + 100 ))" >> $GITHUB_OUTPUT
+
       - name: Run semantic-release
         run: npx semantic-release
         env:
@@ -47,4 +51,4 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          VERSION_CODE: ${{ github.run_number + 100 }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
