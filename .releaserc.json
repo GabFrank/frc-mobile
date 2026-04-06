@@ -1,0 +1,40 @@
+{
+  "branches": [
+    "master",
+    {
+      "name": "develop",
+      "prerelease": "alpha"
+    },
+    {
+      "name": "release/*",
+      "prerelease": "beta"
+    }
+  ],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "npm version ${nextRelease.version} --no-git-tag-version && VERSION_CODE=$(( ${GITHUB_RUN_NUMBER:-0} + 100 )) && sed -i \"s/versionCode [0-9]*/versionCode $VERSION_CODE/\" android/app/build.gradle && sed -i \"s/versionName \\\"[^\\\"]*\\\"/versionName \\\"${nextRelease.version}\\\"/\" android/app/build.gradle && npm run build -- --configuration production && npx cap sync android && cd android && chmod +x gradlew && ./gradlew assembleRelease bundleRelease"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          {
+            "path": "android/app/build/outputs/apk/release/*.apk",
+            "name": "frc-app-${nextRelease.version}.apk",
+            "label": "FRC App APK"
+          },
+          {
+            "path": "android/app/build/outputs/bundle/release/*.aab",
+            "name": "frc-app-${nextRelease.version}.aab",
+            "label": "FRC App AAB (Play Store)"
+          }
+        ]
+      }
+    ]
+  ]
+}
