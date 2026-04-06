@@ -36,3 +36,8 @@ npm-debug.log*
 /plugins
 /www
 /www 2
+
+# Signing keystores - use GitHub Secrets instead
+*.jks
+*.keystore
+*.pepk
