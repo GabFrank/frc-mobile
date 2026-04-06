@@ -8,6 +8,7 @@
     "url": "git+https://github.com/GabFrank/frc-mobile.git"
   },
   "scripts": {
+    "prepare": "husky",
     "ng": "ng",
     "start": "ng serve --port 4300",
     "build": "ng build",

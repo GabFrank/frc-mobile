@@ -17,6 +17,11 @@ $RECYCLE.BIN/
 log.txt
 npm-debug.log*
 
+# Signing keystores
+*.jks
+*.keystore
+*.pepk
+
 /.angular
 /.idea
 /.ionic
