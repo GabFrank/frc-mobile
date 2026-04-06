@@ -189,7 +189,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
     this.modalService.closeModal({ presentacion: presentacion, producto: producto, peso: peso })
   }
 
-  async onAccordionChangeProducto(event: any, producto: Producto) {
+  async onAccordionChangeProducto(event: any, producto?: Producto) {
   }
 
   async onAccordionChangePresentacion(event: any, producto: Producto) {

@@ -14,11 +14,10 @@ import { StockPorSucursalDialogComponent } from './movimiento-stock/stock-por-su
 @NgModule({
   declarations: [
     ListOperacionesComponent,
-    // CajaComponent,
-    // CajaInfoComponent,
-    // AdicionarConteoDialogComponent,
-    // BuscarMaletinDialogComponent,
-    // StockPorSucursalDialogComponent
+    CajaComponent,
+    CajaInfoComponent,
+    AdicionarConteoDialogComponent,
+    BuscarMaletinDialogComponent
   ],
   imports: [
     OperacionesRoutingModule,
