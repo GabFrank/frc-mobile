@@ -16,7 +16,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "npm version ${nextRelease.version} --no-git-tag-version && VERSION_CODE=$(( ${GITHUB_RUN_NUMBER:-0} + 100 )) && sed -i \"s/versionCode [0-9]*/versionCode $VERSION_CODE/\" android/app/build.gradle && sed -i \"s/versionName \\\"[^\\\"]*\\\"/versionName \\\"${nextRelease.version}\\\"/\" android/app/build.gradle && npm run build -- --configuration production && npx cap sync android && cd android && chmod +x gradlew && ./gradlew assembleRelease bundleRelease"
+        "prepareCmd": "npm version ${nextRelease.version} --no-git-tag-version && sed -i \"s/versionCode [0-9]*/versionCode $VERSION_CODE/\" android/app/build.gradle && sed -i \"s/versionName \\\"[^\\\"]*\\\"/versionName \\\"${nextRelease.version}\\\"/\" android/app/build.gradle && npm run build -- --configuration production && npx cap sync android && cd android && chmod +x gradlew && ./gradlew assembleRelease bundleRelease"
       }
     ],
     [
