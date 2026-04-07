@@ -2,7 +2,7 @@ import { NuevoInventarioComponent } from './nuevo-inventario/nuevo-inventario.co
 import { ModalService } from './../../services/modal.service';
 import { descodificarQr, QrData } from './../../generic/utils/qrUtils';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { DialogoService } from './../../services/dialogo.service';
 import { InventarioService } from './inventario.service';
@@ -24,7 +24,7 @@ import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
   selector: 'app-inventario',
   templateUrl: './inventario.component.html',
   styleUrls: ['./inventario.component.scss'],
-  providers: [BarcodeScanner]
+  providers: []
 })
 export class InventarioComponent implements OnInit {
 
@@ -37,7 +37,7 @@ export class InventarioComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private activatedRoute: ActivatedRoute,
-    private barcodeScanner: BarcodeScanner,
+    private barcodeScannerService: BarcodeScannerService,
     private notificacionService: NotificacionService,
     private modalService: ModalService,
     private mainService: MainService,
@@ -52,29 +52,29 @@ export class InventarioComponent implements OnInit {
     setTimeout(() => {
       this.cargandoService.close(loading)
     }, 1000);
-    this.barcodeScanner.scan().then(async barcodeData => {
-      this.notificacionService.open('Escaneado con éxito!', TipoNotificacion.SUCCESS, 1)
-      let codigo: string = barcodeData.text;
-      let qrData: QrData = descodificarQr(codigo);
-      if (qrData.tipoEntidad == TipoEntidad.INVENTARIO && qrData.sucursalId != null && qrData.idCentral != null) {
-        (await this.inventarioService.onGetInventario(qrData.idCentral))
-          .pipe(untilDestroyed(this))
-          .subscribe((res: Inventario) => {
-            if (res != null && res.sucursal.id == qrData.sucursalId && res.usuario?.id == this.mainService.usuarioActual?.id) {
-              this.dialog.open('Atención!!', `Desea abrir el inventario de la sucursal ${res.sucursal.nombre}`, true).then(res2 => {
-                if (res2.role == 'aceptar') {
-                  this.router.navigate(['list/info', res.id], { relativeTo: this.route });
-                }
-              })
-            } else {
-              this.notificacionService.openItemNoEncontrado()
-            }
-          })
-      } else {
-        this.notificacionService.openItemNoEncontrado()
+    this.barcodeScannerService.scan().subscribe(async barcodeData => {
+      if (!barcodeData.cancelled && barcodeData.text) {
+        this.notificacionService.open('Escaneado con éxito!', TipoNotificacion.SUCCESS, 1)
+        let codigo: string = barcodeData.text;
+        let qrData: QrData = descodificarQr(codigo);
+        if (qrData.tipoEntidad == TipoEntidad.INVENTARIO && qrData.sucursalId != null && qrData.idCentral != null) {
+          (await this.inventarioService.onGetInventario(qrData.idCentral))
+            .pipe(untilDestroyed(this))
+            .subscribe((res: Inventario) => {
+              if (res != null && res.sucursal.id == qrData.sucursalId && res.usuario?.id == this.mainService.usuarioActual?.id) {
+                this.dialog.open('Atención!!', `Desea abrir el inventario de la sucursal ${res.sucursal.nombre}`, true).then(res2 => {
+                  if (res2.role == 'aceptar') {
+                    this.router.navigate(['list/info', res.id], { relativeTo: this.route });
+                  }
+                })
+              } else {
+                this.notificacionService.openItemNoEncontrado()
+              }
+            })
+        } else {
+          this.notificacionService.openItemNoEncontrado()
+        }
       }
-    }).catch(err => {
-      this.notificacionService.openAlgoSalioMal()
     });
   }
 

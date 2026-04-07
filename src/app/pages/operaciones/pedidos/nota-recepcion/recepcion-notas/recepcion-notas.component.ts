@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
 import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
 import { CargandoService } from 'src/app/services/cargando.service';
 import { MainService } from 'src/app/services/main.service';
@@ -35,7 +35,7 @@ import { first } from 'rxjs/operators';
   selector: 'app-recepcion-notas',
   templateUrl: './recepcion-notas.component.html',
   styleUrls: ['./recepcion-notas.component.scss'],
-  providers: [BarcodeScanner]
+  providers: []
 })
 export class RecepcionNotasComponent implements OnInit {
   @ViewChild('numeroNotaInput', { static: false, read: IonInput })
@@ -48,7 +48,7 @@ export class RecepcionNotasComponent implements OnInit {
   selectedProveedor: Proveedor;
   constructor(
     private _location: Location,
-    private barcodeScanner: BarcodeScanner,
+    private barcodeScannerService: BarcodeScannerService,
     private cargandoService: CargandoService,
     private notificacionService: NotificacionService,
     private mainService: MainService,
@@ -103,9 +103,8 @@ export class RecepcionNotasComponent implements OnInit {
       this.cargandoService.close(loading);
     }, 1000);
     if (!this.mainService.isDev) {
-      this.barcodeScanner
-        .scan()
-        .then(async (barcodeData) => {
+      this.barcodeScannerService.scan().subscribe(async (barcodeData) => {
+        if (!barcodeData.cancelled && barcodeData.text) {
           this.notificacionService.open(
             'Escaneado con éxito!',
             TipoNotificacion.SUCCESS,
@@ -113,7 +112,6 @@ export class RecepcionNotasComponent implements OnInit {
           );
           let codigo: string = barcodeData.text;
           let arr = codigo.split('-');
-          let prefix = arr[2];
           let sucId: number = +arr[1];
           (await this.sucursalService.onGetSucursal(sucId)).subscribe(
             (sucRes) => {
@@ -122,13 +120,10 @@ export class RecepcionNotasComponent implements OnInit {
               }
             }
           );
-        })
-        .catch((err) => {
-          this.notificacionService.openAlgoSalioMal();
-          return false || this.mainService.isDev;
-        });
+        }
+      });
     } else {
-            (await this.sucursalService.onGetSucursal(13)).subscribe((sucRes) => {
+      (await this.sucursalService.onGetSucursal(13)).subscribe((sucRes) => {
         if (sucRes != null) {
           this.selectedSucursal = sucRes;
         }

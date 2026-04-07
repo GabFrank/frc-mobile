@@ -1,0 +1,53 @@
+<ion-list style="height: 100%">
+  <div class="identification-container">
+    <div class="header-row">
+      <ion-icon name="arrow-back" style="font-size: 1.5em; cursor: pointer;" (click)="onBack()"></ion-icon>
+      <span class="header-title">
+        {{ snapshotUrl ? 'Identidad verificada' : 'Posicione su rostro' }}
+      </span>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 5px;">
+      <span style="font-size: 1.3em; font-weight: bold; color: var(--ion-color-dark);">
+        {{ currentTime | date:'dd/MM/yyyy HH:mm:ss' }}
+      </span>
+    </div>
+
+    <div class="similarity-indicator" *ngIf="similarityPercent !== null">
+      <div class="similarity-bar">
+        <div class="similarity-fill" [style.width.%]="similarityPercent" [class.similarity-success]="isVerified"
+          [class.similarity-fail]="!isVerified">
+        </div>
+      </div>
+      <div class="similarity-text" [class.text-success]="isVerified" [class.text-fail]="!isVerified">
+        {{ verificationMessage }}
+      </div>
+    </div>
+    <div class="liveness-instruction" *ngIf="cameraActive && !isVerified">
+      <ion-icon [name]="livenessIcon" [color]="livenessColor"></ion-icon>
+      <span [style.color]="'var(--ion-color-' + livenessColor + ')'">{{ livenessInstruction }}</span>
+    </div>
+
+    <div class="camera-container">
+      <video *ngIf="!snapshotUrl" id="camera-feed" autoplay playsinline muted class="camera-feed"></video>
+      <div *ngIf="!snapshotUrl && cameraActive" class="camera-mask">
+        <div class="mask-overlay"></div>
+        <div class="mask-hole" [class.verified]="isVerified"></div>
+      </div>
+
+      <img *ngIf="snapshotUrl" [src]="snapshotUrl" alt="Foto verificada" class="camera-snapshot" />
+      <div *ngIf="isLoading" class="loading-overlay">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    </div>
+
+    <ion-row style="margin-top: 4px;">
+      <ion-col size="12" class="ion-text-center">
+        <ion-button (click)="onMarcar()" [disabled]="isLoading || !isVerified" expand="block" shape="round" size="large"
+          color="success">
+          {{isLoading ? 'Procesando...' : 'MARCAR ' + getTipoLabel()}}
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </div>
+</ion-list>

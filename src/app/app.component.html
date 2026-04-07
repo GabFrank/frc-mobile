@@ -60,13 +60,10 @@
             <ion-label>Transferencia</ion-label>
           </ion-item>
 
-        <ion-item
-          [routerLink]="['/operaciones/pedidos']"
-          (click)="closeMenu()"
-        >
-          <ion-icon name="git-compare-outline" slot="start"></ion-icon>
-          <ion-label>Pedidos</ion-label>
-        </ion-item>
+          <ion-item [routerLink]="['/operaciones/pedidos']" (click)="closeMenu()">
+            <ion-icon name="git-compare-outline" slot="start"></ion-icon>
+            <ion-label>Pedidos</ion-label>
+          </ion-item>
 
 
           <ion-accordion value="second">
@@ -79,12 +76,8 @@
               <ion-icon name="cash-outline" slot="start"></ion-icon>
               <ion-label>Caja</ion-label>
             </ion-item>
-            <ion-item
-              slot="content"
-              [routerLink]="['/operaciones/pedidos']"
-              (click)="closeMenu()"
-              style="padding-left: 10%"
-            >
+            <ion-item slot="content" [routerLink]="['/operaciones/pedidos']" (click)="closeMenu()"
+              style="padding-left: 10%">
               <ion-icon name="cube-outline" slot="start"></ion-icon>
               <ion-label>Recepción de Mercaderías</ion-label>
             </ion-item>
@@ -102,7 +95,7 @@
           </ion-accordion>
         </ion-accordion-group>
 
-        <ion-item [routerLink]="['/marcacion']" (click)="closeMenu()" [hidden]="true">
+        <ion-item [routerLink]="['/marcacion']" (click)="closeMenu()">
           <ion-icon name="checkbox-outline" slot="start"></ion-icon>
           <ion-label>Marcar horario</ion-label>
         </ion-item>
@@ -173,5 +166,59 @@
     <ion-content class="ion-padding">
       <ion-router-outlet></ion-router-outlet>
     </ion-content>
+
+    <ion-footer *ngIf="loginService?.usuarioActual?.id !== null">
+      <div class="fab-main-container" [class.with-pagination]="hasPagination">
+        <div class="fab-overlay" *ngIf="fabMenuOpen" (click)="toggleFabMenu()"></div>
+        
+        <div class="fab-actions" [class.show]="fabMenuOpen">
+          <div class="fab-action-item action-pagar" (click)="openPagarScanner()">
+            <div class="fab-action-button">
+              <ion-icon name="qr-code-outline"></ion-icon>
+            </div>
+            <span class="fab-action-label">Pagar</span>
+          </div>
+          
+          <div class="fab-action-item action-transferencia" *ngIf="loginService.usuarioActual?.roles?.includes('VER TRANSFERENCIA')" [routerLink]="['/transferencias']" (click)="toggleFabMenu()">
+            <div class="fab-action-button">
+              <ion-icon name="git-compare-outline"></ion-icon>
+            </div>
+            <span class="fab-action-label">Transf.</span>
+          </div>
+
+          <div class="fab-action-item action-marcar" [routerLink]="['/marcacion']" (click)="toggleFabMenu()">
+            <div class="fab-action-button">
+              <ion-icon name="time-outline"></ion-icon>
+            </div>
+            <span class="fab-action-label">Marcar</span>
+          </div>
+        </div>
+
+        <div class="fab-circle" (click)="toggleFabMenu()" [class.open]="fabMenuOpen">
+          <ion-icon name="add" [class.rotate]="fabMenuOpen"></ion-icon>
+        </div>
+      </div>
+
+      <ion-tab-bar>
+
+        <ion-tab-button [routerLink]="['/']" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">
+          <ion-icon name="home-outline"></ion-icon>
+        </ion-tab-button>
+
+        <ion-tab-button *ngIf="loginService.usuarioActual?.roles?.includes('VER INVENTARIO')" [routerLink]="['/inventario']" routerLinkActive="active-link">
+          <ion-icon name="newspaper-outline"></ion-icon>
+        </ion-tab-button>
+
+        <ion-tab-button class="spacer-button" disabled></ion-tab-button>
+
+        <ion-tab-button [routerLink]="['/producto']" routerLinkActive="active-link">
+          <ion-icon name="beer-outline"></ion-icon>
+        </ion-tab-button>
+
+        <ion-tab-button [routerLink]="['/notificacion']" routerLinkActive="active-link">
+          <ion-icon name="notifications-outline"></ion-icon>
+        </ion-tab-button>
+      </ion-tab-bar>
+    </ion-footer>
   </div>
 </ion-app>

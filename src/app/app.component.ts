@@ -21,6 +21,11 @@ import {
   performImmediateUpdate
 } from './services/update-service.service';
 import { PushNotificationsService } from './services/push-notifications.service';
+import { PaginationStateService } from './services/pagination-state.service';
+import { descodificarQr } from './generic/utils/qrUtils';
+import { stringToInteger } from './generic/utils/numbersUtils';
+import { VentaCreditoService } from './graphql/financiero/venta-credito/venta-credito.service';
+import { BarcodeScannerService } from './services/barcode-scanner.service';
 
 export class Pageable {
   getPageNumber: number;
@@ -59,6 +64,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   isDev = false;
 
+  hasPagination = false;
+
+  fabMenuOpen = false;
+
   loadingOpen = false; // track loading dialog state
   dialog: any;
   intervalID;
@@ -75,7 +84,10 @@ export class AppComponent implements OnInit, OnDestroy {
     public appVersion: AppVersion,
     private platfform: Platform,
     private fingerprintService: FingerprintAuthService,
-    private pushNotificacionService: PushNotificationsService
+    private pushNotificacionService: PushNotificationsService,
+    private paginationStateService: PaginationStateService,
+    private barcodeScannerService: BarcodeScannerService,
+    private ventaCreditoService: VentaCreditoService
   ) {
     this.isDev = isDevMode();
 
@@ -119,6 +131,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.pushNotificacionService.initPush();
+
+    this.paginationStateService.hasPagination$
+      .pipe(untilDestroyed(this))
+      .subscribe(val => this.hasPagination = val);
 
     this.showLoginPop();
 
@@ -218,6 +234,32 @@ export class AppComponent implements OnInit, OnDestroy {
     this.modalService.openModal(ChangeServerIpDialogComponent).then((res) => {
       if (res == true) {
         window.location.reload();
+      }
+    });
+  }
+
+  toggleFabMenu() {
+    this.fabMenuOpen = !this.fabMenuOpen;
+  }
+
+  openPagarScanner() {
+    this.toggleFabMenu();
+    this.barcodeScannerService.scan().subscribe(async res => {
+      if (!res.cancelled && res.text) {
+        let data = descodificarQr(res.text);
+        let idCliente = data.idOrigen
+        let timestamp = stringToInteger(data.timestamp);
+        let sucursalId = data.sucursalId;
+        let secretKey = data.data;
+        (await this.ventaCreditoService.onVentaCreditoQrAuth(this.mainService.usuarioActual?.persona?.id, timestamp, sucursalId, secretKey)).subscribe({
+          next: () => {
+            this.notificacionService.success('Convenio confirmado con éxito');
+          },
+          error: (err) => {
+            console.error(err);
+            this.notificacionService.warn('Error al confirmar');
+          }
+        })
       }
     });
   }

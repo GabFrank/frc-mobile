@@ -1,5 +1,5 @@
-import { ActivatedRoute } from '@angular/router';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { ActivatedRoute, Router } from '@angular/router';
+import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
 import { Presentacion } from 'src/app/domains/productos/presentacion.model';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { ModalService } from './../../../services/modal.service';
@@ -8,7 +8,7 @@ import { UntilDestroy } from '@ngneat/until-destroy';
 import { untilDestroyed } from '@ngneat/until-destroy';
 import { Producto } from 'src/app/domains/productos/producto.model';
 import { UntypedFormControl, Validators } from '@angular/forms';
-import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, Input, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { ProductoService } from '../producto.service';
 import { Location } from '@angular/common';
 import { IonAccordionGroup, IonContent, Platform, IonInput } from '@ionic/angular';
@@ -21,6 +21,7 @@ import { InventarioProductoEstado, InventarioProductoItem, InventarioProductoIte
 import { InventarioService } from '../../inventario/inventario.service';
 import { dateToString } from 'src/app/generic/utils/dateUtils';
 import { EditInventarioItemDialogComponent, InventarioItemData } from '../../inventario/edit-inventario-item-dialog/edit-inventario-item-dialog.component';
+import { PaginationStateService } from 'src/app/services/pagination-state.service';
 
 export interface SearchProductoDialogData {
   mostrarPrecio: boolean;
@@ -31,9 +32,9 @@ export interface SearchProductoDialogData {
   selector: 'app-search-producto-dialog',
   templateUrl: './search-producto-dialog.component.html',
   styleUrls: ['./search-producto-dialog.component.scss'],
-  providers: [BarcodeScanner, PhotoViewer]
+  providers: [PhotoViewer]
 })
-export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
+export class SearchProductoDialogComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('content', { static: false }) content: IonContent;
   @ViewChild('productosAccordion', { static: false }) productosAccordion: IonAccordionGroup;
@@ -68,15 +69,16 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
     private popoverService: PopOverService,
     private modalService: ModalService,
     private dialogService: DialogoService,
-    private barcodeScanner: BarcodeScanner,
+    private barcodeScannerService: BarcodeScannerService,
     private route: ActivatedRoute,
     private _location: Location,
     private plf: Platform,
     private codigoService: CodigoService,
     private photoViewer: PhotoViewer,
     private notificacionService: NotificacionService,
-    private inventarioService: InventarioService
-
+    private inventarioService: InventarioService,
+    private paginationStateService: PaginationStateService,
+    private router: Router
   ) {
     this.isWeb = plf.platforms().includes('mobileweb');
   }
@@ -151,6 +153,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
               const arr = [...this.productosList.concat(res)];
               this.productosList = arr;
             }
+            this.paginationStateService.setPaginationVisible(this.showCargarMas && this.productosList.length > 0);
             this.isSearching = false;
           });
         }
@@ -165,6 +168,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
 
   onMasProductos() {
     this.showCargarMas = false;
+    this.paginationStateService.setPaginationVisible(false);
     this.onSearchProducto(this.buscarControl.value, this.productosList?.length)
   }
 
@@ -365,17 +369,19 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
   }
 
   onBack() {
-    if (this.modalService?.currentModal != null) {
-      this.modalService.closeModal(null)
+    if (this.router.url.includes('/producto/buscar')) {
+      this.router.navigate(['/producto'])
     } else {
-      this._location.back()
+      this.modalService.closeModal(null)
     }
   }
 
   onCameraClick() {
-    this.barcodeScanner.scan().then(barcodeData => {
-      this.buscarControl.setValue(barcodeData.text)
-      this.onSearchProducto(this.buscarControl.value, null)
+    this.barcodeScannerService.scan().subscribe(barcodeData => {
+      if (!barcodeData.cancelled && barcodeData.text) {
+        this.buscarControl.setValue(barcodeData.text)
+        this.onSearchProducto(this.buscarControl.value, null)
+      }
     })
   }
 
@@ -417,4 +423,8 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit {
     }
   }
 
+  ngOnDestroy() {
+    this.paginationStateService.setPaginationVisible(false);
+  }
 }
+

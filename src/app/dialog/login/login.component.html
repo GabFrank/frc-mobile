@@ -43,6 +43,17 @@
         (click)="onLogin()"
         >Entrar</ion-button
       >
+      <ion-button
+        *ngIf="isBiometricAvailable"
+        type="button"
+        class="btn-success-flat"
+        (click)="performBiometricLogin()"
+        expand="block"
+        fill="clear"
+        style="margin-top: 40px;"
+      >
+        Usar huella
+      </ion-button>
     </ion-col>
   </ion-row>
   <ion-row>
@@ -66,14 +77,9 @@
     </ion-col>
   </ion-row>
 
-  <ion-row>
-    <ion-col size="12" style="height: 30px"></ion-col>
-  </ion-row>
-
   <ion-row
     *ngIf="selectedUsuario === null"
-    style="width: 100%"
-    style="bottom: 10px"
+    style="width: 100%; margin-top: -10px;"
   >
     <ion-col size="12">
       <ion-button

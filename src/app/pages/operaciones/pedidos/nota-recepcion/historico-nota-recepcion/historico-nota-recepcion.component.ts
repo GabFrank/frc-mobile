@@ -5,7 +5,7 @@ import { RecepcionMercaderiaService } from '../../recepcion-mercaderia/recepcion
 import { PageInfo } from 'src/app/app.component';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+
 import { QrGeneratorComponent } from 'src/app/components/qr-generator/qr-generator.component';
 import { PopOverService, PopoverSize } from 'src/app/services/pop-over.service';
 import { codificarQr, QrData } from 'src/app/generic/utils/qrUtils';
@@ -15,7 +15,7 @@ import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
   selector: 'app-historico-nota-recepcion',
   templateUrl: './historico-nota-recepcion.component.html',
   styleUrls: ['./historico-nota-recepcion.component.scss'],
-  providers: [BarcodeScanner]
+  providers: []
 })
 export class HistoricoNotaRecepcionComponent implements OnInit {
   recepcionMercaderiaList: RecepcionMercaderia[];

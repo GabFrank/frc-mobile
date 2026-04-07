@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { untilDestroyed } from '@ngneat/until-destroy';
@@ -9,7 +9,7 @@ import { DialogoService } from 'src/app/services/dialogo.service';
 import { ModalService } from 'src/app/services/modal.service';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { TransferenciaService } from '../transferencia.service';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
 import { CodigoService } from '../../codigo/codigo.service';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { Producto } from 'src/app/domains/productos/producto.model';
@@ -18,15 +18,16 @@ import { ProductoService } from '../../producto/producto.service';
 import { MainService } from 'src/app/services/main.service';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 import { TransferenciaItemInput } from '../transferencia.model';
+import { PaginationStateService } from 'src/app/services/pagination-state.service';
 
 @UntilDestroy()
 @Component({
   selector: 'app-transaferencia-list-productos',
   templateUrl: './transaferencia-list-productos.component.html',
   styleUrls: ['./transaferencia-list-productos.component.scss'],
-  providers: [BarcodeScanner, PhotoViewer]
+  providers: [PhotoViewer]
 })
-export class TransaferenciaListProductosComponent implements OnInit, AfterViewInit {
+export class TransaferenciaListProductosComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('content', { static: false }) content: IonContent;
   @ViewChild('buscarInput') buscarInput: any;
@@ -62,7 +63,7 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     private productoService: ProductoService,
     private modalService: ModalService,
     private dialogService: DialogoService,
-    private barcodeScanner: BarcodeScanner,
+    private barcodeScannerService: BarcodeScannerService,
     private _location: Location,
     private platform: Platform,
     private codigoService: CodigoService,
@@ -70,7 +71,8 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     private notificacionService: NotificacionService,
     private transferenciaService: TransferenciaService,
     private mainService: MainService,
-    private router: Router
+    private router: Router,
+    private paginationStateService: PaginationStateService
   ) {
     this.isWeb = this.platform.platforms().includes('mobileweb');
   }
@@ -95,6 +97,10 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     if (!this.isWeb) {
       this.onCameraClick();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.paginationStateService.setPaginationVisible(false);
   }
 
   private async obtenerDatosSucursales() {
@@ -238,6 +244,7 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
                   this.productosList = res || [];
                   if (this.productosList.length === 0) {
                     this.notificacionService.warn('Producto no encontrado');
+                    this.paginationStateService.setPaginationVisible(false);
                   } else {
                     this.notificacionService.open(`Encontrados ${this.productosList.length} productos`, TipoNotificacion.SUCCESS, 2);
                   }
@@ -248,6 +255,7 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
                     this.productosList = [...this.productosList, ...res];
                   }
                 }
+                this.paginationStateService.setPaginationVisible(this.showCargarMas && this.productosList.length > 0);
                 this.isSearching = false;
               },
               error: (error) => {
@@ -271,6 +279,7 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
 
   onMasProductos() {
     this.showCargarMas = false;
+    this.paginationStateService.setPaginationVisible(false);
     this.onSearchProducto(this.buscarControl.value, this.productosList?.length);
   }
 
@@ -343,12 +352,11 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
   }
 
   onCameraClick() {
-    this.barcodeScanner.scan().then(barcodeData => {
-      this.buscarControl.setValue(barcodeData.text);
-      this.onSearchProducto(this.buscarControl.value, null);
-    }).catch(error => {
-      console.error('Error escaneando:', error);
-      this.notificacionService.open('Error al escanear código', TipoNotificacion.DANGER, 2);
+    this.barcodeScannerService.scan().subscribe(barcodeData => {
+      if (!barcodeData.cancelled && barcodeData.text) {
+        this.buscarControl.setValue(barcodeData.text);
+        this.onSearchProducto(this.buscarControl.value, null);
+      }
     });
   }
 
