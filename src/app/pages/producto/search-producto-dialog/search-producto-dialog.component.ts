@@ -193,7 +193,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit, OnD
     this.modalService.closeModal({ presentacion: presentacion, producto: producto, peso: peso })
   }
 
-  async onAccordionChangeProducto(event: any, producto: Producto) {
+  async onAccordionChangeProducto(event: any, producto?: Producto) {
   }
 
   async onAccordionChangePresentacion(event: any, producto: Producto) {
@@ -337,6 +337,14 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit, OnD
           return;
         }
         input.cantidadFisica = stockResponse;
+        input.cantidadAnterior = stockResponse;
+        if (input.cantidad === stockResponse) {
+          input.verificado = true;
+          input.revisado = false;
+        } else {
+          input.verificado = false;
+          input.revisado = true;
+        }
         (await this.inventarioService.onSaveInventarioProductoItem(input))
           .pipe(untilDestroyed(this))
           .subscribe((res) => {

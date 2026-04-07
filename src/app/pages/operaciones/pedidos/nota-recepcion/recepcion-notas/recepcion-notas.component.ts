@@ -123,7 +123,7 @@ export class RecepcionNotasComponent implements OnInit {
         }
       });
     } else {
-      (await this.sucursalService.onGetSucursal(1)).subscribe((sucRes) => {
+      (await this.sucursalService.onGetSucursal(13)).subscribe((sucRes) => {
         if (sucRes != null) {
           this.selectedSucursal = sucRes;
         }

@@ -17,6 +17,11 @@ $RECYCLE.BIN/
 log.txt
 npm-debug.log*
 
+# Signing keystores
+*.jks
+*.keystore
+*.pepk
+
 /.angular
 /.idea
 /.ionic
@@ -31,3 +36,8 @@ npm-debug.log*
 /plugins
 /www
 /www 2
+
+# Signing keystores - use GitHub Secrets instead
+*.jks
+*.keystore
+*.pepk
