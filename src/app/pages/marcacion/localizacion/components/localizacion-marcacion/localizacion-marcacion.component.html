@@ -6,20 +6,70 @@
       </ion-col>
     </ion-row>
   </ion-card>
-  <div style="text-align: center; font-size: large; padding: 20px">
-    {{isLoading ? 'Buscando ubicación precisa por GPS...' : 'Tu ubicación'}}
+
+  <!-- GPS Progress -->
+  <div style="text-align: center; padding: 16px 20px;">
+    <div *ngIf="isLoading" style="font-size: large;">
+      <div *ngIf="gpsStatus === 'warming'">
+        <ion-icon name="satellite-outline" style="font-size: 2em; color: #ffc409;"></ion-icon>
+        <p style="margin: 8px 0 4px;">OBTENIENDO UBICACIÓN ACTUAL...</p>
+        <p style="font-size: small; color: #888;" *ngIf="gpsAccuracy">
+          Precisión actual: {{ gpsAccuracy.toFixed(0) }}m
+        </p>
+      </div>
+      <div *ngIf="gpsStatus === 'reading'">
+        <ion-icon name="navigate-outline" style="font-size: 2em; color: #4285F4;"></ion-icon>
+        <p style="margin: 8px 0 4px;">Recolectando lecturas GPS</p>
+        <div style="display: flex; justify-content: center; gap: 6px; margin: 10px 0;">
+          <div *ngFor="let item of [].constructor(gpsReadingsNeeded); let i = index"
+            style="width: 12px; height: 12px; border-radius: 50%;"
+            [style.background-color]="i < gpsReadingsCollected ? '#2dd36f' : '#e0e0e0'">
+          </div>
+        </div>
+        <p style="font-size: small; color: #888;">
+          {{ gpsMessage }}
+        </p>
+      </div>
+    </div>
+
+    <div *ngIf="!isLoading && !gpsError && userPosition">Tu ubicación</div>
+
+    <div *ngIf="gpsError" style="color: #eb445a;">
+      <ion-icon name="warning-outline" style="font-size: 2em;"></ion-icon>
+      <p>{{ gpsMessage }}</p>
+      <div style="text-align: left; font-size: small; color: #666; padding: 12px; background: #f8f8f8; border-radius: 8px; margin-top: 8px;">
+        <p style="font-weight: 600; margin-bottom: 6px;">Para mejorar la precisión:</p>
+        <p>1. Active el GPS en modo <b>Alta precisión</b></p>
+        <p>2. Active Wi-Fi y datos móviles</p>
+        <p>3. Desactive el ahorro de batería</p>
+        <p>4. Acérquese a una ventana o salga al exterior</p>
+      </div>
+    </div>
   </div>
+
+  <!-- Loading spinner (solo cuando carga y no hay mapa aún) -->
+  <div *ngIf="isLoading" style="display: flex; align-items: center; justify-content: center; height: 200px;">
+    <ion-spinner name="lines" style="width: 50px; height: 50px;"></ion-spinner>
+  </div>
+
+  <!-- Map container - siempre en DOM, oculto hasta que haya posición -->
   <ion-row>
     <ion-col size="12">
-      <div class="map-container">
-        <div style="width: 100%; height: 100%" *ngIf="isLoading">
-          <ion-spinner name="lines" style="width: 50px; height: 50px;"></ion-spinner>
-        </div>
+      <div class="map-container" [hidden]="!mapReady">
         <div #mapContainer id="map" style="width: 100%; height: 100%"></div>
       </div>
     </ion-col>
   </ion-row>
+
   <div class="location-info-container" *ngIf="!isLoading && userPosition">
+    <!-- GPS Accuracy Badge -->
+    <div *ngIf="gpsAccuracy" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px;">
+      <ion-badge [color]="getAccuracyColor()" style="padding: 6px 12px; font-size: 0.85em;">
+        <ion-icon name="locate-outline" style="margin-right: 4px;"></ion-icon>
+        Precisión: ±{{ gpsAccuracy.toFixed(0) }}m ({{ getAccuracyLabel() }})
+      </ion-badge>
+    </div>
+
     <div class="status-badge" [class.success]="isInBodega" [class.warning]="!isInBodega">
       <ion-icon [name]="isInBodega ? 'business' : 'location'"></ion-icon>
       <span>{{ isInBodega ? 'Dentro del rango de sucursal' : 'Fuera de rango' }}</span>
@@ -27,13 +77,22 @@
 
     <div class="distance-info" *ngIf="distanciaMetros !== null">
       <p class="label">Distancia a la sucursal más cercana:</p>
-      <p class="value">{{ distanciaMetros >= 1000 ? (distanciaMetros/1000).toFixed(2) + ' km' : distanciaMetros + ' m'
-        }}</p>
+      <p class="value">{{ distanciaMetros >= 1000 ? (distanciaMetros/1000).toFixed(2) + ' km' : distanciaMetros + ' m' }}</p>
     </div>
 
     <div *ngIf="isInBodega" class="selected-branch">
       <span class="branch-label">Sucursal detectada:</span>
-      <h2 class="branch-name">{{selectedBodega?.nombre}}</h2>
+      <h2 class="branch-name">{{ selectedBodega?.nombre }}</h2>
+    </div>
+
+    <!-- Ayuda si no está en rango -->
+    <div *ngIf="!isInBodega && gpsAccuracy && gpsAccuracy > 20"
+      style="text-align: left; font-size: small; color: #666; padding: 12px; background: #fff8e1; border-radius: 8px; margin: 12px 0;">
+      <p style="font-weight: 600; color: #f4a900; margin-bottom: 4px;">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        La precisión GPS no es óptima
+      </p>
+      <p>Intente actualizar la ubicación en un lugar más abierto o espere unos segundos y reintente.</p>
     </div>
 
     <div class="actions">
@@ -48,5 +107,13 @@
         Actualizar ubicación
       </ion-button>
     </div>
+  </div>
+
+  <!-- Retry on error -->
+  <div *ngIf="gpsError && !isLoading" style="text-align: center; padding: 20px;">
+    <ion-button (click)="onTryAgain()" expand="block" shape="round" color="primary">
+      <ion-icon name="refresh-outline" slot="start"></ion-icon>
+      Reintentar
+    </ion-button>
   </div>
 </ion-content>
