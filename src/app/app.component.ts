@@ -26,6 +26,8 @@ import { descodificarQr } from './generic/utils/qrUtils';
 import { stringToInteger } from './generic/utils/numbersUtils';
 import { VentaCreditoService } from './graphql/financiero/venta-credito/venta-credito.service';
 import { BarcodeScannerService } from './services/barcode-scanner.service';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 export class Pageable {
   getPageNumber: number;
@@ -65,6 +67,7 @@ export class AppComponent implements OnInit, OnDestroy {
   isDev = false;
 
   hasPagination = false;
+  isHomeRoute = true;
 
   fabMenuOpen = false;
 
@@ -87,7 +90,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private pushNotificacionService: PushNotificationsService,
     private paginationStateService: PaginationStateService,
     private barcodeScannerService: BarcodeScannerService,
-    private ventaCreditoService: VentaCreditoService
+    private ventaCreditoService: VentaCreditoService,
+    private router: Router
   ) {
     this.isDev = isDevMode();
 
@@ -131,6 +135,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.pushNotificacionService.initPush();
+    this.updateFabPosition(this.router.url);
+
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        untilDestroyed(this)
+      )
+      .subscribe(event => this.updateFabPosition(event.urlAfterRedirects));
 
     this.paginationStateService.hasPagination$
       .pipe(untilDestroyed(this))
@@ -240,6 +252,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
   toggleFabMenu() {
     this.fabMenuOpen = !this.fabMenuOpen;
+  }
+
+  private updateFabPosition(url: string) {
+    const normalizedUrl = url.split('?')[0].split('#')[0];
+    this.isHomeRoute = normalizedUrl === '' || normalizedUrl === '/';
+    if (!this.isHomeRoute) {
+      this.fabMenuOpen = false;
+    }
   }
 
   openPagarScanner() {
