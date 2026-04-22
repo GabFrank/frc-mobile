@@ -5,8 +5,10 @@ export type Channel = 'alpha' | 'beta' | 'stable';
 
 @Injectable({ providedIn: 'root' })
 export class ChannelService {
+  // web: página de opt-in de programas de testing (alpha/beta) en Play Store.
   private readonly OPT_IN_URL =
     'https://play.google.com/apps/testing/com.sistemasinformaticos.frc';
+  // android: ficha de la app en Play Store (para volver a stable / desinscribirse).
   private readonly STORE_URL =
     'https://play.google.com/store/apps/details?id=com.sistemasinformaticos.frc';
 
