@@ -144,7 +144,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const sheet = await this.actionSheetCtrl.create({
       header: 'Canal de actualizaciones',
       subHeader:
-        `Canal actual: ${current}. Al cambiar, Play Store propagará la versión del nuevo canal al dispositivo en ~15 minutos.`,
+        `Canal actual: ${current} (v${this.currentVersion ?? '?'}). Al cambiar, Play Store propagará la versión del nuevo canal al dispositivo en ~15 minutos.`,
       buttons: [
         {
           text: 'Alpha (pruebas internas)',
