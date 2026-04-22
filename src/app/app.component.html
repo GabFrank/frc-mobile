@@ -92,6 +92,11 @@
               <ion-icon name="globe-outline" slot="start"></ion-icon>
               <ion-label>Configuración del servidor</ion-label>
             </ion-item>
+            <ion-item slot="content" (click)="openChannelSelector(); closeMenu()" style="padding-left: 10%">
+              <ion-icon name="swap-horizontal-outline" slot="start"></ion-icon>
+              <ion-label>Canal de actualizaciones</ion-label>
+              <ion-note slot="end">{{ channelService.getChannelLabel(currentChannel) }}</ion-note>
+            </ion-item>
           </ion-accordion>
         </ion-accordion-group>
 

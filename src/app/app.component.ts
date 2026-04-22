@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, isDevMode } from '@angular/core';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
-import { MenuController, Platform, PopoverController } from '@ionic/angular';
+import { ActionSheetController, MenuController, Platform, PopoverController, ToastController } from '@ionic/angular';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   NotificacionService,
@@ -28,6 +28,7 @@ import { VentaCreditoService } from './graphql/financiero/venta-credito/venta-cr
 import { BarcodeScannerService } from './services/barcode-scanner.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { Channel, ChannelService } from './services/channel.service';
 
 export class Pageable {
   getPageNumber: number;
@@ -58,6 +59,7 @@ export class AppComponent implements OnInit, OnDestroy {
   online = false;
   puedeVerInventario = false;
   currentVersion = null;
+  currentChannel: Channel = 'stable';
 
   optionZbar: any;
   scannedOutput: any;
@@ -91,7 +93,10 @@ export class AppComponent implements OnInit, OnDestroy {
     private paginationStateService: PaginationStateService,
     private barcodeScannerService: BarcodeScannerService,
     private ventaCreditoService: VentaCreditoService,
-    private router: Router
+    private router: Router,
+    public channelService: ChannelService,
+    private actionSheetCtrl: ActionSheetController,
+    private toastCtrl: ToastController
   ) {
     this.isDev = isDevMode();
 
@@ -103,6 +108,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.platfform.ready().then((res) => {
       appVersion.getVersionNumber().then((res) => {
         this.currentVersion = res;
+        this.currentChannel = this.channelService.detectCurrentChannel(res);
       });
     });
 
@@ -132,6 +138,59 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   openInventario() {}
+
+  async openChannelSelector() {
+    const current = this.channelService.getChannelLabel(this.currentChannel);
+    const sheet = await this.actionSheetCtrl.create({
+      header: 'Canal de actualizaciones',
+      subHeader:
+        `Canal actual: ${current}. Al cambiar, Play Store propagará la versión del nuevo canal al dispositivo en ~15 minutos.`,
+      buttons: [
+        {
+          text: 'Alpha (pruebas internas)',
+          icon: 'flask-outline',
+          handler: () => {
+            this.selectChannel('alpha');
+          }
+        },
+        {
+          text: 'Beta (producción piloto)',
+          icon: 'rocket-outline',
+          handler: () => {
+            this.selectChannel('beta');
+          }
+        },
+        {
+          text: 'Stable (producción)',
+          icon: 'shield-checkmark-outline',
+          handler: () => {
+            this.selectChannel('stable');
+          }
+        },
+        { text: 'Cancelar', role: 'cancel' }
+      ]
+    });
+    await sheet.present();
+  }
+
+  private async selectChannel(target: Channel) {
+    await this.channelService.openPlayStoreOptIn(target);
+    const messages: Record<Channel, string> = {
+      alpha:
+        'Se abrió Play Store. Si tu correo está invitado al programa alpha, tocá "Unirme". Tras unirse, Play Store bajará la versión alpha en ~15 min.',
+      beta:
+        'Se abrió Play Store. Si tu correo está invitado al programa beta, tocá "Unirme". Tras unirse, Play Store bajará la versión beta en ~15 min.',
+      stable:
+        'Para volver a stable, tocá "Abandonar el programa" en Play Store y luego desinstalá y reinstalá la app.'
+    };
+    const toast = await this.toastCtrl.create({
+      message: messages[target],
+      duration: 6000,
+      position: 'bottom',
+      color: 'medium'
+    });
+    await toast.present();
+  }
 
   async ngOnInit(): Promise<void> {
     this.pushNotificacionService.initPush();
