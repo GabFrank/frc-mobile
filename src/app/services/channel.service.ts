@@ -5,10 +5,17 @@ export type Channel = 'alpha' | 'beta' | 'stable';
 
 @Injectable({ providedIn: 'root' })
 export class ChannelService {
-  // web: página de opt-in de programas de testing (alpha/beta) en Play Store.
-  private readonly OPT_IN_URL =
+  // Alpha → Internal testing (Play Console). Requiere estar en la email list
+  // "alpha". ID numérico del track internal testing.
+  private readonly ALPHA_OPT_IN_URL =
+    'https://play.google.com/apps/internaltest/4701535382290616522';
+  // Beta → Open testing. Abierto a cualquier cuenta Google. El URL web muestra
+  // directamente la página de opt-in con el botón "Aderir ao teste beta".
+  private readonly BETA_OPT_IN_URL =
     'https://play.google.com/apps/testing/com.sistemasinformaticos.frc';
-  // android: ficha de la app en Play Store (para volver a stable / desinscribirse).
+  // Stable → ficha pública de la app. Mismo URL que beta — Play Store detecta
+  // automáticamente si el usuario está en un programa y muestra el botón
+  // "Abandonar" para volver a stable.
   private readonly STORE_URL =
     'https://play.google.com/store/apps/details?id=com.sistemasinformaticos.frc';
 
@@ -28,7 +35,18 @@ export class ChannelService {
   }
 
   async openPlayStoreOptIn(target: Channel): Promise<void> {
-    const url = target === 'stable' ? this.STORE_URL : this.OPT_IN_URL;
+    let url: string;
+    switch (target) {
+      case 'alpha':
+        url = this.ALPHA_OPT_IN_URL;
+        break;
+      case 'beta':
+        url = this.BETA_OPT_IN_URL;
+        break;
+      case 'stable':
+        url = this.STORE_URL;
+        break;
+    }
     await Browser.open({ url });
   }
 }
