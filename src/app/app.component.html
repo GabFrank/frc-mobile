@@ -92,6 +92,11 @@
               <ion-icon name="globe-outline" slot="start"></ion-icon>
               <ion-label>Configuración del servidor</ion-label>
             </ion-item>
+            <ion-item slot="content" (click)="openChannelSelector(); closeMenu()" style="padding-left: 10%">
+              <ion-icon name="swap-horizontal-outline" slot="start"></ion-icon>
+              <ion-label>Canal de actualizaciones</ion-label>
+              <ion-note slot="end">{{ channelService.getChannelLabel(currentChannel) }}</ion-note>
+            </ion-item>
           </ion-accordion>
         </ion-accordion-group>
 
@@ -168,7 +173,7 @@
     </ion-content>
 
     <ion-footer *ngIf="loginService?.usuarioActual?.id !== null">
-      <div class="fab-main-container" [class.with-pagination]="hasPagination">
+      <div class="fab-main-container" [class.with-pagination]="hasPagination" [class.not-home]="!isHomeRoute">
         <div class="fab-overlay" *ngIf="fabMenuOpen" (click)="toggleFabMenu()"></div>
         
         <div class="fab-actions" [class.show]="fabMenuOpen">
