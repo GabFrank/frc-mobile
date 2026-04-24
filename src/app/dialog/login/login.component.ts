@@ -1,10 +1,8 @@
 import { PreRegistroFuncionarioComponent } from './../../pages/funcionario/pre-registro-funcionario/pre-registro-funcionario.component';
 import { ModalService } from './../../services/modal.service';
-import { Router } from '@angular/router';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
-import { CargandoService } from './../../services/cargando.service';
 import { Usuario } from './../../domains/personas/usuario.model';
-import { Platform, PopoverController, ToastController } from '@ionic/angular';
+import { Platform, ToastController } from '@ionic/angular';
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -19,6 +17,7 @@ import { NativeBiometric } from '@capgo/capacitor-native-biometric';
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit {
+  private static readonly BIOMETRIC_SERVER = 'franco-system';
   @ViewChild('nickname', { static: false }) nicknameInput: ElementRef;
   @ViewChild('password', { static: false }) passwordInput: ElementRef;
 
@@ -34,10 +33,7 @@ export class LoginComponent implements OnInit {
   isBiometricAvailable = false;
 
   constructor(private loginService: LoginService,
-    private popoverController: PopoverController,
-    private cargandoService: CargandoService,
     private notificacionService: NotificacionService,
-    private router: Router,
     private modalService: ModalService,
     private platform: Platform,
     private toastController: ToastController
@@ -67,35 +63,27 @@ export class LoginComponent implements OnInit {
     try {
       const isAvailable = await NativeBiometric.isAvailable();
       if (isAvailable.isAvailable) {
-        const credentials = await NativeBiometric.getCredentials({ server: 'franco-system' });
-        if (credentials && credentials.username && credentials.password) {
-          await NativeBiometric.verifyIdentity({
-            reason: 'Inicia sesión con tu huella',
-            title: 'Inicio de sesión biométrico',
-            subtitle: 'Autenticación requerida',
-          });
-
-          const storedToken = credentials.password;
-          const storedUsuarioId = credentials.username;
-
-          if (!isNaN(+storedUsuarioId)) {
-            localStorage.setItem('token', storedToken);
-            localStorage.setItem('usuarioId', storedUsuarioId);
-            this.loginService.isAuthenticated()
-              .pipe(untilDestroyed(this))
-              .subscribe(res => {
-                if (res) {
-                  this.onSelectUsuarioAndDismiss(res);
-                } else {
-                  this.error = "Token biométrico expirado o no válido.";
-                  this.notificacionService.open(this.error, TipoNotificacion.DANGER, 5);
-                }
-              });
-          } else {
-            this.error = "Sesión biométrica antigua. Inicia manualmente.";
-            this.notificacionService.open(this.error, TipoNotificacion.DANGER, 5);
-          }
+        const credentials = await NativeBiometric.getCredentials({ server: LoginComponent.BIOMETRIC_SERVER });
+        if (!credentials?.password) {
+          return;
         }
+
+        await NativeBiometric.verifyIdentity({
+          reason: 'Inicia sesión con tu huella',
+          title: 'Inicio de sesión biométrico',
+          subtitle: 'Autenticación requerida',
+        });
+
+        (await this.loginService.biometricLogin(credentials.password))
+          .pipe(untilDestroyed(this))
+          .subscribe(res => {
+            if (res?.error == null && res?.usuario != null) {
+              this.onSelectUsuarioAndDismiss(res.usuario);
+            } else {
+              this.error = res?.error?.error?.message || "No se pudo validar la sesión biométrica.";
+              this.notificacionService.open(this.error, TipoNotificacion.DANGER, 5);
+            }
+          });
       }
     } catch (error: any) {
       console.log('Biometric login not possible or cancelled:', error);
@@ -119,11 +107,7 @@ export class LoginComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe(res => {
         if (res.error == null) {
-          NativeBiometric.setCredentials({
-            username: res.usuario.id.toString(),
-            password: localStorage.getItem('token'),
-            server: 'franco-system'
-          }).catch(err => console.log('Error saving credentials:', err));
+          this.syncBiometricCredentialsForOwner(res.usuario.id, localStorage.getItem('token'));
 
           this.onSelectUsuarioAndDismiss(res.usuario)
         } else {
@@ -173,4 +157,35 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  private async syncBiometricCredentialsForOwner(userId: number, token: string) {
+    if (!token) {
+      return;
+    }
+    const ownerId = await this.loginService.getBiometricOwnerUserId();
+    if (ownerId != null && ownerId !== userId) {
+      return;
+    }
+
+    try {
+      const existingCredentials = await NativeBiometric.getCredentials({
+        server: LoginComponent.BIOMETRIC_SERVER
+      });
+      // Si backend indica que este usuario es owner, permitimos corregir credenciales antiguas.
+      if (existingCredentials?.username && +existingCredentials.username !== userId && ownerId !== userId) {
+        return;
+      }
+    } catch {
+      // No hay owner biométrico todavía; se registrará el usuario actual.
+    }
+
+    try {
+      await NativeBiometric.setCredentials({
+        username: userId.toString(),
+        password: token,
+        server: LoginComponent.BIOMETRIC_SERVER
+      });
+    } catch (err) {
+      console.log('Error saving biometric credentials:', err);
+    }
+  }
 }
