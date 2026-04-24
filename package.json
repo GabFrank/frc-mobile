@@ -17,8 +17,7 @@
     "e2e": "ng e2e",
     "refresh": "ng build && npx cap sync && npx cap copy",
     "clean-install": "npx rimraf node_modules package-lock.json && npm cache clean --force && npm install --legacy-peer-deps",
-    "postinstall": "node -e \"const fs=require('fs'),p='node_modules/phonegap-plugin-barcodescanner/src/android/barcodescanner.gradle';if(fs.existsSync(p)){fs.writeFileSync(p,fs.readFileSync(p,'utf8').replace(/compile\\(/g,'implementation('))}\"",
-    "prepare": "husky"
+    "postinstall": "node -e \"const fs=require('fs'),p='node_modules/phonegap-plugin-barcodescanner/src/android/barcodescanner.gradle';if(fs.existsSync(p)){fs.writeFileSync(p,fs.readFileSync(p,'utf8').replace(/compile\\(/g,'implementation('))}\""
   },
   "private": true,
   "dependencies": {
@@ -40,6 +39,7 @@
     "@capacitor-mlkit/barcode-scanning": "5.3.0",
     "@capacitor/android": "^5.0.0",
     "@capacitor/app": "^5.0.0",
+    "@capacitor/browser": "^5.2.1",
     "@capacitor/camera": "^5.0.0",
     "@capacitor/cli": "^5.0.0",
     "@capacitor/core": "^5.0.0",

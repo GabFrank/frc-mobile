@@ -56,6 +56,11 @@ ion-footer {
       top: 5px; /* Baja para no interferir con la paginación */
     }
 
+    &.not-home {
+      top: 5px;
+      transition: none;
+    }
+
     .fab-overlay {
       position: fixed;
       top: 0;
