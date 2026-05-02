@@ -24,6 +24,10 @@ const routes: Routes = [
   {
     path: 'solicitud-pago',
     loadChildren: () => import('./solicitud-pago/solicitud-pago.module').then(m => m.SolicitudPagoModule)
+  },
+  {
+    path: 'solicitud-gastos',
+    loadChildren: () => import('./solicitud-gastos/solicitud-gastos.module').then(m => m.SolicitudGastosModule)
   }
 ];
 

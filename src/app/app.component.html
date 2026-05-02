@@ -81,6 +81,11 @@
               <ion-icon name="cube-outline" slot="start"></ion-icon>
               <ion-label>Recepción de Mercaderías</ion-label>
             </ion-item>
+            <ion-item slot="content" [routerLink]="['/operaciones/solicitud-gastos']" (click)="closeMenu()"
+              style="padding-left: 10%">
+              <ion-icon name="receipt-outline" slot="start"></ion-icon>
+              <ion-label>Solicitud de Gastos</ion-label>
+            </ion-item>
           </ion-accordion>
 
           <ion-accordion value="third">
