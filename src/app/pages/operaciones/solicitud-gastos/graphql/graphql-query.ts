@@ -21,25 +21,29 @@ export const tipoGastosQuery = gql`
   }
 `;
 
-/** Lista paginada de todas las personas (para selector tipo modal). */
-export const personasListQuery = gql`
-  query personas($page: Int, $size: Int) {
-    data: personas(page: $page, size: $size) {
-      id
-      nombre
-      isFuncionario
+export const personaSearchPageQuery = gql`
+  query personaSearchPage($texto: String, $page: Int, $size: Int) {
+    data: personaSearchPage(texto: $texto, page: $page, size: $size) {
+      hasNext
+      getContent {
+        id
+        nombre
+        isFuncionario
+      }
     }
   }
 `;
 
-/** Lista paginada de todos los proveedores (para selector tipo modal). */
-export const proveedoresListQuery = gql`
-  query proveedores($page: Int, $size: Int) {
-    data: proveedores(page: $page, size: $size) {
-      id
-      persona {
+export const proveedorSearchByPersonaPageQuery = gql`
+  query proveedorSearchByPersonaPage($texto: String, $page: Int, $size: Int) {
+    data: proveedorSearchByPersonaPage(texto: $texto, page: $page, size: $size) {
+      hasNext
+      getContent {
         id
-        nombre
+        persona {
+          id
+          nombre
+        }
       }
     }
   }

@@ -18,18 +18,17 @@
           <ion-icon name="person-outline" slot="start"></ion-icon>
           <ion-label>
             <h2>Identificacion</h2>
-            <p>Responsable, beneficiario y tipo de gasto</p>
+            <p>Solicitante (tu usuario), beneficiario y tipo de gasto</p>
           </ion-label>
         </ion-item>
         <div slot="content" class="accordion-content">
           <ion-list lines="full">
-            <ion-item button class="dark2" (click)="abrirModalFuncionario()">
+            <ion-item class="dark2">
               <ion-icon slot="start" name="person-outline"></ion-icon>
               <ion-label>
-                <h3>Responsable</h3>
-                <p>{{ textoResponsable || 'Seleccionar funcionario' }}</p>
+                <h3>Solicitante</h3>
+                <p>{{ textoResponsable || 'Sin persona en sesión' }}</p>
               </ion-label>
-              <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
             </ion-item>
             <ion-item class="dark2">
               <ion-label position="stacked">Beneficiario</ion-label>
@@ -42,7 +41,7 @@
                 </ion-segment-button>
               </ion-segment>
             </ion-item>
-            <ion-item button class="dark2" *ngIf="beneficiarioTipo === 'PERSONA'" (click)="abrirModalPersonaBeneficiaria()">
+            <ion-item button class="dark2" *ngIf="beneficiarioTipo === 'PERSONA'" (click)="abrirModalPersonaBeneficiaria($event)">
               <ion-icon slot="start" name="person-outline"></ion-icon>
               <ion-label>
                 <h3>Persona beneficiaria</h3>
@@ -50,7 +49,7 @@
               </ion-label>
               <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
             </ion-item>
-            <ion-item button class="dark2" *ngIf="beneficiarioTipo === 'PROVEEDOR'" (click)="abrirModalProveedorBeneficiario()">
+            <ion-item button class="dark2" *ngIf="beneficiarioTipo === 'PROVEEDOR'" (click)="abrirModalProveedorBeneficiario($event)">
               <ion-icon slot="start" name="business-outline"></ion-icon>
               <ion-label>
                 <h3>Proveedor beneficiario</h3>
@@ -58,13 +57,13 @@
               </ion-label>
               <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
             </ion-item>
-            <ion-item class="dark2">
-              <ion-label position="stacked">Tipo de gasto</ion-label>
-              <ion-select interface="action-sheet" placeholder="Seleccionar tipo de gasto" [(ngModel)]="tipoGastoId">
-                <ion-select-option *ngFor="let tipo of tiposGasto" [value]="tipo.id">
-                  {{ tipo.descripcion }}
-                </ion-select-option>
-              </ion-select>
+            <ion-item button class="dark2" (click)="abrirModalTipoGasto($event)">
+              <ion-icon slot="start" name="pricetag-outline"></ion-icon>
+              <ion-label>
+                <h3>Tipo de gasto</h3>
+                <p>{{ textoTipoGasto || 'Seleccionar tipo de gasto' }}</p>
+              </ion-label>
+              <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
             </ion-item>
           </ion-list>
         </div>
@@ -150,7 +149,7 @@
         </ion-item>
         <div slot="content" class="accordion-content">
           <ion-list lines="full">
-            <ion-item button class="dark2" (click)="abrirModalSucursal()">
+            <ion-item button class="dark2" (click)="abrirModalSucursal($event)">
               <ion-icon slot="start" name="location-outline"></ion-icon>
               <ion-label>
                 <h3>Sucursal de retiro</h3>
@@ -190,52 +189,12 @@
       </ng-template>
     </ion-modal>
 
-    <ion-modal [isOpen]="isFuncionarioModalOpen" cssClass="sucursal-modal" (didDismiss)="cerrarModalFuncionario()">
-      <ng-template>
-        <ion-header>
-          <ion-toolbar class="sucursal-toolbar">
-            <ion-buttons slot="start">
-              <ion-button fill="clear" (click)="cerrarModalFuncionario()">
-                <ion-icon name="close-outline"></ion-icon>
-              </ion-button>
-            </ion-buttons>
-            <ion-title>Funcionario responsable</ion-title>
-          </ion-toolbar>
-          <ion-toolbar class="sucursal-search-toolbar">
-            <ion-searchbar
-              [(ngModel)]="funcionarioSearch"
-              (ngModelChange)="filtrarFuncionariosModal()"
-              placeholder="Buscar funcionario"
-              show-clear-button="focus"
-            ></ion-searchbar>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content class="sucursal-content">
-          <ion-list lines="full" class="sucursal-list">
-            <ion-item
-              button
-              *ngFor="let funcionario of funcionariosFiltrados"
-              [class.selected]="responsableId === funcionario.id"
-              (click)="seleccionarFuncionario(funcionario)"
-            >
-              <ion-icon slot="start" name="person-outline"></ion-icon>
-              <ion-label>
-                <h3>{{ funcionario.nombre }}</h3>
-                <p>ID: {{ funcionario.id }}</p>
-              </ion-label>
-              <ion-icon
-                slot="end"
-                color="success"
-                name="checkmark-circle"
-                *ngIf="responsableId === funcionario.id"
-              ></ion-icon>
-            </ion-item>
-          </ion-list>
-        </ion-content>
-      </ng-template>
-    </ion-modal>
-
-    <ion-modal [isOpen]="isPersonaBenefModalOpen" cssClass="sucursal-modal" (didDismiss)="cerrarModalPersonaBeneficiaria()">
+    <ion-modal
+      [isOpen]="isPersonaBenefModalOpen"
+      cssClass="sucursal-modal"
+      [backdropDismiss]="true"
+      (didDismiss)="cerrarModalPersonaBeneficiaria()"
+    >
       <ng-template>
         <ion-header>
           <ion-toolbar class="sucursal-toolbar">
@@ -249,19 +208,21 @@
           <ion-toolbar class="sucursal-search-toolbar">
             <ion-searchbar
               [(ngModel)]="personaBenefSearch"
-              (ngModelChange)="filtrarPersonasBenefModal()"
+              (ngModelChange)="onPersonaBenefSearchChange()"
               placeholder="Buscar persona"
               show-clear-button="focus"
+              [debounce]="0"
             ></ion-searchbar>
           </ion-toolbar>
         </ion-header>
-        <ion-content class="sucursal-content">
+        <ion-content class="sucursal-content" scrollEvents="true">
           <ion-list lines="full" class="sucursal-list">
             <ion-item
               button
+              detail="false"
               *ngFor="let persona of personasFiltradasBenef"
               [class.selected]="beneficiarioPersonaId === persona.id"
-              (click)="seleccionarPersonaBeneficiaria(persona)"
+              (click)="seleccionarPersonaBeneficiaria(persona, $event)"
             >
               <ion-icon slot="start" name="person-outline"></ion-icon>
               <ion-label>
@@ -276,11 +237,23 @@
               ></ion-icon>
             </ion-item>
           </ion-list>
+          <ion-infinite-scroll
+            threshold="120px"
+            [disabled]="!personaBenefHayMas || personaBenefCargando"
+            (ionInfinite)="cargarMasPersonasBenef($event)"
+          >
+            <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Cargando..."></ion-infinite-scroll-content>
+          </ion-infinite-scroll>
         </ion-content>
       </ng-template>
     </ion-modal>
 
-    <ion-modal [isOpen]="isProveedorBenefModalOpen" cssClass="sucursal-modal" (didDismiss)="cerrarModalProveedorBeneficiario()">
+    <ion-modal
+      [isOpen]="isProveedorBenefModalOpen"
+      cssClass="sucursal-modal"
+      [backdropDismiss]="true"
+      (didDismiss)="cerrarModalProveedorBeneficiario()"
+    >
       <ng-template>
         <ion-header>
           <ion-toolbar class="sucursal-toolbar">
@@ -294,19 +267,21 @@
           <ion-toolbar class="sucursal-search-toolbar">
             <ion-searchbar
               [(ngModel)]="proveedorBenefSearch"
-              (ngModelChange)="filtrarProveedoresBenefModal()"
+              (ngModelChange)="onProveedorBenefSearchChange()"
               placeholder="Buscar proveedor"
               show-clear-button="focus"
+              [debounce]="0"
             ></ion-searchbar>
           </ion-toolbar>
         </ion-header>
-        <ion-content class="sucursal-content">
+        <ion-content class="sucursal-content" scrollEvents="true">
           <ion-list lines="full" class="sucursal-list">
             <ion-item
               button
+              detail="false"
               *ngFor="let proveedor of proveedoresFiltradosBenef"
               [class.selected]="beneficiarioProveedorId === proveedor.id"
-              (click)="seleccionarProveedorBeneficiario(proveedor)"
+              (click)="seleccionarProveedorBeneficiario(proveedor, $event)"
             >
               <ion-icon slot="start" name="business-outline"></ion-icon>
               <ion-label>
@@ -321,11 +296,69 @@
               ></ion-icon>
             </ion-item>
           </ion-list>
+          <ion-infinite-scroll
+            threshold="120px"
+            [disabled]="!proveedorBenefHayMas || proveedorBenefCargando"
+            (ionInfinite)="cargarMasProveedoresBenef($event)"
+          >
+            <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Cargando..."></ion-infinite-scroll-content>
+          </ion-infinite-scroll>
         </ion-content>
       </ng-template>
     </ion-modal>
 
-    <ion-modal [isOpen]="isSucursalModalOpen" cssClass="sucursal-modal" (didDismiss)="cerrarModalSucursal()">
+    <ion-modal
+      [isOpen]="isTipoGastoModalOpen"
+      cssClass="sucursal-modal"
+      [backdropDismiss]="true"
+      (didDismiss)="cerrarModalTipoGasto()"
+    >
+      <ng-template>
+        <ion-header>
+          <ion-toolbar class="sucursal-toolbar">
+            <ion-buttons slot="start">
+              <ion-button fill="clear" (click)="cerrarModalTipoGasto()">
+                <ion-icon name="close-outline"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+            <ion-title>Tipo de gasto</ion-title>
+          </ion-toolbar>
+          <ion-toolbar class="sucursal-search-toolbar">
+            <ion-searchbar
+              [(ngModel)]="tipoGastoSearch"
+              (ngModelChange)="filtrarTiposGasto()"
+              placeholder="Buscar tipo de gasto"
+              show-clear-button="focus"
+            ></ion-searchbar>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="sucursal-content">
+          <ion-list lines="full" class="sucursal-list">
+            <ion-item
+              button
+              detail="false"
+              *ngFor="let tipo of tiposGastoFiltrados"
+              [class.selected]="tipoGastoId === tipo.id"
+              (click)="seleccionarTipoGasto(tipo, $event)"
+            >
+              <ion-icon slot="start" name="pricetag-outline"></ion-icon>
+              <ion-label>
+                <h3>{{ tipo.descripcion }}</h3>
+                <p>ID: {{ tipo.id }}</p>
+              </ion-label>
+              <ion-icon slot="end" color="success" name="checkmark-circle" *ngIf="tipoGastoId === tipo.id"></ion-icon>
+            </ion-item>
+          </ion-list>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+
+    <ion-modal
+      [isOpen]="isSucursalModalOpen"
+      cssClass="sucursal-modal"
+      [backdropDismiss]="true"
+      (didDismiss)="cerrarModalSucursal()"
+    >
       <ng-template>
         <ion-header>
           <ion-toolbar class="sucursal-toolbar">
@@ -349,9 +382,10 @@
           <ion-list lines="full" class="sucursal-list">
             <ion-item
               button
+              detail="false"
               *ngFor="let sucursal of sucursalesFiltradas"
               [class.selected]="selectedSucursal === sucursal.nombre"
-              (click)="seleccionarSucursal(sucursal)"
+              (click)="$event.stopPropagation(); seleccionarSucursal(sucursal)"
             >
               <ion-icon slot="start" name="location-outline"></ion-icon>
               <ion-label>
