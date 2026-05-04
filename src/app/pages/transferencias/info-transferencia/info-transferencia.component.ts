@@ -10,7 +10,7 @@ import { QrGeneratorComponent } from 'src/app/components/qr-generator/qr-generat
 import { TipoEntidad } from 'src/app/domains/enums/tipo-entidad.enum';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
 import { updateDataSourceWithId } from 'src/app/generic/utils/numbersUtils';
-import { codificarQr, QrData } from 'src/app/generic/utils/qrUtils';
+import { codificarQr, descodificarQr, QrData } from 'src/app/generic/utils/qrUtils';
 import { CargandoService } from 'src/app/services/cargando.service';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { MainService } from 'src/app/services/main.service';
@@ -358,41 +358,38 @@ export class InfoTransferenciaComponent implements OnInit, OnDestroy {
   }
 
   async onAvanzarEtapa(etapa) {
-    let ok = true;
     if (etapa == EtapaTransferencia.RECEPCION_EN_VERIFICACION) {
-      ok = await this.onVerificarSucursal();
+      await this.onVerificarSucursal();
     }
-    ok
-      ? this.transferenciaService
-        .onAvanzarEtapa(this.selectedTransferencia, etapa)
-        .pipe(untilDestroyed(this))
-        .subscribe((res) => {
-          if (res) {
-            this.selectedTransferencia.etapa = etapa;
-            if (etapa == EtapaTransferencia.TRANSPORTE_VERIFICACION) {
-              this.selectedTransferencia.usuarioTransporte =
-                this.mainService.usuarioActual;
-            } else if (etapa == EtapaTransferencia.PREPARACION_MERCADERIA) {
-              this.selectedTransferencia.usuarioPreparacion =
-                this.mainService.usuarioActual;
-            } else if (etapa == EtapaTransferencia.PRE_TRANSFERENCIA_ORIGEN) {
-              this.selectedTransferencia.estado =
-                TransferenciaEstado.EN_ORIGEN;
-            } else if (etapa == EtapaTransferencia.TRANSPORTE_EN_CAMINO) {
-              this.selectedTransferencia.estado =
-                TransferenciaEstado.EN_TRANSITO;
-            } else if (
-              etapa == EtapaTransferencia.RECEPCION_EN_VERIFICACION
-            ) {
-              this.selectedTransferencia.estado =
-                TransferenciaEstado.EN_DESTINO;
-              this.selectedTransferencia.usuarioRecepcion =
-                this.mainService.usuarioActual;
-            }
-            this.verificarEtapa();
+    this.transferenciaService
+      .onAvanzarEtapa(this.selectedTransferencia, etapa)
+      .pipe(untilDestroyed(this))
+      .subscribe((res) => {
+        if (res) {
+          this.selectedTransferencia.etapa = etapa;
+          if (etapa == EtapaTransferencia.TRANSPORTE_VERIFICACION) {
+            this.selectedTransferencia.usuarioTransporte =
+              this.mainService.usuarioActual;
+          } else if (etapa == EtapaTransferencia.PREPARACION_MERCADERIA) {
+            this.selectedTransferencia.usuarioPreparacion =
+              this.mainService.usuarioActual;
+          } else if (etapa == EtapaTransferencia.PRE_TRANSFERENCIA_ORIGEN) {
+            this.selectedTransferencia.estado =
+              TransferenciaEstado.EN_ORIGEN;
+          } else if (etapa == EtapaTransferencia.TRANSPORTE_EN_CAMINO) {
+            this.selectedTransferencia.estado =
+              TransferenciaEstado.EN_TRANSITO;
+          } else if (
+            etapa == EtapaTransferencia.RECEPCION_EN_VERIFICACION
+          ) {
+            this.selectedTransferencia.estado =
+              TransferenciaEstado.EN_DESTINO;
+            this.selectedTransferencia.usuarioRecepcion =
+              this.mainService.usuarioActual;
           }
-        })
-      : null;
+          this.verificarEtapa();
+        }
+      });
   }
 
   async onConfirm(item: TransferenciaItem) {
@@ -672,26 +669,27 @@ export class InfoTransferenciaComponent implements OnInit, OnDestroy {
     }, 1000);
     return new Promise((resolve) => {
       this.barcodeScannerService.scan().subscribe((barcodeData) => {
-        if (!barcodeData.cancelled && barcodeData.text) {
+        const scannedText = (barcodeData?.text || '').trim();
+        if (!barcodeData.cancelled && scannedText.length > 0) {
           this.notificacionService.open(
             'Escaneado con éxito!',
             TipoNotificacion.SUCCESS,
             1
           );
-          let codigo: string = barcodeData.text;
-          let arr = codigo.split('-');
-          let prefix = arr[2];
-          let sucId: number = +arr[1];
-          if (prefix == TipoEntidad.SUCURSAL && sucId != null) {
-            if (this.selectedTransferencia?.sucursalDestino?.id == sucId) {
-              resolve(true);
-              return;
+          const qrData = descodificarQr(scannedText);
+          const prefix = (qrData?.tipoEntidad || '').trim().toUpperCase();
+          const sucId = Number(qrData?.sucursalId);
+          if (prefix == TipoEntidad.SUCURSAL && Number.isFinite(sucId)) {
+            if (this.selectedTransferencia?.sucursalDestino?.id != sucId) {
+              this.notificacionService.warn('Sucursal destino no corresponde al QR');
             }
           } else {
             this.notificacionService.openItemNoEncontrado();
           }
         }
-        resolve(false || this.mainService.isDev);
+        // Continue flow so the etapa dialog is shown even when camera is cancelled
+        // or QR cannot be validated on some devices.
+        resolve(true);
       });
     });
   }
