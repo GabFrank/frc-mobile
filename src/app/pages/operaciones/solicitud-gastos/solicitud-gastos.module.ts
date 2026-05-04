@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { SolicitudGastosRoutingModule } from './solicitud-gastos-routing.module';
 import { NuevoSolicitudGastosComponent } from './pages/nuevo-solicitud-gastos/nuevo-solicitud-gastos.component';
+import { ComponentsModule } from 'src/app/components/components.module';
 
 
 @NgModule({
@@ -15,7 +16,8 @@ import { NuevoSolicitudGastosComponent } from './pages/nuevo-solicitud-gastos/nu
     CommonModule,
     FormsModule,
     IonicModule,
-    SolicitudGastosRoutingModule
+    SolicitudGastosRoutingModule,
+    ComponentsModule
   ]
 })
 export class SolicitudGastosModule { }

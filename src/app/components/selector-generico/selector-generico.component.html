@@ -1,0 +1,9 @@
+<ion-item class="dark2" lines="full">
+  <ion-label position="stacked">{{ etiqueta }}</ion-label>
+  <ion-select [interface]="interfaz" [placeholder]="placeholder" [value]="valorInterno"
+    (ionChange)="alCambiarValor($event)">
+    <ion-select-option *ngFor="let opcion of opciones" [value]="opcion.valor">
+      {{ opcion.texto }}
+    </ion-select-option>
+  </ion-select>
+</ion-item>
