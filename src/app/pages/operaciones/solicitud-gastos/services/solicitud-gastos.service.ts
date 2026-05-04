@@ -16,6 +16,7 @@ import { PersonaSearchPageGQL, PersonaPageResponse } from '../graphql/personaSea
 import { ProveedorSearchByPersonaPageGQL, ProveedorPageResponse } from '../graphql/proveedorSearchByPersonaPage';
 import { SavePreGastoGQL } from '../graphql/savePreGasto';
 import { TipoGastosGQL } from '../graphql/tipoGastos';
+import { FilterPreGastosGQL } from '../graphql/preGastosSearch';
 import {
   PreGastoDetalleFinanzasInput,
   PreGastoInput,
@@ -105,6 +106,7 @@ export class SolicitudGastosService {
     private formasPagoGQL: FormasPagoGQL,
     private mainService: MainService,
     private notificacionService: NotificacionService,
+    private filterPreGastosGQL: FilterPreGastosGQL,
   ) { }
 
   async cargarDatosIniciales(): Promise<void> {
@@ -230,6 +232,21 @@ export class SolicitudGastosService {
       this.notificacionService.danger(mensaje || 'Error al guardar la solicitud de gasto');
       throw err;
     }
+  }
+
+  async getMisSolicitudes(page = 0, size = 15, inicio?: string, fin?: string): Promise<any> {
+    const obs = await this.genericService.onGet<any>(
+      this.filterPreGastosGQL,
+      {
+        page,
+        size,
+        inicio,
+        fin,
+        estados: ["PENDIENTE", "AUTORIZADO", "RECHAZADO", "ENVIADO_A_TESORERIA"]
+      },
+      false
+    );
+    return (await this.resolverObservable(obs)) ?? { getContent: [] };
   }
 
   async cargarPaginaPersonas(texto: string, pagina: number): Promise<{ items: Persona[]; hayMas: boolean }> {

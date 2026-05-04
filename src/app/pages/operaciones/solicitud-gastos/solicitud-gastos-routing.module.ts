@@ -1,11 +1,23 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { NuevoSolicitudGastosComponent } from './pages/nuevo-solicitud-gastos/nuevo-solicitud-gastos.component';
+import { SolicitudComponent } from './pages/solicitud/solicitud.component';
+import { ListSolicitudGastosComponent } from './pages/list-solicitud-gastos/list-solicitud-gastos.component';
 
-const routes: Routes = [{
-  path: '',
-  component: NuevoSolicitudGastosComponent
-}];
+const routes: Routes = [
+  {
+    path: '',
+    component: SolicitudComponent
+  },
+  {
+    path: 'list-solicitud-gastos',
+    component: ListSolicitudGastosComponent
+  },
+  {
+    path: 'nuevo-solicitud-gastos',
+    component: NuevoSolicitudGastosComponent
+  }
+];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],

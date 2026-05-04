@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { Persona } from 'src/app/domains/personas/persona.model';
 import { Proveedor } from 'src/app/pages/personas/proveedor/proveedor.model';
 import { TipoGasto } from '../../models/tipo-gasto.model';
@@ -40,6 +41,7 @@ export class NuevoSolicitudGastosComponent implements OnInit {
   constructor(
     public servicio: SolicitudGastosService,
     private cdr: ChangeDetectorRef,
+    private router: Router
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -167,10 +169,15 @@ export class NuevoSolicitudGastosComponent implements OnInit {
         descripcion: this.descripcion,
         gastoItems: this.gastoItems,
       });
+      this.router.navigate(['/operaciones/solicitud-gastos/list-solicitud-gastos']);
     } catch {
     } finally {
       this.guardando = false;
       this.cdr.markForCheck();
     }
+  }
+
+  cancelar(): void {
+    this.router.navigate(['/operaciones/solicitud-gastos']);
   }
 }
