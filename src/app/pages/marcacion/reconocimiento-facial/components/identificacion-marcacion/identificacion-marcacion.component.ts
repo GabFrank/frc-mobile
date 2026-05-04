@@ -269,10 +269,15 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       const embedding = this.detection.face[0].embedding as unknown as number[];
       const location = await this.geoLocation.getCurrentLocation();
 
+      if (!location) {
+        this.isLoading = false;
+        this.notificacionService.danger('No se pudo obtener la ubicación. Verifique que el GPS esté activo con ubicación precisa.');
+        return;
+      }
+
       const now = this.horaServidorService.obtenerHoraActual();
       const fechaLocal = this.toLocalIsoString(now);
 
-      // Si es primer registro facial, guardar la foto como perfil con embedding
       if (this.isPrimerRegistro && this.snapshotUrl) {
         try {
           (await this.usuarioService.onSaveUsuarioImage(
