@@ -50,7 +50,7 @@
 
         <h2 class="description">{{ item.descripcion || 'Sin descripción' }}</h2>
 
-        <div class="info-row">
+        <div class="info-row" style="align-items: center;">
           <div class="info-item">
             <ion-icon name="location-outline"></ion-icon>
             <span>{{ item.sucursalCaja?.nombre || 'N/A' }}</span>
@@ -59,6 +59,9 @@
             <ion-icon name="calendar-outline"></ion-icon>
             <span>{{ item.creadoEn | date:'dd/MM/yyyy HH:mm' }}</span>
           </div>
+          <ion-button fill="clear" color="success" (click)="onShareWhatsApp(item)" style="margin: 0; margin-left: auto; height: 30px;">
+            <ion-icon slot="icon-only" name="logo-whatsapp" style="font-size: 22px;"></ion-icon>
+          </ion-button>
         </div>
 
         <div class="card-footer">

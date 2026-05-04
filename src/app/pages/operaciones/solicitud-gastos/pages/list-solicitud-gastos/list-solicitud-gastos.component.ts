@@ -5,6 +5,7 @@ import { CalendarModal, CalendarModalOptions } from 'ion7-calendar';
 import { ModalController, NavController } from '@ionic/angular';
 import { PopOverService, PopoverSize } from '../../../../../services/pop-over.service';
 import { QrGeneratorComponent } from '../../../../../components/qr-generator/qr-generator.component';
+import { MainService } from '../../../../../services/main.service';
 
 @Component({
   selector: 'app-list-solicitud-gastos',
@@ -17,7 +18,7 @@ export class ListSolicitudGastosComponent implements OnInit {
   cargando = false;
   pagina = 0;
   hayMas = false;
-  
+
   fechaInicio: string = new Date().toISOString().split('T')[0];
   fechaFin: string = new Date().toISOString().split('T')[0];
 
@@ -25,7 +26,8 @@ export class ListSolicitudGastosComponent implements OnInit {
     private solicitudService: SolicitudGastosService,
     private modalCtrl: ModalController,
     private navCtrl: NavController,
-    private popoverService: PopOverService
+    private popoverService: PopOverService,
+    public mainService: MainService
   ) { }
 
   ngOnInit() {
@@ -42,7 +44,7 @@ export class ListSolicitudGastosComponent implements OnInit {
       // Ajustamos las fechas para cubrir todo el día (00:00:00 a 23:59:59)
       const inicio = `${this.fechaInicio}T00:00:00`;
       const fin = `${this.fechaFin}T23:59:59`;
-      
+
       const respuesta = await this.solicitudService.getMisSolicitudes(this.pagina, 15, inicio, fin);
       const nuevosItems = respuesta?.getContent ?? [];
       this.solicitudes = [...this.solicitudes, ...nuevosItems];
@@ -91,8 +93,8 @@ export class ListSolicitudGastosComponent implements OnInit {
       closeIcon: true,
       weekStart: 1,
       defaultScrollTo: this.fechaInicio ? new Date(this.fechaInicio) : new Date(),
-      defaultDateRange: this.fechaInicio && this.fechaFin ? 
-                        { from: new Date(this.fechaInicio), to: new Date(this.fechaFin) } : undefined
+      defaultDateRange: this.fechaInicio && this.fechaFin ?
+        { from: new Date(this.fechaInicio), to: new Date(this.fechaFin) } : undefined
     };
 
     const myCalendar = await this.modalCtrl.create({
@@ -122,6 +124,15 @@ export class ListSolicitudGastosComponent implements OnInit {
       case 'TRAMITE': return 'primary';
       default: return 'medium';
     }
+  }
+
+  async onShareWhatsApp(item: PreGasto) {
+    const monto = item.montoSolicitado ? item.montoSolicitado.toLocaleString('es-PY') : '0';
+    const simbolo = item.moneda?.simbolo || 'Gs.';
+    const nombreUsuario = this.mainService.usuarioActual?.persona?.nombre || this.mainService.usuarioActual?.nickname || 'Usuario';
+    const text = `Solicitud de Gasto N°${item.id}\nSolicitante: ${nombreUsuario}\nDescripción: ${item.descripcion || 'Sin descripción'}\nMonto: ${simbolo} ${monto}\nEstado: ${item.estadoEtiqueta || item.estado}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
   }
 
   async onShowQR(id: number) {
