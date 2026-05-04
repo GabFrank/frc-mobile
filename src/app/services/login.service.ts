@@ -11,19 +11,15 @@ import {
 import { Injectable } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Observable } from 'rxjs';
-import { serverAdress } from 'src/environments/environment';
 import { Usuario } from '../domains/personas/usuario.model';
 import { MainService } from './main.service';
 import { UsuarioService } from './usuario.service';
-import { ModalService } from './modal.service';
 import { CambiarContrasenhaDialogComponent } from '../dialog/login/cambiar-contrasenha-dialog/cambiar-contrasenha-dialog.component';
 import { PopOverService, PopoverSize } from './pop-over.service';
 import { CargandoService } from './cargando.service';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { InicioSesion } from '../domains/configuracion/inicio-sesion.model';
-import { Sucursal } from '../domains/empresarial/sucursal/sucursal.model';
 import { generateUUID } from '../generic/utils/string-utils';
-import { PushNotifications } from '@capacitor/push-notifications';
 
 export interface LoginResponse {
   usuario?: Usuario;
@@ -85,6 +81,16 @@ export class LoginService {
     });
   }
 
+  private getOrCreateDeviceId(): string {
+    let deviceId = localStorage.getItem('deviceId');
+    if (deviceId == null) {
+      const uuid = generateUUID();
+      localStorage.setItem('deviceId', uuid);
+      deviceId = uuid;
+    }
+    return deviceId;
+  }
+
   async login(nickname, password): Promise<Observable<LoginResponse>> {
     let loading = await this.cargandoService.open('Entrando al sistema....');
     return new Observable((obs) => {
@@ -127,12 +133,7 @@ export class LoginService {
                         inicioSesion.horaInicio = new Date();
                         inicioSesion.token = localStorage.getItem('pushToken')
                         inicioSesion.creadoEn = new Date();
-                        let deviceId = localStorage.getItem('deviceId');
-                        if (deviceId == null) {
-                          let uuid = generateUUID();
-                          localStorage.setItem('deviceId', uuid);
-                          deviceId = uuid;
-                        }
+                        const deviceId = this.getOrCreateDeviceId();
                         inicioSesion.idDispositivo = deviceId;
 
                         if (
@@ -160,10 +161,12 @@ export class LoginService {
                               PopoverSize.XS
                             )
                             .then((res2) => {
-                              if (res2 != null) {
-                                response.usuario = res2;
-                                this.usuarioActual = res2;
+                              if (res2?.data?.id != null) {
+                                response.usuario = res2.data;
+                                this.usuarioActual = res2.data;
                                 window.location.reload();
+                              } else {
+                                obs.next(response);
                               }
                             });
                         } else {
@@ -218,6 +221,71 @@ export class LoginService {
         this.router.navigate(['']);
         resolve(); // Resolve the Promise
       }
+    });
+  }
+
+  async biometricLogin(
+    biometricToken: string
+  ): Promise<Observable<LoginResponse>> {
+    return new Observable((obs) => {
+      const httpBody = {
+        biometricToken,
+        idDispositivo: this.getOrCreateDeviceId()
+      };
+
+      this.http
+        .post(
+          `http://${localStorage.getItem('serverIp')}:${localStorage.getItem(
+            'serverPort'
+          )}/login/biometric`,
+          httpBody,
+          this.httpOptions
+        )
+        .pipe(untilDestroyed(this))
+        .subscribe(
+          (res) => {
+            if (res['token'] != null && res['usuarioId'] != null) {
+              localStorage.setItem('token', res['token']);
+              localStorage.setItem('usuarioId', res['usuarioId']);
+              this.mainService.sucursalActual = res['sucursal'];
+
+              this.usuarioService
+                .onGetUsuario(res['usuarioId'])
+                .pipe(untilDestroyed(this))
+                .subscribe((usuarioRes) => {
+                  if (usuarioRes?.id != null) {
+                    this.usuarioActual = usuarioRes;
+                    this.mainService.usuarioActual = this.usuarioActual;
+                    obs.next({ usuario: usuarioRes, error: null });
+                  } else {
+                    obs.next({ usuario: null, error: null });
+                  }
+                });
+            } else {
+              obs.next({ usuario: null, error: null });
+            }
+          },
+          (error) => {
+            obs.next({ usuario: null, error });
+          }
+        );
+    });
+  }
+
+  async getBiometricOwnerUserId(): Promise<number | null> {
+    return new Promise((resolve) => {
+      this.http
+        .get<number>(
+          `http://${localStorage.getItem('serverIp')}:${localStorage.getItem(
+            'serverPort'
+          )}/login/biometric-owner/${this.getOrCreateDeviceId()}`,
+          this.httpOptions
+        )
+        .pipe(untilDestroyed(this))
+        .subscribe(
+          (res) => resolve(res),
+          () => resolve(null)
+        );
     });
   }
 }
