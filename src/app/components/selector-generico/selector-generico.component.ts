@@ -29,6 +29,12 @@ export class SelectorGenericoComponent implements OnChanges {
   @Output() valorChange = new EventEmitter<unknown>();
 
   valorInterno: unknown = null;
+  readonly compararValores = (a: unknown, b: unknown): boolean => {
+    if (a === null || a === undefined || b === null || b === undefined) {
+      return a === b;
+    }
+    return String(a) === String(b);
+  };
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['valor']) {

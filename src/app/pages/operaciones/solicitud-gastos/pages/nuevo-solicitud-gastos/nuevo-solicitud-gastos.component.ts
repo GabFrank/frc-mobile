@@ -17,6 +17,7 @@ import { SucursalItem, DetalleGastoFormulario } from '../../interfaces';
 export class NuevoSolicitudGastosComponent implements OnInit {
   gastoItems: DetalleGastoFormulario[] = [{ id: 1, monto: null, monedaId: null, formaPago: null }];
   private nextGastoId = 2;
+  private montoTextoPorItemId: Record<number, string> = {};
 
   beneficiarioTipo: 'PERSONA' | 'PROVEEDOR' = 'PERSONA';
   isPersonaBenefModalOpen = false;
@@ -60,6 +61,7 @@ export class NuevoSolicitudGastosComponent implements OnInit {
       ...this.gastoItems,
       { id: this.nextGastoId++, monto: null, monedaId: null, formaPago: null },
     ];
+    this.cdr.markForCheck();
   }
 
   quitarDetalleGasto(id: number): void {
@@ -67,6 +69,48 @@ export class NuevoSolicitudGastosComponent implements OnInit {
       return;
     }
     this.gastoItems = this.gastoItems.filter((item) => item.id !== id);
+    delete this.montoTextoPorItemId[id];
+    this.cdr.markForCheck();
+  }
+
+  alCambiarMoneda(item: DetalleGastoFormulario, valor: unknown): void {
+    const monedaId = this.normalizarNumero(valor);
+    item.monedaId = monedaId;
+    if (item.monto != null) {
+      this.montoTextoPorItemId[item.id] = this.formatearMonto(item.monto, monedaId);
+    }
+    this.cdr.markForCheck();
+  }
+
+  alCambiarMontoTexto(item: DetalleGastoFormulario, texto: string): void {
+    const textoIngresado = (texto ?? '').toString();
+    const monto = this.parsearMonto(textoIngresado, item.monedaId);
+    item.monto = monto;
+    this.montoTextoPorItemId[item.id] = monto == null ? '' : this.formatearMonto(monto, item.monedaId);
+    this.cdr.markForCheck();
+  }
+
+  alPerderFocoMonto(item: DetalleGastoFormulario): void {
+    if (item.monto == null) {
+      this.montoTextoPorItemId[item.id] = '';
+      this.cdr.markForCheck();
+      return;
+    }
+    this.montoTextoPorItemId[item.id] = this.formatearMonto(item.monto, item.monedaId);
+    this.cdr.markForCheck();
+  }
+
+  obtenerMontoTexto(item: DetalleGastoFormulario): string {
+    const texto = this.montoTextoPorItemId[item.id];
+    if (texto !== undefined) {
+      return texto;
+    }
+    if (item.monto == null) {
+      return '';
+    }
+    const formateado = this.formatearMonto(item.monto, item.monedaId);
+    this.montoTextoPorItemId[item.id] = formateado;
+    return formateado;
   }
 
   abrirModalPersonaBeneficiaria(event?: Event): void {
@@ -179,5 +223,61 @@ export class NuevoSolicitudGastosComponent implements OnInit {
 
   cancelar(): void {
     this.router.navigate(['/operaciones/solicitud-gastos']);
+  }
+
+  private parsearMonto(texto: string, monedaId: number | null): number | null {
+    const textoLimpio = (texto || '').replace(/\s/g, '');
+    if (!textoLimpio) {
+      return null;
+    }
+    const precision = this.obtenerPrecisionPorMoneda(monedaId);
+    if (precision === 0) {
+      const soloDigitos = textoLimpio.replace(/\D/g, '');
+      if (!soloDigitos) {
+        return null;
+      }
+      return Number(soloDigitos);
+    }
+
+    const ultimoSeparadorIndex = Math.max(textoLimpio.lastIndexOf(','), textoLimpio.lastIndexOf('.'));
+    const fuenteEntera = ultimoSeparadorIndex >= 0 ? textoLimpio.slice(0, ultimoSeparadorIndex) : textoLimpio;
+    const parteEntera = fuenteEntera.replace(/\D/g, '');
+    if (!parteEntera) {
+      return null;
+    }
+
+    const fuenteDecimal = ultimoSeparadorIndex >= 0 ? textoLimpio.slice(ultimoSeparadorIndex + 1) : '';
+    const parteDecimal = fuenteDecimal.replace(/\D/g, '').slice(0, precision);
+    const normalizado = parteDecimal.length > 0 ? `${parteEntera}.${parteDecimal}` : parteEntera;
+    const valor = Number(normalizado);
+    return Number.isFinite(valor) ? valor : null;
+  }
+
+  private formatearMonto(monto: number, monedaId: number | null): string {
+    const precision = this.obtenerPrecisionPorMoneda(monedaId);
+    return new Intl.NumberFormat('es-PY', {
+      minimumFractionDigits: precision,
+      maximumFractionDigits: precision,
+    }).format(monto);
+  }
+
+  private obtenerPrecisionPorMoneda(monedaId: number | null): number {
+    if (!monedaId) {
+      return 2;
+    }
+    const opcionMoneda = this.servicio.opcionesMoneda.find((opcion) => Number(opcion.valor) === Number(monedaId));
+    const textoMoneda = (opcionMoneda?.texto || '').toUpperCase();
+    if (textoMoneda.includes('GUARANI') || textoMoneda.includes('₲')) {
+      return 0;
+    }
+    return 2;
+  }
+
+  private normalizarNumero(valor: unknown): number | null {
+    if (valor === null || valor === undefined || valor === '') {
+      return null;
+    }
+    const numero = Number(valor);
+    return Number.isNaN(numero) ? null : numero;
   }
 }

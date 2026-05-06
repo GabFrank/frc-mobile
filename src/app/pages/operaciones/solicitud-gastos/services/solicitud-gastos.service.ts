@@ -153,10 +153,22 @@ export class SolicitudGastosService {
   }
 
   obtenerResponsableSesion(): { id: number | null; texto: string } {
-    const persona = this.mainService?.usuarioActual?.persona;
-    const pid = persona?.id != null ? Number(persona.id) : NaN;
-    if (!Number.isNaN(pid) && pid > 0) {
-      return { id: pid, texto: (persona?.nombre || '').toString().toUpperCase() };
+    const usuario = this.mainService?.usuarioActual;
+    const persona = usuario?.persona;
+    const personaId = persona?.id != null ? Number(persona.id) : NaN;
+    if (!Number.isNaN(personaId) && personaId > 0) {
+      return { id: personaId, texto: (persona?.nombre || '').toString().toUpperCase() };
+    }
+
+    const usuarioIdStorage = Number(localStorage.getItem('usuarioId'));
+    const usuarioId = !Number.isNaN(Number(usuario?.id)) && Number(usuario?.id) > 0
+      ? Number(usuario?.id)
+      : (!Number.isNaN(usuarioIdStorage) && usuarioIdStorage > 0 ? usuarioIdStorage : NaN);
+    if (!Number.isNaN(usuarioId) && usuarioId > 0) {
+      const texto = (usuario?.persona?.nombre || usuario?.nickname || `USUARIO ${usuarioId}`)
+        .toString()
+        .toUpperCase();
+      return { id: usuarioId, texto };
     }
     return { id: null, texto: '' };
   }
