@@ -129,7 +129,7 @@ export class SolicitudGastosService {
     }));
 
     this.tiposGasto = ((await this.resolverObservable<TipoGasto[]>(tiposGastoObs)) ?? [])
-      .filter((item) => item?.activo !== false);
+      .filter((item) => item?.activo !== false && item?.autorizacion === true);
 
     const monedas = (await this.resolverObservable<Moneda[]>(monedasObs)) ?? [];
     const formasPago = (await this.resolverObservable<FormaPago[]>(formasPagoObs)) ?? [];

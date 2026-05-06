@@ -17,6 +17,7 @@ export const tipoGastosQuery = gql`
       id
       descripcion
       activo
+      autorizacion
     }
   }
 `;
