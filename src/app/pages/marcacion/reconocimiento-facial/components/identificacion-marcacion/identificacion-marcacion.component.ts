@@ -3,7 +3,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NotificacionService } from 'src/app/services/notificacion.service';
-import { GeoLocationService } from 'src/app/services/geo-location.service';
 import { MainService } from 'src/app/services/main.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { FaceRecognitionService } from 'src/app/services/face-recognition.service';
@@ -42,6 +41,8 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   livenessIcon = 'eye-outline';
   livenessColor = 'primary';
   private hasBlinked = false;
+  private modelInitPromise: Promise<void> | null = null;
+  private storedEmbeddingPromise: Promise<number[] | null> | null = null;
 
   constructor(
     private usuarioService: UsuarioService,
@@ -51,7 +52,6 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     private notificacionService: NotificacionService,
     private faceRecognitionService: FaceRecognitionService,
     private marcacionService: MarcacionService,
-    private geoLocation: GeoLocationService,
     private router: Router,
     private horaServidorService: HoraServidorService
   ) { }
@@ -63,13 +63,13 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       this.esSalidaAlmuerzo = this.route.snapshot.queryParamMap.get('esSalidaAlmuerzo') === 'true';
     });
 
-    await this.faceRecognitionService.init();
+    // Precargamos modelo y descriptor en paralelo para reducir latencia inicial.
+    this.modelInitPromise = this.faceRecognitionService.init();
+    this.storedEmbeddingPromise = this.getStoredEmbedding();
 
     // Siempre ir directo a la cámara. Si no tiene foto de perfil,
     // el flujo de "primer registro facial" se encarga de guardarla.
-    setTimeout(() => {
-      this.startCamera();
-    }, 500);
+    this.startCamera();
 
     this.currentTime = this.horaServidorService.obtenerHoraActual();
     this.timeInterval = setInterval(() => {
@@ -89,22 +89,21 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     this.livenessColor = 'primary';
     this.hasBlinked = false;
 
-    setTimeout(() => {
-      this.videoElement = document.getElementById('camera-feed') as HTMLVideoElement;
-      if (this.videoElement) {
-        navigator.mediaDevices
-          .getUserMedia({ video: { facingMode: 'user' } })
-          .then((stream) => {
-            this.videoElement.srcObject = stream;
-            this.videoElement.play();
-            this.detectAndVerify();
-          })
-          .catch((err) => {
-            console.error('Error al acceder a la cámara:', err);
-            this.notificacionService.danger('No se pudo acceder a la cámara.');
-          });
-      }
-    }, 100);
+    this.videoElement = await this.getVideoElementWithRetry();
+    if (this.videoElement) {
+      navigator.mediaDevices
+        .getUserMedia({ video: { facingMode: 'user' } })
+        .then(async (stream) => {
+          this.videoElement.srcObject = stream;
+          await this.videoElement.play();
+          await this.waitForVideoReady(this.videoElement);
+          this.detectAndVerify();
+        })
+        .catch((err) => {
+          console.error('Error al acceder a la cámara:', err);
+          this.notificacionService.danger('No se pudo acceder a la cámara.');
+        });
+    }
   }
 
   captureSnapshot() {
@@ -127,6 +126,10 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     if (!this.cameraActive || !this.videoElement) return;
 
     try {
+      if (this.modelInitPromise) {
+        await this.modelInitPromise;
+        this.modelInitPromise = null;
+      }
       const result = await this.faceRecognitionService.detect(this.videoElement);
       this.detection = result;
 
@@ -134,15 +137,19 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
         const currentEmbedding = result.face[0].embedding as unknown as number[];
 
         if (currentEmbedding && currentEmbedding.length > 0) {
-          const storedEmbedding = await this.getStoredEmbedding();
+          const storedEmbedding = this.storedEmbeddingPromise
+            ? await this.storedEmbeddingPromise
+            : await this.getStoredEmbedding();
 
           if (storedEmbedding) {
             const similarity = this.faceRecognitionService.similarity(currentEmbedding, storedEmbedding);
             this.similarityPercent = Math.round(similarity * 100);
 
             if (similarity >= 0.6) {
-              // Liveness Detection
-              if (this.livenessStep === 'BLINK') {
+              // El parpadeo se pide una sola vez; luego ya no se vuelve a requerir.
+              if (this.hasBlinked) {
+                this.livenessStep = 'DONE';
+              } else if (this.livenessStep === 'BLINK') {
                 const blinkGesture = result.gesture.find((g: any) => g.gesture.toLowerCase().includes('blink'));
                 const liveness = (result.face[0] as any).liveness;
 
@@ -169,7 +176,9 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
               this.verificationMessage = `No coincide (${this.similarityPercent}% similitud)`;
             }
           } else {
-            if (this.livenessStep === 'BLINK') {
+            if (this.hasBlinked) {
+              this.livenessStep = 'DONE';
+            } else if (this.livenessStep === 'BLINK') {
               const blinkGesture = result.gesture.find((g: any) => g.gesture.toLowerCase().includes('blink'));
               const liveness = (result.face[0] as any).liveness;
 
@@ -267,14 +276,6 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     try {
       const embedding = this.detection.face[0].embedding as unknown as number[];
-      const location = await this.geoLocation.getCurrentLocation();
-
-      if (!location) {
-        this.isLoading = false;
-        this.notificacionService.danger('No se pudo obtener la ubicación. Verifique que el GPS esté activo con ubicación precisa.');
-        return;
-      }
-
       const now = this.horaServidorService.obtenerHoraActual();
       const fechaLocal = this.toLocalIsoString(now);
 
@@ -303,9 +304,6 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
         tipo: this.tipo,
         sucursalId: this.sucursalId,
         embedding: embedding,
-        latitud: location.latitude,
-        longitud: location.longitude,
-        precisionGps: location.accuracy,
         distanciaSucursalMetros: 0,
         esSalidaAlmuerzo: this.esSalidaAlmuerzo,
         sucursalEntradaId: this.sucursalId
@@ -328,7 +326,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
 
           setTimeout(() => {
             this.router.navigate(['/marcacion']);
-          }, 1500);
+          }, 400);
         },
         error: (err) => {
           this.isLoading = false;
@@ -346,7 +344,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
 
     } catch (e) {
       this.isLoading = false;
-      this.notificacionService.danger('Error obteniendo ubicación o procesando marcación.');
+      this.notificacionService.danger('Error procesando marcación.');
     }
   }
 
@@ -374,5 +372,32 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     const tzOffset = date.getTimezoneOffset() * 60000;
     const localISOTime = (new Date(date.getTime() - tzOffset)).toISOString().slice(0, -1);
     return localISOTime;
+  }
+
+  private waitForVideoReady(video: HTMLVideoElement): Promise<void> {
+    if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      const onReady = () => {
+        video.removeEventListener('loadeddata', onReady);
+        video.removeEventListener('canplay', onReady);
+        resolve();
+      };
+      video.addEventListener('loadeddata', onReady, { once: true });
+      video.addEventListener('canplay', onReady, { once: true });
+    });
+  }
+
+  private async getVideoElementWithRetry(maxAttempts = 10): Promise<HTMLVideoElement | null> {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const video = document.getElementById('camera-feed') as HTMLVideoElement | null;
+      if (video) {
+        return video;
+      }
+      await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+    }
+    return null;
   }
 }
