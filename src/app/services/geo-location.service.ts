@@ -34,9 +34,9 @@ const NativeLocation = registerPlugin<NativeLocationPlugin>('NativeLocation');
 export class GeoLocationService {
 
   static readonly MAX_ACCURACY = 20;
-  static readonly WARMUP_MS = 2000;
-  static readonly MAX_TIME_MS = 8000;
-  static readonly MIN_READINGS = 5;
+  static readonly WARMUP_MS = 700;
+  static readonly MAX_TIME_MS = 3200;
+  static readonly MIN_READINGS = 3;
 
   constructor() { }
 
@@ -181,6 +181,17 @@ export class GeoLocationService {
               readingsCollected: readings.length, totalReadingsNeeded: GeoLocationService.MIN_READINGS,
               message: `Lectura ${readings.length}/${GeoLocationService.MIN_READINGS} - Precisión: ${acc.toFixed(0)}m`
             });
+
+            if (readings.length >= 2 && acc <= 30) {
+              const avg = this.averageReadings(readings);
+              onProgress?.({
+                status: 'done', currentAccuracy: avg.accuracy,
+                readingsCollected: readings.length, totalReadingsNeeded: GeoLocationService.MIN_READINGS,
+                message: `Ubicación obtenida: ±${avg.accuracy.toFixed(0)}m`
+              });
+              finish(avg);
+              return;
+            }
 
             if (readings.length >= 3 && acc <= GeoLocationService.MAX_ACCURACY) {
               const avg = this.averageReadings(readings);

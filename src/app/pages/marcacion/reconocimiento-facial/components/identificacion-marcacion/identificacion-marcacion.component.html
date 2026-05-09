@@ -30,22 +30,15 @@
 
     <div class="camera-container">
       <video *ngIf="!snapshotUrl" id="camera-feed" autoplay playsinline muted class="camera-feed"></video>
-      <div *ngIf="!snapshotUrl && cameraActive" class="camera-mask">
-        <div class="mask-overlay"></div>
-        <div class="mask-hole" [class.verified]="isVerified"></div>
-      </div>
 
       <img *ngIf="snapshotUrl" [src]="snapshotUrl" alt="Foto verificada" class="camera-snapshot" />
-      <div *ngIf="isLoading" class="loading-overlay">
-        <ion-spinner name="crescent"></ion-spinner>
-      </div>
     </div>
 
     <ion-row style="margin-top: 4px;">
       <ion-col size="12" class="ion-text-center">
         <ion-button (click)="onMarcar()" [disabled]="isLoading || !isVerified" expand="block" shape="round" size="large"
           color="success">
-          {{isLoading ? 'Procesando...' : 'MARCAR ' + getTipoLabel()}}
+          {{ 'MARCAR ' + getTipoLabel() }}
         </ion-button>
       </ion-col>
     </ion-row>

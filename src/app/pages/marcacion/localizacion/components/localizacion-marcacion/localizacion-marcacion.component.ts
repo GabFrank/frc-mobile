@@ -107,10 +107,8 @@ export class LocalizacionMarcacionComponent implements OnInit {
     this.userPosition = { lat: result.latitude, lng: result.longitude };
     this.cdr.detectChanges();
 
-    setTimeout(() => {
-      this.initMap();
-      this.evaluateSucursales(result);
-    }, 100);
+    this.initMap();
+    this.evaluateSucursales(result);
   }
 
   private initMap() {
