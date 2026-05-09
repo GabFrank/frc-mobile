@@ -8,7 +8,7 @@ import { UsuarioService } from 'src/app/services/usuario.service';
 import { FaceRecognitionService } from 'src/app/services/face-recognition.service';
 import { HoraServidorService } from 'src/app/services/hora-servidor.service';
 import { MarcacionService } from '../../../marcar-horario/service/marcacion.service';
-import { Jornada, MarcacionInput, TipoMarcacion } from '../../../marcar-horario/models/marcacion.model';
+import { MarcacionInput, TipoMarcacion } from '../../../marcar-horario/models/marcacion.model';
 import { Result } from '@vladmandic/human';
 
 @UntilDestroy({ checkProperties: true })
@@ -35,7 +35,6 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   currentTime: Date;
   private timeInterval: any;
 
-  // Liveness detection state
   livenessStep: 'BLINK' | 'DONE' = 'BLINK';
   livenessInstruction = 'Parpadee para verificar';
   livenessIcon = 'eye-outline';
@@ -63,12 +62,8 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       this.esSalidaAlmuerzo = this.route.snapshot.queryParamMap.get('esSalidaAlmuerzo') === 'true';
     });
 
-    // Precargamos modelo y descriptor en paralelo para reducir latencia inicial.
     this.modelInitPromise = this.faceRecognitionService.init();
     this.storedEmbeddingPromise = this.getStoredEmbedding();
-
-    // Siempre ir directo a la cámara. Si no tiene foto de perfil,
-    // el flujo de "primer registro facial" se encarga de guardarla.
     this.startCamera();
 
     this.currentTime = this.horaServidorService.obtenerHoraActual();
@@ -122,6 +117,9 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     }
   }
 
+  private lastDetectTime = 0;
+  private canvasElement: HTMLCanvasElement;
+
   async detectAndVerify() {
     if (!this.cameraActive || !this.videoElement) return;
 
@@ -130,80 +128,82 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
         await this.modelInitPromise;
         this.modelInitPromise = null;
       }
-      const result = await this.faceRecognitionService.detect(this.videoElement);
-      this.detection = result;
 
-      if (result.face && result.face.length > 0 && result.face[0].score > 0.6) {
-        const currentEmbedding = result.face[0].embedding as unknown as number[];
+      const now = Date.now();
+      if (now - this.lastDetectTime > 250) {
+        this.lastDetectTime = now;
 
-        if (currentEmbedding && currentEmbedding.length > 0) {
-          const storedEmbedding = this.storedEmbeddingPromise
-            ? await this.storedEmbeddingPromise
-            : await this.getStoredEmbedding();
+        if (!this.canvasElement) {
+          this.canvasElement = document.createElement('canvas');
+        }
+        this.canvasElement.width = this.videoElement.videoWidth;
+        this.canvasElement.height = this.videoElement.videoHeight;
+        const ctx = this.canvasElement.getContext('2d');
+        ctx.drawImage(this.videoElement, 0, 0, this.canvasElement.width, this.canvasElement.height);
 
-          if (storedEmbedding) {
-            const similarity = this.faceRecognitionService.similarity(currentEmbedding, storedEmbedding);
-            this.similarityPercent = Math.round(similarity * 100);
+        const base64Image = this.canvasElement.toDataURL('image/jpeg', 0.7);
 
-            if (similarity >= 0.6) {
-              // El parpadeo se pide una sola vez; luego ya no se vuelve a requerir.
-              if (this.hasBlinked) {
-                this.livenessStep = 'DONE';
-              } else if (this.livenessStep === 'BLINK') {
-                const blinkGesture = result.gesture.find((g: any) => g.gesture.toLowerCase().includes('blink'));
-                const liveness = (result.face[0] as any).liveness;
+        const faces = await this.faceRecognitionService.fastDetectFace(base64Image);
 
-                // Detectamos parpadeo por gesto o por baja liveness (ojos cerrados)
-                if (blinkGesture || (liveness !== undefined && liveness < 0.15)) {
-                  this.hasBlinked = true;
-                  this.livenessStep = 'DONE';
-                  this.livenessInstruction = 'Verificación completa';
-                  this.livenessIcon = 'checkmark-done-outline';
-                  this.livenessColor = 'success';
-                }
-              }
+        if (faces && faces.length > 0) {
+          const face = faces[0];
 
-              if (this.livenessStep === 'DONE') {
-                this.isVerified = true;
-                this.verificationMessage = `Identidad verificada (${this.similarityPercent}% similitud)`;
-                this.captureSnapshot();
-                return;
-              } else {
-                this.verificationMessage = this.livenessInstruction;
-              }
-            } else {
-              this.isVerified = false;
-              this.verificationMessage = `No coincide (${this.similarityPercent}% similitud)`;
-            }
-          } else {
-            if (this.hasBlinked) {
+          if (!this.hasBlinked) {
+            const leftEyeClosed = face.leftEyeOpenProbability !== undefined && face.leftEyeOpenProbability < 0.2;
+            const rightEyeClosed = face.rightEyeOpenProbability !== undefined && face.rightEyeOpenProbability < 0.2;
+
+            if (leftEyeClosed || rightEyeClosed) {
+              this.hasBlinked = true;
               this.livenessStep = 'DONE';
-            } else if (this.livenessStep === 'BLINK') {
-              const blinkGesture = result.gesture.find((g: any) => g.gesture.toLowerCase().includes('blink'));
-              const liveness = (result.face[0] as any).liveness;
-
-              if (blinkGesture || (liveness !== undefined && liveness < 0.15)) {
-                this.hasBlinked = true;
-                this.livenessStep = 'DONE';
-              }
-            }
-
-            if (this.livenessStep === 'DONE') {
-              this.isVerified = true;
-              this.isPrimerRegistro = true;
-              this.similarityPercent = 100;
-              this.verificationMessage = 'Primer registro facial - verificado';
-              this.captureSnapshot();
-              return;
-            } else {
-              this.verificationMessage = this.livenessInstruction;
+              this.livenessInstruction = 'Verificación completa';
+              this.livenessIcon = 'checkmark-done-outline';
+              this.livenessColor = 'success';
             }
           }
+
+          if (this.livenessStep === 'DONE') {
+            const result = await this.faceRecognitionService.detect(this.videoElement);
+            this.detection = result;
+
+            if (result.face && result.face.length > 0) {
+              const currentEmbedding = result.face[0].embedding as unknown as number[];
+
+              if (currentEmbedding && currentEmbedding.length > 0) {
+                const storedEmbedding = this.storedEmbeddingPromise
+                  ? await this.storedEmbeddingPromise
+                  : await this.getStoredEmbedding();
+
+                if (storedEmbedding) {
+                  const similarity = this.faceRecognitionService.similarity(currentEmbedding, storedEmbedding);
+                  this.similarityPercent = Math.round(similarity * 100);
+
+                  if (similarity >= 0.6) {
+                    this.isVerified = true;
+                    this.verificationMessage = `Identidad verificada (${this.similarityPercent}% similitud)`;
+                    this.captureSnapshot();
+                    return;
+                  } else {
+                    this.isVerified = false;
+                    this.verificationMessage = `No coincide (${this.similarityPercent}% similitud)`;
+                  }
+                } else {
+                  this.isVerified = true;
+                  this.isPrimerRegistro = true;
+                  this.similarityPercent = 100;
+                  this.verificationMessage = 'Primer registro facial - verificado';
+                  this.captureSnapshot();
+                  return;
+                }
+              }
+            }
+          } else {
+            this.verificationMessage = this.livenessInstruction;
+          }
+        } else {
+          this.isVerified = false;
+          this.similarityPercent = null;
+          this.verificationMessage = 'Posicione su rostro frente a la cámara';
         }
-      } else {
-        this.isVerified = false;
-        this.similarityPercent = null;
-        this.verificationMessage = 'Posicione su rostro frente a la cámara';
       }
     } catch (e) {
       console.error('Error en detección:', e);

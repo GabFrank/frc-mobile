@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Human, Config, Result } from '@vladmandic/human';
+import { FaceDetection, Face, ClassificationMode } from '@capacitor-mlkit/face-detection';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 @Injectable({
     providedIn: 'root'
@@ -15,16 +17,16 @@ export class FaceRecognitionService {
             detector: { rotation: false },
             mesh: { enabled: true },
             attention: { enabled: false },
-            iris: { enabled: true },
+            iris: { enabled: false },
             description: { enabled: true },
             emotion: { enabled: false },
-            antispoof: { enabled: true },
-            liveness: { enabled: true }
+            antispoof: { enabled: false },
+            liveness: { enabled: false }
         },
         body: { enabled: false },
         hand: { enabled: false },
         object: { enabled: false },
-        gesture: { enabled: true }
+        gesture: { enabled: false }
     };
 
     async init(): Promise<void> {
@@ -66,5 +68,33 @@ export class FaceRecognitionService {
     similarity(embedding1: number[], embedding2: number[]): number {
         if (!embedding1 || !embedding2) return 0;
         return this.human?.match.similarity(embedding1, embedding2) || 0;
+    }
+
+    async fastDetectFace(base64Image: string): Promise<Face[]> {
+        try {
+            const fileName = 'temp_mlkit_frame.jpg';
+            const base64Data = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
+
+            await Filesystem.writeFile({
+                path: fileName,
+                data: base64Data,
+                directory: Directory.Cache,
+            });
+
+            const { uri } = await Filesystem.getUri({
+                path: fileName,
+                directory: Directory.Cache,
+            });
+
+            const result = await FaceDetection.processImage({
+                path: uri,
+                classificationMode: ClassificationMode.All
+            });
+
+            return result.faces;
+        } catch (e) {
+            console.error('Error en ML Kit Face Detection:', e);
+            return [];
+        }
     }
 }
