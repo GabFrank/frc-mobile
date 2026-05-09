@@ -3,19 +3,19 @@
     <div class="header-row">
       <ion-icon name="arrow-back" style="font-size: 1.5em; cursor: pointer;" (click)="onBack()"></ion-icon>
       <span class="header-title">
-        {{ snapshotUrl ? 'Identidad verificada' : 'Posicione su rostro' }}
+        {{ headerTitle }}
       </span>
     </div>
 
     <div style="text-align: center; margin-bottom: 5px;">
       <span style="font-size: 1.3em; font-weight: bold; color: var(--ion-color-dark);">
-        {{ currentTime | date:'dd/MM/yyyy HH:mm:ss' }}
+        {{ formattedTime }}
       </span>
     </div>
 
     <div *ngIf="usuarioIdentificado" style="text-align: center; margin-bottom: 10px; padding: 10px; background: var(--ion-color-success); color: white; border-radius: 8px;">
       <div style="font-size: 0.7em; opacity: 0.9;">IDENTIFICANDO A:</div>
-      <div style="font-size: 1em; font-weight: bold;">{{ usuarioIdentificado?.persona?.nombreCompleto || usuarioIdentificado?.nickname }}</div>
+      <div style="font-size: 1em; font-weight: bold;">{{ nombreUsuario }}</div>
     </div>
 
     <div class="similarity-indicator" *ngIf="similarityPercent !== null">
@@ -43,7 +43,7 @@
       <ion-col size="12" class="ion-text-center">
         <ion-button (click)="onMarcar()" [disabled]="isLoading || !isVerified" expand="block" shape="round" size="large"
           color="success">
-          {{ 'MARCAR ' + getTipoLabel() }}
+          {{ 'MARCAR ' + tipoLabel }}
         </ion-button>
       </ion-col>
     </ion-row>

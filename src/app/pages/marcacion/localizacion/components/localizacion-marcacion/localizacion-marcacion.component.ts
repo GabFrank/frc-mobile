@@ -34,18 +34,24 @@ export class LocalizacionMarcacionComponent implements OnInit {
 
   map: L.Map;
   userPosition: { lat: number; lng: number };
-  isLoading = null;
+  isLoading = false;
   isInBodega = false;
   selectedBodega: Sucursal;
   distanciaMetros: number | null = null;
   mapReady = false;
 
+  accuracyColor = 'medium';
+  accuracyLabel = '';
+
   gpsAccuracy: number | null = null;
+  formattedAccuracy = '';
   gpsMessage = '';
   gpsStatus: string = '';
   gpsReadingsCollected = 0;
   gpsReadingsNeeded = 5;
+  gpsReadingsNeededArray: number[] = [];
   gpsError = false;
+  formattedDistancia = '';
 
   private userIcon = L.divIcon({
     className: 'custom-div-icon',
@@ -91,6 +97,8 @@ export class LocalizacionMarcacionComponent implements OnInit {
           if (progress.status === 'error') {
             this.gpsError = true;
           }
+          this.actualizarAccuracyInfo();
+          this.gpsReadingsNeededArray = Array(this.gpsReadingsNeeded).fill(0);
           this.cdr.detectChanges();
         });
       }
@@ -107,6 +115,7 @@ export class LocalizacionMarcacionComponent implements OnInit {
 
     this.gpsAccuracy = result.accuracy;
     this.userPosition = { lat: result.latitude, lng: result.longitude };
+    this.actualizarAccuracyInfo();
     this.cdr.detectChanges();
 
     this.initMap();
@@ -191,22 +200,34 @@ export class LocalizacionMarcacionComponent implements OnInit {
         } else {
           this.isInBodega = false;
         }
+
+        this.formattedDistancia = this.distanciaMetros >= 1000
+          ? (this.distanciaMetros / 1000).toFixed(2) + ' km'
+          : this.distanciaMetros + ' m';
       }
     });
   }
 
-  getAccuracyColor(): string {
-    if (!this.gpsAccuracy) return 'medium';
-    if (this.gpsAccuracy <= GeoLocationService.MAX_ACCURACY) return 'success';
-    if (this.gpsAccuracy <= 50) return 'warning';
-    return 'danger';
-  }
+  actualizarAccuracyInfo(): void {
+    if (!this.gpsAccuracy) {
+      this.accuracyColor = 'medium';
+      this.accuracyLabel = '';
+      this.formattedAccuracy = '';
+      return;
+    }
 
-  getAccuracyLabel(): string {
-    if (!this.gpsAccuracy) return '';
-    if (this.gpsAccuracy <= GeoLocationService.MAX_ACCURACY) return 'Excelente';
-    if (this.gpsAccuracy <= 50) return 'Aceptable';
-    return 'Baja';
+    this.formattedAccuracy = this.gpsAccuracy.toFixed(0);
+
+    if (this.gpsAccuracy <= GeoLocationService.MAX_ACCURACY) {
+      this.accuracyColor = 'success';
+      this.accuracyLabel = 'Excelente';
+    } else if (this.gpsAccuracy <= 50) {
+      this.accuracyColor = 'warning';
+      this.accuracyLabel = 'Aceptable';
+    } else {
+      this.accuracyColor = 'danger';
+      this.accuracyLabel = 'Baja';
+    }
   }
 
   onTryAgain() {

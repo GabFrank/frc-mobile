@@ -3,6 +3,7 @@ import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { NotificacionService } from 'src/app/services/notificacion.service';
+import { Usuario } from 'src/app/domains/personas/usuario.model';
 
 @Component({
   selector: 'app-ingreso-persona',
@@ -37,7 +38,7 @@ export class IngresoPersonaComponent implements OnInit {
 
     this.isLoading = true;
     this.usuarioService.onGetUsuarioPorPersonaId(+this.personaIdInput).subscribe({
-      next: (usuario) => {
+      next: (usuario: Usuario) => {
         this.isLoading = false;
         if (usuario && usuario.id) {
           this.router.navigate(['/marcacion'], {

@@ -5,6 +5,7 @@ import { TipoMarcacion, Jornada, EstadoJornada } from '../../models/marcacion.mo
 import { MarcacionService } from '../../service/marcacion.service';
 import { MainService } from 'src/app/services/main.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
+import { Usuario } from 'src/app/domains/personas/usuario.model';
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -16,7 +17,7 @@ export class TipoMarcacionComponent implements OnInit {
 
   jornadasHoy: Jornada[] = [];
   ultimaJornada: Jornada | null = null;
-  usuarioIdentificado: any = null;
+  usuarioIdentificado: Usuario | null = null;
   isLoading = true;
 
   usuarioId: number | null = null;
@@ -24,6 +25,14 @@ export class TipoMarcacionComponent implements OnInit {
   salidaAlmuerzoDisabled = false;
   entradaAlmuerzoDisabled = false;
   salidaDisabled = false;
+
+  horaEntrada: string | null = null;
+  horaSalidaAlmuerzo: string | null = null;
+  horaEntradaAlmuerzo: string | null = null;
+  horaSalida: string | null = null;
+
+  isAdmin = false;
+  nombreUsuario = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -43,9 +52,9 @@ export class TipoMarcacionComponent implements OnInit {
         this.usuarioId = this.mainService.usuarioActual.id;
         this.usuarioIdentificado = this.mainService.usuarioActual;
       }
+      this.actualizarInformacionUsuario();
 
-      // Si es ADMIN y no viene con un usuarioId específico, mandarlo a ingresar persona
-      if (this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN' && !qUsuarioId) {
+      if (this.isAdmin && !qUsuarioId) {
         this.router.navigate(['ingreso-persona'], { relativeTo: this.route });
         return;
       }
@@ -72,6 +81,7 @@ export class TipoMarcacionComponent implements OnInit {
           next: (jornadas) => {
             this.jornadasHoy = jornadas || [];
             this.actualizarEstadoBotones();
+            this.actualizarHorasMarcacion();
             this.isLoading = false;
           },
           error: (err) => {
@@ -132,7 +142,14 @@ export class TipoMarcacionComponent implements OnInit {
     }
   }
 
-  getHoraMarcacion(tipo: 'ENTRADA' | 'SALIDA_ALMUERZO' | 'ENTRADA_ALMUERZO' | 'SALIDA'): string | null {
+  private actualizarHorasMarcacion() {
+    this.horaEntrada = this.getHoraMarcacion('ENTRADA');
+    this.horaSalidaAlmuerzo = this.getHoraMarcacion('SALIDA_ALMUERZO');
+    this.horaEntradaAlmuerzo = this.getHoraMarcacion('ENTRADA_ALMUERZO');
+    this.horaSalida = this.getHoraMarcacion('SALIDA');
+  }
+
+  private getHoraMarcacion(tipo: 'ENTRADA' | 'SALIDA_ALMUERZO' | 'ENTRADA_ALMUERZO' | 'SALIDA'): string | null {
     if (!this.ultimaJornada) return null;
     let marcacion = null;
     switch (tipo) {
@@ -155,6 +172,15 @@ export class TipoMarcacionComponent implements OnInit {
     this.salidaAlmuerzoDisabled = false;
     this.entradaAlmuerzoDisabled = false;
     this.salidaDisabled = false;
+    this.horaEntrada = null;
+    this.horaSalidaAlmuerzo = null;
+    this.horaEntradaAlmuerzo = null;
+    this.horaSalida = null;
+  }
+
+  private actualizarInformacionUsuario() {
+    this.isAdmin = this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN';
+    this.nombreUsuario = this.usuarioIdentificado?.persona?.nombreCompleto || this.usuarioIdentificado?.nickname || '';
   }
 
   onLocalizacion(tipo: string, esSalidaAlmuerzo: boolean = false) {
@@ -166,8 +192,9 @@ export class TipoMarcacionComponent implements OnInit {
 
   async cargarDatosUsuario() {
     if (!this.usuarioId) return;
-    this.usuarioService.onGetUsuario(this.usuarioId).subscribe(res => {
+    this.usuarioService.onGetUsuario(this.usuarioId).subscribe((res: Usuario) => {
       this.usuarioIdentificado = res;
+      this.actualizarInformacionUsuario();
     });
   }
 

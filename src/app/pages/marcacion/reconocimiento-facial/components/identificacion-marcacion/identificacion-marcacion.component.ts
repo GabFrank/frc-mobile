@@ -10,6 +10,7 @@ import { HoraServidorService } from 'src/app/services/hora-servidor.service';
 import { MarcacionService } from '../../../marcar-horario/service/marcacion.service';
 import { MarcacionInput, TipoMarcacion } from '../../../marcar-horario/models/marcacion.model';
 import { Result } from '@vladmandic/human';
+import { Usuario } from 'src/app/domains/personas/usuario.model';
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -22,7 +23,10 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   tipo: TipoMarcacion = TipoMarcacion.ENTRADA;
   esSalidaAlmuerzo = false;
   usuarioId: number;
-  usuarioIdentificado: any = null;
+  usuarioIdentificado: Usuario | null = null;
+  tipoLabel = '';
+  headerTitle = '';
+  nombreUsuario = '';
 
   isLoading = false;
   detection: Result | null = null;
@@ -35,7 +39,8 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   isPrimerRegistro = false;
   snapshotUrl: string | null = null;
   currentTime: Date;
-  private timeInterval: any;
+  formattedTime = '';
+  private timeInterval: ReturnType<typeof setInterval>;
 
   livenessStep: 'BLINK' | 'DONE' = 'BLINK';
   livenessInstruction = 'Parpadee para verificar';
@@ -64,6 +69,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       this.esSalidaAlmuerzo = this.route.snapshot.queryParamMap.get('esSalidaAlmuerzo') === 'true';
       const customUsuarioId = this.route.snapshot.queryParamMap.get('usuarioId');
       this.usuarioId = customUsuarioId ? +customUsuarioId : this.mainService.usuarioActual.id;
+      this.actualizarTipoLabel();
       this.cargarDatosUsuario();
     });
 
@@ -72,8 +78,10 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     this.startCamera();
 
     this.currentTime = this.horaServidorService.obtenerHoraActual();
+    this.actualizarFormattedTime();
     this.timeInterval = setInterval(() => {
       this.currentTime = this.horaServidorService.obtenerHoraActual();
+      this.actualizarFormattedTime();
     }, 1000);
   }
 
@@ -88,6 +96,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     this.livenessIcon = 'eye-outline';
     this.livenessColor = 'primary';
     this.hasBlinked = false;
+    this.actualizarHeaderTitle();
 
     this.videoElement = await this.getVideoElementWithRetry();
     if (this.videoElement) {
@@ -115,6 +124,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(this.videoElement, 0, 0, canvas.width, canvas.height);
       this.snapshotUrl = canvas.toDataURL('image/jpeg', 0.9);
+      this.actualizarHeaderTitle();
       this.videoElement.pause();
       this.stopCamera();
     } catch (e) {
@@ -257,14 +267,32 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  getTipoLabel(): string {
+  actualizarTipoLabel(): void {
     if (this.tipo === TipoMarcacion.ENTRADA) {
-      if (this.esSalidaAlmuerzo) return 'ENTRADA ALMUERZO';
-      return 'ENTRADA';
+      this.tipoLabel = this.esSalidaAlmuerzo ? 'ENTRADA ALMUERZO' : 'ENTRADA';
     } else {
-      if (this.esSalidaAlmuerzo) return 'SALIDA ALMUERZO';
-      return 'SALIDA';
+      this.tipoLabel = this.esSalidaAlmuerzo ? 'SALIDA ALMUERZO' : 'SALIDA';
     }
+  }
+
+  private actualizarHeaderTitle(): void {
+    this.headerTitle = this.snapshotUrl ? 'Identidad verificada' : 'Posicione su rostro';
+  }
+
+  private actualizarFormattedTime(): void {
+    if (!this.currentTime) return;
+    this.formattedTime = this.currentTime.toLocaleString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  }
+
+  private actualizarNombreUsuario(): void {
+    this.nombreUsuario = this.usuarioIdentificado?.persona?.nombreCompleto || this.usuarioIdentificado?.nickname || '';
   }
 
   async onMarcar() {
@@ -325,9 +353,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
         next: (res) => {
           this.isLoading = false;
           this.stopCamera();
-
-          const tipoLabel = this.getTipoLabel();
-          this.notificacionService.success(`${tipoLabel} registrada correctamente`);
+          this.notificacionService.success(`${this.tipoLabel} registrada correctamente`);
 
           setTimeout(() => {
             this.router.navigate(['/marcacion']);
@@ -410,10 +436,12 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     if (!this.usuarioId) return;
     if (this.usuarioId === this.mainService.usuarioActual?.id) {
       this.usuarioIdentificado = this.mainService.usuarioActual;
+      this.actualizarNombreUsuario();
       return;
     }
-    this.usuarioService.onGetUsuario(this.usuarioId).subscribe(res => {
+    this.usuarioService.onGetUsuario(this.usuarioId).subscribe((res: Usuario) => {
       this.usuarioIdentificado = res;
+      this.actualizarNombreUsuario();
     });
   }
 }
