@@ -4,6 +4,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { TipoMarcacion, Jornada, EstadoJornada } from '../../models/marcacion.model';
 import { MarcacionService } from '../../service/marcacion.service';
 import { MainService } from 'src/app/services/main.service';
+import { UsuarioService } from 'src/app/services/usuario.service';
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -15,8 +16,10 @@ export class TipoMarcacionComponent implements OnInit {
 
   jornadasHoy: Jornada[] = [];
   ultimaJornada: Jornada | null = null;
+  usuarioIdentificado: any = null;
   isLoading = true;
 
+  usuarioId: number | null = null;
   entradaDisabled = false;
   salidaAlmuerzoDisabled = false;
   entradaAlmuerzoDisabled = false;
@@ -26,11 +29,29 @@ export class TipoMarcacionComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private marcacionService: MarcacionService,
-    private mainService: MainService
+    public mainService: MainService,
+    private usuarioService: UsuarioService
   ) { }
 
   ngOnInit() {
-    this.cargarEstadoJornadas();
+    this.route.queryParamMap.pipe(untilDestroyed(this)).subscribe(params => {
+      const qUsuarioId = params.get('usuarioId');
+      if (qUsuarioId) {
+        this.usuarioId = +qUsuarioId;
+        this.cargarDatosUsuario();
+      } else {
+        this.usuarioId = this.mainService.usuarioActual.id;
+        this.usuarioIdentificado = this.mainService.usuarioActual;
+      }
+
+      // Si es ADMIN y no viene con un usuarioId específico, mandarlo a ingresar persona
+      if (this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN' && !qUsuarioId) {
+        this.router.navigate(['ingreso-persona'], { relativeTo: this.route });
+        return;
+      }
+
+      this.cargarEstadoJornadas();
+    });
   }
 
   ionViewWillEnter() {
@@ -38,13 +59,14 @@ export class TipoMarcacionComponent implements OnInit {
   }
 
   async cargarEstadoJornadas() {
+    if (!this.usuarioId) return;
     this.isLoading = true;
     const hoy = new Date();
     const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()).toISOString();
     const fin = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59).toISOString();
 
     try {
-      (await this.marcacionService.onGetJornadasPorUsuario(this.mainService.usuarioActual.id, inicio, fin))
+      (await this.marcacionService.onGetJornadasPorUsuario(this.usuarioId, inicio, fin))
         .pipe(untilDestroyed(this))
         .subscribe({
           next: (jornadas) => {
@@ -138,7 +160,18 @@ export class TipoMarcacionComponent implements OnInit {
   onLocalizacion(tipo: string, esSalidaAlmuerzo: boolean = false) {
     this.router.navigate(['localizacion/true'], {
       relativeTo: this.route,
-      queryParams: { tipo, esSalidaAlmuerzo }
+      queryParams: { tipo, esSalidaAlmuerzo, usuarioId: this.usuarioId }
     });
+  }
+
+  async cargarDatosUsuario() {
+    if (!this.usuarioId) return;
+    this.usuarioService.onGetUsuario(this.usuarioId).subscribe(res => {
+      this.usuarioIdentificado = res;
+    });
+  }
+
+  onCambiarUsuario() {
+    this.router.navigate(['ingreso-persona'], { relativeTo: this.route });
   }
 }

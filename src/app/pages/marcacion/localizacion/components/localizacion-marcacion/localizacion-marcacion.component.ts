@@ -13,6 +13,7 @@ import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
 import { GeoLocationService, GeoProgress, GeoResult } from 'src/app/services/geo-location.service';
 import * as L from 'leaflet';
+import { MainService } from 'src/app/services/main.service';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -48,7 +49,7 @@ export class LocalizacionMarcacionComponent implements OnInit {
 
   private userIcon = L.divIcon({
     className: 'custom-div-icon',
-    html: `<div style='background-color: #4285F4; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);'></div>`,
+    html: `<div style='background-color: #2dd36f; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);'></div>`,
     iconSize: [20, 20],
     iconAnchor: [10, 10]
   });
@@ -60,7 +61,8 @@ export class LocalizacionMarcacionComponent implements OnInit {
     private sucursalService: SucursalService,
     private router: Router,
     private ngZone: NgZone,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private mainService: MainService
   ) { }
 
   ngOnInit() {
@@ -137,8 +139,8 @@ export class LocalizacionMarcacionComponent implements OnInit {
     if (this.gpsAccuracy) {
       L.circle([this.userPosition.lat, this.userPosition.lng], {
         radius: this.gpsAccuracy,
-        color: '#4285F4',
-        fillColor: '#4285F430',
+        color: '#2dd36f',
+        fillColor: '#2dd36f30',
         fillOpacity: 0.2,
         weight: 1
       }).addTo(this.map);

@@ -13,6 +13,11 @@
       </span>
     </div>
 
+    <div *ngIf="usuarioIdentificado" style="text-align: center; margin-bottom: 10px; padding: 10px; background: var(--ion-color-success); color: white; border-radius: 8px;">
+      <div style="font-size: 0.7em; opacity: 0.9;">IDENTIFICANDO A:</div>
+      <div style="font-size: 1em; font-weight: bold;">{{ usuarioIdentificado?.persona?.nombreCompleto || usuarioIdentificado?.nickname }}</div>
+    </div>
+
     <div class="similarity-indicator" *ngIf="similarityPercent !== null">
       <div class="similarity-bar">
         <div class="similarity-fill" [style.width.%]="similarityPercent" [class.similarity-success]="isVerified"

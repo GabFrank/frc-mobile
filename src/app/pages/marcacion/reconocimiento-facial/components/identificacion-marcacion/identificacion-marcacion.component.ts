@@ -21,6 +21,8 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   sucursalId: number;
   tipo: TipoMarcacion = TipoMarcacion.ENTRADA;
   esSalidaAlmuerzo = false;
+  usuarioId: number;
+  usuarioIdentificado: any = null;
 
   isLoading = false;
   detection: Result | null = null;
@@ -60,6 +62,9 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       this.sucursalId = +res.get('sucId');
       this.tipo = (this.route.snapshot.queryParamMap.get('tipo') as TipoMarcacion) || TipoMarcacion.ENTRADA;
       this.esSalidaAlmuerzo = this.route.snapshot.queryParamMap.get('esSalidaAlmuerzo') === 'true';
+      const customUsuarioId = this.route.snapshot.queryParamMap.get('usuarioId');
+      this.usuarioId = customUsuarioId ? +customUsuarioId : this.mainService.usuarioActual.id;
+      this.cargarDatosUsuario();
     });
 
     this.modelInitPromise = this.faceRecognitionService.init();
@@ -225,7 +230,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     try {
       const perfilImages = await new Promise<string[]>((resolve, reject) => {
         this.usuarioService.onGetUsuarioImages(
-          this.mainService.usuarioActual.id,
+          this.usuarioId,
           'perfil'
         ).then(obs => {
           obs.subscribe({
@@ -282,7 +287,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       if (this.isPrimerRegistro && this.snapshotUrl) {
         try {
           (await this.usuarioService.onSaveUsuarioImage(
-            this.mainService.usuarioActual.id,
+            this.usuarioId,
             'perfil',
             this.snapshotUrl,
             embedding
@@ -300,7 +305,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       }
 
       const input: MarcacionInput = {
-        usuarioId: this.mainService.usuarioActual.id,
+        usuarioId: this.usuarioId,
         tipo: this.tipo,
         sucursalId: this.sucursalId,
         embedding: embedding,
@@ -399,5 +404,16 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
     }
     return null;
+  }
+
+  async cargarDatosUsuario() {
+    if (!this.usuarioId) return;
+    if (this.usuarioId === this.mainService.usuarioActual?.id) {
+      this.usuarioIdentificado = this.mainService.usuarioActual;
+      return;
+    }
+    this.usuarioService.onGetUsuario(this.usuarioId).subscribe(res => {
+      this.usuarioIdentificado = res;
+    });
   }
 }

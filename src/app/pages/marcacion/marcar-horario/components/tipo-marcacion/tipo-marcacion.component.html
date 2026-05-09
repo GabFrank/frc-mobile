@@ -1,5 +1,20 @@
 <ion-content class="center-content">
-  <div style="text-align: center; font-size: large; padding: 20px;">Elegir tipo de marcación</div>
+  <div class="header-user-info" *ngIf="usuarioIdentificado" 
+       style="background: var(--ion-color-success); color: white; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center;">
+      <ion-icon name="person-circle" style="font-size: 2.5em; margin-right: 10px;"></ion-icon>
+      <div style="text-align: left;">
+        <div style="font-size: 0.8em; opacity: 0.8; font-weight: 500;">MARCACIÓN PARA:</div>
+        <div style="font-size: 1.1em; font-weight: bold;">{{ usuarioIdentificado?.persona?.nombreCompleto || usuarioIdentificado?.nickname }}</div>
+      </div>
+    </div>
+    <ion-button *ngIf="mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN'" 
+                (click)="onCambiarUsuario()" fill="clear" style="--color: white;">
+      <ion-icon name="swap-horizontal-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+  </div>
+
+  <div style="text-align: center; font-size: large; padding: 10px;">Elegir tipo de marcación</div>
 
   <div *ngIf="isLoading" style="text-align: center; padding: 40px;">
     <ion-spinner name="crescent"></ion-spinner>

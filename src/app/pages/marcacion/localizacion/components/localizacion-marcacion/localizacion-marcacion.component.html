@@ -18,7 +18,7 @@
         </p>
       </div>
       <div *ngIf="gpsStatus === 'reading'">
-        <ion-icon name="navigate-outline" style="font-size: 2em; color: #4285F4;"></ion-icon>
+        <ion-icon name="navigate-outline" style="font-size: 2em; color: var(--ion-color-success);"></ion-icon>
         <p style="margin: 8px 0 4px;">Recolectando lecturas GPS</p>
         <div style="display: flex; justify-content: center; gap: 6px; margin: 10px 0;">
           <div *ngFor="let item of [].constructor(gpsReadingsNeeded); let i = index"
@@ -109,9 +109,8 @@
     </div>
   </div>
 
-  <!-- Retry on error -->
   <div *ngIf="gpsError && !isLoading" style="text-align: center; padding: 20px;">
-    <ion-button (click)="onTryAgain()" expand="block" shape="round" color="primary">
+    <ion-button (click)="onTryAgain()" expand="block" shape="round" color="success">
       <ion-icon name="refresh-outline" slot="start"></ion-icon>
       Reintentar
     </ion-button>
