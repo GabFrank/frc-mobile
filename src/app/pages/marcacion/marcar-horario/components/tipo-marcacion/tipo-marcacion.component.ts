@@ -18,7 +18,7 @@ export class TipoMarcacionComponent implements OnInit {
   jornadasHoy: Jornada[] = [];
   ultimaJornada: Jornada | null = null;
   usuarioIdentificado: Usuario | null = null;
-  isLoading = true;
+  isLoading = false;
 
   usuarioId: number | null = null;
   entradaDisabled = false;
@@ -68,7 +68,7 @@ export class TipoMarcacionComponent implements OnInit {
   }
 
   async cargarEstadoJornadas() {
-    if (!this.usuarioId) return;
+    if (!this.usuarioId || this.isLoading) return;
     this.isLoading = true;
     const hoy = new Date();
     const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()).toISOString();
@@ -184,6 +184,14 @@ export class TipoMarcacionComponent implements OnInit {
   }
 
   onLocalizacion(tipo: string, esSalidaAlmuerzo: boolean = false) {
+    const isLoggedAsAdmin = this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN';
+    if (isLoggedAsAdmin && this.marcacionService.sucursalPersistida) {
+      this.router.navigate(['/marcacion/localizacion/true/identificacion/' + this.marcacionService.sucursalPersistida.id], {
+        queryParams: { tipo, esSalidaAlmuerzo, usuarioId: this.usuarioId },
+        queryParamsHandling: 'merge'
+      });
+      return;
+    }
     this.router.navigate(['localizacion/true'], {
       relativeTo: this.route,
       queryParams: { tipo, esSalidaAlmuerzo, usuarioId: this.usuarioId }

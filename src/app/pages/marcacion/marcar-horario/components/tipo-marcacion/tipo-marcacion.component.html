@@ -1,6 +1,6 @@
 <ion-content class="center-content">
   <div class="header-user-info" *ngIf="usuarioIdentificado" 
-       style="background: var(--ion-color-success); color: white; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+       style="background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1);">
     <div style="display: flex; align-items: center;">
       <ion-icon name="person-circle" style="font-size: 2.5em; margin-right: 10px;"></ion-icon>
       <div style="text-align: left;">
@@ -61,7 +61,7 @@
     </ion-card>
 
     <ion-card class="marking-card card-entrada" [class.disabled]="entradaAlmuerzoDisabled"
-      (click)="!entradaAlmuerzoDisabled && onLocalizacion('ENTRADA')">
+      (click)="!entradaAlmuerzoDisabled && onLocalizacion('ENTRADA', true)">
       <div class="card-content">
         <div class="icon-section bg-info">
           <ion-icon name="walk-outline"></ion-icon>

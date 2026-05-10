@@ -13,7 +13,7 @@
       </span>
     </div>
 
-    <div *ngIf="usuarioIdentificado" style="text-align: center; margin-bottom: 10px; padding: 10px; background: var(--ion-color-success); color: white; border-radius: 8px;">
+    <div *ngIf="usuarioIdentificado" style="text-align: center; margin-bottom: 10px; padding: 10px; background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; border-radius: 8px;">
       <div style="font-size: 0.7em; opacity: 0.9;">IDENTIFICANDO A:</div>
       <div style="font-size: 1em; font-weight: bold;">{{ nombreUsuario }}</div>
     </div>
@@ -42,7 +42,7 @@
     <ion-row style="margin-top: 4px;">
       <ion-col size="12" class="ion-text-center">
         <ion-button (click)="onMarcar()" [disabled]="isLoading || !isVerified" expand="block" shape="round" size="large"
-          color="success">
+          style="--background: linear-gradient(135deg, #28a745 0%, #218838 100%);">
           {{ 'MARCAR ' + tipoLabel }}
         </ion-button>
       </ion-col>

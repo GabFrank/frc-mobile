@@ -33,10 +33,10 @@ const NativeLocation = registerPlugin<NativeLocationPlugin>('NativeLocation');
 })
 export class GeoLocationService {
 
-  static readonly MAX_ACCURACY = 20;
+  static readonly MAX_ACCURACY = 33;
   static readonly WARMUP_MS = 700;
-  static readonly MAX_TIME_MS = 3200;
-  static readonly MIN_READINGS = 3;
+  static readonly MAX_TIME_MS = 6300;
+  static readonly MIN_READINGS = 2;
 
   constructor() { }
 
@@ -182,18 +182,18 @@ export class GeoLocationService {
               message: `Lectura ${readings.length}/${GeoLocationService.MIN_READINGS} - Precisión: ${acc.toFixed(0)}m`
             });
 
-            if (readings.length >= 2 && acc <= 30) {
+            if (readings.length >= 2 && acc <= 25) {
               const avg = this.averageReadings(readings);
               onProgress?.({
                 status: 'done', currentAccuracy: avg.accuracy,
                 readingsCollected: readings.length, totalReadingsNeeded: GeoLocationService.MIN_READINGS,
-                message: `Ubicación obtenida: ±${avg.accuracy.toFixed(0)}m`
+                message: `Ubicación estable: ±${avg.accuracy.toFixed(0)}m`
               });
               finish(avg);
               return;
             }
 
-            if (readings.length >= 3 && acc <= GeoLocationService.MAX_ACCURACY) {
+            if (readings.length >= 2 && acc <= GeoLocationService.MAX_ACCURACY) {
               const avg = this.averageReadings(readings);
               onProgress?.({
                 status: 'done', currentAccuracy: avg.accuracy,
@@ -230,7 +230,7 @@ export class GeoLocationService {
 
   private averageReadings(readings: GeoResult[]): GeoResult {
     const sorted = [...readings].sort((a, b) => a.accuracy - b.accuracy);
-    const count = Math.min(sorted.length, Math.max(3, Math.ceil(sorted.length * 0.6)));
+    const count = Math.min(sorted.length, Math.max(2, Math.ceil(sorted.length * 0.6)));
     const best = sorted.slice(0, count);
 
     const sumLat = best.reduce((s, r) => s + r.latitude, 0);

@@ -14,6 +14,7 @@ import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.s
 import { GeoLocationService, GeoProgress, GeoResult } from 'src/app/services/geo-location.service';
 import * as L from 'leaflet';
 import { MainService } from 'src/app/services/main.service';
+import { MarcacionService } from '../../../marcar-horario/service/marcacion.service';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -68,7 +69,8 @@ export class LocalizacionMarcacionComponent implements OnInit {
     private router: Router,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef,
-    private mainService: MainService
+    private mainService: MainService,
+    private marcacionService: MarcacionService
   ) { }
 
   ngOnInit() {
@@ -186,7 +188,7 @@ export class LocalizacionMarcacionComponent implements OnInit {
         const masCercana = sucursalesConDistancia[0];
         this.distanciaMetros = Math.round(masCercana.distancia);
 
-        const radioSucursal = 20;
+        const radioSucursal = 33;
         const isMatch = this.geoLocation.checkIfLocationMatches(
           +masCercana.sucursal.localizacion.split(',')[0],
           +masCercana.sucursal.localizacion.split(',')[1],
@@ -244,6 +246,10 @@ export class LocalizacionMarcacionComponent implements OnInit {
   }
 
   onConfirmar() {
+    const isAdmin = this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN';
+    if (isAdmin) {
+      this.marcacionService.sucursalPersistida = this.selectedBodega;
+    }
     this.router.navigate(['identificacion/' + this.selectedBodega?.id], {
       relativeTo: this.route,
       queryParamsHandling: 'preserve'
