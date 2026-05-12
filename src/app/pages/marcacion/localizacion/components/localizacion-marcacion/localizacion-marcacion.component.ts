@@ -168,7 +168,7 @@ export class LocalizacionMarcacionComponent implements OnInit {
   }
 
   private async evaluateSucursales(geoResult: GeoResult) {
-    (await this.sucursalService.onGetAllSucursales()).subscribe(sucRes => {
+    (await this.sucursalService.onGetAllSucursales()).pipe(untilDestroyed(this)).subscribe(sucRes => {
       if (!sucRes?.length || !this.userPosition) return;
 
       const sucursalesConDistancia = sucRes

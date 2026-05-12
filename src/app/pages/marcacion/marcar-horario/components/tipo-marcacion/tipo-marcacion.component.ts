@@ -200,7 +200,7 @@ export class TipoMarcacionComponent implements OnInit {
 
   async cargarDatosUsuario() {
     if (!this.usuarioId) return;
-    this.usuarioService.onGetUsuario(this.usuarioId).subscribe((res: Usuario) => {
+    this.usuarioService.onGetUsuario(this.usuarioId).pipe(untilDestroyed(this)).subscribe((res: Usuario) => {
       this.usuarioIdentificado = res;
       this.actualizarInformacionUsuario();
     });
