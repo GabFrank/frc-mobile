@@ -5,6 +5,7 @@ import { MarcacionRoutingModule } from './marcacion-routing.module';
 import { TipoMarcacionComponent } from './marcar-horario/components/tipo-marcacion/tipo-marcacion.component';
 import { IdentificacionMarcacionComponent } from './reconocimiento-facial/components/identificacion-marcacion/identificacion-marcacion.component';
 import { LocalizacionMarcacionComponent } from './localizacion/components/localizacion-marcacion/localizacion-marcacion.component';
+import { IngresoPersonaComponent } from './reconocimiento-facial/components/ingreso-persona/ingreso-persona.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { WebcamModule } from 'ngx-webcam';
@@ -13,12 +14,14 @@ import { WebcamModule } from 'ngx-webcam';
   declarations: [
     TipoMarcacionComponent,
     IdentificacionMarcacionComponent,
-    LocalizacionMarcacionComponent
+    LocalizacionMarcacionComponent,
+    IngresoPersonaComponent
   ],
   exports: [
     TipoMarcacionComponent,
     IdentificacionMarcacionComponent,
-    LocalizacionMarcacionComponent
+    LocalizacionMarcacionComponent,
+    IngresoPersonaComponent
   ],
   imports: [
     CommonModule,

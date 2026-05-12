@@ -203,6 +203,7 @@ export class LoginService {
           (res) => {
             localStorage.setItem('token', null);
             localStorage.setItem('usuarioId', null);
+            localStorage.removeItem('sucursalPersistida');
             sessionStorage.setItem('justLoggedOut', 'true');
             this.usuarioActual = null;
             this.router.navigate(['']);
@@ -216,6 +217,7 @@ export class LoginService {
       } else {
         localStorage.setItem('token', null);
         localStorage.setItem('usuarioId', null);
+        localStorage.removeItem('sucursalPersistida');
         sessionStorage.setItem('justLoggedOut', 'true');
         this.usuarioActual = null;
         this.router.navigate(['']);

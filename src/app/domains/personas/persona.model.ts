@@ -4,6 +4,7 @@ import { Usuario } from "./usuario.model";
 export interface Persona  {
     id: number;
     nombre: string;
+    nombreCompleto?: string;
     apodo: string;
     nacimiento: Date;
     documento: string;
