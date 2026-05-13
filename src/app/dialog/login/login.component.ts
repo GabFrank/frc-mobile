@@ -31,6 +31,8 @@ export class LoginComponent implements OnInit {
   error = null;
   activateDev = 0;
   isBiometricAvailable = false;
+  loading = false;
+  isDismissing = false;
 
   constructor(private loginService: LoginService,
     private notificacionService: NotificacionService,
@@ -55,7 +57,11 @@ export class LoginComponent implements OnInit {
     if (justLoggedOut) {
       sessionStorage.removeItem('justLoggedOut');
     } else {
-      this.performBiometricLogin();
+      setTimeout(() => {
+        if (!this.isDismissing && !this.loading) {
+          this.performBiometricLogin();
+        }
+      }, 500);
     }
   }
 
@@ -74,16 +80,18 @@ export class LoginComponent implements OnInit {
           subtitle: 'Autenticación requerida',
         });
 
+        this.loading = true;
         (await this.loginService.biometricLogin(credentials.password))
           .pipe(untilDestroyed(this))
           .subscribe(res => {
+            this.loading = false;
             if (res?.error == null && res?.usuario != null) {
               this.onSelectUsuarioAndDismiss(res.usuario);
             } else {
               this.error = res?.error?.error?.message || "No se pudo validar la sesión biométrica.";
               this.notificacionService.open(this.error, TipoNotificacion.DANGER, 5);
             }
-          });
+          }, () => this.loading = false);
       }
     } catch (error: any) {
       console.log('Biometric login not possible or cancelled:', error);
@@ -98,33 +106,44 @@ export class LoginComponent implements OnInit {
   }
 
   async onLogin() {
+    if (this.loading || this.isDismissing) return;
     this.error = null;
     let usuario: string = this.usuarioControl.value;
     if (usuario[usuario.length - 1] == ' ') {
       usuario = usuario.substring(0, usuario.length - 2);
     }
+    this.loading = true;
     (await this.loginService.login(usuario, this.passwordControl.value))
       .pipe(untilDestroyed(this))
       .subscribe(res => {
+        this.loading = false;
         if (res.error == null) {
           this.syncBiometricCredentialsForOwner(res.usuario.id, localStorage.getItem('token'));
 
           this.onSelectUsuarioAndDismiss(res.usuario)
         } else {
-          this.error = res.error['message'];
+          this.error = res.error['message'] || "Error al iniciar sesión";
           this.notificacionService.open(this.error, TipoNotificacion.DANGER, 10)
         }
+      }, (err) => {
+        this.loading = false;
+        this.error = "Error de conexión";
+        this.notificacionService.open(this.error, TipoNotificacion.DANGER, 10);
       })
   }
 
   onSelectUsuarioAndDismiss(usuario: Usuario) {
+    if (this.isDismissing) return;
+    this.isDismissing = true;
     this.selectedUsuario = usuario;
     setTimeout(() => {
-      this.modalService.closeModal(null)
+      this.modalService.closeModal(usuario)
     }, 2000);
   }
 
   onSolicitarNuevoUsuario() {
+    if (this.isDismissing) return;
+    this.isDismissing = true;
     this.modalService.closeModal(null)
     setTimeout(() => {
       this.modalService.openModal(PreRegistroFuncionarioComponent)

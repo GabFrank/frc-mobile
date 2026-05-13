@@ -5,12 +5,36 @@ import { SaveMarcacionGQL } from '../graphql/saveMarcacion';
 import { GetMarcacionesPorUsuarioGQL } from '../graphql/getMarcacionesPorUsuario';
 import { GetJornadasPorUsuarioGQL } from '../graphql/getJornadasPorUsuario';
 import { GenericCrudService } from 'src/app/generic/generic-crud.service';
+import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 
 @Injectable({
     providedIn: 'root',
 })
 export class MarcacionService {
+
+    private _sucursalPersistida: Sucursal | null = null;
+
+    get sucursalPersistida(): Sucursal | null {
+        if (!this._sucursalPersistida) {
+            const saved = localStorage.getItem('sucursalPersistida');
+            if (saved) {
+                this._sucursalPersistida = JSON.parse(saved);
+            }
+        }
+        return this._sucursalPersistida;
+    }
+
+    set sucursalPersistida(val: Sucursal | null) {
+        this._sucursalPersistida = val;
+        if (val) {
+            localStorage.setItem('sucursalPersistida', JSON.stringify(val));
+        } else {
+            localStorage.removeItem('sucursalPersistida');
+        }
+    }
+
     constructor(
+
         private genericCrudService: GenericCrudService,
         private saveMarcacionGQL: SaveMarcacionGQL,
         private getMarcacionesPorUsuarioGQL: GetMarcacionesPorUsuarioGQL,
@@ -29,3 +53,4 @@ export class MarcacionService {
         return await this.genericCrudService.onGetCustom(this.getJornadasPorUsuarioGQL, { usuarioId, fechaInicio, fechaFin });
     }
 }
+

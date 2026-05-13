@@ -1,5 +1,20 @@
 <ion-content class="center-content">
-  <div style="text-align: center; font-size: large; padding: 20px;">Elegir tipo de marcación</div>
+  <div class="header-user-info" *ngIf="usuarioIdentificado" 
+       style="background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1);">
+    <div style="display: flex; align-items: center;">
+      <ion-icon name="person-circle" style="font-size: 2.5em; margin-right: 10px;"></ion-icon>
+      <div style="text-align: left;">
+        <div style="font-size: 0.8em; opacity: 0.8; font-weight: 500;">MARCACIÓN PARA:</div>
+        <div style="font-size: 1.1em; font-weight: bold;">{{ nombreUsuario }}</div>
+      </div>
+    </div>
+    <ion-button *ngIf="isAdmin" 
+                (click)="onCambiarUsuario()" fill="clear" style="--color: white;">
+      <ion-icon name="swap-horizontal-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+  </div>
+
+  <div style="text-align: center; font-size: large; padding: 10px;">Elegir tipo de marcación</div>
 
   <div *ngIf="isLoading" style="text-align: center; padding: 40px;">
     <ion-spinner name="crescent"></ion-spinner>
@@ -15,10 +30,10 @@
         </div>
         <div class="info-section">
           <h3>Entrada</h3>
-          <p *ngIf="getHoraMarcacion('ENTRADA')" class="status-recorded">
-            Marcado a las {{ getHoraMarcacion('ENTRADA') }}
+          <p *ngIf="horaEntrada" class="status-recorded">
+            Marcado a las {{ horaEntrada }}
           </p>
-          <p *ngIf="!getHoraMarcacion('ENTRADA')" class="status-pending">Pendiente</p>
+          <p *ngIf="!horaEntrada" class="status-pending">Pendiente</p>
         </div>
         <div class="check-section" *ngIf="entradaDisabled">
           <ion-icon name="checkmark-circle" color="success"></ion-icon>
@@ -34,10 +49,10 @@
         </div>
         <div class="info-section">
           <h3>Salida Almuerzo</h3>
-          <p *ngIf="getHoraMarcacion('SALIDA_ALMUERZO')" class="status-recorded">
-            Marcado a las {{ getHoraMarcacion('SALIDA_ALMUERZO') }}
+          <p *ngIf="horaSalidaAlmuerzo" class="status-recorded">
+            Marcado a las {{ horaSalidaAlmuerzo }}
           </p>
-          <p *ngIf="!getHoraMarcacion('SALIDA_ALMUERZO')" class="status-pending">Pendiente</p>
+          <p *ngIf="!horaSalidaAlmuerzo" class="status-pending">Pendiente</p>
         </div>
         <div class="check-section" *ngIf="salidaAlmuerzoDisabled">
           <ion-icon name="checkmark-circle" color="success"></ion-icon>
@@ -46,17 +61,17 @@
     </ion-card>
 
     <ion-card class="marking-card card-entrada" [class.disabled]="entradaAlmuerzoDisabled"
-      (click)="!entradaAlmuerzoDisabled && onLocalizacion('ENTRADA')">
+      (click)="!entradaAlmuerzoDisabled && onLocalizacion('ENTRADA', true)">
       <div class="card-content">
         <div class="icon-section bg-info">
           <ion-icon name="walk-outline"></ion-icon>
         </div>
         <div class="info-section">
           <h3>Entrada Almuerzo</h3>
-          <p *ngIf="getHoraMarcacion('ENTRADA_ALMUERZO')" class="status-recorded">
-            Marcado a las {{ getHoraMarcacion('ENTRADA_ALMUERZO') }}
+          <p *ngIf="horaEntradaAlmuerzo" class="status-recorded">
+            Marcado a las {{ horaEntradaAlmuerzo }}
           </p>
-          <p *ngIf="!getHoraMarcacion('ENTRADA_ALMUERZO')" class="status-pending">Pendiente</p>
+          <p *ngIf="!horaEntradaAlmuerzo" class="status-pending">Pendiente</p>
         </div>
         <div class="check-section" *ngIf="entradaAlmuerzoDisabled">
           <ion-icon name="checkmark-circle" color="success"></ion-icon>
@@ -72,10 +87,10 @@
         </div>
         <div class="info-section">
           <h3>Salida</h3>
-          <p *ngIf="getHoraMarcacion('SALIDA')" class="status-recorded">
-            Marcado a las {{ getHoraMarcacion('SALIDA') }}
+          <p *ngIf="horaSalida" class="status-recorded">
+            Marcado a las {{ horaSalida }}
           </p>
-          <p *ngIf="!getHoraMarcacion('SALIDA')" class="status-pending">Pendiente</p>
+          <p *ngIf="!horaSalida" class="status-pending">Pendiente</p>
         </div>
         <div class="check-section" *ngIf="salidaDisabled">
           <ion-icon name="checkmark-circle" color="success"></ion-icon>
