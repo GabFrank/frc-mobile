@@ -70,6 +70,7 @@ export class LoginService {
               this.mainService.usuarioActual = this.usuarioActual;
               console.log(res);
 
+              this.mainService.authenticationSub.next(true);
               obs.next(res);
             } else {
               obs.next(null);
@@ -126,6 +127,7 @@ export class LoginService {
                         };
                         this.usuarioActual = res;
                         this.mainService.usuarioActual = this.usuarioActual;
+                        this.mainService.authenticationSub.next(true);
                         let inicioSesion = new InicioSesion();
                         inicioSesion.usuario = res;
                         inicioSesion.sucursal =
