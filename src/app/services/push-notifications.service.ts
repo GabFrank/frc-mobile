@@ -21,7 +21,16 @@ export class PushNotificationsService {
     private mainService: MainService,
     private usuarioService: UsuarioService,
     private router: Router
-  ) {}
+  ) {
+    this.mainService.authenticationSub.subscribe((auth) => {
+      if (auth) {
+        const token = localStorage.getItem('pushToken');
+        if (token) {
+          this.updatePushTokenInBackend(token);
+        }
+      }
+    });
+  }
 
   initPush() {
     if (!this.plf.platforms().includes('mobileweb')) {
@@ -61,7 +70,9 @@ export class PushNotificationsService {
     // Push registration listener
     PushNotifications.addListener('registration', (token: Token) => {
       console.log('Push registration success, token: ' + token.value);
-      // You might want to send the token to your backend
+      this.mainService.setPushToken(token.value);
+      localStorage.setItem('pushToken', token.value);
+      this.updatePushTokenInBackend(token.value);
     });
 
     // Handle registration errors
@@ -100,6 +111,24 @@ export class PushNotificationsService {
         attempts--;
       }
     }, 1000);
+  }
+
+  private async updatePushTokenInBackend(token: string) {
+    const usuario = this.mainService.usuarioActual;
+    if (usuario && usuario.inicioSesion) {
+      console.log('Updating push token in backend for current session');
+      const inicioSesionInput = {
+        id: usuario.inicioSesion.id,
+        token: token
+      };
+      (await this.usuarioService.onSaveInicioSesion(inicioSesionInput as any)).subscribe(
+        (res) => {
+          console.log('Push token updated successfully in backend');
+          usuario.inicioSesion.token = token;
+        },
+        (err) => console.error('Failed to update push token in backend', err)
+      );
+    }
   }
 }
 // export class PushNotificationsService {
