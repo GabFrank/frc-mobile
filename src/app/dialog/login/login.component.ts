@@ -42,11 +42,18 @@ export class LoginComponent implements OnInit {
   ) { }
 
   async ngOnInit() {
-    NativeBiometric.isAvailable().then(res => {
-      this.isBiometricAvailable = res.isAvailable;
-    }).catch(() => {
+    const biometricPref = localStorage.getItem('biometricEnabled');
+    const isBiometricDisabled = biometricPref === 'false';
+
+    if (!isBiometricDisabled) {
+      NativeBiometric.isAvailable().then(res => {
+        this.isBiometricAvailable = res.isAvailable;
+      }).catch(() => {
+        this.isBiometricAvailable = false;
+      });
+    } else {
       this.isBiometricAvailable = false;
-    });
+    }
 
     this.formGroup = new UntypedFormGroup({
       'usuario': this.usuarioControl,
@@ -56,7 +63,7 @@ export class LoginComponent implements OnInit {
     const justLoggedOut = sessionStorage.getItem('justLoggedOut');
     if (justLoggedOut) {
       sessionStorage.removeItem('justLoggedOut');
-    } else {
+    } else if (!isBiometricDisabled && localStorage.getItem('biometricHasCredentials') === 'true') {
       setTimeout(() => {
         if (!this.isDismissing && !this.loading) {
           this.performBiometricLogin();
@@ -71,8 +78,11 @@ export class LoginComponent implements OnInit {
       if (isAvailable.isAvailable) {
         const credentials = await NativeBiometric.getCredentials({ server: LoginComponent.BIOMETRIC_SERVER });
         if (!credentials?.password) {
+          localStorage.setItem('biometricHasCredentials', 'false');
           return;
         }
+
+        localStorage.setItem('biometricHasCredentials', 'true');
 
         await NativeBiometric.verifyIdentity({
           reason: 'Inicia sesión con tu huella',
@@ -138,7 +148,7 @@ export class LoginComponent implements OnInit {
     this.selectedUsuario = usuario;
     setTimeout(() => {
       this.modalService.closeModal(usuario)
-    }, 2000);
+    }, 200);
   }
 
   onSolicitarNuevoUsuario() {
@@ -180,6 +190,13 @@ export class LoginComponent implements OnInit {
     if (!token) {
       return;
     }
+
+    // No sincronizar credenciales si el usuario desactivó la huella
+    const biometricPref = localStorage.getItem('biometricEnabled');
+    if (biometricPref === 'false') {
+      return;
+    }
+
     const ownerId = await this.loginService.getBiometricOwnerUserId();
     if (ownerId != null && ownerId !== userId) {
       return;
@@ -203,6 +220,7 @@ export class LoginComponent implements OnInit {
         password: token,
         server: LoginComponent.BIOMETRIC_SERVER
       });
+      localStorage.setItem('biometricHasCredentials', 'true');
     } catch (err) {
       console.log('Error saving biometric credentials:', err);
     }
