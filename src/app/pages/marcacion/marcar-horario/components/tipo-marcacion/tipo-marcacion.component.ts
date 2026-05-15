@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { TipoMarcacion, Jornada, EstadoJornada } from '../../models/marcacion.model';
+import { Jornada, EstadoJornada } from '../../models/marcacion.model';
 import { MarcacionService } from '../../service/marcacion.service';
 import { MainService } from 'src/app/services/main.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
@@ -53,17 +53,15 @@ export class TipoMarcacionComponent implements OnInit {
         this.usuarioIdentificado = this.mainService.usuarioActual;
       }
       this.actualizarInformacionUsuario();
-
-      if (this.isAdmin && !qUsuarioId) {
-        this.router.navigate(['ingreso-persona'], { relativeTo: this.route });
-        return;
-      }
-
       this.cargarEstadoJornadas();
     });
   }
 
   ionViewWillEnter() {
+    const qUsuarioId = this.route.snapshot.queryParamMap.get('usuarioId');
+    if (this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN' && !qUsuarioId) {
+      return;
+    }
     this.cargarEstadoJornadas();
   }
 
@@ -71,7 +69,9 @@ export class TipoMarcacionComponent implements OnInit {
     if (!this.usuarioId || this.isLoading) return;
     this.isLoading = true;
     const hoy = new Date();
-    const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()).toISOString();
+    const ayer = new Date(hoy);
+    ayer.setDate(hoy.getDate() - 1);
+    const inicio = new Date(ayer.getFullYear(), ayer.getMonth(), ayer.getDate()).toISOString();
     const fin = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59).toISOString();
 
     try {
@@ -100,14 +100,16 @@ export class TipoMarcacionComponent implements OnInit {
   actualizarEstadoBotones() {
     this.resetearBotones();
 
-    if (this.jornadasHoy.length === 0) {
+    const jornadasActivas = this.jornadasHoy.filter(j => this.esJornadaActiva(j));
+
+    if (jornadasActivas.length === 0) {
       this.salidaAlmuerzoDisabled = true;
       this.entradaAlmuerzoDisabled = true;
       this.salidaDisabled = true;
       return;
     }
 
-    this.ultimaJornada = [...this.jornadasHoy].sort((a, b) => a.id - b.id)[this.jornadasHoy.length - 1];
+    this.ultimaJornada = this.seleccionarJornadaRelevante(jornadasActivas);
     const j = this.ultimaJornada;
 
     if (j.estado === EstadoJornada.NORMAL || j.marcacionSalida) {
@@ -176,6 +178,65 @@ export class TipoMarcacionComponent implements OnInit {
     this.horaSalidaAlmuerzo = null;
     this.horaEntradaAlmuerzo = null;
     this.horaSalida = null;
+  }
+
+  /**
+   * Jornadas de turno día (o sin turno) vencen a medianoche: no permiten salida al día siguiente.
+   * Solo NOCHE y MADRUGADA pueden cerrarse en un día distinto al de la entrada.
+   */
+  private esJornadaActiva(j: Jornada): boolean {
+    const hoy = this.fechaLocal(new Date());
+    const fechaJornada = this.fechaLocal(j.fecha);
+
+    if (fechaJornada >= hoy) {
+      return true;
+    }
+
+    return this.cruzaMedianoche(j)
+      && j.estado === EstadoJornada.INCOMPLETO
+      && !j.marcacionSalida
+      && !!j.marcacionEntrada;
+  }
+
+  private cruzaMedianoche(j: Jornada): boolean {
+    const turno = (j.turno || '').toUpperCase();
+    return turno === 'NOCHE' || turno === 'MADRUGADA';
+  }
+
+  /**
+   * Prioriza jornada abierta (entrada sin salida); en empate, la de turno nocturno/madrugada
+   * del día anterior sobre una jornada vacía del día actual.
+   */
+  private seleccionarJornadaRelevante(jornadas: Jornada[]): Jornada {
+    const abiertas = jornadas.filter(
+      j => j.estado === EstadoJornada.INCOMPLETO && !!j.marcacionEntrada && !j.marcacionSalida
+    );
+    if (abiertas.length > 0) {
+      const nocturnas = abiertas.filter(j => this.cruzaMedianoche(j));
+      const candidatas = nocturnas.length > 0 ? nocturnas : abiertas;
+      return [...candidatas].sort((a, b) => b.id - a.id)[0];
+    }
+
+    const hoy = this.fechaLocal(new Date());
+    return [...jornadas].sort((a, b) => {
+      const aEsHoy = this.fechaLocal(a.fecha) === hoy ? 1 : 0;
+      const bEsHoy = this.fechaLocal(b.fecha) === hoy ? 1 : 0;
+      if (aEsHoy !== bEsHoy) {
+        return bEsHoy - aEsHoy;
+      }
+      return a.id - b.id;
+    })[jornadas.length - 1];
+  }
+
+  /** Evita que "2026-05-15" se interprete como UTC y quede en el día anterior. */
+  private fechaLocal(valor: Date | string): string {
+    const date = typeof valor === 'string'
+      ? new Date(valor.length <= 10 ? `${valor}T12:00:00` : valor)
+      : valor;
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   private actualizarInformacionUsuario() {

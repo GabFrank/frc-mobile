@@ -37,6 +37,7 @@ export class GetJornadasPorUsuarioGQL extends Query<{ data: Jornada[] }> {
           fechaEntrada
           fechaSalida
         }
+        turno
         estado
       }
     }
