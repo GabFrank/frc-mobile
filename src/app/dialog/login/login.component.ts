@@ -2,7 +2,7 @@ import { PreRegistroFuncionarioComponent } from './../../pages/funcionario/pre-r
 import { ModalService } from './../../services/modal.service';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { Usuario } from './../../domains/personas/usuario.model';
-import { Platform, ToastController } from '@ionic/angular';
+import { AlertController, Platform, ToastController } from '@ionic/angular';
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -38,7 +38,8 @@ export class LoginComponent implements OnInit {
     private notificacionService: NotificacionService,
     private modalService: ModalService,
     private platform: Platform,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private alertController: AlertController
   ) { }
 
   async ngOnInit() {
@@ -63,7 +64,7 @@ export class LoginComponent implements OnInit {
     const justLoggedOut = sessionStorage.getItem('justLoggedOut');
     if (justLoggedOut) {
       sessionStorage.removeItem('justLoggedOut');
-    } else if (!isBiometricDisabled && localStorage.getItem('biometricHasCredentials') === 'true') {
+    } else if (localStorage.getItem('biometricEnabled') === 'true' && localStorage.getItem('biometricHasCredentials') === 'true') {
       setTimeout(() => {
         if (!this.isDismissing && !this.loading) {
           this.performBiometricLogin();
@@ -128,9 +129,9 @@ export class LoginComponent implements OnInit {
       .subscribe(res => {
         this.loading = false;
         if (res.error == null) {
-          this.syncBiometricCredentialsForOwner(res.usuario.id, localStorage.getItem('token'));
-
-          this.onSelectUsuarioAndDismiss(res.usuario)
+          this.handlePostLoginBiometric(res.usuario.id, localStorage.getItem('token')).then(() => {
+            this.onSelectUsuarioAndDismiss(res.usuario)
+          });
         } else {
           this.error = res.error['message'] || "Error al iniciar sesión";
           this.notificacionService.open(this.error, TipoNotificacion.DANGER, 10)
@@ -169,6 +170,72 @@ export class LoginComponent implements OnInit {
     this.subscription.unsubscribe();
   }
 
+  async handlePostLoginBiometric(userId: number, token: string) {
+    const biometricPref = localStorage.getItem('biometricEnabled');
+
+    if (biometricPref === null) {
+      let isAvailable: any;
+      try {
+        isAvailable = await NativeBiometric.isAvailable();
+      } catch {
+        return;
+      }
+      if (!isAvailable?.isAvailable) return;
+
+      const alert = await this.alertController.create({
+        header: 'Configurar Huella',
+        message: '¿Deseas activar el inicio de sesión con huella digital para entrar más rápido la próxima vez?',
+        buttons: [
+          {
+            text: 'No, gracias',
+            role: 'cancel'
+          },
+          {
+            text: 'Sí, activar',
+            role: 'confirm'
+          }
+        ]
+      });
+      await alert.present();
+      const result = await alert.onDidDismiss();
+
+      if (result.role === 'confirm') {
+        try {
+          await NativeBiometric.verifyIdentity({
+            reason: 'Confirma tu huella para activar el acceso rápido',
+            title: 'Activar Huella Digital',
+            subtitle: 'Autenticación requerida',
+          });
+
+          if (!token) {
+            this.notificacionService.warn('No se pudo activar la huella: token no disponible');
+            return;
+          }
+
+          // Guardar credenciales PRIMERO
+          await NativeBiometric.setCredentials({
+            username: userId.toString(),
+            password: token,
+            server: LoginComponent.BIOMETRIC_SERVER
+          });
+
+          // Solo DESPUES de que las credenciales se guardaron exitosamente, marcar como habilitado
+          localStorage.setItem('biometricEnabled', 'true');
+          localStorage.setItem('biometricHasCredentials', 'true');
+          this.notificacionService.success('Huella activada correctamente');
+        } catch (error) {
+          console.log('Error activating biometrics:', error);
+          // NO setear biometricEnabled - dejarlo como null para que pregunte de nuevo la proxima vez
+          this.notificacionService.warn('No se pudo activar la huella');
+        }
+      } else {
+        localStorage.setItem('biometricEnabled', 'false');
+      }
+    } else if (biometricPref === 'true') {
+      await this.syncBiometricCredentialsForOwner(userId, token);
+    }
+  }
+
   async onDev() {
     this.activateDev++;
     if (this.activateDev > 4 && this.activateDev < 8) {
@@ -191,30 +258,28 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    // No sincronizar credenciales si el usuario desactivó la huella
     const biometricPref = localStorage.getItem('biometricEnabled');
-    if (biometricPref === 'false') {
-      return;
-    }
-
-    const ownerId = await this.loginService.getBiometricOwnerUserId();
-    if (ownerId != null && ownerId !== userId) {
+    if (biometricPref !== 'true') {
       return;
     }
 
     try {
-      const existingCredentials = await NativeBiometric.getCredentials({
-        server: LoginComponent.BIOMETRIC_SERVER
-      });
-      // Si backend indica que este usuario es owner, permitimos corregir credenciales antiguas.
-      if (existingCredentials?.username && +existingCredentials.username !== userId && ownerId !== userId) {
+      const ownerId = await this.loginService.getBiometricOwnerUserId();
+      if (ownerId != null && ownerId !== userId) {
         return;
       }
-    } catch {
-      // No hay owner biométrico todavía; se registrará el usuario actual.
-    }
 
-    try {
+      try {
+        const existingCredentials = await NativeBiometric.getCredentials({
+          server: LoginComponent.BIOMETRIC_SERVER
+        });
+        if (existingCredentials?.username && +existingCredentials.username !== userId && ownerId !== userId) {
+          return;
+        }
+      } catch {
+      }
+
+      // Guardar credenciales primero, luego marcar en localStorage
       await NativeBiometric.setCredentials({
         username: userId.toString(),
         password: token,

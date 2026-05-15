@@ -34,14 +34,8 @@ export class HuellaDigitalComponent implements OnInit {
     } catch {
       this.isBiometricAvailable = false;
     }
-
-    // Leer la preferencia guardada en localStorage
     const storedPref = localStorage.getItem('biometricEnabled');
-    
-    // Por defecto activado si no hay preferencia (primera instalación)
-    this.isBiometricEnabled = storedPref !== 'false';
-
-    // Verificar si hay credenciales almacenadas usando el flag para evitar el prompt
+    this.isBiometricEnabled = storedPref === 'true';
     this.hasCredentials = localStorage.getItem('biometricHasCredentials') === 'true';
   }
 
@@ -63,7 +57,6 @@ export class HuellaDigitalComponent implements OnInit {
 
   private async enableBiometric() {
     try {
-      // Verificar disponibilidad del sensor
       const result = await NativeBiometric.isAvailable();
       if (!result.isAvailable) {
         this.isBiometricEnabled = false;
@@ -74,15 +67,11 @@ export class HuellaDigitalComponent implements OnInit {
         );
         return;
       }
-
-      // Verificar identidad del usuario
       await NativeBiometric.verifyIdentity({
         reason: 'Verificar identidad para activar huella digital',
         title: 'Activar Huella Digital',
         subtitle: 'Coloca tu huella para confirmar',
       });
-
-      // Si hay credenciales existentes, las mantenemos. Si no, las guardamos ahora mismo.
       localStorage.setItem('biometricEnabled', 'true');
       this.isBiometricEnabled = true;
 
@@ -117,7 +106,6 @@ export class HuellaDigitalComponent implements OnInit {
 
   private async disableBiometric() {
     try {
-      // Eliminar credenciales almacenadas
       if (this.hasCredentials) {
         await NativeBiometric.deleteCredentials({
           server: HuellaDigitalComponent.BIOMETRIC_SERVER,

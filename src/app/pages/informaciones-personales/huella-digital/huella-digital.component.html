@@ -9,7 +9,6 @@
 
 <ion-content class="ion-padding">
   <div class="huella-container">
-    <!-- Icono principal -->
     <div class="huella-icon-wrapper" [class.active]="isBiometricEnabled">
       <ion-icon name="finger-print-outline"></ion-icon>
     </div>
@@ -19,8 +18,6 @@
       Activa o desactiva el inicio de sesión con huella digital.
       Al activar, podrás ingresar a la aplicación sin necesidad de escribir tu contraseña.
     </p>
-
-    <!-- Toggle principal -->
     <div class="toggle-card" *ngIf="isBiometricAvailable">
       <ion-item lines="none" class="toggle-item">
         <ion-icon name="finger-print" slot="start" class="toggle-icon" [class.active]="isBiometricEnabled"></ion-icon>
@@ -28,25 +25,14 @@
           <h3>Usar huella digital</h3>
           <p>{{ isBiometricEnabled ? 'Activado' : 'Desactivado' }}</p>
         </ion-label>
-        <ion-toggle
-          slot="end"
-          [checked]="isBiometricEnabled"
-          (ionChange)="onToggleBiometric($event)"
-          [disabled]="loading"
-          color="success"
-        ></ion-toggle>
+        <ion-toggle slot="end" [checked]="isBiometricEnabled" (ionChange)="onToggleBiometric($event)"
+          [disabled]="loading" color="success"></ion-toggle>
       </ion-item>
     </div>
-
-    <!-- Estado actual -->
     <div class="status-card" *ngIf="isBiometricAvailable">
       <ion-item lines="none" class="status-item">
-        <ion-icon
-          [name]="isBiometricEnabled ? 'shield-checkmark' : 'shield-outline'"
-          slot="start"
-          class="status-icon"
-          [class.active]="isBiometricEnabled"
-        ></ion-icon>
+        <ion-icon [name]="isBiometricEnabled ? 'shield-checkmark' : 'shield-outline'" slot="start" class="status-icon"
+          [class.active]="isBiometricEnabled"></ion-icon>
         <ion-label>
           <h3>Estado</h3>
           <p *ngIf="isBiometricEnabled && hasCredentials">
@@ -61,8 +47,6 @@
         </ion-label>
       </ion-item>
     </div>
-
-    <!-- Sensor no disponible -->
     <div class="warning-card" *ngIf="!isBiometricAvailable">
       <ion-item lines="none" class="warning-item">
         <ion-icon name="warning-outline" slot="start" class="warning-icon"></ion-icon>
@@ -75,8 +59,6 @@
         </ion-label>
       </ion-item>
     </div>
-
-    <!-- Loading indicator -->
     <div class="loading-indicator" *ngIf="loading">
       <ion-spinner name="crescent" color="primary"></ion-spinner>
       <p>Procesando...</p>
