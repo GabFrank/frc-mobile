@@ -72,6 +72,7 @@ export class AppComponent implements OnInit, OnDestroy {
   isHomeRoute = true;
 
   fabMenuOpen = false;
+  marcacionRoute: string[] = ['/marcacion'];
 
   loadingOpen = false; // track loading dialog state
   dialog: any;
@@ -195,6 +196,11 @@ export class AppComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.pushNotificacionService.initPush();
     this.updateFabPosition(this.router.url);
+    this.actualizarMarcacionRoute();
+
+    this.mainService.authenticationSub
+      .pipe(untilDestroyed(this))
+      .subscribe(() => this.actualizarMarcacionRoute());
 
     this.router.events
       .pipe(
@@ -289,6 +295,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async onSalir() {
     await this.loginService.logOut();
+    this.actualizarMarcacionRoute();
     this.showLoginPop();
     this.menu.close();
   }
@@ -319,6 +326,11 @@ export class AppComponent implements OnInit, OnDestroy {
     if (!this.isHomeRoute) {
       this.fabMenuOpen = false;
     }
+  }
+
+  private actualizarMarcacionRoute(): void {
+    const isAdmin = this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN';
+    this.marcacionRoute = isAdmin ? ['/marcacion/ingreso-persona'] : ['/marcacion'];
   }
 
   openPagarScanner() {

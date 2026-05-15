@@ -32,6 +32,11 @@ export class IngresoPersonaComponent implements OnInit {
     });
   }
 
+  ionViewWillEnter() {
+    this.personaIdInput = '';
+    this.isLoading = false;
+  }
+
   onSiguiente() {
     if (this.isLoading) return;
     if (!this.personaIdInput) {
