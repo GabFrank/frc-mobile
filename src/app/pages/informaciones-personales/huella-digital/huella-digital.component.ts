@@ -71,6 +71,7 @@ export class HuellaDigitalComponent implements OnInit {
         reason: 'Verificar identidad para activar huella digital',
         title: 'Activar Huella Digital',
         subtitle: 'Coloca tu huella para confirmar',
+        maxAttempts: 3,
       });
       localStorage.setItem('biometricEnabled', 'true');
       this.isBiometricEnabled = true;
