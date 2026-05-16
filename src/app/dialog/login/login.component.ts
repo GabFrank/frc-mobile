@@ -8,7 +8,7 @@ import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { LoginService } from 'src/app/services/login.service';
 import { ChangeServerIpDialogComponent } from 'src/app/components/change-server-ip-dialog/change-server-ip-dialog.component';
-import { NativeBiometric } from '@capgo/capacitor-native-biometric';
+import { BiometricAuthError, NativeBiometric } from '@capgo/capacitor-native-biometric';
 
 @UntilDestroy()
 @Component({
@@ -18,6 +18,7 @@ import { NativeBiometric } from '@capgo/capacitor-native-biometric';
 })
 export class LoginComponent implements OnInit {
   private static readonly BIOMETRIC_SERVER = 'franco-system';
+  private static readonly BIOMETRIC_MAX_ATTEMPTS = 3;
   @ViewChild('nickname', { static: false }) nicknameInput: ElementRef;
   @ViewChild('password', { static: false }) passwordInput: ElementRef;
 
@@ -89,6 +90,7 @@ export class LoginComponent implements OnInit {
           reason: 'Inicia sesión con tu huella',
           title: 'Inicio de sesión biométrico',
           subtitle: 'Autenticación requerida',
+          maxAttempts: LoginComponent.BIOMETRIC_MAX_ATTEMPTS,
         });
 
         this.loading = true;
@@ -106,11 +108,9 @@ export class LoginComponent implements OnInit {
       }
     } catch (error: any) {
       console.log('Biometric login not possible or cancelled:', error);
-      const errStr = (JSON.stringify(error) + (error.message || '')).toLowerCase();
-      // Si el sensor se bloquea por muchos intentos (iOS/Android)
-      if (errStr.includes('too many') || errStr.includes('lockout') || errStr.includes('intentos') || errStr.includes('bloquea')) {
+      if (this.isBiometricLockoutError(error)) {
         this.isBiometricAvailable = false;
-        this.error = "Sensor bloqueado por múltiples intentos fallidos.";
+        this.error = 'Sensor bloqueado por múltiples intentos fallidos.';
         this.notificacionService.open(this.error, TipoNotificacion.DANGER, 5);
       }
     }
@@ -205,6 +205,7 @@ export class LoginComponent implements OnInit {
             reason: 'Confirma tu huella para activar el acceso rápido',
             title: 'Activar Huella Digital',
             subtitle: 'Autenticación requerida',
+            maxAttempts: LoginComponent.BIOMETRIC_MAX_ATTEMPTS,
           });
 
           if (!token) {
@@ -251,6 +252,14 @@ export class LoginComponent implements OnInit {
         }
       })
     }
+  }
+
+  private isBiometricLockoutError(error: any): boolean {
+    const code = Number(error?.code);
+    return (
+      code === BiometricAuthError.USER_LOCKOUT ||
+      code === BiometricAuthError.USER_TEMPORARY_LOCKOUT
+    );
   }
 
   private async syncBiometricCredentialsForOwner(userId: number, token: string) {
