@@ -356,7 +356,11 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
           this.notificacionService.success(`${this.tipoLabel} registrada correctamente`);
 
           setTimeout(() => {
-            this.router.navigate(['/marcacion']);
+            const isAdmin = this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN';
+            this.router.navigate(
+              isAdmin ? ['/marcacion/ingreso-persona'] : ['/marcacion'],
+              { replaceUrl: true }
+            );
           }, 400);
         },
         error: (err) => {

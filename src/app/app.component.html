@@ -105,7 +105,7 @@
           </ion-accordion>
         </ion-accordion-group>
 
-        <ion-item [routerLink]="['/marcacion']" (click)="closeMenu()">
+        <ion-item [routerLink]="marcacionRoute" (click)="closeMenu()">
           <ion-icon name="checkbox-outline" slot="start"></ion-icon>
           <ion-label>Marcar horario</ion-label>
         </ion-item>
@@ -196,7 +196,7 @@
             <span class="fab-action-label">Transf.</span>
           </div>
 
-          <div class="fab-action-item action-marcar" [routerLink]="['/marcacion']" (click)="toggleFabMenu()">
+          <div class="fab-action-item action-marcar" [routerLink]="marcacionRoute" (click)="toggleFabMenu()">
             <div class="fab-action-button">
               <ion-icon name="time-outline"></ion-icon>
             </div>
