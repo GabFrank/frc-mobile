@@ -9,6 +9,10 @@ const routes: Routes = [
     component: HomeComponent
   },
   {
+    path: 'solicitud-gastos',
+    loadChildren: () => import('./pages/operaciones/solicitud-gastos/solicitud-gastos.module').then(m => m.SolicitudGastosModule)
+  },
+  {
     path: 'inventario',
     loadChildren: () => import('./pages/inventario/inventario.module').then(m => m.InventarioModule)
   },

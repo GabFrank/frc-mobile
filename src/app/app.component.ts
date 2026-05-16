@@ -118,7 +118,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.intervalID = setInterval(this.searchUpdate, 50000); // 5000 milliseconds = 5 seconds
   }
   ngOnDestroy(): void {
-    this.statusSub?.unsubscribe();
     clearInterval(this.intervalID);
   }
 
@@ -335,23 +334,35 @@ export class AppComponent implements OnInit, OnDestroy {
 
   openPagarScanner() {
     this.toggleFabMenu();
-    this.barcodeScannerService.scan().subscribe(async res => {
-      if (!res.cancelled && res.text) {
-        let data = descodificarQr(res.text);
-        let idCliente = data.idOrigen
-        let timestamp = stringToInteger(data.timestamp);
-        let sucursalId = data.sucursalId;
-        let secretKey = data.data;
-        (await this.ventaCreditoService.onVentaCreditoQrAuth(this.mainService.usuarioActual?.persona?.id, timestamp, sucursalId, secretKey)).subscribe({
-          next: () => {
-            this.notificacionService.success('Convenio confirmado con éxito');
-          },
-          error: (err) => {
-            console.error(err);
-            this.notificacionService.warn('Error al confirmar');
-          }
-        })
-      }
-    });
+    this.barcodeScannerService
+      .scan()
+      .pipe(untilDestroyed(this))
+      .subscribe(async (res) => {
+        if (!res.cancelled && res.text) {
+          let data = descodificarQr(res.text);
+          let idCliente = data.idOrigen;
+          let timestamp = stringToInteger(data.timestamp);
+          let sucursalId = data.sucursalId;
+          let secretKey = data.data;
+          (
+            await this.ventaCreditoService.onVentaCreditoQrAuth(
+              this.mainService.usuarioActual?.persona?.id,
+              timestamp,
+              sucursalId,
+              secretKey
+            )
+          )
+            .pipe(untilDestroyed(this))
+            .subscribe({
+              next: () => {
+                this.notificacionService.success('Convenio confirmado con éxito');
+              },
+              error: (err) => {
+                console.error(err);
+                this.notificacionService.warn('Error al confirmar');
+              }
+            });
+        }
+      });
   }
 }

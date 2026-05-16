@@ -1,0 +1,171 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Nueva solicitud de gasto</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear">
+        <ion-icon name="document-text-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="solicitud-gastos-content">
+  <div class="content-wrapper">
+    <ion-accordion-group [multiple]="true">
+      <app-seccion-accordion valor="identificacion" icono="person-outline" titulo="Identificacion"
+        subtitulo="Solicitante (tu usuario), beneficiario y tipo de gasto">
+        <ion-list lines="full">
+          <ion-item class="dark2">
+            <ion-icon slot="start" name="person-outline"></ion-icon>
+            <ion-label>
+              <h3>Solicitante</h3>
+              <p>{{ textoResponsable || 'Sin persona en sesión' }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item class="dark2">
+            <ion-label position="stacked">Beneficiario</ion-label>
+            <ion-segment [(ngModel)]="beneficiarioTipo" mode="md"
+              (ngModelChange)="cambiarTipoBeneficiario($event)">
+              <ion-segment-button value="PERSONA" (click)="cambiarTipoBeneficiario('PERSONA')">
+                <ion-label>Persona</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="PROVEEDOR" (click)="cambiarTipoBeneficiario('PROVEEDOR')">
+                <ion-label>Proveedor</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </ion-item>
+          <ion-item button class="dark2" *ngIf="beneficiarioTipo === 'PERSONA'"
+            (click)="abrirModalPersonaBeneficiaria($event)">
+            <ion-icon slot="start" name="person-outline"></ion-icon>
+            <ion-label>
+              <h3>Persona beneficiaria</h3>
+              <p>{{ textoPersonaBeneficiaria || 'Seleccionar persona' }}</p>
+            </ion-label>
+            <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+          </ion-item>
+          <ion-item button class="dark2" *ngIf="beneficiarioTipo === 'PROVEEDOR'"
+            (click)="abrirModalProveedorBeneficiario($event)">
+            <ion-icon slot="start" name="business-outline"></ion-icon>
+            <ion-label>
+              <h3>Proveedor beneficiario</h3>
+              <p>{{ textoProveedorBeneficiario || 'Seleccionar proveedor' }}</p>
+            </ion-label>
+            <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+          </ion-item>
+          <ion-item button class="dark2" (click)="abrirModalTipoGasto($event)">
+            <ion-icon slot="start" name="pricetag-outline"></ion-icon>
+            <ion-label>
+              <h3>Tipo de gasto</h3>
+              <p>{{ textoTipoGasto || 'Seleccionar tipo de gasto' }}</p>
+            </ion-label>
+            <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+          </ion-item>
+        </ion-list>
+      </app-seccion-accordion>
+
+      <app-seccion-accordion valor="montos" icono="wallet-outline" titulo="Montos y pago"
+        subtitulo="Vencimiento y composicion de montos">
+        <ion-list lines="full">
+          <ion-item class="dark2">
+            <ion-label position="stacked">Fecha de vencimiento</ion-label>
+            <ion-datetime-button datetime="fecha-vencimiento"></ion-datetime-button>
+          </ion-item>
+        </ion-list>
+
+        <div class="section-inline-header">
+          <ion-note>Detalle de montos</ion-note>
+          <ion-button fill="clear" class="inline-action-btn" (click)="agregarDetalleGasto()">
+            <ion-icon name="add-circle"></ion-icon>
+          </ion-button>
+        </div>
+
+        <ion-card *ngFor="let item of gastoItems; let i = index" class="gasto-item-card dark2">
+          <ion-card-header>
+            <ion-card-subtitle>Detalle {{ i + 1 }}</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-grid class="nested-grid">
+              <ion-row>
+                <ion-col size="6">
+                  <app-selector-generico etiqueta="Moneda" placeholder="Moneda"
+                    [opciones]="servicio.opcionesMoneda" [valor]="item.monedaId"
+                    (valorChange)="alCambiarMoneda(item, $event)"></app-selector-generico>
+                </ion-col>
+                <ion-col size="6">
+                  <app-selector-generico etiqueta="Forma de pago" placeholder="Forma de pago"
+                    [opciones]="servicio.opcionesFormaPago" [(valor)]="item.formaPago"></app-selector-generico>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+            <ion-item class="dark1" lines="none">
+              <ion-label position="stacked">Monto</ion-label>
+              <ion-input type="text" inputmode="decimal" placeholder="Ingrese el monto"
+                [ngModel]="obtenerMontoTexto(item)" (ngModelChange)="alCambiarMontoTexto(item, $event)"
+                (ionBlur)="alPerderFocoMonto(item)"></ion-input>
+            </ion-item>
+            <ion-button fill="clear" class="remove-btn" [disabled]="gastoItems.length === 1"
+              (click)="quitarDetalleGasto(item.id)">
+              <ion-icon name="remove-circle" slot="start"></ion-icon>
+              Quitar detalle
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+      </app-seccion-accordion>
+
+      <app-seccion-accordion valor="detalle" icono="list-outline" titulo="Detalle final"
+        subtitulo="Sucursal, urgencia y descripcion">
+        <ion-list lines="full">
+          <ion-item button class="dark2" (click)="abrirModalSucursal($event)">
+            <ion-icon slot="start" name="location-outline"></ion-icon>
+            <ion-label>
+              <h3>Sucursal de retiro</h3>
+              <p>{{ selectedSucursal || 'Seleccionar sucursal' }}</p>
+            </ion-label>
+            <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+          </ion-item>
+          <app-selector-generico etiqueta="Nivel de urgencia" placeholder="Seleccionar urgencia"
+            [opciones]="servicio.opcionesUrgencia" [(valor)]="nivelUrgencia"></app-selector-generico>
+          <ion-item class="dark2">
+            <ion-label position="stacked">Descripcion</ion-label>
+            <ion-textarea rows="4" placeholder="Escriba una descripcion" [(ngModel)]="descripcion"></ion-textarea>
+          </ion-item>
+        </ion-list>
+      </app-seccion-accordion>
+    </ion-accordion-group>
+
+    <ion-modal [keepContentsMounted]="true" cssClass="vencimiento-modal">
+      <ng-template>
+        <ion-datetime id="fecha-vencimiento" presentation="date" locale="es-PY" [showDefaultButtons]="true"
+          doneText="Listo" cancelText="Cerrar" [(ngModel)]="fechaVencimiento"></ion-datetime>
+      </ng-template>
+    </ion-modal>
+
+    <app-buscador-modal [abierto]="isPersonaBenefModalOpen" [config]="servicio.configPersonaBenef"
+      [valorSeleccionadoId]="beneficiarioPersonaId" (seleccionar)="seleccionarPersonaBeneficiaria($event)"
+      (cerrar)="cerrarModalPersonaBeneficiaria()"></app-buscador-modal>
+
+    <app-buscador-modal [abierto]="isProveedorBenefModalOpen" [config]="servicio.configProveedorBenef"
+      [valorSeleccionadoId]="beneficiarioProveedorId" (seleccionar)="seleccionarProveedorBeneficiario($event)"
+      (cerrar)="cerrarModalProveedorBeneficiario()"></app-buscador-modal>
+
+    <app-buscador-modal [abierto]="isTipoGastoModalOpen" [config]="servicio.configTipoGasto" [valorSeleccionadoId]="tipoGastoId"
+      (seleccionar)="seleccionarTipoGasto($event)" (cerrar)="cerrarModalTipoGasto()"></app-buscador-modal>
+
+    <app-buscador-modal [abierto]="isSucursalModalOpen" [config]="servicio.configSucursal"
+      [valorSeleccionadoId]="selectedSucursalId" (seleccionar)="seleccionarSucursal($event)"
+      (cerrar)="cerrarModalSucursal()"></app-buscador-modal>
+  </div>
+</ion-content>
+
+<ion-footer class="footer-actions">
+  <ion-toolbar>
+    <ion-button expand="block" class="btn-success action-btn" [disabled]="guardando" (click)="enviarSolicitud()">
+      <ion-icon slot="start" name="send-outline"></ion-icon>
+      Enviar solicitud
+    </ion-button>
+    <ion-button expand="block" fill="outline" class="action-btn cancel-btn" (click)="cancelar()">
+      <ion-icon slot="start" name="close-outline"></ion-icon>
+      Cancelar
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>
