@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 
 import { InformacionesPersonalesRoutingModule } from './informaciones-personales-routing.module';
 import { InformacionesPersonalesDashboardComponent } from './informaciones-personales-dashboard/informaciones-personales-dashboard.component';
+import { HuellaDigitalComponent } from './huella-digital/huella-digital.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { ComponentsModule } from 'src/app/components/components.module';
 
 
 @NgModule({
-  declarations: [InformacionesPersonalesDashboardComponent],
+  declarations: [InformacionesPersonalesDashboardComponent, HuellaDigitalComponent],
   imports: [
     CommonModule,
     InformacionesPersonalesRoutingModule,
