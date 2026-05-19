@@ -1,0 +1,85 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="transparent">
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Mis Solicitudes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="filters-container animate__animated animate__fadeIn">
+    <div class="calendar-filter-wrapper" (click)="openCalendar()">
+      <div class="calendar-button">
+        <ion-icon name="calendar"></ion-icon>
+      </div>
+      <div class="date-info">
+        <span class="label">RANGO DE FECHAS</span>
+        <span class="value">{{ fechaInicio | date: 'dd/MM/yyyy' }} - {{ fechaFin | date: 'dd/MM/yyyy' }}</span>
+      </div>
+      <ion-icon name="chevron-forward-outline" class="arrow"></ion-icon>
+    </div>
+  </div>
+
+  <div *ngIf="cargando && solicitudes.length === 0" class="loading-container">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando solicitudes...</p>
+  </div>
+
+  <div *ngIf="!cargando && solicitudes.length === 0" class="empty-state">
+    <ion-icon name="document-text-outline"></ion-icon>
+    <h3>No hay solicitudes</h3>
+    <p>Aún no has realizado ninguna solicitud de gasto.</p>
+  </div>
+
+  <div *ngIf="!cargando && solicitudes.length > 0" class="list-container">
+    <ion-card *ngFor="let item of solicitudes" class="request-card animate__animated animate__fadeInUp">
+      <ion-card-content>
+        <div class="card-header">
+          <div class="id-badge">#{{ item.id }}</div>
+          <ion-badge [color]="getBadgeColor(item.estado)">
+            {{ item.estadoEtiqueta || item.estado }}
+          </ion-badge>
+        </div>
+
+        <h2 class="description">{{ item.descripcion || 'Sin descripción' }}</h2>
+
+        <div class="info-row" style="align-items: center;">
+          <div class="info-item">
+            <ion-icon name="location-outline"></ion-icon>
+            <span>{{ item.sucursalCaja?.nombre || 'N/A' }}</span>
+          </div>
+          <div class="info-item">
+            <ion-icon name="calendar-outline"></ion-icon>
+            <span>{{ item.creadoEn | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <ion-button fill="clear" color="success" (click)="onShareWhatsApp(item)" style="margin: 0; margin-left: auto; height: 30px;">
+            <ion-icon slot="icon-only" name="logo-whatsapp" style="font-size: 22px;"></ion-icon>
+          </ion-button>
+        </div>
+
+        <div class="card-footer">
+          <div class="amount">
+            <span class="symbol">{{ item.moneda?.simbolo }}</span>
+            <span class="value">{{ item.montoSolicitado | number:'1.0-2' }}</span>
+          </div>
+          <div class="qr-container">
+            <ion-button fill="clear" color="primary" class="qr-button" (click)="onShowQR(item.id)">
+              <ion-icon slot="icon-only" name="qr-code-outline"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <ion-infinite-scroll (ionInfinite)="onLoadMore($event)" [disabled]="!hayMas">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Cargando más..."></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>
