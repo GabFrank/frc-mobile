@@ -42,8 +42,7 @@
         [disabled]="formGroup.invalid || loading || isDismissing"
         (click)="onLogin()"
       >
-        <ion-spinner name="crescent" *ngIf="loading"></ion-spinner>
-        <span *ngIf="!loading">Entrar</span>
+        <span>Entrar</span>
       </ion-button>
       <ion-button
         *ngIf="isBiometricAvailable"

@@ -1,0 +1,67 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Huella Digital</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="huella-container">
+    <div class="huella-icon-wrapper" [class.active]="isBiometricEnabled">
+      <ion-icon name="finger-print-outline"></ion-icon>
+    </div>
+
+    <h2>Acceso con Huella Digital</h2>
+    <p class="huella-description">
+      Activa o desactiva el inicio de sesión con huella digital.
+      Al activar, podrás ingresar a la aplicación sin necesidad de escribir tu contraseña.
+    </p>
+    <div class="toggle-card" *ngIf="isBiometricAvailable">
+      <ion-item lines="none" class="toggle-item">
+        <ion-icon name="finger-print" slot="start" class="toggle-icon" [class.active]="isBiometricEnabled"></ion-icon>
+        <ion-label>
+          <h3>Usar huella digital</h3>
+          <p>{{ isBiometricEnabled ? 'Activado' : 'Desactivado' }}</p>
+        </ion-label>
+        <ion-toggle slot="end" [checked]="isBiometricEnabled" (ionChange)="onToggleBiometric($event)"
+          [disabled]="loading" color="success"></ion-toggle>
+      </ion-item>
+    </div>
+    <div class="status-card" *ngIf="isBiometricAvailable">
+      <ion-item lines="none" class="status-item">
+        <ion-icon [name]="isBiometricEnabled ? 'shield-checkmark' : 'shield-outline'" slot="start" class="status-icon"
+          [class.active]="isBiometricEnabled"></ion-icon>
+        <ion-label>
+          <h3>Estado</h3>
+          <p *ngIf="isBiometricEnabled && hasCredentials">
+            Tu huella está configurada y lista para usar.
+          </p>
+          <p *ngIf="isBiometricEnabled && !hasCredentials">
+            Activo. Se configurará en tu próximo inicio de sesión.
+          </p>
+          <p *ngIf="!isBiometricEnabled">
+            No estás usando la huella digital para iniciar sesión.
+          </p>
+        </ion-label>
+      </ion-item>
+    </div>
+    <div class="warning-card" *ngIf="!isBiometricAvailable">
+      <ion-item lines="none" class="warning-item">
+        <ion-icon name="warning-outline" slot="start" class="warning-icon"></ion-icon>
+        <ion-label>
+          <h3>Sensor no disponible</h3>
+          <p>
+            Tu dispositivo no tiene sensor biométrico o no está configurado.
+            Configura una huella en los ajustes de tu dispositivo e intenta de nuevo.
+          </p>
+        </ion-label>
+      </ion-item>
+    </div>
+    <div class="loading-indicator" *ngIf="loading">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p>Procesando...</p>
+    </div>
+  </div>
+</ion-content>
