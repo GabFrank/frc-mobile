@@ -19,6 +19,7 @@ import { BiometricAuthError, NativeBiometric } from '@capgo/capacitor-native-bio
 export class LoginComponent implements OnInit {
   private static readonly BIOMETRIC_SERVER = 'franco-system';
   private static readonly BIOMETRIC_MAX_ATTEMPTS = 3;
+  private static readonly WELCOME_DISPLAY_MS = 2000;
   @ViewChild('nickname', { static: false }) nicknameInput: ElementRef;
   @ViewChild('password', { static: false }) passwordInput: ElementRef;
 
@@ -149,7 +150,7 @@ export class LoginComponent implements OnInit {
     this.selectedUsuario = usuario;
     setTimeout(() => {
       this.modalService.closeModal(usuario)
-    }, 200);
+    }, LoginComponent.WELCOME_DISPLAY_MS);
   }
 
   onSolicitarNuevoUsuario() {
