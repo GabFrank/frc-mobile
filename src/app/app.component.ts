@@ -70,6 +70,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   hasPagination = false;
   isHomeRoute = true;
+  showFooter = true;
 
   fabMenuOpen = false;
   marcacionRoute: string[] = ['/marcacion'];
@@ -325,6 +326,11 @@ export class AppComponent implements OnInit, OnDestroy {
     if (!this.isHomeRoute) {
       this.fabMenuOpen = false;
     }
+    this.showFooter = !(
+      normalizedUrl.includes('/producto/consultar-precio') ||
+      normalizedUrl.includes('/producto/mostrar-precio') ||
+      normalizedUrl.includes('/producto/precio-config')
+    );
   }
 
   private actualizarMarcacionRoute(): void {
