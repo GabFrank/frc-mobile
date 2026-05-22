@@ -41,6 +41,16 @@
                 <ion-label>Ver solo no leídas</ion-label>
                 <ion-toggle formControlName="leidas" (ionChange)="alBuscar()"></ion-toggle>
             </ion-item>
+            <ion-button
+                *ngIf="conteoNoLeidas > 0"
+                fill="clear"
+                expand="block"
+                class="mark-all-read-btn"
+                [disabled]="marcandoTodas"
+                (click)="marcarTodasComoLeidas()">
+                <ion-icon name="checkmark-done-outline" slot="start"></ion-icon>
+                {{ marcandoTodas ? 'Marcando...' : 'Marcar todas como leídas' }}
+            </ion-button>
         </form>
     </div>
 

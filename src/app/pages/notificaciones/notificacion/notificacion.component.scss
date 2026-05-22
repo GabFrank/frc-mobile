@@ -56,6 +56,24 @@ ion-content {
         }
     }
 
+    .mark-all-read-btn {
+        --color: #ffffff;
+        margin: 4px 0 0;
+        font-size: 14px;
+        font-weight: 500;
+        text-transform: none;
+        letter-spacing: 0;
+
+        ion-icon {
+            color: var(--accent-red);
+            font-size: 20px;
+        }
+
+        &[disabled] {
+            opacity: 0.5;
+        }
+    }
+
     .filter-actions {
         display: flex;
         justify-content: center;

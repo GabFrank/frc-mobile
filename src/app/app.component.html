@@ -241,8 +241,13 @@
           <ion-icon name="beer-outline"></ion-icon>
         </ion-tab-button>
 
-        <ion-tab-button [routerLink]="['/notificacion']" routerLinkActive="active-link">
-          <ion-icon name="notifications-outline"></ion-icon>
+        <ion-tab-button [routerLink]="['/notificacion']" routerLinkActive="active-link" class="tab-notificaciones">
+          <span class="tab-notificaciones-icon">
+            <ion-icon name="notifications-outline"></ion-icon>
+            <ion-badge *ngIf="conteoNoLeidas > 0" class="notification-tab-badge">
+              {{ conteoNoLeidas > 99 ? '99+' : conteoNoLeidas }}
+            </ion-badge>
+          </span>
         </ion-tab-button>
       </ion-tab-bar>
     </ion-footer>
