@@ -182,7 +182,7 @@
       <ion-router-outlet></ion-router-outlet>
     </ion-content>
 
-    <ion-footer *ngIf="loginService?.usuarioActual?.id !== null">
+    <ion-footer *ngIf="loginService?.usuarioActual?.id !== null && showFooter">
       <div class="fab-main-container" [class.with-pagination]="hasPagination" [class.not-home]="!isHomeRoute">
         <div class="fab-overlay" *ngIf="fabMenuOpen" (click)="toggleFabMenu()"></div>
 
