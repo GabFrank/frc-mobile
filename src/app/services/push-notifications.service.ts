@@ -11,6 +11,7 @@ import { FCM } from '@capacitor-community/fcm';
 import { MainService } from './main.service';
 import { UsuarioService } from './usuario.service';
 import { Router } from '@angular/router';
+import { NotificacionService as NotificacionesUsuarioService } from '../pages/notificaciones/notificacion.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +21,8 @@ export class PushNotificationsService {
     private plf: Platform,
     private mainService: MainService,
     private usuarioService: UsuarioService,
-    private router: Router
+    private router: Router,
+    private notificacionesUsuarioService: NotificacionesUsuarioService
   ) {
     this.mainService.authenticationSub.subscribe((auth) => {
       if (auth) {
@@ -83,7 +85,7 @@ export class PushNotificationsService {
     // Handle push notifications received while the app is open
     PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
       console.log('Push notification received: ' + JSON.stringify(notification));
-      // You can show a toast or local notification here if needed
+      this.notificacionesUsuarioService.refrescarConteoNoLeidas();
     });
 
     // Handle when a push notification is tapped by the user

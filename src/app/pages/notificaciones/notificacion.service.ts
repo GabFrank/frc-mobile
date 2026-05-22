@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { NotificacionDestinatario, NotificacionesUsuarioVariables } from './models/notificacion.model';
 import { NotificacionesUsuarioQueryService } from './graphql/notificaciones-usuario-query.service';
 import { MarcarNotificacionLeidaMutationService } from './graphql/marcar-notificacion-leida-mutation.service';
+import { MarcarTodasNotificacionesLeidasMutationService } from './graphql/marcar-todas-notificaciones-leidas-mutation.service';
 import { ConteoNotificacionesNoLeidasQueryService } from './graphql/conteo-notificaciones-no-leidas-query.service';
 import { ComentariosNotificacionQueryService } from './graphql/comentarios-notificacion-query.service';
 import { CrearComentarioNotificacionMutationService } from './graphql/crear-comentario-notificacion-mutation.service';
@@ -19,6 +20,7 @@ import { Usuario } from './models/usuario.model';
 export class NotificacionService {
   private readonly notificacionesUsuarioQuery = inject(NotificacionesUsuarioQueryService);
   private readonly marcarLeidaMutation = inject(MarcarNotificacionLeidaMutationService);
+  private readonly marcarTodasLeidasMutation = inject(MarcarTodasNotificacionesLeidasMutationService);
   private readonly countNoLeidasQuery = inject(ConteoNotificacionesNoLeidasQueryService);
   private readonly comentariosQuery = inject(ComentariosNotificacionQueryService);
   private readonly crearComentarioMutation = inject(CrearComentarioNotificacionMutationService);
@@ -35,6 +37,9 @@ export class NotificacionService {
   private _totalElements$ = new BehaviorSubject<number>(0);
   public totalElements$ = this._totalElements$.asObservable();
 
+  private _conteoNoLeidas$ = new BehaviorSubject<number>(0);
+  public conteoNoLeidas$ = this._conteoNoLeidas$.asObservable();
+
   notificaciones(variables: NotificacionesUsuarioVariables): Observable<NotificacionDestinatario[]> {
     this._cargando$.next(true);
     return this.notificacionesUsuarioQuery.fetch(variables).pipe(
@@ -50,9 +55,25 @@ export class NotificacionService {
     );
   }
 
+  marcarTodasComoLeidas(): Observable<boolean | null | undefined> {
+    return this.marcarTodasLeidasMutation.mutate().pipe(
+      map(res => res.data?.marcarTodasNotificacionesLeidas),
+      tap(exito => {
+        if (exito) {
+          this.refrescarConteoNoLeidas();
+        }
+      })
+    );
+  }
+
   marcarComoLeida(notificacionId: number): Observable<boolean | null | undefined> {
     return this.marcarLeidaMutation.mutate({ notificacionId }).pipe(
-      map(res => res.data?.marcarNotificacionLeida)
+      map(res => res.data?.marcarNotificacionLeida),
+      tap(exito => {
+        if (exito) {
+          this.refrescarConteoNoLeidas();
+        }
+      })
     );
   }
 
@@ -60,6 +81,17 @@ export class NotificacionService {
     return this.countNoLeidasQuery.fetch().pipe(
       map(res => res.data?.conteoNotificacionesNoLeidas)
     );
+  }
+
+  refrescarConteoNoLeidas(): void {
+    this.countNoLeidasQuery.fetch(undefined, { fetchPolicy: 'network-only' }).subscribe({
+      next: res => this._conteoNoLeidas$.next(res.data?.conteoNotificacionesNoLeidas ?? 0),
+      error: () => {}
+    });
+  }
+
+  resetConteoNoLeidas(): void {
+    this._conteoNoLeidas$.next(0);
   }
 
   comentarios(notificacionId: number): Observable<NotificacionComentario[]> {

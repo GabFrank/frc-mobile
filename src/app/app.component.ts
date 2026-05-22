@@ -28,7 +28,9 @@ import { VentaCreditoService } from './graphql/financiero/venta-credito/venta-cr
 import { BarcodeScannerService } from './services/barcode-scanner.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { timer } from 'rxjs';
 import { Channel, ChannelService } from './services/channel.service';
+import { NotificacionService as NotificacionesUsuarioService } from './pages/notificaciones/notificacion.service';
 
 export class Pageable {
   getPageNumber: number;
@@ -74,6 +76,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   fabMenuOpen = false;
   marcacionRoute: string[] = ['/marcacion'];
+  conteoNoLeidas = 0;
 
   loadingOpen = false; // track loading dialog state
   dialog: any;
@@ -98,7 +101,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private router: Router,
     public channelService: ChannelService,
     private actionSheetCtrl: ActionSheetController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private notificacionesUsuarioService: NotificacionesUsuarioService
   ) {
     this.isDev = isDevMode();
 
@@ -213,6 +217,8 @@ export class AppComponent implements OnInit, OnDestroy {
       .pipe(untilDestroyed(this))
       .subscribe(val => this.hasPagination = val);
 
+    this.iniciarConteoNotificaciones();
+
     this.showLoginPop();
 
     this.statusSub = connectionStatusSub
@@ -283,6 +289,32 @@ export class AppComponent implements OnInit, OnDestroy {
     //     alert('Push action performed: ' + JSON.stringify(notification));
     //   }
     // );
+  }
+
+  private iniciarConteoNotificaciones(): void {
+    this.notificacionesUsuarioService.conteoNoLeidas$
+      .pipe(untilDestroyed(this))
+      .subscribe(count => {
+        this.conteoNoLeidas = count;
+      });
+
+    timer(0, 5000)
+      .pipe(untilDestroyed(this))
+      .subscribe(() => {
+        if (this.loginService.usuarioActual) {
+          this.notificacionesUsuarioService.refrescarConteoNoLeidas();
+        }
+      });
+
+    this.mainService.authenticationSub
+      .pipe(untilDestroyed(this))
+      .subscribe(authenticated => {
+        if (authenticated) {
+          this.notificacionesUsuarioService.refrescarConteoNoLeidas();
+        } else {
+          this.notificacionesUsuarioService.resetConteoNoLeidas();
+        }
+      });
   }
 
   openMenu() {

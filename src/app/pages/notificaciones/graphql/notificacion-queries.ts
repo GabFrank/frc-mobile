@@ -33,6 +33,12 @@ export const MARCAR_NOTIFICACION_LEIDA_MUTATION = gql`
   }
 `;
 
+export const MARCAR_TODAS_NOTIFICACIONES_LEIDAS_MUTATION = gql`
+  mutation marcarTodasNotificacionesLeidas {
+    marcarTodasNotificacionesLeidas
+  }
+`;
+
 export const CONTEO_NOTIFICACIONES_NO_LEIDAS_QUERY = gql`
   query conteoNotificacionesNoLeidas {
     conteoNotificacionesNoLeidas
