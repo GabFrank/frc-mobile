@@ -96,6 +96,11 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit, OnD
 
     if (this.data?.data?.mostrarPrecio != null) {
       this.mostrarPrecio = this.data.data.mostrarPrecio;
+    } else {
+      const routeMostrarPrecio = this.route.snapshot.paramMap.get('mostrarPrecio');
+      if (routeMostrarPrecio != null) {
+        this.mostrarPrecio = routeMostrarPrecio === 'true';
+      }
     }
 
     if (this.data?.data?.isInventario == true) {

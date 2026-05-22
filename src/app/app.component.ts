@@ -359,7 +359,6 @@ export class AppComponent implements OnInit, OnDestroy {
       this.fabMenuOpen = false;
     }
     this.showFooter = !(
-      normalizedUrl.includes('/producto/consultar-precio') ||
       normalizedUrl.includes('/producto/mostrar-precio') ||
       normalizedUrl.includes('/producto/precio-config')
     );

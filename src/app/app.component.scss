@@ -53,12 +53,12 @@ ion-footer {
     transition: top 0.3s ease;
 
     &.with-pagination {
-      top: 5px; /* Baja para no interferir con la paginación */
+      top: -10px; /* Baja para no interferir con la paginación */
     }
 
     &.not-home {
-      top: 5px;
-      transition: none;
+      top: -10px;
+      transition: top 0.3s ease;
     }
 
     .fab-overlay {
