@@ -12,7 +12,7 @@ import { AfterViewInit, Component, Input, OnInit, ViewChild, OnDestroy } from '@
 import { ProductoService } from '../producto.service';
 import { Location } from '@angular/common';
 import { IonAccordionGroup, IonContent, Platform, IonInput } from '@ionic/angular';
-import { CodigoService } from '../../codigo/codigo.service';
+import { ProductoBusquedaService } from '../producto-busqueda.service';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { StockPorSucursalDialogComponent, StockPorSucursalDialogData } from '../../operaciones/movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
@@ -22,7 +22,6 @@ import { InventarioService } from '../../inventario/inventario.service';
 import { dateToString } from 'src/app/generic/utils/dateUtils';
 import { EditInventarioItemDialogComponent, InventarioItemData } from '../../inventario/edit-inventario-item-dialog/edit-inventario-item-dialog.component';
 import { PaginationStateService } from 'src/app/services/pagination-state.service';
-
 export interface SearchProductoDialogData {
   mostrarPrecio: boolean;
   sucursalId?: number;
@@ -73,7 +72,7 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit, OnD
     private route: ActivatedRoute,
     private _location: Location,
     private plf: Platform,
-    private codigoService: CodigoService,
+    private productoBusquedaService: ProductoBusquedaService,
     private photoViewer: PhotoViewer,
     private notificacionService: NotificacionService,
     private inventarioService: InventarioService,
@@ -121,50 +120,56 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit, OnD
   }
 
   onSearchProducto(text: string, offset?: number) {
-    let isPesable = false;
-    let peso;
-    let codigo;
     this.isSearching = true;
     if (this.onSearchTimer != null) {
       clearTimeout(this.onSearchTimer);
     }
-    if (text == "" || text == null || text == " ") {
-      console.log("text is ", text);
+    const trimmed = text?.trim();
+    if (!trimmed) {
       this.isSearching = false;
-    } else {
-      if (text.length == 13 && text.substring(0, 2) == '20') {
-        isPesable = true;
-        codigo = text.substring(2, 7)
-        peso = +text.substring(7, 12) / 1000
-        text = codigo
-      }
-      this.onSearchTimer = setTimeout(async () => {
-        if (isPesable) {
-          (await this.codigoService.onGetCodigoPorCodigo(codigo)).pipe(untilDestroyed(this)).subscribe(codigoRes => {
-            if (codigoRes.length == 1) {
-              this.onPresentacionClick(codigoRes[0]?.presentacion, codigoRes[0]?.presentacion?.producto, peso);
-            }
-          })
-        } else {
-          (await this.productoService.onSearch(text, offset)).pipe(untilDestroyed(this)).subscribe((res) => {
-            if (offset == null) {
-              this.productosList = res;
-              if (this.productosList.length === 0) {
-                this.notificacionService.warn('Producto no encontrado');
-              }
-              this.showCargarMas = true
+      return;
+    }
+
+    this.onSearchTimer = setTimeout(() => {
+      if (this.productoBusquedaService.esBusquedaPesable(trimmed) && offset == null) {
+        this.productoBusquedaService
+          .buscarProductoPesable(trimmed)
+          .pipe(untilDestroyed(this))
+          .subscribe((resultado) => {
+            if (resultado) {
+              this.onPresentacionClick(
+                resultado.presentacion,
+                resultado.producto,
+                resultado.peso
+              );
             } else {
-              if (res?.length > 0) this.showCargarMas = true
-              const arr = [...this.productosList.concat(res)];
-              this.productosList = arr;
+              this.notificacionService.warn('Producto no encontrado');
             }
-            this.paginationStateService.setPaginationVisible(this.showCargarMas && this.productosList.length > 0);
             this.isSearching = false;
           });
-        }
+        return;
+      }
 
-      }, 1000);
-    }
+      this.productoBusquedaService
+        .buscarPorCodigoOTexto(trimmed, offset)
+        .pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          if (offset == null) {
+            this.productosList = res;
+            if (this.productosList.length === 0) {
+              this.notificacionService.warn('Producto no encontrado');
+            }
+            this.showCargarMas = true;
+          } else {
+            if (res?.length > 0) {
+              this.showCargarMas = true;
+            }
+            this.productosList = [...this.productosList.concat(res)];
+          }
+          this.paginationStateService.setPaginationVisible(this.showCargarMas && this.productosList.length > 0);
+          this.isSearching = false;
+        });
+    }, 1000);
   }
 
   onAvatarClick(image) {

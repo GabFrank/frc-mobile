@@ -206,6 +206,7 @@ export const productoPorCodigoQuery = gql`
   query ($texto: String) {
     data: productoPorCodigo(texto: $texto) {
       id
+      balanza
       descripcion
       garantia
       vencimiento

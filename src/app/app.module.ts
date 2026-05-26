@@ -31,9 +31,9 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { NgxQRCodeModule } from '@techiediaries/ngx-qrcode';
 import { APOLLO_OPTIONS, ApolloModule } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
-import { BehaviorSubject } from 'rxjs';
 import { environment, serverAdress } from 'src/environments/environment';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
+import { ServerConnectionService } from './services/server-connection.service';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { CambiarContrasenhaDialogComponent } from './dialog/login/cambiar-contrasenha-dialog/cambiar-contrasenha-dialog.component';
@@ -80,19 +80,15 @@ const wsClient = new SubscriptionClient(wUri, {
   reconnect: true
 });
 
-export const connectionStatusSub = new BehaviorSubject<any>(null);
+/** Puente para eventos WS antes de que Angular instancie ServerConnectionService. */
+export const serverConnectionBridge = {
+  onConnected: () => {},
+  onDisconnected: () => {},
+};
 
-wsClient.onConnected(() => {
-  connectionStatusSub.next(true);
-});
-wsClient.onDisconnected(() => {
-  if (connectionStatusSub.value != false) {
-    connectionStatusSub.next(false);
-  }
-});
-wsClient.onReconnected(() => {
-  connectionStatusSub.next(true);
-});
+wsClient.onConnected(() => serverConnectionBridge.onConnected());
+wsClient.onDisconnected(() => serverConnectionBridge.onDisconnected());
+wsClient.onReconnected(() => serverConnectionBridge.onConnected());
 
 @Injectable()
 export class HammerConfig extends HammerGestureConfig {
@@ -203,6 +199,15 @@ export class HammerConfig extends HammerGestureConfig {
         multi: true
       }
     ],
+    [
+      ServerConnectionService,
+      {
+        provide: APP_INITIALIZER,
+        useFactory: initServerConnection,
+        deps: [ServerConnectionService],
+        multi: true
+      }
+    ],
     BarcodeScannerService
   ],
   bootstrap: [AppComponent]
@@ -211,4 +216,11 @@ export class AppModule { }
 
 export function appInit(appConfigService: MainService) {
   return () => appConfigService.load();
+}
+
+export function initServerConnection(serverConnection: ServerConnectionService) {
+  return () => {
+    serverConnectionBridge.onConnected = () => serverConnection.onWebSocketConnected();
+    serverConnectionBridge.onDisconnected = () => serverConnection.onWebSocketDisconnected();
+  };
 }

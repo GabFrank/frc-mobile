@@ -2,9 +2,6 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { ZXingScannerModule } from '@zxing/ngx-scanner';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-
 import { ProductoRoutingModule } from './producto-routing.module';
 import { ComponentsModule } from 'src/app/components/components.module';
 import { EditProductoComponent } from './edit-producto/edit-producto.component';
@@ -35,9 +32,7 @@ import { ProductosVencidosComponent } from './productos-vencidos/productos-venci
     ReactiveFormsModule,
     FormsModule,
     ComponentsModule,
-    ProductoRoutingModule,
-    ZXingScannerModule
+    ProductoRoutingModule
   ],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ProductoModule { }
