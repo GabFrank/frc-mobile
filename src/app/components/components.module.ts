@@ -1,5 +1,4 @@
 import { QrGeneratorComponent } from './qr-generator/qr-generator.component';
-import { QrScannerDialogComponent } from './qr-scanner-dialog/qr-scanner-dialog.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -18,7 +17,7 @@ import { SelectorGenericoComponent } from './selector-generico/selector-generico
 
 
 @NgModule({
-  declarations: [QrScannerDialogComponent, QrGeneratorComponent, GenericListDialogComponent, ChangeServerIpDialogComponent, ImagePopoverComponent, EnumToStringPipe, PaginacionComponent, BuscadorModalComponent, SeccionAccordionComponent, SelectorGenericoComponent],
+  declarations: [QrGeneratorComponent, GenericListDialogComponent, ChangeServerIpDialogComponent, ImagePopoverComponent, EnumToStringPipe, PaginacionComponent, BuscadorModalComponent, SeccionAccordionComponent, SelectorGenericoComponent],
   imports: [
     CommonModule,
     IonicModule,
@@ -28,7 +27,6 @@ import { SelectorGenericoComponent } from './selector-generico/selector-generico
     NgxPaginationModule
   ],
   exports: [
-    QrScannerDialogComponent,
     QrGeneratorComponent,
     EnumToStringPipe,
     NgxPaginationModule,

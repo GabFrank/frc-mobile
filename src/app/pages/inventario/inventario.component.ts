@@ -7,7 +7,6 @@ import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { DialogoService } from './../../services/dialogo.service';
 import { InventarioService } from './inventario.service';
 import { CargandoService } from './../../services/cargando.service';
-import { ScannerService } from '../../components/qr-scanner-dialog/scanner.service';
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
@@ -30,7 +29,7 @@ export class InventarioComponent implements OnInit {
 
   isWeb = false;
 
-  constructor(private scannerService: ScannerService,
+  constructor(
     private cargandoService: CargandoService,
     private inventarioService: InventarioService,
     private dialog: DialogoService,

@@ -6,7 +6,7 @@ import {
   NotificacionService,
   TipoNotificacion
 } from 'src/app/services/notificacion.service';
-import { connectionStatusSub } from './app.module';
+import { ServerConnectionService } from './services/server-connection.service';
 import { ChangeServerIpDialogComponent } from './components/change-server-ip-dialog/change-server-ip-dialog.component';
 import { LoginComponent } from './dialog/login/login.component';
 import { CargandoService } from './services/cargando.service';
@@ -63,9 +63,6 @@ export class AppComponent implements OnInit, OnDestroy {
   currentVersion = null;
   currentChannel: Channel = 'stable';
 
-  optionZbar: any;
-  scannedOutput: any;
-
   isFarma = false;
 
   isDev = false;
@@ -102,14 +99,10 @@ export class AppComponent implements OnInit, OnDestroy {
     public channelService: ChannelService,
     private actionSheetCtrl: ActionSheetController,
     private toastCtrl: ToastController,
-    private notificacionesUsuarioService: NotificacionesUsuarioService
+    private notificacionesUsuarioService: NotificacionesUsuarioService,
+    private serverConnectionService: ServerConnectionService
   ) {
     this.isDev = isDevMode();
-
-    this.optionZbar = {
-      flash: 'off',
-      drawSight: false
-    };
 
     this.platfform.ready().then((res) => {
       appVersion.getVersionNumber().then((res) => {
@@ -221,29 +214,29 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.showLoginPop();
 
-    this.statusSub = connectionStatusSub
+    this.statusSub = this.serverConnectionService.serverReachable$
       .pipe(untilDestroyed(this))
-      .subscribe(async (res) => {
-        if (res === true) {
+      .subscribe(async (reachable) => {
+        if (reachable === true) {
           if (this.loadingOpen) {
-            // only close if loading dialog is open
-            if (this.dialog != null) this.cargandoService.close(this.dialog);
+            if (this.dialog != null) {
+              this.cargandoService.close(this.dialog);
+            }
             this.notificacionService.open(
               'Servidor conectado',
               TipoNotificacion.SUCCESS,
               2
             );
-            this.loadingOpen = false; // set loading state to closed
+            this.loadingOpen = false;
           }
           this.online = true;
-        } else if (res === false) {
+        } else if (reachable === false) {
           this.online = false;
           if (!this.loadingOpen) {
-            // only open if loading dialog is not already open
             this.dialog = await this.cargandoService.open(
               'No se puede acceder al servidor'
             );
-            this.loadingOpen = true; // set loading state to open
+            this.loadingOpen = true;
           }
         }
       });

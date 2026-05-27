@@ -23,7 +23,7 @@ npm run clean-install      # nuke node_modules + package-lock + cache → npm in
 
 1. **`--legacy-peer-deps` es obligatorio.** El árbol de dependencias tiene conflictos peer (mezcla `@ionic-native/*` viejo con `@awesome-cordova-plugins/*`, varias versiones de Angular/Ionic). Sin la flag, `npm install` falla. Por eso `clean-install` la incluye.
 
-2. **El `postinstall` hook patchea** `node_modules/phonegap-plugin-barcodescanner/src/android/barcodescanner.gradle` reemplazando `compile(` por `implementation(`. Es porque el plugin original usa la sintaxis Gradle deprecada y el build de Android Gradle Plugin moderno la rechaza. Si ves un diff sorpresa en `node_modules/`, es esto — no es cache podrido. El hook es idempotente.
+2. **Escaneo de códigos:** solo `@capacitor-mlkit/barcode-scanning` vía `BarcodeScannerService`. No usar ZXing ni plugins legacy de barcode.
 
 3. **`npm run refresh`** es el comando que hay que correr **siempre** después de cambios en código Angular antes de probar en device/emulador, no `npm run build` solo. Ejecuta build → `cap sync` (instala plugins/actualiza configs nativas) → `cap copy` (copia el bundle a `android/app/src/main/assets/public` e iOS equivalente).
 
@@ -76,7 +76,7 @@ public Page<Pedido> getPedidosPaginated(...) { ... }
 - **CapacitorUpdater** (`@capgo/capacitor-updater`) con `autoUpdate: true` — actualizaciones OTA del bundle web. Esto es independiente del release del APK.
 - **Splash screen**: rojo `#b40000` (color de marca), `CENTER_CROP`, fullscreen.
 - **Plugins notables**: `@capacitor-mlkit/barcode-scanning` (scanner moderno), `@capgo/capacitor-native-biometric` (face/fingerprint), `@capacitor-community/fcm` (push), `@capacitor/google-maps`, `@capacitor/geolocation`, `@capacitor/camera` con `androidSource: 'both'`.
-- **Cordova legacy**: todavía hay plugins Cordova viejos (`cordova-plugin-app-version`, `cordova-plugin-globalization`, `phonegap-plugin-barcodescanner`) conviviendo con los Capacitor modernos. Migración incompleta — no remover sin verificar uso.
+- **Cordova legacy**: plugins Cordova para versión/globalización (`cordova-plugin-app-version`, `cordova-plugin-globalization`). El escaneo de barcodes ya no usa phonegap.
 
 ## ⚠️ Claves Android pendientes de reubicar
 
