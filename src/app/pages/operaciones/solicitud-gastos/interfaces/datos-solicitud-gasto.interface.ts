@@ -10,5 +10,6 @@ export interface DatosSolicitudGasto {
   fechaVencimiento: string;
   nivelUrgencia: string;
   descripcion: string;
+  enteId?: number | null;
   gastoItems: DetalleGastoFormulario[];
 }

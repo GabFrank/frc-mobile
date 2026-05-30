@@ -29,11 +29,28 @@ import {
   BuscadorModalConfigLocal,
   BuscadorModalConfigPaginado,
 } from 'src/app/components/buscador-modal/buscador-modal.component';
+import { VehiculoSearchPageGQL, VehiculoPageResponse } from '../graphql/vehiculoSearchPage';
+import { MuebleSearchPageGQL, MueblePageResponse } from '../graphql/muebleSearchPage';
+import { InmuebleSearchPageGQL, InmueblePageResponse } from '../graphql/inmuebleSearchPage';
+import { EnteByReferenciaIdGQL } from '../graphql/enteByReferenciaId';
+import { SaveEnteGQL } from '../graphql/saveEnte';
+import {
+  ActivoBusqueda,
+  Ente,
+  Inmueble,
+  ModuloPadreGasto,
+  Mueble,
+  TipoEnte,
+  Vehiculo,
+} from '../models/ente.model';
 
 export const TAM_PAGINA_BUSQUEDA = 25;
 
 export type PersonaPageDto = NonNullable<PersonaPageResponse['data']>;
 export type ProveedorPageDto = NonNullable<ProveedorPageResponse['data']>;
+export type VehiculoPageDto = NonNullable<VehiculoPageResponse['data']>;
+export type MueblePageDto = NonNullable<MueblePageResponse['data']>;
+export type InmueblePageDto = NonNullable<InmueblePageResponse['data']>;
 
 
 @Injectable({
@@ -95,12 +112,19 @@ export class SolicitudGastosService {
     campoSubtexto: (s) => `ID: ${s.id}`,
   };
 
+  configActivo: BuscadorModalConfigPaginado<ActivoBusqueda> | null = null;
+
   constructor(
     private genericService: GenericCrudService,
     private guardarPreGastoGQL: SavePreGastoGQL,
     private tipoGastosGQL: TipoGastosGQL,
     private personaSearchPageGQL: PersonaSearchPageGQL,
     private proveedorSearchByPersonaPageGQL: ProveedorSearchByPersonaPageGQL,
+    private vehiculoSearchPageGQL: VehiculoSearchPageGQL,
+    private muebleSearchPageGQL: MuebleSearchPageGQL,
+    private inmuebleSearchPageGQL: InmuebleSearchPageGQL,
+    private enteByReferenciaIdGQL: EnteByReferenciaIdGQL,
+    private saveEnteGQL: SaveEnteGQL,
     private sucursalService: SucursalService,
     private monedaService: MonedaService,
     private formasPagoGQL: FormasPagoGQL,
@@ -152,6 +176,113 @@ export class SolicitudGastosService {
     this.configSucursal = { ...this.configSucursal, items: [...this.sucursales] };
   }
 
+  requiereModuloPadreActivo(moduloPadre?: ModuloPadreGasto | null): boolean {
+    return moduloPadre === 'VEHICULO' || moduloPadre === 'MUEBLE' || moduloPadre === 'INMUEBLE';
+  }
+
+  etiquetaModuloPadre(moduloPadre?: ModuloPadreGasto | null): string {
+    switch (moduloPadre) {
+      case 'VEHICULO':
+        return 'Vehículo';
+      case 'MUEBLE':
+        return 'Mueble';
+      case 'INMUEBLE':
+        return 'Inmueble';
+      default:
+        return 'Activo';
+    }
+  }
+
+  iconoModuloPadre(moduloPadre?: ModuloPadreGasto | null): string {
+    switch (moduloPadre) {
+      case 'MUEBLE':
+        return 'cube-outline';
+      case 'INMUEBLE':
+        return 'business-outline';
+      default:
+        return 'car-outline';
+    }
+  }
+
+  prepararConfigActivo(moduloPadre?: ModuloPadreGasto | null): void {
+    if (!this.requiereModuloPadreActivo(moduloPadre)) {
+      this.configActivo = null;
+      return;
+    }
+
+    const titulo = this.etiquetaModuloPadre(moduloPadre);
+    const icono = this.iconoModuloPadre(moduloPadre);
+
+    if (moduloPadre === 'VEHICULO') {
+      this.configActivo = {
+        modo: 'paginado',
+        titulo: `Buscar ${titulo}`,
+        placeholder: 'Buscar por chapa, marca o modelo',
+        icono,
+        campoTexto: (v) => this.textoVehiculo(v as Vehiculo),
+        campoId: (v) => v.id,
+        campoSubtexto: (v) => `ID: ${v.id}`,
+        cargarPagina: (texto, pagina) => this.cargarPaginaVehiculos(texto, pagina),
+      };
+      return;
+    }
+
+    if (moduloPadre === 'MUEBLE') {
+      this.configActivo = {
+        modo: 'paginado',
+        titulo: `Buscar ${titulo}`,
+        placeholder: 'Buscar mueble',
+        icono,
+        campoTexto: (m) => ((m as Mueble).descripcion || '').toUpperCase(),
+        campoId: (m) => m.id,
+        campoSubtexto: (m) => `ID: ${m.id}`,
+        cargarPagina: (texto, pagina) => this.cargarPaginaMuebles(texto, pagina),
+      };
+      return;
+    }
+
+    this.configActivo = {
+      modo: 'paginado',
+      titulo: `Buscar ${titulo}`,
+      placeholder: 'Buscar inmueble',
+      icono,
+      campoTexto: (i) => ((i as Inmueble).nombreAsignado || '').toUpperCase(),
+      campoId: (i) => i.id,
+      campoSubtexto: (i) => `ID: ${i.id}`,
+      cargarPagina: (texto, pagina) => this.cargarPaginaInmuebles(texto, pagina),
+    };
+  }
+
+  textoActivoSeleccionado(moduloPadre: ModuloPadreGasto | null | undefined, activo: ActivoBusqueda): string {
+    if (moduloPadre === 'VEHICULO') {
+      return this.textoVehiculo(activo as Vehiculo);
+    }
+    if (moduloPadre === 'MUEBLE') {
+      return ((activo as Mueble).descripcion || '').toUpperCase();
+    }
+    return ((activo as Inmueble).nombreAsignado || '').toUpperCase();
+  }
+
+  async resolverEnteDesdeActivo(moduloPadre: ModuloPadreGasto, referenciaId: number): Promise<Ente> {
+    const tipoEnte = moduloPadre as TipoEnte;
+    const enteExistente = await this.buscarEntePorReferencia(tipoEnte, referenciaId);
+    if (enteExistente?.id) {
+      return enteExistente;
+    }
+
+    const obs = await this.genericService.onSave<Ente>(this.saveEnteGQL, {
+      tipoEnte,
+      referenciaId,
+      activo: true,
+      usuarioId: this.mainService?.usuarioActual?.id,
+    });
+    const ente = await this.resolverObservable(obs);
+    if (!ente?.id) {
+      throw new Error('No se pudo vincular el activo seleccionado');
+    }
+    return ente;
+  }
+
   obtenerResponsableSesion(): { id: number | null; texto: string } {
     const usuario = this.mainService?.usuarioActual;
     const persona = usuario?.persona;
@@ -182,6 +313,10 @@ export class SolicitudGastosService {
     }
     if (!datos.tipoGastoId) {
       return 'Seleccione un tipo de gasto';
+    }
+    const tipoGasto = this.tiposGasto.find((item) => Number(item.id) === Number(datos.tipoGastoId));
+    if (this.requiereModuloPadreActivo(tipoGasto?.moduloPadre) && !datos.enteId) {
+      return `Seleccione ${this.etiquetaModuloPadre(tipoGasto?.moduloPadre).toLowerCase()}`;
     }
     if (datos.beneficiarioTipo === 'PERSONA' && !datos.beneficiarioPersonaId) {
       return 'Seleccione la persona beneficiaria';
@@ -230,6 +365,7 @@ export class SolicitudGastosService {
         datos.beneficiarioTipo === 'PERSONA' ? datos.beneficiarioPersonaId ?? undefined : undefined,
       beneficiarioProveedorId:
         datos.beneficiarioTipo === 'PROVEEDOR' ? datos.beneficiarioProveedorId ?? undefined : undefined,
+      enteId: datos.enteId ?? undefined,
       fechaVencimiento: datos.fechaVencimiento || undefined,
       usuarioId: this.mainService?.usuarioActual?.id,
       finanzas,
@@ -281,6 +417,65 @@ export class SolicitudGastosService {
       items: resultado?.getContent ?? [],
       hayMas: resultado?.hasNext === true,
     };
+  }
+
+  async cargarPaginaVehiculos(texto: string, pagina: number): Promise<{ items: Vehiculo[]; hayMas: boolean }> {
+    const obs = await this.genericService.onGet<VehiculoPageDto>(
+      this.vehiculoSearchPageGQL,
+      { texto: texto ?? '', page: pagina, size: TAM_PAGINA_BUSQUEDA },
+      false,
+    );
+    const resultado = await this.resolverObservable(obs);
+    return {
+      items: resultado?.getContent ?? [],
+      hayMas: resultado?.hasNext === true,
+    };
+  }
+
+  async cargarPaginaMuebles(texto: string, pagina: number): Promise<{ items: Mueble[]; hayMas: boolean }> {
+    const obs = await this.genericService.onGet<MueblePageDto>(
+      this.muebleSearchPageGQL,
+      { texto: texto ?? '', page: pagina, size: TAM_PAGINA_BUSQUEDA },
+      false,
+    );
+    const resultado = await this.resolverObservable(obs);
+    return {
+      items: resultado?.getContent ?? [],
+      hayMas: resultado?.hasNext === true,
+    };
+  }
+
+  async cargarPaginaInmuebles(texto: string, pagina: number): Promise<{ items: Inmueble[]; hayMas: boolean }> {
+    const obs = await this.genericService.onGet<InmueblePageDto>(
+      this.inmuebleSearchPageGQL,
+      { texto: texto ?? '', page: pagina, size: TAM_PAGINA_BUSQUEDA },
+      false,
+    );
+    const resultado = await this.resolverObservable(obs);
+    return {
+      items: resultado?.getContent ?? [],
+      hayMas: resultado?.hasNext === true,
+    };
+  }
+
+  private async buscarEntePorReferencia(tipoEnte: TipoEnte, referenciaId: number): Promise<Ente | null> {
+    const obs = await this.genericService.onGet<Ente>(
+      this.enteByReferenciaIdGQL,
+      { tipoEnte, referenciaId },
+      false,
+    );
+    return (await this.resolverObservable(obs)) ?? null;
+  }
+
+  private textoVehiculo(vehiculo: Vehiculo): string {
+    const chapa = (vehiculo.chapa || '').toUpperCase();
+    const marca = (vehiculo.modelo?.marca?.descripcion || '').toUpperCase();
+    const modelo = (vehiculo.modelo?.descripcion || '').toUpperCase();
+    const detalle = [marca, modelo].filter(Boolean).join(' ');
+    if (chapa && detalle) {
+      return `${chapa} - ${detalle}`;
+    }
+    return chapa || detalle || `VEHÍCULO ${vehiculo.id}`;
   }
 
   private async resolverObservable<T>(obs$: Observable<T>): Promise<T> {
