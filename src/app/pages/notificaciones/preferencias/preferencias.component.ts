@@ -13,6 +13,11 @@ export class PreferenciasComponent implements OnInit {
 
   configuraciones: ConfiguracionNotificacion[] = [];
   loading = false;
+  private readonly descripcionPorTipo: Record<string, string> = {
+    RETIRO: 'Notificacion de retiro realizado en sucursal',
+    VENTA_TRANSFERENCIA: 'Notificacion de venta con pago por transferencia',
+    VENTA_STOCK_CRITICO: 'Notificacion de venta con producto en stock cero o negativo'
+  };
 
   constructor(
     private misConfiguracionesQuery: MisConfiguracionesNotificacionQueryService,
@@ -28,7 +33,12 @@ export class PreferenciasComponent implements OnInit {
   cargarConfiguraciones() {
     this.loading = true;
     this.misConfiguracionesQuery.watch({}, { fetchPolicy: 'cache-and-network' }).valueChanges.subscribe(result => {
-      this.configuraciones = result.data.misConfiguracionesNotificacion.map(c => ({ ...c }));
+      this.configuraciones = result.data.misConfiguracionesNotificacion
+        .map(c => ({
+          ...c,
+          descripcion: c.descripcion || this.descripcionPorTipo[c.tipo] || c.tipo
+        }))
+        .sort((a, b) => a.descripcion.localeCompare(b.descripcion));
       this.loading = false;
     }, err => {
       this.loading = false;
