@@ -60,6 +60,14 @@
             </ion-label>
             <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
           </ion-item>
+          <ion-item button class="dark2" *ngIf="requiereEnteActivo" (click)="abrirModalEnteActivo($event)">
+            <ion-icon slot="start" [name]="iconoEnteActivo"></ion-icon>
+            <ion-label>
+              <h3>{{ etiquetaEnteActivo }}</h3>
+              <p>{{ textoEnteActivo || ('Seleccionar ' + etiquetaEnteActivo.toLowerCase()) }}</p>
+            </ion-label>
+            <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+          </ion-item>
         </ion-list>
       </app-seccion-accordion>
 
@@ -150,6 +158,10 @@
 
     <app-buscador-modal [abierto]="isTipoGastoModalOpen" [config]="servicio.configTipoGasto" [valorSeleccionadoId]="tipoGastoId"
       (seleccionar)="seleccionarTipoGasto($event)" (cerrar)="cerrarModalTipoGasto()"></app-buscador-modal>
+
+    <app-buscador-modal *ngIf="servicio.configActivo" [abierto]="isEnteActivoModalOpen"
+      [config]="servicio.configActivo" [valorSeleccionadoId]="activoReferenciaId"
+      (seleccionar)="seleccionarEnteActivo($event)" (cerrar)="cerrarModalEnteActivo()"></app-buscador-modal>
 
     <app-buscador-modal [abierto]="isSucursalModalOpen" [config]="servicio.configSucursal"
       [valorSeleccionadoId]="selectedSucursalId" (seleccionar)="seleccionarSucursal($event)"

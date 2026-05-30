@@ -13,5 +13,6 @@ export interface PreGastoInput {
   beneficiarioProveedorId?: number;
   beneficiarioPersonaId?: number;
   fechaVencimiento?: string;
+  enteId?: number;
   finanzas: PreGastoDetalleFinanzasInput[];
 }
