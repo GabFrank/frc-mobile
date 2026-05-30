@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Persona } from 'src/app/domains/personas/persona.model';
 import { Proveedor } from 'src/app/pages/personas/proveedor/proveedor.model';
 import { TipoGasto } from '../../models/tipo-gasto.model';
+import { ActivoBusqueda, ModuloPadreGasto } from '../../models/ente.model';
 import {
   SolicitudGastosService,
 } from '../../services/solicitud-gastos.service';
@@ -24,10 +25,15 @@ export class NuevoSolicitudGastosComponent implements OnInit {
   isProveedorBenefModalOpen = false;
   isTipoGastoModalOpen = false;
   isSucursalModalOpen = false;
+  isEnteActivoModalOpen = false;
   responsableId: number | null = null;
   textoResponsable = '';
   tipoGastoId: number | null = null;
   textoTipoGasto = '';
+  moduloPadreTipoGasto: ModuloPadreGasto | null = null;
+  enteId: number | null = null;
+  activoReferenciaId: number | null = null;
+  textoEnteActivo = '';
   beneficiarioPersonaId: number | null = null;
   beneficiarioProveedorId: number | null = null;
   textoPersonaBeneficiaria = '';
@@ -159,6 +165,30 @@ export class NuevoSolicitudGastosComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  get requiereEnteActivo(): boolean {
+    return this.servicio.requiereModuloPadreActivo(this.moduloPadreTipoGasto);
+  }
+
+  get etiquetaEnteActivo(): string {
+    return this.servicio.etiquetaModuloPadre(this.moduloPadreTipoGasto);
+  }
+
+  get iconoEnteActivo(): string {
+    return this.servicio.iconoModuloPadre(this.moduloPadreTipoGasto);
+  }
+
+  abrirModalEnteActivo(event?: Event): void {
+    event?.stopPropagation();
+    this.servicio.prepararConfigActivo(this.moduloPadreTipoGasto);
+    this.isEnteActivoModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  cerrarModalEnteActivo(): void {
+    this.isEnteActivoModalOpen = false;
+    this.cdr.markForCheck();
+  }
+
   cambiarTipoBeneficiario(tipo: 'PERSONA' | 'PROVEEDOR'): void {
     this.beneficiarioTipo = tipo;
     if (tipo === 'PERSONA') {
@@ -187,8 +217,26 @@ export class NuevoSolicitudGastosComponent implements OnInit {
   seleccionarTipoGasto(tipo: TipoGasto): void {
     this.tipoGastoId = Number(tipo.id);
     this.textoTipoGasto = (tipo.descripcion || '').toString().toUpperCase();
+    this.moduloPadreTipoGasto = tipo.moduloPadre ?? null;
+    this.limpiarEnteActivo();
+    this.servicio.prepararConfigActivo(this.moduloPadreTipoGasto);
     this.cerrarModalTipoGasto();
     this.cdr.markForCheck();
+  }
+
+  async seleccionarEnteActivo(activo: ActivoBusqueda): Promise<void> {
+    if (!this.moduloPadreTipoGasto) {
+      return;
+    }
+    try {
+      const ente = await this.servicio.resolverEnteDesdeActivo(this.moduloPadreTipoGasto, Number(activo.id));
+      this.enteId = ente.id ?? null;
+      this.activoReferenciaId = Number(activo.id);
+      this.textoEnteActivo = this.servicio.textoActivoSeleccionado(this.moduloPadreTipoGasto, activo);
+      this.cerrarModalEnteActivo();
+      this.cdr.markForCheck();
+    } catch {
+    }
   }
 
   seleccionarSucursal(sucursal: SucursalItem): void {
@@ -205,6 +253,7 @@ export class NuevoSolicitudGastosComponent implements OnInit {
         sucursalId: this.selectedSucursalId,
         responsableId: this.responsableId,
         tipoGastoId: this.tipoGastoId,
+        enteId: this.enteId,
         beneficiarioTipo: this.beneficiarioTipo,
         beneficiarioPersonaId: this.beneficiarioPersonaId,
         beneficiarioProveedorId: this.beneficiarioProveedorId,
@@ -223,6 +272,12 @@ export class NuevoSolicitudGastosComponent implements OnInit {
 
   cancelar(): void {
     this.router.navigate(['/operaciones/solicitud-gastos']);
+  }
+
+  private limpiarEnteActivo(): void {
+    this.enteId = null;
+    this.activoReferenciaId = null;
+    this.textoEnteActivo = '';
   }
 
   private parsearMonto(texto: string, monedaId: number | null): number | null {
