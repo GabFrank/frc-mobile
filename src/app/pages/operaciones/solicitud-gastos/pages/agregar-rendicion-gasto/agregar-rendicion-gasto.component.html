@@ -1,0 +1,62 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Añadir gasto rendido</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cerrar()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-label position="stacked">Monto total</ion-label>
+    <ion-input type="number" [(ngModel)]="montoTotal" min="0"></ion-input>
+  </ion-item>
+
+  <ng-container *ngIf="esCombustible">
+    <ion-item>
+      <ion-label position="stacked">Km actual</ion-label>
+      <ion-input type="number" [(ngModel)]="kmActual"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked">Litros</ion-label>
+      <ion-input type="number" [(ngModel)]="litros"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked">Precio por litro</ion-label>
+      <ion-input type="number" [(ngModel)]="precioPorLitro"></ion-input>
+    </ion-item>
+  </ng-container>
+
+  <ng-container *ngIf="esAlimentacion">
+    <ion-item>
+      <ion-label position="stacked">Establecimiento</ion-label>
+      <ion-input [(ngModel)]="establecimientoAlimentacion"></ion-input>
+    </ion-item>
+  </ng-container>
+
+  <ion-item>
+    <ion-label position="stacked">Ubicación / detalle</ion-label>
+    <ion-input [(ngModel)]="ubicacionProvisoria"></ion-input>
+  </ion-item>
+
+  <div class="fotos">
+    <ion-button expand="block" fill="outline" (click)="capturarFoto('factura')">
+      <ion-icon slot="start" name="camera-outline"></ion-icon>
+      Foto factura / comprobante
+    </ion-button>
+    <img *ngIf="fotoFacturaUrl" [src]="fotoFacturaUrl" class="preview" alt="Factura" />
+
+    <ion-button expand="block" fill="outline" (click)="capturarFoto('producto')">
+      <ion-icon slot="start" name="image-outline"></ion-icon>
+      Foto producto (opcional)
+    </ion-button>
+    <img *ngIf="fotoProductoUrl" [src]="fotoProductoUrl" class="preview" alt="Producto" />
+  </div>
+
+  <ion-button expand="block" color="primary" class="btn-guardar" [disabled]="guardando" (click)="guardar()">
+    Guardar rendición
+  </ion-button>
+</ion-content>

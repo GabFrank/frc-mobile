@@ -3,4 +3,5 @@ export interface DetalleGastoFormulario {
   monto: number | null;
   monedaId: number | null;
   formaPago: string | null;
+  montoTexto: string;
 }
