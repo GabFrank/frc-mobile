@@ -69,17 +69,37 @@
   </ion-item>
 
   <div class="fotos">
-    <ion-button expand="block" fill="outline" (click)="capturarFoto('factura')">
-      <ion-icon slot="start" name="camera-outline"></ion-icon>
-      Foto factura / comprobante
-    </ion-button>
-    <img *ngIf="fotoFacturaUrl" [src]="fotoFacturaUrl" class="preview" alt="Factura" />
+    <div class="foto-section">
+      <ion-note class="section-label">Factura / comprobante</ion-note>
+      <div class="foto-grid" *ngIf="fotosFacturaItems.length">
+        <div class="foto-item" *ngFor="let foto of fotosFacturaItems">
+          <img [src]="foto.url" class="preview" alt="Factura" />
+          <ion-button fill="clear" class="btn-remove-foto" (click)="quitarFoto('factura', foto.id)">
+            <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+      <ion-button expand="block" fill="outline" (click)="capturarFoto('factura')">
+        <ion-icon slot="start" name="camera-outline"></ion-icon>
+        {{ fotosFacturaItems.length ? 'Agregar otra foto' : 'Foto factura/comprobante' }}
+      </ion-button>
+    </div>
 
-    <ion-button expand="block" fill="outline" (click)="capturarFoto('producto')">
-      <ion-icon slot="start" name="image-outline"></ion-icon>
-      Foto producto (opcional)
-    </ion-button>
-    <img *ngIf="fotoProductoUrl" [src]="fotoProductoUrl" class="preview" alt="Producto" />
+    <div class="foto-section">
+      <ion-note class="section-label">Producto</ion-note>
+      <div class="foto-grid" *ngIf="fotosProductoItems.length">
+        <div class="foto-item" *ngFor="let foto of fotosProductoItems">
+          <img [src]="foto.url" class="preview" alt="Producto" />
+          <ion-button fill="clear" class="btn-remove-foto" (click)="quitarFoto('producto', foto.id)">
+            <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+      <ion-button expand="block" fill="outline" (click)="capturarFoto('producto')">
+        <ion-icon slot="start" name="image-outline"></ion-icon>
+        {{ fotosProductoItems.length ? 'Agregar otra foto' : 'Foto del producto' }}
+      </ion-button>
+    </div>
   </div>
 
   <ion-button expand="block" color="primary" class="btn-guardar" [disabled]="guardando" (click)="guardar()">

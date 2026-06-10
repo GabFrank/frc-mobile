@@ -5,7 +5,7 @@ import { UntilDestroy } from '@ngneat/until-destroy';
 import { MainService } from 'src/app/services/main.service';
 import { NotificacionService } from 'src/app/services/notificacion.service';
 import { GastoRendicionInput, PreGasto } from '../../models/pre-gasto.model';
-import { MontoRendicionFormulario } from '../../interfaces/monto-rendicion-formulario.interface';
+import { FotoRendicionFormulario, MontoRendicionFormulario } from '../../interfaces';
 import { SolicitudGastosService } from '../../services/solicitud-gastos.service';
 
 @UntilDestroy({ checkProperties: true })
@@ -19,10 +19,10 @@ export class AgregarRendicionGastoComponent implements OnInit {
   @Input() preGasto: PreGasto;
 
   montosItems: MontoRendicionFormulario[] = [];
+  fotosFacturaItems: FotoRendicionFormulario[] = [];
+  fotosProductoItems: FotoRendicionFormulario[] = [];
   private nextMontoId = 1;
-
-  fotoFacturaUrl = '';
-  fotoProductoUrl = '';
+  private nextFotoId = 1;
   kmActual: number | null = null;
   litros: number | null = null;
   precioPorLitro: number | null = null;
@@ -121,19 +121,36 @@ export class AgregarRendicionGastoComponent implements OnInit {
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Prompt,
+        promptLabelHeader: 'Foto',
+        promptLabelPhoto: 'Desde galería',
+        promptLabelPicture: 'Tomar foto',
+        promptLabelCancel: 'Cancelar',
       });
       if (!image.dataUrl) {
         return;
       }
+      const nuevaFoto: FotoRendicionFormulario = {
+        id: this.nextFotoId++,
+        url: image.dataUrl,
+      };
       if (campo === 'factura') {
-        this.fotoFacturaUrl = image.dataUrl;
+        this.fotosFacturaItems = [...this.fotosFacturaItems, nuevaFoto];
       } else {
-        this.fotoProductoUrl = image.dataUrl;
+        this.fotosProductoItems = [...this.fotosProductoItems, nuevaFoto];
       }
       this.cdr.markForCheck();
     } catch {
       this.notificacion.warn('No se pudo capturar la imagen.');
     }
+  }
+
+  quitarFoto(campo: 'factura' | 'producto', id: number): void {
+    if (campo === 'factura') {
+      this.fotosFacturaItems = this.fotosFacturaItems.filter((foto) => foto.id !== id);
+    } else {
+      this.fotosProductoItems = this.fotosProductoItems.filter((foto) => foto.id !== id);
+    }
+    this.cdr.markForCheck();
   }
 
   async guardar(): Promise<void> {
@@ -151,8 +168,8 @@ export class AgregarRendicionGastoComponent implements OnInit {
       return;
     }
 
-    if (!this.fotoFacturaUrl) {
-      this.notificacion.warn('Adjunte foto de factura o comprobante.');
+    if (this.fotosFacturaItems.length === 0) {
+      this.notificacion.warn('Adjunte al menos una foto de factura o comprobante.');
       return;
     }
 
@@ -162,8 +179,10 @@ export class AgregarRendicionGastoComponent implements OnInit {
       preGastoId: this.preGasto.id,
       sucursalId: this.preGasto.sucursalId,
       montoTotal,
-      fotoFacturaUrl: this.fotoFacturaUrl,
-      fotoProductoUrl: this.fotoProductoUrl || undefined,
+      fotosFacturaUrls: this.fotosFacturaItems.map((foto) => foto.url),
+      fotosProductoUrls: this.fotosProductoItems.length
+        ? this.fotosProductoItems.map((foto) => foto.url)
+        : undefined,
       kmActual: this.kmActual ?? undefined,
       litros: this.litros ?? undefined,
       precioPorLitro: this.precioPorLitro ?? undefined,

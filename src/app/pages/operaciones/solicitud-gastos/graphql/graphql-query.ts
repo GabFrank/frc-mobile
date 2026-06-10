@@ -163,6 +163,8 @@ export const preGastoPorIdQuery = gql`
         montoTotal
         fotoFacturaUrl
         fotoProductoUrl
+        fotosFacturaUrls
+        fotosProductoUrls
         kmActual
         litros
         precioPorLitro

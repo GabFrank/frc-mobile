@@ -12,6 +12,8 @@ export class GastoRendicion {
   montoTotal: number;
   fotoFacturaUrl?: string;
   fotoProductoUrl?: string;
+  fotosFacturaUrls?: string[];
+  fotosProductoUrls?: string[];
   kmActual?: number;
   litros?: number;
   precioPorLitro?: number;
@@ -53,6 +55,8 @@ export class GastoRendicionInput {
   montoTotal: number;
   fotoFacturaUrl?: string;
   fotoProductoUrl?: string;
+  fotosFacturaUrls?: string[];
+  fotosProductoUrls?: string[];
   kmActual?: number;
   litros?: number;
   precioPorLitro?: number;
