@@ -7,6 +7,7 @@ import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service'
 import { MainService } from 'src/app/services/main.service';
 import { NotificacionService } from 'src/app/services/notificacion.service';
 import { PreGasto } from '../../models/pre-gasto.model';
+import { ResumenMontoPorMoneda } from '../../interfaces';
 import { SolicitudGastosService } from '../../services/solicitud-gastos.service';
 import { AgregarRendicionGastoComponent } from '../agregar-rendicion-gasto/agregar-rendicion-gasto.component';
 
@@ -27,7 +28,8 @@ export class DetalleSolicitudGastosComponent implements OnInit {
   puedeEscanearRetiro = false;
   puedeAgregarRendicion = false;
   mostrarEsperaEntrega = false;
-  simboloMoneda = 'Gs.';
+  resumenMontosPorMoneda: ResumenMontoPorMoneda[] = [];
+  simboloMonedaPrincipal = 'Gs.';
   badgeColorEstado = 'medium';
 
   constructor(
@@ -148,8 +150,137 @@ export class DetalleSolicitudGastosComponent implements OnInit {
     this.puedeEscanearRetiro = solicitud?.estado === 'AUTORIZADO' && !solicitud?.retiroConfirmadoEn;
     this.puedeAgregarRendicion = solicitud?.estado === 'TRAMITE';
     this.mostrarEsperaEntrega = !!solicitud?.retiroConfirmadoEn && solicitud?.estado === 'AUTORIZADO';
-    this.simboloMoneda = solicitud?.moneda?.simbolo || 'Gs.';
+    this.resumenMontosPorMoneda = this.construirResumenMontosPorMoneda();
+    this.simboloMonedaPrincipal = this.resumenMontosPorMoneda[0]?.simboloMoneda
+      || solicitud?.moneda?.simbolo
+      || 'Gs.';
     this.badgeColorEstado = this.resolverBadgeColor(solicitud?.estado);
+  }
+
+  private construirResumenMontosPorMoneda(): ResumenMontoPorMoneda[] {
+    const solicitud = this.solicitud;
+    if (!solicitud) {
+      return [];
+    }
+    const finanzas = solicitud.finanzas ?? [];
+    if (finanzas.length === 0) {
+      const simbolo = solicitud.moneda?.simbolo ?? 'Gs.';
+      const etiqueta = solicitud.moneda?.denominacion ?? 'Moneda';
+      const esGuarani = this.esMonedaGuarani(simbolo, etiqueta);
+      const solicitado = Number(solicitud.montoSolicitado ?? 0);
+      const retirado = Number(solicitud.montoRetirado ?? 0);
+      const gastado = Number(solicitud.montoGastado ?? 0);
+      const saldo = Number(solicitud.saldoDevolver ?? 0);
+      return [{
+        etiquetaMoneda: etiqueta,
+        simboloMoneda: simbolo,
+        solicitadoTexto: this.formatearMonto(solicitado, esGuarani),
+        retiradoTexto: this.formatearMonto(retirado, esGuarani),
+        gastadoTexto: this.formatearMonto(gastado, esGuarani),
+        saldoDevolverTexto: this.formatearMonto(saldo, esGuarani),
+      }];
+    }
+
+    return finanzas.map((fin) => {
+      const simbolo = fin?.moneda?.simbolo ?? '';
+      const etiqueta = fin?.moneda?.denominacion ?? 'Moneda';
+      const esGuarani = this.esMonedaGuarani(simbolo, etiqueta);
+      const solicitado = Number(fin?.monto ?? 0);
+      const retirado = this.valorRetiradoPorMoneda(simbolo, etiqueta);
+      const vuelto = this.valorVueltoPorMoneda(simbolo, etiqueta);
+      const gastado = Math.max(retirado - vuelto, 0);
+      return {
+        etiquetaMoneda: etiqueta,
+        simboloMoneda: simbolo,
+        solicitadoTexto: this.formatearMonto(solicitado, esGuarani),
+        retiradoTexto: this.formatearMonto(retirado, esGuarani),
+        gastadoTexto: this.formatearMonto(gastado, esGuarani),
+        saldoDevolverTexto: this.formatearMonto(vuelto, esGuarani),
+      };
+    });
+  }
+
+  private valorRetiradoPorMoneda(simbolo: string, denominacion: string): number {
+    const gasto = this.solicitud?.gasto;
+    if (!gasto) {
+      const monedaPrincipal = this.solicitud?.moneda;
+      if (this.mismaMoneda(simbolo, denominacion, monedaPrincipal?.simbolo, monedaPrincipal?.denominacion)) {
+        return Number(this.solicitud?.montoRetirado ?? 0);
+      }
+      return 0;
+    }
+    if (this.esMonedaGuarani(simbolo, denominacion)) {
+      return Number(gasto.retiroGs ?? 0);
+    }
+    if (this.esMonedaReal(simbolo, denominacion)) {
+      return Number(gasto.retiroRs ?? 0);
+    }
+    if (this.esMonedaDolar(simbolo, denominacion)) {
+      return Number(gasto.retiroDs ?? 0);
+    }
+    return 0;
+  }
+
+  private valorVueltoPorMoneda(simbolo: string, denominacion: string): number {
+    const gasto = this.solicitud?.gasto;
+    if (!gasto) {
+      const monedaPrincipal = this.solicitud?.moneda;
+      if (this.mismaMoneda(simbolo, denominacion, monedaPrincipal?.simbolo, monedaPrincipal?.denominacion)) {
+        return Number(this.solicitud?.saldoDevolver ?? 0);
+      }
+      return 0;
+    }
+    if (this.esMonedaGuarani(simbolo, denominacion)) {
+      return Number(gasto.vueltoGs ?? 0);
+    }
+    if (this.esMonedaReal(simbolo, denominacion)) {
+      return Number(gasto.vueltoRs ?? 0);
+    }
+    if (this.esMonedaDolar(simbolo, denominacion)) {
+      return Number(gasto.vueltoDs ?? 0);
+    }
+    return 0;
+  }
+
+  private mismaMoneda(
+    simboloA?: string,
+    denominacionA?: string,
+    simboloB?: string,
+    denominacionB?: string
+  ): boolean {
+    const simboloNormalizadoA = (simboloA ?? '').trim().toUpperCase();
+    const simboloNormalizadoB = (simboloB ?? '').trim().toUpperCase();
+    const denominacionNormalizadaA = (denominacionA ?? '').trim().toUpperCase();
+    const denominacionNormalizadaB = (denominacionB ?? '').trim().toUpperCase();
+    return (
+      (!!simboloNormalizadoA && simboloNormalizadoA === simboloNormalizadoB) ||
+      (!!denominacionNormalizadaA && denominacionNormalizadaA === denominacionNormalizadaB)
+    );
+  }
+
+  private esMonedaGuarani(simbolo: string, denominacion: string): boolean {
+    const simboloNormalizado = (simbolo ?? '').trim().toUpperCase();
+    const denominacionNormalizada = (denominacion ?? '').trim().toUpperCase();
+    return simboloNormalizado.includes('GS') || denominacionNormalizada.includes('GUARANI');
+  }
+
+  private esMonedaReal(simbolo: string, denominacion: string): boolean {
+    const simboloNormalizado = (simbolo ?? '').trim().toUpperCase();
+    const denominacionNormalizada = (denominacion ?? '').trim().toUpperCase();
+    return simboloNormalizado.includes('R$') || simboloNormalizado.includes('RS') || denominacionNormalizada.includes('REAL');
+  }
+
+  private esMonedaDolar(simbolo: string, denominacion: string): boolean {
+    const simboloNormalizado = (simbolo ?? '').trim().toUpperCase();
+    const denominacionNormalizada = (denominacion ?? '').trim().toUpperCase();
+    return simboloNormalizado.includes('USD') || simboloNormalizado.includes('US$') || simboloNormalizado === '$' || denominacionNormalizada.includes('DOLAR');
+  }
+
+  private formatearMonto(monto: number, esGuarani: boolean): string {
+    return new Intl.NumberFormat('es-PY', {
+      minimumFractionDigits: esGuarani ? 0 : 2,
+      maximumFractionDigits: esGuarani ? 0 : 2,
+    }).format(monto);
   }
 
   private resolverBadgeColor(estado?: string): string {

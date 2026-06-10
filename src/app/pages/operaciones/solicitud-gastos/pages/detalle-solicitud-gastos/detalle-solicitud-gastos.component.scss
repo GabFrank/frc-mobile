@@ -45,6 +45,24 @@ h2 {
   align-items: center;
 }
 
+.resumen-moneda {
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  &:last-of-type {
+    margin-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.resumen-moneda-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e0e0e0;
+  margin-bottom: 4px;
+}
+
 .resumen-fila {
   display: flex;
   justify-content: space-between;

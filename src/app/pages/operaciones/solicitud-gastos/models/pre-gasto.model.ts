@@ -7,6 +7,15 @@ export class PersonaResumen {
   nombre: string;
 }
 
+export class PreGastoGasto {
+  retiroGs?: number;
+  retiroRs?: number;
+  retiroDs?: number;
+  vueltoGs?: number;
+  vueltoRs?: number;
+  vueltoDs?: number;
+}
+
 export class GastoRendicion {
   id: number;
   montoTotal: number;
@@ -45,6 +54,7 @@ export class PreGasto {
   funcionario?: PersonaResumen;
   tipoGasto?: TipoGasto;
   finanzas?: { monto: number; moneda?: Moneda }[];
+  gasto?: PreGastoGasto;
   rendiciones?: GastoRendicion[];
 }
 

@@ -158,6 +158,14 @@ export const preGastoPorIdQuery = gql`
       moneda { id simbolo denominacion }
       sucursalCaja { id nombre }
       finanzas { monto moneda { simbolo denominacion } }
+      gasto {
+        retiroGs
+        retiroRs
+        retiroDs
+        vueltoGs
+        vueltoRs
+        vueltoDs
+      }
       rendiciones {
         id
         montoTotal
