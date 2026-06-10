@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ActionSheetController, ModalController } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { MainService } from 'src/app/services/main.service';
@@ -34,6 +34,7 @@ export class AgregarRendicionGastoComponent implements OnInit {
 
   constructor(
     private modalCtrl: ModalController,
+    private actionSheetCtrl: ActionSheetController,
     public solicitudService: SolicitudGastosService,
     private notificacion: NotificacionService,
     private mainService: MainService,
@@ -115,16 +116,45 @@ export class AgregarRendicionGastoComponent implements OnInit {
   }
 
   async capturarFoto(campo: 'factura' | 'producto'): Promise<void> {
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Foto',
+      cssClass: 'foto-picker-sheet',
+      backdropDismiss: true,
+      buttons: [
+        {
+          text: 'Tomar foto',
+          icon: 'camera-outline',
+          cssClass: 'foto-picker-option',
+          data: { source: CameraSource.Camera },
+        },
+        {
+          text: 'Desde galería',
+          icon: 'image-outline',
+          cssClass: 'foto-picker-option',
+          data: { source: CameraSource.Photos },
+        },
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'foto-picker-cancel',
+        },
+      ],
+    });
+    await actionSheet.present();
+    const { data, role } = await actionSheet.onDidDismiss<{ source: CameraSource }>();
+    if (role === 'cancel' || !data?.source) {
+      return;
+    }
+    await this.tomarFotoDesde(campo, data.source);
+  }
+
+  private async tomarFotoDesde(campo: 'factura' | 'producto', source: CameraSource): Promise<void> {
     try {
       const image = await Camera.getPhoto({
         quality: 80,
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
-        source: CameraSource.Prompt,
-        promptLabelHeader: 'Foto',
-        promptLabelPhoto: 'Desde galería',
-        promptLabelPicture: 'Tomar foto',
-        promptLabelCancel: 'Cancelar',
+        source,
       });
       if (!image.dataUrl) {
         return;
@@ -139,7 +169,11 @@ export class AgregarRendicionGastoComponent implements OnInit {
         this.fotosProductoItems = [...this.fotosProductoItems, nuevaFoto];
       }
       this.cdr.markForCheck();
-    } catch {
+    } catch (err) {
+      const mensaje = ((err as Error)?.message || '').toLowerCase();
+      if (mensaje.includes('cancel')) {
+        return;
+      }
       this.notificacion.warn('No se pudo capturar la imagen.');
     }
   }
