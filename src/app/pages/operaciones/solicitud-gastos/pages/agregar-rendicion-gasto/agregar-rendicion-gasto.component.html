@@ -10,35 +10,61 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-item>
-    <ion-label position="stacked">Monto total</ion-label>
-    <ion-input type="number" [(ngModel)]="montoTotal" min="0"></ion-input>
-  </ion-item>
+  <div class="montos-section">
+    <ion-note class="section-label">Montos</ion-note>
+
+    <div class="monto-row" *ngFor="let item of montosItems; let last = last">
+      <div class="monto-fields">
+        <div class="monto-field monto-field--moneda">
+          <app-selector-generico etiqueta="Moneda" placeholder="Moneda"
+            [opciones]="solicitudService.opcionesMoneda" [valor]="item.monedaId"
+            (valorChange)="alCambiarMoneda(item, $event)"></app-selector-generico>
+        </div>
+        <div class="monto-field monto-field--monto">
+          <ion-item class="dark2 monto-input-item" lines="full">
+            <ion-label position="stacked">Monto</ion-label>
+            <ion-input type="text" inputmode="decimal" placeholder="0"
+              [(ngModel)]="item.montoTexto" (ngModelChange)="alCambiarMontoTexto(item, $event)"
+              (ionBlur)="alPerderFocoMonto(item)"></ion-input>
+          </ion-item>
+        </div>
+      </div>
+      <div class="monto-actions">
+        <ion-button *ngIf="last" fill="clear" class="btn-add" (click)="agregarMonto()">
+          <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+        </ion-button>
+        <ion-button *ngIf="!last && montosItems.length > 1" fill="clear" class="btn-remove"
+          (click)="quitarMonto(item.id)">
+          <ion-icon slot="icon-only" name="remove-circle"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+  </div>
 
   <ng-container *ngIf="esCombustible">
-    <ion-item>
+    <ion-item class="dark2 campo-item">
       <ion-label position="stacked">Km actual</ion-label>
       <ion-input type="number" [(ngModel)]="kmActual"></ion-input>
     </ion-item>
-    <ion-item>
+    <ion-item class="dark2 campo-item">
       <ion-label position="stacked">Litros</ion-label>
       <ion-input type="number" [(ngModel)]="litros"></ion-input>
     </ion-item>
-    <ion-item>
+    <ion-item class="dark2 campo-item">
       <ion-label position="stacked">Precio por litro</ion-label>
       <ion-input type="number" [(ngModel)]="precioPorLitro"></ion-input>
     </ion-item>
   </ng-container>
 
   <ng-container *ngIf="esAlimentacion">
-    <ion-item>
+    <ion-item class="dark2 campo-item">
       <ion-label position="stacked">Establecimiento</ion-label>
       <ion-input [(ngModel)]="establecimientoAlimentacion"></ion-input>
     </ion-item>
   </ng-container>
 
-  <ion-item>
-    <ion-label position="stacked">Ubicación / detalle</ion-label>
+  <ion-item class="dark2 campo-item">
+    <ion-label position="stacked">Tienda</ion-label>
     <ion-input [(ngModel)]="ubicacionProvisoria"></ion-input>
   </ion-item>
 

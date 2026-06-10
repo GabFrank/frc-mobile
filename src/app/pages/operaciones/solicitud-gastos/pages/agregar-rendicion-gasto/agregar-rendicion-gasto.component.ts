@@ -5,6 +5,7 @@ import { UntilDestroy } from '@ngneat/until-destroy';
 import { MainService } from 'src/app/services/main.service';
 import { NotificacionService } from 'src/app/services/notificacion.service';
 import { GastoRendicionInput, PreGasto } from '../../models/pre-gasto.model';
+import { MontoRendicionFormulario } from '../../interfaces/monto-rendicion-formulario.interface';
 import { SolicitudGastosService } from '../../services/solicitud-gastos.service';
 
 @UntilDestroy({ checkProperties: true })
@@ -17,7 +18,9 @@ import { SolicitudGastosService } from '../../services/solicitud-gastos.service'
 export class AgregarRendicionGastoComponent implements OnInit {
   @Input() preGasto: PreGasto;
 
-  montoTotal = 0;
+  montosItems: MontoRendicionFormulario[] = [];
+  private nextMontoId = 1;
+
   fotoFacturaUrl = '';
   fotoProductoUrl = '';
   kmActual: number | null = null;
@@ -31,19 +34,77 @@ export class AgregarRendicionGastoComponent implements OnInit {
 
   constructor(
     private modalCtrl: ModalController,
-    private solicitudService: SolicitudGastosService,
+    public solicitudService: SolicitudGastosService,
     private notificacion: NotificacionService,
     private mainService: MainService,
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    try {
+      await this.solicitudService.cargarDatosIniciales();
+    } catch {
+      // monedas pueden cargarse en otro flujo previo
+    }
+    this.montosItems = [this.crearFilaMonto()];
     this.actualizarCamposPorTipo();
     this.cdr.markForCheck();
   }
 
   cerrar(): void {
     this.modalCtrl.dismiss();
+  }
+
+  agregarMonto(): void {
+    this.montosItems = [
+      ...this.montosItems,
+      this.crearFilaMonto(),
+    ];
+    this.cdr.markForCheck();
+  }
+
+  quitarMonto(id: number): void {
+    if (this.montosItems.length === 1) {
+      return;
+    }
+    this.montosItems = this.montosItems.filter((item) => item.id !== id);
+    this.cdr.markForCheck();
+  }
+
+  alCambiarMoneda(item: MontoRendicionFormulario, valor: unknown): void {
+    const monedaId = this.normalizarNumero(valor);
+    item.monedaId = monedaId;
+    if (item.monto != null) {
+      item.montoTexto = this.formatearMonto(item.monto, monedaId);
+    }
+    this.cdr.markForCheck();
+  }
+
+  alCambiarMontoTexto(item: MontoRendicionFormulario, texto: string): void {
+    const textoIngresado = (texto ?? '').toString();
+    const monto = this.parsearMonto(textoIngresado, item.monedaId);
+    item.monto = monto;
+    item.montoTexto = monto == null ? '' : this.formatearMonto(monto, item.monedaId);
+    this.cdr.markForCheck();
+  }
+
+  alPerderFocoMonto(item: MontoRendicionFormulario): void {
+    if (item.monto == null) {
+      item.montoTexto = '';
+      this.cdr.markForCheck();
+      return;
+    }
+    item.montoTexto = this.formatearMonto(item.monto, item.monedaId);
+    this.cdr.markForCheck();
+  }
+
+  private crearFilaMonto(): MontoRendicionFormulario {
+    return {
+      id: this.nextMontoId++,
+      monto: null,
+      monedaId: this.obtenerIdGuarani(),
+      montoTexto: '',
+    };
   }
 
   private actualizarCamposPorTipo(): void {
@@ -83,19 +144,24 @@ export class AgregarRendicionGastoComponent implements OnInit {
       this.notificacion.warn('El gasto no tiene un tipo asociado.');
       return;
     }
-    if (!this.montoTotal || this.montoTotal <= 0) {
-      this.notificacion.warn('Ingrese un monto mayor a cero.');
+
+    const errorMontos = this.validarMontos();
+    if (errorMontos) {
+      this.notificacion.warn(errorMontos);
       return;
     }
+
     if (!this.fotoFacturaUrl) {
       this.notificacion.warn('Adjunte foto de factura o comprobante.');
       return;
     }
 
+    const montoTotal = this.calcularMontoTotal();
+
     const input: GastoRendicionInput = {
       preGastoId: this.preGasto.id,
       sucursalId: this.preGasto.sucursalId,
-      montoTotal: this.montoTotal,
+      montoTotal,
       fotoFacturaUrl: this.fotoFacturaUrl,
       fotoProductoUrl: this.fotoProductoUrl || undefined,
       kmActual: this.kmActual ?? undefined,
@@ -119,5 +185,108 @@ export class AgregarRendicionGastoComponent implements OnInit {
       this.guardando = false;
       this.cdr.markForCheck();
     }
+  }
+
+  private validarMontos(): string | null {
+    const filasConMonto = this.montosItems.filter((item) => item.monto != null && item.monto > 0);
+    if (filasConMonto.length === 0) {
+      return 'Ingrese un monto mayor a cero.';
+    }
+
+    const monedasUsadas = new Set<number>();
+    for (const item of this.montosItems) {
+      if (item.monto == null || item.monto <= 0) {
+        continue;
+      }
+      if (!item.monedaId) {
+        return 'Seleccione la moneda en cada monto.';
+      }
+      if (monedasUsadas.has(item.monedaId)) {
+        return 'No se permite repetir moneda en los montos.';
+      }
+      monedasUsadas.add(item.monedaId);
+    }
+
+    return null;
+  }
+
+  private calcularMontoTotal(): number {
+    const guaraniId = this.obtenerIdGuarani();
+    const filasValidas = this.montosItems.filter((item) => item.monto != null && item.monto > 0);
+
+    if (guaraniId != null) {
+      const filasGuarani = filasValidas.filter((item) => Number(item.monedaId) === Number(guaraniId));
+      if (filasGuarani.length > 0) {
+        return filasGuarani.reduce((suma, item) => suma + (item.monto ?? 0), 0);
+      }
+    }
+
+    return filasValidas.reduce((suma, item) => suma + (item.monto ?? 0), 0);
+  }
+
+  private obtenerIdGuarani(): number | null {
+    const opcionGuarani = this.solicitudService.opcionesMoneda.find((opcion) => {
+      const texto = (opcion.texto || '').toUpperCase();
+      return texto.includes('GUARANI') || texto.includes('₲') || texto.includes('GS.');
+    });
+    return opcionGuarani ? Number(opcionGuarani.valor) : null;
+  }
+
+  private normalizarNumero(valor: unknown): number | null {
+    if (valor === null || valor === undefined || valor === '') {
+      return null;
+    }
+    const numero = Number(valor);
+    return Number.isFinite(numero) ? numero : null;
+  }
+
+  private parsearMonto(texto: string, monedaId: number | null): number | null {
+    const textoLimpio = (texto || '').replace(/\s/g, '');
+    if (!textoLimpio) {
+      return null;
+    }
+    const precision = this.obtenerPrecisionPorMoneda(monedaId);
+    if (precision === 0) {
+      const soloDigitos = textoLimpio.replace(/\D/g, '');
+      if (!soloDigitos) {
+        return null;
+      }
+      return Number(soloDigitos);
+    }
+
+    const ultimoSeparadorIndex = Math.max(textoLimpio.lastIndexOf(','), textoLimpio.lastIndexOf('.'));
+    const fuenteEntera = ultimoSeparadorIndex >= 0 ? textoLimpio.slice(0, ultimoSeparadorIndex) : textoLimpio;
+    const parteEntera = fuenteEntera.replace(/\D/g, '');
+    if (!parteEntera) {
+      return null;
+    }
+
+    const fuenteDecimal = ultimoSeparadorIndex >= 0 ? textoLimpio.slice(ultimoSeparadorIndex + 1) : '';
+    const parteDecimal = fuenteDecimal.replace(/\D/g, '').slice(0, precision);
+    const normalizado = parteDecimal.length > 0 ? `${parteEntera}.${parteDecimal}` : parteEntera;
+    const valor = Number(normalizado);
+    return Number.isFinite(valor) ? valor : null;
+  }
+
+  private formatearMonto(monto: number, monedaId: number | null): string {
+    const precision = this.obtenerPrecisionPorMoneda(monedaId);
+    return new Intl.NumberFormat('es-PY', {
+      minimumFractionDigits: precision,
+      maximumFractionDigits: precision,
+    }).format(monto);
+  }
+
+  private obtenerPrecisionPorMoneda(monedaId: number | null): number {
+    if (!monedaId) {
+      return 2;
+    }
+    const opcionMoneda = this.solicitudService.opcionesMoneda.find(
+      (opcion) => Number(opcion.valor) === Number(monedaId)
+    );
+    const textoMoneda = (opcionMoneda?.texto || '').toUpperCase();
+    if (textoMoneda.includes('GUARANI') || textoMoneda.includes('₲')) {
+      return 0;
+    }
+    return 2;
   }
 }
