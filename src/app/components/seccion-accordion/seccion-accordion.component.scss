@@ -1,0 +1,25 @@
+.accordion-header {
+  --background: #161616;
+  --border-color: #222;
+  min-height: 60px;
+  border-left: 3px solid var(--accent-red, #ff3b30);
+
+  h2 {
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+  }
+
+  p {
+    color: #a4b0a8;
+    font-size: 0.82rem;
+    margin: 0;
+  }
+}
+
+.accordion-content {
+  background: #191919;
+  border-top: 1px solid #222;
+  padding: 8px;
+}

@@ -135,7 +135,6 @@ export class ProductoService {
   }
 
   onImageSave(image: string, filename: string) {
-    // return new Observable((obs) => {
     console.log("saving image");
     this.saveImage
       .mutate({
@@ -144,20 +143,18 @@ export class ProductoService {
       }).pipe(untilDestroyed(this))
       .subscribe((res) => {
         if (res.errors == null) {
-          // obs.next(res.data)
           this.notificacionSnack.openGuardadoConExito()
         } else {
           this.notificacionSnack.openAlgoSalioMal()
         }
       });
-    // })
   }
 
-  async  onGetStockPorSucursal(productoId: number, sucursalId: number): Promise<Observable<number>>{
-    return await this.genericService.onGet(this.getStockPorSucursal, {proId: productoId, sucId: sucursalId});
+  async onGetStockPorSucursal(productoId: number, sucursalId: number): Promise<Observable<number>> {
+    return await this.genericService.onGet(this.getStockPorSucursal, { proId: productoId, sucId: sucursalId });
   }
-  
+
   async onGetProductoPorCodigo(texto): Promise<Observable<Producto>> {
-    return await this.genericService.onCustomGet(this.productoPorCodigo, { texto });
-    }
+    return await this.genericService.onCustomGet(this.productoPorCodigo, { texto });
+  }
 }

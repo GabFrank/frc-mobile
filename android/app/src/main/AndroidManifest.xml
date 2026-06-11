@@ -38,6 +38,7 @@
     <meta-data android:name="com.google.android.geo.API_KEY"
       android:value="AIzaSyCHwGrrR6zNzmIRRPOvziFXpyW7H3BmwU4" />
     <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode" />
+    <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="fcm_default_channel" />
   </application>
   <uses-permission android:name="android.permission.USE_BIOMETRIC" />
   <uses-permission android:name="android.permission.USE_FINGERPRINT" />

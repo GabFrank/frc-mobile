@@ -52,6 +52,10 @@ export interface MarcarNotificacionLeidaResponse {
     marcarNotificacionLeida: boolean;
 }
 
+export interface MarcarTodasNotificacionesLeidasResponse {
+    marcarTodasNotificacionesLeidas: boolean;
+}
+
 export interface ConfiguracionNotificacion {
     tipo: string;
     descripcion: string;

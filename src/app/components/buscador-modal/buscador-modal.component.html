@@ -1,0 +1,64 @@
+<ion-modal
+  [isOpen]="abierto"
+  cssClass="buscador-modal"
+  [backdropDismiss]="true"
+  (didDismiss)="alCerrar()"
+>
+  <ng-template>
+    <ion-header>
+      <ion-toolbar class="buscador-toolbar">
+        <ion-buttons slot="start">
+          <ion-button fill="clear" (click)="alCerrar()">
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>{{ tituloModal() }}</ion-title>
+      </ion-toolbar>
+      <ion-toolbar class="buscador-search-toolbar">
+        <ion-searchbar
+          [(ngModel)]="textoBusqueda"
+          (ngModelChange)="alCambiarTexto()"
+          [placeholder]="placeholderBusqueda()"
+          show-clear-button="focus"
+          [debounce]="0"
+        ></ion-searchbar>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="buscador-content" scrollEvents="true">
+      <ion-list lines="full" class="buscador-list">
+        <ion-item
+          button
+          detail="false"
+          *ngFor="let item of itemsFiltrados"
+          [class.selected]="esSeleccionado(item)"
+          (click)="alSeleccionar(item, $event)"
+        >
+          <ion-icon slot="start" [name]="iconoItem()"></ion-icon>
+          <ion-label>
+            <h3>{{ textoItem(item) }}</h3>
+            <p *ngIf="subtextoItem(item)">{{ subtextoItem(item) }}</p>
+          </ion-label>
+          <ion-icon
+            slot="end"
+            color="success"
+            name="checkmark-circle"
+            *ngIf="esSeleccionado(item)"
+          ></ion-icon>
+        </ion-item>
+      </ion-list>
+
+      <ion-infinite-scroll
+        *ngIf="!esModoLocal()"
+        threshold="120px"
+        [disabled]="!hayMas || cargando"
+        (ionInfinite)="alCargarMas($event)"
+      >
+        <ion-infinite-scroll-content
+          loadingSpinner="crescent"
+          loadingText="Cargando..."
+        ></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+    </ion-content>
+  </ng-template>
+</ion-modal>

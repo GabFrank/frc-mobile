@@ -6,7 +6,7 @@ import {
   NotificacionService,
   TipoNotificacion
 } from 'src/app/services/notificacion.service';
-import { connectionStatusSub } from './app.module';
+import { ServerConnectionService } from './services/server-connection.service';
 import { ChangeServerIpDialogComponent } from './components/change-server-ip-dialog/change-server-ip-dialog.component';
 import { LoginComponent } from './dialog/login/login.component';
 import { CargandoService } from './services/cargando.service';
@@ -28,7 +28,9 @@ import { VentaCreditoService } from './graphql/financiero/venta-credito/venta-cr
 import { BarcodeScannerService } from './services/barcode-scanner.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { timer } from 'rxjs';
 import { Channel, ChannelService } from './services/channel.service';
+import { NotificacionService as NotificacionesUsuarioService } from './pages/notificaciones/notificacion.service';
 
 export class Pageable {
   getPageNumber: number;
@@ -61,17 +63,17 @@ export class AppComponent implements OnInit, OnDestroy {
   currentVersion = null;
   currentChannel: Channel = 'stable';
 
-  optionZbar: any;
-  scannedOutput: any;
-
   isFarma = false;
 
   isDev = false;
 
   hasPagination = false;
   isHomeRoute = true;
+  showFooter = true;
 
   fabMenuOpen = false;
+  marcacionRoute: string[] = ['/marcacion'];
+  conteoNoLeidas = 0;
 
   loadingOpen = false; // track loading dialog state
   dialog: any;
@@ -96,14 +98,11 @@ export class AppComponent implements OnInit, OnDestroy {
     private router: Router,
     public channelService: ChannelService,
     private actionSheetCtrl: ActionSheetController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private notificacionesUsuarioService: NotificacionesUsuarioService,
+    private serverConnectionService: ServerConnectionService
   ) {
     this.isDev = isDevMode();
-
-    this.optionZbar = {
-      flash: 'off',
-      drawSight: false
-    };
 
     this.platfform.ready().then((res) => {
       appVersion.getVersionNumber().then((res) => {
@@ -117,7 +116,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.intervalID = setInterval(this.searchUpdate, 50000); // 5000 milliseconds = 5 seconds
   }
   ngOnDestroy(): void {
-    this.statusSub?.unsubscribe();
     clearInterval(this.intervalID);
   }
 
@@ -195,6 +193,11 @@ export class AppComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.pushNotificacionService.initPush();
     this.updateFabPosition(this.router.url);
+    this.actualizarMarcacionRoute();
+
+    this.mainService.authenticationSub
+      .pipe(untilDestroyed(this))
+      .subscribe(() => this.actualizarMarcacionRoute());
 
     this.router.events
       .pipe(
@@ -207,31 +210,33 @@ export class AppComponent implements OnInit, OnDestroy {
       .pipe(untilDestroyed(this))
       .subscribe(val => this.hasPagination = val);
 
+    this.iniciarConteoNotificaciones();
+
     this.showLoginPop();
 
-    this.statusSub = connectionStatusSub
+    this.statusSub = this.serverConnectionService.serverReachable$
       .pipe(untilDestroyed(this))
-      .subscribe(async (res) => {
-        if (res === true) {
+      .subscribe(async (reachable) => {
+        if (reachable === true) {
           if (this.loadingOpen) {
-            // only close if loading dialog is open
-            if (this.dialog != null) this.cargandoService.close(this.dialog);
+            if (this.dialog != null) {
+              this.cargandoService.close(this.dialog);
+            }
             this.notificacionService.open(
               'Servidor conectado',
               TipoNotificacion.SUCCESS,
               2
             );
-            this.loadingOpen = false; // set loading state to closed
+            this.loadingOpen = false;
           }
           this.online = true;
-        } else if (res === false) {
+        } else if (reachable === false) {
           this.online = false;
           if (!this.loadingOpen) {
-            // only open if loading dialog is not already open
             this.dialog = await this.cargandoService.open(
               'No se puede acceder al servidor'
             );
-            this.loadingOpen = true; // set loading state to open
+            this.loadingOpen = true;
           }
         }
       });
@@ -279,6 +284,32 @@ export class AppComponent implements OnInit, OnDestroy {
     // );
   }
 
+  private iniciarConteoNotificaciones(): void {
+    this.notificacionesUsuarioService.conteoNoLeidas$
+      .pipe(untilDestroyed(this))
+      .subscribe(count => {
+        this.conteoNoLeidas = count;
+      });
+
+    timer(0, 5000)
+      .pipe(untilDestroyed(this))
+      .subscribe(() => {
+        if (this.loginService.usuarioActual) {
+          this.notificacionesUsuarioService.refrescarConteoNoLeidas();
+        }
+      });
+
+    this.mainService.authenticationSub
+      .pipe(untilDestroyed(this))
+      .subscribe(authenticated => {
+        if (authenticated) {
+          this.notificacionesUsuarioService.refrescarConteoNoLeidas();
+        } else {
+          this.notificacionesUsuarioService.resetConteoNoLeidas();
+        }
+      });
+  }
+
   openMenu() {
     // this.menu.open();
   }
@@ -289,6 +320,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async onSalir() {
     await this.loginService.logOut();
+    this.actualizarMarcacionRoute();
     this.showLoginPop();
     this.menu.close();
   }
@@ -319,27 +351,48 @@ export class AppComponent implements OnInit, OnDestroy {
     if (!this.isHomeRoute) {
       this.fabMenuOpen = false;
     }
+    this.showFooter = !(
+      normalizedUrl.includes('/producto/mostrar-precio') ||
+      normalizedUrl.includes('/producto/precio-config')
+    );
+  }
+
+  private actualizarMarcacionRoute(): void {
+    const isAdmin = this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN';
+    this.marcacionRoute = isAdmin ? ['/marcacion/ingreso-persona'] : ['/marcacion'];
   }
 
   openPagarScanner() {
     this.toggleFabMenu();
-    this.barcodeScannerService.scan().subscribe(async res => {
-      if (!res.cancelled && res.text) {
-        let data = descodificarQr(res.text);
-        let idCliente = data.idOrigen
-        let timestamp = stringToInteger(data.timestamp);
-        let sucursalId = data.sucursalId;
-        let secretKey = data.data;
-        (await this.ventaCreditoService.onVentaCreditoQrAuth(this.mainService.usuarioActual?.persona?.id, timestamp, sucursalId, secretKey)).subscribe({
-          next: () => {
-            this.notificacionService.success('Convenio confirmado con éxito');
-          },
-          error: (err) => {
-            console.error(err);
-            this.notificacionService.warn('Error al confirmar');
-          }
-        })
-      }
-    });
+    this.barcodeScannerService
+      .scan()
+      .pipe(untilDestroyed(this))
+      .subscribe(async (res) => {
+        if (!res.cancelled && res.text) {
+          let data = descodificarQr(res.text);
+          let idCliente = data.idOrigen;
+          let timestamp = stringToInteger(data.timestamp);
+          let sucursalId = data.sucursalId;
+          let secretKey = data.data;
+          (
+            await this.ventaCreditoService.onVentaCreditoQrAuth(
+              this.mainService.usuarioActual?.persona?.id,
+              timestamp,
+              sucursalId,
+              secretKey
+            )
+          )
+            .pipe(untilDestroyed(this))
+            .subscribe({
+              next: () => {
+                this.notificacionService.success('Convenio confirmado con éxito');
+              },
+              error: (err) => {
+                console.error(err);
+                this.notificacionService.warn('Error al confirmar');
+              }
+            });
+        }
+      });
   }
 }

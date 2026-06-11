@@ -1,0 +1,12 @@
+<ion-accordion [value]="valor">
+  <ion-item slot="header" class="accordion-header dark1">
+    <ion-icon [name]="icono" slot="start"></ion-icon>
+    <ion-label>
+      <h2>{{ titulo }}</h2>
+      <p>{{ subtitulo }}</p>
+    </ion-label>
+  </ion-item>
+  <div slot="content" class="accordion-content">
+    <ng-content></ng-content>
+  </div>
+</ion-accordion>
