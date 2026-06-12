@@ -10,7 +10,7 @@ import { ModalService } from 'src/app/services/modal.service';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { TransferenciaService } from '../transferencia.service';
 import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
-import { CodigoService } from '../../codigo/codigo.service';
+import { ProductoBusquedaService } from '../../producto/producto-busqueda.service';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { Producto } from 'src/app/domains/productos/producto.model';
 import { Presentacion } from 'src/app/domains/productos/presentacion.model';
@@ -66,7 +66,7 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
     private barcodeScannerService: BarcodeScannerService,
     private _location: Location,
     private platform: Platform,
-    private codigoService: CodigoService,
+    private productoBusquedaService: ProductoBusquedaService,
     private photoViewer: PhotoViewer,
     private notificacionService: NotificacionService,
     private transferenciaService: TransferenciaService,
@@ -190,12 +190,12 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
   }
 
   onSearchProducto(text: string, offset?: number) {
-
     if (this.onSearchTimer != null) {
       clearTimeout(this.onSearchTimer);
     }
 
-    if (!text || text.trim() === '') {
+    const trimmed = text?.trim();
+    if (!trimmed) {
       this.isSearching = false;
       this.productosList = [];
       return;
@@ -203,73 +203,66 @@ export class TransaferenciaListProductosComponent implements OnInit, AfterViewIn
 
     this.isSearching = true;
 
-    let isPesable = false;
-    let peso: number;
-    let codigo: string;
-
-    if (text.length == 13 && text.substring(0, 2) == '20') {
-      isPesable = true;
-      codigo = text.substring(2, 7);
-      peso = +text.substring(7, 12) / 1000;
-      text = codigo;
-    }
-
-    this.onSearchTimer = setTimeout(async () => {
-      try {
-        if (isPesable) {
-          (await this.codigoService.onGetCodigoPorCodigo(codigo))
-            .pipe(untilDestroyed(this))
-            .subscribe({
-              next: (codigoRes) => {
-                if (codigoRes && codigoRes.length > 0) {
-                  this.abrirFormularioPresentacion(codigoRes[0]?.presentacion, codigoRes[0]?.presentacion?.producto, peso);
-                } else {
-                  this.notificacionService.warn('Código de barras no encontrado');
-                }
-                this.isSearching = false;
-              },
-              error: (error) => {
-                console.error('Error buscando código:', error);
-                this.isSearching = false;
-                this.notificacionService.open('Error al buscar código', TipoNotificacion.DANGER, 2);
+    this.onSearchTimer = setTimeout(() => {
+      if (this.productoBusquedaService.esBusquedaPesable(trimmed) && offset == null) {
+        this.productoBusquedaService
+          .buscarProductoPesable(trimmed)
+          .pipe(untilDestroyed(this))
+          .subscribe({
+            next: (resultado) => {
+              if (resultado) {
+                this.abrirFormularioPresentacion(
+                  resultado.presentacion,
+                  resultado.producto,
+                  resultado.peso
+                );
+              } else {
+                this.notificacionService.warn('Código de barras no encontrado');
               }
-            });
-        } else {
-          console.log('Buscando producto por texto:', text);
-          (await this.productoService.onSearch(text, offset))
-            .pipe(untilDestroyed(this))
-            .subscribe({
-              next: (res) => {
-                if (offset == null) {
-                  this.productosList = res || [];
-                  if (this.productosList.length === 0) {
-                    this.notificacionService.warn('Producto no encontrado');
-                    this.paginationStateService.setPaginationVisible(false);
-                  } else {
-                    this.notificacionService.open(`Encontrados ${this.productosList.length} productos`, TipoNotificacion.SUCCESS, 2);
-                  }
-                  this.showCargarMas = true;
-                } else {
-                  if (res?.length > 0) {
-                    this.showCargarMas = true;
-                    this.productosList = [...this.productosList, ...res];
-                  }
-                }
-                this.paginationStateService.setPaginationVisible(this.showCargarMas && this.productosList.length > 0);
-                this.isSearching = false;
-              },
-              error: (error) => {
-                console.error('Error buscando productos:', error);
-                this.isSearching = false;
-                this.notificacionService.open('Error al buscar productos', TipoNotificacion.DANGER, 2);
-              }
-            });
-        }
-      } catch (error) {
-        console.error('Error en búsqueda:', error);
-        this.isSearching = false;
-        this.notificacionService.open('Error al realizar la búsqueda', TipoNotificacion.DANGER, 2);
+              this.isSearching = false;
+            },
+            error: (error) => {
+              console.error('Error buscando producto pesable:', error);
+              this.isSearching = false;
+              this.notificacionService.open('Error al buscar código', TipoNotificacion.DANGER, 2);
+            },
+          });
+        return;
       }
+
+      this.productoBusquedaService
+        .buscarPorCodigoOTexto(trimmed, offset)
+        .pipe(untilDestroyed(this))
+        .subscribe({
+          next: (res) => {
+            if (offset == null) {
+              this.productosList = res || [];
+              if (this.productosList.length === 0) {
+                this.notificacionService.warn('Producto no encontrado');
+                this.paginationStateService.setPaginationVisible(false);
+              } else {
+                this.notificacionService.open(
+                  `Encontrados ${this.productosList.length} productos`,
+                  TipoNotificacion.SUCCESS,
+                  2
+                );
+              }
+              this.showCargarMas = true;
+            } else {
+              if (res?.length > 0) {
+                this.showCargarMas = true;
+                this.productosList = [...this.productosList, ...res];
+              }
+            }
+            this.paginationStateService.setPaginationVisible(this.showCargarMas && this.productosList.length > 0);
+            this.isSearching = false;
+          },
+          error: (error) => {
+            console.error('Error buscando productos:', error);
+            this.isSearching = false;
+            this.notificacionService.open('Error al buscar productos', TipoNotificacion.DANGER, 2);
+          },
+        });
     }, 800);
   }
 

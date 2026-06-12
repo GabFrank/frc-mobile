@@ -1,5 +1,4 @@
 import { QrGeneratorComponent } from './qr-generator/qr-generator.component';
-import { QrScannerDialogComponent } from './qr-scanner-dialog/qr-scanner-dialog.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -11,11 +10,14 @@ import { ImagePopoverComponent } from './image-popover/image-popover.component';
 import {NgxPaginationModule} from 'ngx-pagination';
 import { EnumToStringPipe } from '../generic/utils/pipes/enum-to-string';
 import { PaginacionComponent } from './paginacion/paginacion.component';
+import { BuscadorModalComponent } from './buscador-modal/buscador-modal.component';
+import { SeccionAccordionComponent } from './seccion-accordion/seccion-accordion.component';
+import { SelectorGenericoComponent } from './selector-generico/selector-generico.component';
 
 
 
 @NgModule({
-  declarations: [QrScannerDialogComponent, QrGeneratorComponent, GenericListDialogComponent, ChangeServerIpDialogComponent, ImagePopoverComponent, EnumToStringPipe,  PaginacionComponent],
+  declarations: [QrGeneratorComponent, GenericListDialogComponent, ChangeServerIpDialogComponent, ImagePopoverComponent, EnumToStringPipe, PaginacionComponent, BuscadorModalComponent, SeccionAccordionComponent, SelectorGenericoComponent],
   imports: [
     CommonModule,
     IonicModule,
@@ -25,11 +27,13 @@ import { PaginacionComponent } from './paginacion/paginacion.component';
     NgxPaginationModule
   ],
   exports: [
-    QrScannerDialogComponent,
     QrGeneratorComponent,
     EnumToStringPipe,
     NgxPaginationModule,
-    PaginacionComponent
+    PaginacionComponent,
+    BuscadorModalComponent,
+    SeccionAccordionComponent,
+    SelectorGenericoComponent
   ]
 })
 export class ComponentsModule { }

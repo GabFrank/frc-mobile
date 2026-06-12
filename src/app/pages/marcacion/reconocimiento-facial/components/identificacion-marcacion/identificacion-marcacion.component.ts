@@ -3,14 +3,14 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NotificacionService } from 'src/app/services/notificacion.service';
-import { GeoLocationService } from 'src/app/services/geo-location.service';
 import { MainService } from 'src/app/services/main.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { FaceRecognitionService } from 'src/app/services/face-recognition.service';
 import { HoraServidorService } from 'src/app/services/hora-servidor.service';
 import { MarcacionService } from '../../../marcar-horario/service/marcacion.service';
-import { Jornada, MarcacionInput, TipoMarcacion } from '../../../marcar-horario/models/marcacion.model';
+import { MarcacionInput, TipoMarcacion } from '../../../marcar-horario/models/marcacion.model';
 import { Result } from '@vladmandic/human';
+import { Usuario } from 'src/app/domains/personas/usuario.model';
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -22,6 +22,11 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   sucursalId: number;
   tipo: TipoMarcacion = TipoMarcacion.ENTRADA;
   esSalidaAlmuerzo = false;
+  usuarioId: number;
+  usuarioIdentificado: Usuario | null = null;
+  tipoLabel = '';
+  headerTitle = '';
+  nombreUsuario = '';
 
   isLoading = false;
   detection: Result | null = null;
@@ -34,14 +39,16 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   isPrimerRegistro = false;
   snapshotUrl: string | null = null;
   currentTime: Date;
-  private timeInterval: any;
+  formattedTime = '';
+  private timeInterval: ReturnType<typeof setInterval>;
 
-  // Liveness detection state
   livenessStep: 'BLINK' | 'DONE' = 'BLINK';
   livenessInstruction = 'Parpadee para verificar';
   livenessIcon = 'eye-outline';
   livenessColor = 'primary';
   private hasBlinked = false;
+  private modelInitPromise: Promise<void> | null = null;
+  private storedEmbeddingPromise: Promise<number[] | null> | null = null;
 
   constructor(
     private usuarioService: UsuarioService,
@@ -51,7 +58,6 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     private notificacionService: NotificacionService,
     private faceRecognitionService: FaceRecognitionService,
     private marcacionService: MarcacionService,
-    private geoLocation: GeoLocationService,
     private router: Router,
     private horaServidorService: HoraServidorService
   ) { }
@@ -61,19 +67,21 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       this.sucursalId = +res.get('sucId');
       this.tipo = (this.route.snapshot.queryParamMap.get('tipo') as TipoMarcacion) || TipoMarcacion.ENTRADA;
       this.esSalidaAlmuerzo = this.route.snapshot.queryParamMap.get('esSalidaAlmuerzo') === 'true';
+      const customUsuarioId = this.route.snapshot.queryParamMap.get('usuarioId');
+      this.usuarioId = customUsuarioId ? +customUsuarioId : this.mainService.usuarioActual.id;
+      this.actualizarTipoLabel();
+      this.cargarDatosUsuario();
     });
 
-    await this.faceRecognitionService.init();
-
-    // Siempre ir directo a la cámara. Si no tiene foto de perfil,
-    // el flujo de "primer registro facial" se encarga de guardarla.
-    setTimeout(() => {
-      this.startCamera();
-    }, 500);
+    this.modelInitPromise = this.faceRecognitionService.init();
+    this.storedEmbeddingPromise = this.getStoredEmbedding();
+    this.startCamera();
 
     this.currentTime = this.horaServidorService.obtenerHoraActual();
+    this.actualizarFormattedTime();
     this.timeInterval = setInterval(() => {
       this.currentTime = this.horaServidorService.obtenerHoraActual();
+      this.actualizarFormattedTime();
     }, 1000);
   }
 
@@ -88,23 +96,23 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     this.livenessIcon = 'eye-outline';
     this.livenessColor = 'primary';
     this.hasBlinked = false;
+    this.actualizarHeaderTitle();
 
-    setTimeout(() => {
-      this.videoElement = document.getElementById('camera-feed') as HTMLVideoElement;
-      if (this.videoElement) {
-        navigator.mediaDevices
-          .getUserMedia({ video: { facingMode: 'user' } })
-          .then((stream) => {
-            this.videoElement.srcObject = stream;
-            this.videoElement.play();
-            this.detectAndVerify();
-          })
-          .catch((err) => {
-            console.error('Error al acceder a la cámara:', err);
-            this.notificacionService.danger('No se pudo acceder a la cámara.');
-          });
-      }
-    }, 100);
+    this.videoElement = await this.getVideoElementWithRetry();
+    if (this.videoElement) {
+      navigator.mediaDevices
+        .getUserMedia({ video: { facingMode: 'user' } })
+        .then(async (stream) => {
+          this.videoElement.srcObject = stream;
+          await this.videoElement.play();
+          await this.waitForVideoReady(this.videoElement);
+          this.detectAndVerify();
+        })
+        .catch((err) => {
+          console.error('Error al acceder a la cámara:', err);
+          this.notificacionService.danger('No se pudo acceder a la cámara.');
+        });
+    }
   }
 
   captureSnapshot() {
@@ -116,6 +124,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       const ctx = canvas.getContext('2d');
       ctx.drawImage(this.videoElement, 0, 0, canvas.width, canvas.height);
       this.snapshotUrl = canvas.toDataURL('image/jpeg', 0.9);
+      this.actualizarHeaderTitle();
       this.videoElement.pause();
       this.stopCamera();
     } catch (e) {
@@ -123,78 +132,93 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     }
   }
 
+  private lastDetectTime = 0;
+  private canvasElement: HTMLCanvasElement;
+
   async detectAndVerify() {
     if (!this.cameraActive || !this.videoElement) return;
 
     try {
-      const result = await this.faceRecognitionService.detect(this.videoElement);
-      this.detection = result;
+      if (this.modelInitPromise) {
+        await this.modelInitPromise;
+        this.modelInitPromise = null;
+      }
 
-      if (result.face && result.face.length > 0 && result.face[0].score > 0.6) {
-        const currentEmbedding = result.face[0].embedding as unknown as number[];
+      const now = Date.now();
+      if (now - this.lastDetectTime > 250) {
+        this.lastDetectTime = now;
 
-        if (currentEmbedding && currentEmbedding.length > 0) {
-          const storedEmbedding = await this.getStoredEmbedding();
+        if (!this.canvasElement) {
+          this.canvasElement = document.createElement('canvas');
+        }
+        this.canvasElement.width = this.videoElement.videoWidth;
+        this.canvasElement.height = this.videoElement.videoHeight;
+        const ctx = this.canvasElement.getContext('2d');
+        ctx.drawImage(this.videoElement, 0, 0, this.canvasElement.width, this.canvasElement.height);
 
-          if (storedEmbedding) {
-            const similarity = this.faceRecognitionService.similarity(currentEmbedding, storedEmbedding);
-            this.similarityPercent = Math.round(similarity * 100);
+        const base64Image = this.canvasElement.toDataURL('image/jpeg', 0.7);
 
-            if (similarity >= 0.6) {
-              // Liveness Detection
-              if (this.livenessStep === 'BLINK') {
-                const blinkGesture = result.gesture.find((g: any) => g.gesture.toLowerCase().includes('blink'));
-                const liveness = (result.face[0] as any).liveness;
+        const faces = await this.faceRecognitionService.fastDetectFace(base64Image);
 
-                // Detectamos parpadeo por gesto o por baja liveness (ojos cerrados)
-                if (blinkGesture || (liveness !== undefined && liveness < 0.15)) {
-                  this.hasBlinked = true;
-                  this.livenessStep = 'DONE';
-                  this.livenessInstruction = 'Verificación completa';
-                  this.livenessIcon = 'checkmark-done-outline';
-                  this.livenessColor = 'success';
-                }
-              }
+        if (faces && faces.length > 0) {
+          const face = faces[0];
 
-              if (this.livenessStep === 'DONE') {
-                this.isVerified = true;
-                this.verificationMessage = `Identidad verificada (${this.similarityPercent}% similitud)`;
-                this.captureSnapshot();
-                return;
-              } else {
-                this.verificationMessage = this.livenessInstruction;
-              }
-            } else {
-              this.isVerified = false;
-              this.verificationMessage = `No coincide (${this.similarityPercent}% similitud)`;
-            }
-          } else {
-            if (this.livenessStep === 'BLINK') {
-              const blinkGesture = result.gesture.find((g: any) => g.gesture.toLowerCase().includes('blink'));
-              const liveness = (result.face[0] as any).liveness;
+          if (!this.hasBlinked) {
+            const leftEyeClosed = face.leftEyeOpenProbability !== undefined && face.leftEyeOpenProbability < 0.2;
+            const rightEyeClosed = face.rightEyeOpenProbability !== undefined && face.rightEyeOpenProbability < 0.2;
 
-              if (blinkGesture || (liveness !== undefined && liveness < 0.15)) {
-                this.hasBlinked = true;
-                this.livenessStep = 'DONE';
-              }
-            }
-
-            if (this.livenessStep === 'DONE') {
-              this.isVerified = true;
-              this.isPrimerRegistro = true;
-              this.similarityPercent = 100;
-              this.verificationMessage = 'Primer registro facial - verificado';
-              this.captureSnapshot();
-              return;
-            } else {
-              this.verificationMessage = this.livenessInstruction;
+            if (leftEyeClosed || rightEyeClosed) {
+              this.hasBlinked = true;
+              this.livenessStep = 'DONE';
+              this.livenessInstruction = 'Verificación completa';
+              this.livenessIcon = 'checkmark-done-outline';
+              this.livenessColor = 'success';
             }
           }
+
+          if (this.livenessStep === 'DONE') {
+            const result = await this.faceRecognitionService.detect(this.videoElement);
+            this.detection = result;
+
+            if (result.face && result.face.length > 0) {
+              const currentEmbedding = result.face[0].embedding as unknown as number[];
+
+              if (currentEmbedding && currentEmbedding.length > 0) {
+                const storedEmbedding = this.storedEmbeddingPromise
+                  ? await this.storedEmbeddingPromise
+                  : await this.getStoredEmbedding();
+
+                if (storedEmbedding) {
+                  const similarity = this.faceRecognitionService.similarity(currentEmbedding, storedEmbedding);
+                  this.similarityPercent = Math.round(similarity * 100);
+
+                  if (similarity >= 0.6) {
+                    this.isVerified = true;
+                    this.verificationMessage = `Identidad verificada (${this.similarityPercent}% similitud)`;
+                    this.captureSnapshot();
+                    return;
+                  } else {
+                    this.isVerified = false;
+                    this.verificationMessage = `No coincide (${this.similarityPercent}% similitud)`;
+                  }
+                } else {
+                  this.isVerified = true;
+                  this.isPrimerRegistro = true;
+                  this.similarityPercent = 100;
+                  this.verificationMessage = 'Primer registro facial - verificado';
+                  this.captureSnapshot();
+                  return;
+                }
+              }
+            }
+          } else {
+            this.verificationMessage = this.livenessInstruction;
+          }
+        } else {
+          this.isVerified = false;
+          this.similarityPercent = null;
+          this.verificationMessage = 'Posicione su rostro frente a la cámara';
         }
-      } else {
-        this.isVerified = false;
-        this.similarityPercent = null;
-        this.verificationMessage = 'Posicione su rostro frente a la cámara';
       }
     } catch (e) {
       console.error('Error en detección:', e);
@@ -216,7 +240,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     try {
       const perfilImages = await new Promise<string[]>((resolve, reject) => {
         this.usuarioService.onGetUsuarioImages(
-          this.mainService.usuarioActual.id,
+          this.usuarioId,
           'perfil'
         ).then(obs => {
           obs.subscribe({
@@ -243,14 +267,32 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  getTipoLabel(): string {
+  actualizarTipoLabel(): void {
     if (this.tipo === TipoMarcacion.ENTRADA) {
-      if (this.esSalidaAlmuerzo) return 'ENTRADA ALMUERZO';
-      return 'ENTRADA';
+      this.tipoLabel = this.esSalidaAlmuerzo ? 'ENTRADA ALMUERZO' : 'ENTRADA';
     } else {
-      if (this.esSalidaAlmuerzo) return 'SALIDA ALMUERZO';
-      return 'SALIDA';
+      this.tipoLabel = this.esSalidaAlmuerzo ? 'SALIDA ALMUERZO' : 'SALIDA';
     }
+  }
+
+  private actualizarHeaderTitle(): void {
+    this.headerTitle = this.snapshotUrl ? 'Identidad verificada' : 'Posicione su rostro';
+  }
+
+  private actualizarFormattedTime(): void {
+    if (!this.currentTime) return;
+    this.formattedTime = this.currentTime.toLocaleString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  }
+
+  private actualizarNombreUsuario(): void {
+    this.nombreUsuario = this.usuarioIdentificado?.persona?.nombreCompleto || this.usuarioIdentificado?.nickname || '';
   }
 
   async onMarcar() {
@@ -267,21 +309,13 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     try {
       const embedding = this.detection.face[0].embedding as unknown as number[];
-      const location = await this.geoLocation.getCurrentLocation();
-
-      if (!location) {
-        this.isLoading = false;
-        this.notificacionService.danger('No se pudo obtener la ubicación. Verifique que el GPS esté activo con ubicación precisa.');
-        return;
-      }
-
       const now = this.horaServidorService.obtenerHoraActual();
       const fechaLocal = this.toLocalIsoString(now);
 
       if (this.isPrimerRegistro && this.snapshotUrl) {
         try {
           (await this.usuarioService.onSaveUsuarioImage(
-            this.mainService.usuarioActual.id,
+            this.usuarioId,
             'perfil',
             this.snapshotUrl,
             embedding
@@ -299,13 +333,10 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       }
 
       const input: MarcacionInput = {
-        usuarioId: this.mainService.usuarioActual.id,
+        usuarioId: this.usuarioId,
         tipo: this.tipo,
         sucursalId: this.sucursalId,
         embedding: embedding,
-        latitud: location.latitude,
-        longitud: location.longitude,
-        precisionGps: location.accuracy,
         distanciaSucursalMetros: 0,
         esSalidaAlmuerzo: this.esSalidaAlmuerzo,
         sucursalEntradaId: this.sucursalId
@@ -322,13 +353,15 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
         next: (res) => {
           this.isLoading = false;
           this.stopCamera();
-
-          const tipoLabel = this.getTipoLabel();
-          this.notificacionService.success(`${tipoLabel} registrada correctamente`);
+          this.notificacionService.success(`${this.tipoLabel} registrada correctamente`);
 
           setTimeout(() => {
-            this.router.navigate(['/marcacion']);
-          }, 1500);
+            const isAdmin = this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN';
+            this.router.navigate(
+              isAdmin ? ['/marcacion/ingreso-persona'] : ['/marcacion'],
+              { replaceUrl: true }
+            );
+          }, 400);
         },
         error: (err) => {
           this.isLoading = false;
@@ -346,7 +379,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
 
     } catch (e) {
       this.isLoading = false;
-      this.notificacionService.danger('Error obteniendo ubicación o procesando marcación.');
+      this.notificacionService.danger('Error procesando marcación.');
     }
   }
 
@@ -374,5 +407,45 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     const tzOffset = date.getTimezoneOffset() * 60000;
     const localISOTime = (new Date(date.getTime() - tzOffset)).toISOString().slice(0, -1);
     return localISOTime;
+  }
+
+  private waitForVideoReady(video: HTMLVideoElement): Promise<void> {
+    if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      const onReady = () => {
+        video.removeEventListener('loadeddata', onReady);
+        video.removeEventListener('canplay', onReady);
+        resolve();
+      };
+      video.addEventListener('loadeddata', onReady, { once: true });
+      video.addEventListener('canplay', onReady, { once: true });
+    });
+  }
+
+  private async getVideoElementWithRetry(maxAttempts = 10): Promise<HTMLVideoElement | null> {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const video = document.getElementById('camera-feed') as HTMLVideoElement | null;
+      if (video) {
+        return video;
+      }
+      await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+    }
+    return null;
+  }
+
+  async cargarDatosUsuario() {
+    if (!this.usuarioId) return;
+    if (this.usuarioId === this.mainService.usuarioActual?.id) {
+      this.usuarioIdentificado = this.mainService.usuarioActual;
+      this.actualizarNombreUsuario();
+      return;
+    }
+    this.usuarioService.onGetUsuario(this.usuarioId).subscribe((res: Usuario) => {
+      this.usuarioIdentificado = res;
+      this.actualizarNombreUsuario();
+    });
   }
 }

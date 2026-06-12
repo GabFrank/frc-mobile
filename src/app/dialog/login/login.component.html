@@ -39,10 +39,11 @@
         type="submit"
         color="primary"
         expand="block"
-        [disabled]="formGroup.invalid"
+        [disabled]="formGroup.invalid || loading || isDismissing"
         (click)="onLogin()"
-        >Entrar</ion-button
       >
+        <span>Entrar</span>
+      </ion-button>
       <ion-button
         *ngIf="isBiometricAvailable"
         type="button"
@@ -50,6 +51,7 @@
         (click)="performBiometricLogin()"
         expand="block"
         fill="clear"
+        [disabled]="loading || isDismissing"
         style="margin-top: 40px;"
       >
         Usar huella
@@ -88,6 +90,7 @@
         (click)="onSolicitarNuevoUsuario()"
         expand="block"
         fill="clear"
+        [disabled]="loading || isDismissing"
       >
         Solicitar usuario
       </ion-button>

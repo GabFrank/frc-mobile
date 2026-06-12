@@ -1,0 +1,134 @@
+.huella-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 8px;
+}
+
+// Icono principal
+.huella-icon-wrapper {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  transition: all 0.4s ease;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+
+  ion-icon {
+    font-size: 56px;
+    color: rgba(255, 255, 255, 0.5);
+    transition: color 0.4s ease;
+  }
+
+  &.active {
+    background: rgba(76, 175, 80, 0.15);
+    border-color: rgba(76, 175, 80, 0.5);
+
+    ion-icon {
+      color: #4caf50;
+    }
+  }
+}
+
+h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  text-align: center;
+}
+
+.huella-description {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+  max-width: 320px;
+}
+
+// Cards compartidos
+.toggle-card,
+.status-card,
+.warning-card {
+  width: 100%;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.toggle-item,
+.status-item,
+.warning-item {
+  --background: transparent;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --inner-padding-end: 8px;
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0 0 4px 0;
+  }
+
+  p {
+    font-size: 0.82rem;
+    color: var(--ion-color-medium);
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+// Toggle icon
+.toggle-icon {
+  font-size: 28px;
+  color: var(--ion-color-medium);
+  margin-right: 12px;
+  transition: color 0.3s ease;
+
+  &.active {
+    color: #4caf50;
+  }
+}
+
+// Status icon
+.status-icon {
+  font-size: 28px;
+  color: var(--ion-color-medium);
+  margin-right: 12px;
+  transition: color 0.3s ease;
+
+  &.active {
+    color: #4caf50;
+  }
+}
+
+// Warning icon
+.warning-icon {
+  font-size: 28px;
+  color: #ff9800;
+  margin-right: 12px;
+}
+
+.warning-card {
+  background: rgba(255, 152, 0, 0.08);
+  border: 1px solid rgba(255, 152, 0, 0.25);
+}
+
+// Loading
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 16px;
+
+  p {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--ion-color-medium);
+  }
+}

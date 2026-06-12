@@ -16,8 +16,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "refresh": "ng build && npx cap sync && npx cap copy",
-    "clean-install": "npx rimraf node_modules package-lock.json && npm cache clean --force && npm install --legacy-peer-deps",
-    "postinstall": "node -e \"const fs=require('fs'),p='node_modules/phonegap-plugin-barcodescanner/src/android/barcodescanner.gradle';if(fs.existsSync(p)){fs.writeFileSync(p,fs.readFileSync(p,'utf8').replace(/compile\\(/g,'implementation('))}\""
+    "clean-install": "npx rimraf node_modules package-lock.json && npm cache clean --force && npm install --legacy-peer-deps"
   },
   "private": true,
   "dependencies": {
@@ -37,6 +36,7 @@
     "@capacitor-community/fcm": "^5.0.2",
     "@capacitor-community/file-opener": "^1.0.6",
     "@capacitor-mlkit/barcode-scanning": "5.3.0",
+    "@capacitor-mlkit/face-detection": "^5.3.0",
     "@capacitor/android": "^5.0.0",
     "@capacitor/app": "^5.0.0",
     "@capacitor/browser": "^5.2.1",
@@ -64,9 +64,6 @@
     "@ngneat/until-destroy": "^9.0.1",
     "@techiediaries/ngx-qrcode": "^9.1.0",
     "@vladmandic/human": "^3.3.6",
-    "@zxing/browser": "^0.1.5",
-    "@zxing/library": "^0.18.6",
-    "@zxing/ngx-scanner": "^3.9.1",
     "apollo-angular": "^4.2.1",
     "chart.js": "^3.8.0",
     "cordova-plugin-app-version": "^0.1.14",

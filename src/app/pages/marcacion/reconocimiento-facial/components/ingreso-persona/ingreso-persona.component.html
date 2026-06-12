@@ -1,0 +1,37 @@
+<ion-list style="height: 100%; display: flex; flex-direction: column;">
+  <div class="identification-container"
+    style="padding: 20px; text-align: center; height: 100%; display: flex; flex-direction: column; background-color: var(--ion-color-light);">
+    <div class="header-row"
+      style="display: flex; align-items: center; justify-content: center; margin-bottom: 30px; background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+      <span class="header-title" style="font-size: 1.3em; font-weight: bold;">
+        Ingrese su identificador
+      </span>
+    </div>
+
+    <div
+      style="flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 400px; margin: 0 auto; width: 100%;">
+
+      <div style="margin-bottom: 30px;">
+        <ion-icon name="person-circle-outline" style="font-size: 5em; color: #1b8a42;"></ion-icon>
+        <p style="color: var(--ion-color-medium); font-size: 1.1em; margin-top: 10px;">
+          Por favor introduzca su identificador
+        </p>
+      </div>
+
+      <ion-item
+        style="margin-bottom: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); --background: white;">
+        <ion-label position="floating" style="color: #218838; font-weight: 600;">ID de
+          Persona</ion-label>
+        <ion-input type="number" [(ngModel)]="personaIdInput" placeholder="Ej: 12345" [disabled]="isLoading"
+          style="font-size: 1.5em; margin-top: 10px; color: #1a1a1a; font-weight: bold;"></ion-input>
+      </ion-item>
+
+      <ion-button (click)="onSiguiente()" [disabled]="isLoading || !personaIdInput" expand="block" shape="round"
+        size="large"
+        style="height: 55px; font-size: 1.1em; font-weight: bold; --background: linear-gradient(135deg, #28a745 0%, #218838 100%); --box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);">
+        CONTINUAR
+        <ion-spinner *ngIf="isLoading" name="crescent" style="margin-left: 10px;"></ion-spinner>
+      </ion-button>
+    </div>
+  </div>
+</ion-list>

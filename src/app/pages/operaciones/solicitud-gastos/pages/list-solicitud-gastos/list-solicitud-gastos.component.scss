@@ -1,0 +1,218 @@
+:host {
+  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-border: rgba(255, 255, 255, 0.1);
+}
+
+ion-content {
+  --background: #0f172a;
+}
+
+.filters-container {
+  margin-bottom: 24px;
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 16px;
+
+  .calendar-filter-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+
+    .calendar-button {
+      background: linear-gradient(135deg, #ff4d4d, #f93827);
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(249, 56, 39, 0.3);
+      
+      ion-icon {
+        font-size: 24px;
+        color: white;
+      }
+    }
+
+    .date-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .label {
+        font-size: 10px;
+        font-weight: 700;
+        color: #94a3b8;
+        letter-spacing: 1px;
+      }
+
+      .value {
+        font-size: 15px;
+        font-weight: 600;
+        color: white;
+      }
+    }
+
+    .arrow {
+      color: #475569;
+      font-size: 20px;
+    }
+  }
+}
+
+.loading-container, .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  color: #94a3b8;
+
+  ion-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  h3 {
+    color: white;
+    margin-bottom: 8px;
+  }
+}
+
+.request-card {
+  margin: 0 0 16px 0;
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transition: transform 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  ion-card-content {
+    padding: 20px;
+  }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  .id-badge {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #94a3b8;
+  }
+
+  ion-badge {
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+.description {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.info-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #94a3b8;
+    font-size: 13px;
+
+    ion-icon {
+      font-size: 16px;
+      color: #6366f1;
+    }
+  }
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--card-border);
+
+  .amount {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+
+    .symbol {
+      font-size: 14px;
+      font-weight: 600;
+      color: #6366f1;
+    }
+
+    .value {
+      font-size: 24px;
+      font-weight: 800;
+      color: white;
+    }
+  }
+
+  .qr-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    margin: 0;
+    height: 40px;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 12px;
+
+    ion-icon {
+      font-size: 24px;
+    }
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate__fadeInUp {
+  animation: fadeInUp 0.5s ease backwards;
+}
+
+// Generate different delays for the first items
+.request-card:nth-child(1) { animation-delay: 0.1s; }
+.request-card:nth-child(2) { animation-delay: 0.2s; }
+.request-card:nth-child(3) { animation-delay: 0.3s; }
+.request-card:nth-child(4) { animation-delay: 0.4s; }
+.request-card:nth-child(5) { animation-delay: 0.5s; }

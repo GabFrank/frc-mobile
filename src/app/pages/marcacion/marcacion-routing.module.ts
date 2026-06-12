@@ -3,11 +3,18 @@ import { RouterModule, Routes } from '@angular/router';
 import { IdentificacionMarcacionComponent } from './reconocimiento-facial/components/identificacion-marcacion/identificacion-marcacion.component';
 import { LocalizacionMarcacionComponent } from './localizacion/components/localizacion-marcacion/localizacion-marcacion.component';
 import { TipoMarcacionComponent } from './marcar-horario/components/tipo-marcacion/tipo-marcacion.component';
+import { IngresoPersonaComponent } from './reconocimiento-facial/components/ingreso-persona/ingreso-persona.component';
+import { AdminIngresoPersonaGuard } from './guards/admin-ingreso-persona.guard';
 
 const routes: Routes = [
   {
     path: '',
-    component: TipoMarcacionComponent
+    component: TipoMarcacionComponent,
+    canActivate: [AdminIngresoPersonaGuard]
+  },
+  {
+    path: 'ingreso-persona',
+    component: IngresoPersonaComponent
   },
   {
     path: 'localizacion/:arg',
@@ -16,6 +23,10 @@ const routes: Routes = [
   {
     path: 'localizacion/:arg/identificacion/:sucId',
     component: IdentificacionMarcacionComponent
+  },
+  {
+    path: 'localizacion/:arg/ingreso-persona/:sucId',
+    component: IngresoPersonaComponent
   }
 ];
 

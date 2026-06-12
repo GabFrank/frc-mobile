@@ -47,6 +47,8 @@ export class NotificacionComponent implements OnInit, OnDestroy {
   public formulario: UntypedFormGroup;
   public datosPagina: PageInfo<NotificacionDestinatario>;
   public indicePagina: number = 0;
+  conteoNoLeidas = 0;
+  marcandoTodas = false;
 
   constructor() {
     this.formulario = this.fb.group({
@@ -66,6 +68,14 @@ export class NotificacionComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.notificacionService.conteoNoLeidas$
+      .pipe(takeUntil(this.destruir$))
+      .subscribe(count => {
+        this.conteoNoLeidas = count;
+        this.cdr.markForCheck();
+      });
+    this.notificacionService.refrescarConteoNoLeidas();
+
     const polling$ = timer(0, 5000).pipe(map(() => undefined));
 
     merge(polling$, this.disparadorRefresco$).pipe(
@@ -261,6 +271,26 @@ export class NotificacionComponent implements OnInit, OnDestroy {
     this.notificacionService.marcarComoLeida(notificacion.id).subscribe(exito => {
       if (exito) {
         this.disparadorRefresco$.next();
+      }
+    });
+  }
+
+  marcarTodasComoLeidas(): void {
+    if (this.marcandoTodas || this.conteoNoLeidas === 0) {
+      return;
+    }
+    this.marcandoTodas = true;
+    this.notificacionService.marcarTodasComoLeidas().subscribe({
+      next: exito => {
+        this.marcandoTodas = false;
+        if (exito) {
+          this.disparadorRefresco$.next();
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.marcandoTodas = false;
+        this.cdr.markForCheck();
       }
     });
   }

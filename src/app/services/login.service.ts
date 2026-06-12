@@ -70,6 +70,7 @@ export class LoginService {
               this.mainService.usuarioActual = this.usuarioActual;
               console.log(res);
 
+              this.mainService.authenticationSub.next(true);
               obs.next(res);
             } else {
               obs.next(null);
@@ -113,70 +114,69 @@ export class LoginService {
             if (res['token'] != null) {
               localStorage.setItem('token', res['token']);
               this.mainService.sucursalActual = res['sucursal'];
-              setTimeout(() => {
-                if (res['usuarioId'] != null) {
-                  localStorage.setItem('usuarioId', res['usuarioId']);
-                  this.usuarioService
-                    .onGetUsuario(res['usuarioId'])
-                    .subscribe(async (res) => {
-                      if (res?.id != null) {
-                        let response: LoginResponse = {
-                          usuario: res,
-                          error: null
-                        };
-                        this.usuarioActual = res;
-                        this.mainService.usuarioActual = this.usuarioActual;
-                        let inicioSesion = new InicioSesion();
-                        inicioSesion.usuario = res;
-                        inicioSesion.sucursal =
-                          this.mainService?.sucursalActual;
-                        inicioSesion.horaInicio = new Date();
-                        inicioSesion.token = localStorage.getItem('pushToken')
-                        inicioSesion.creadoEn = new Date();
-                        const deviceId = this.getOrCreateDeviceId();
-                        inicioSesion.idDispositivo = deviceId;
+              if (res['usuarioId'] != null) {
+                localStorage.setItem('usuarioId', res['usuarioId']);
+                this.usuarioService
+                  .onGetUsuario(res['usuarioId'])
+                  .subscribe(async (res) => {
+                    if (res?.id != null) {
+                      let response: LoginResponse = {
+                        usuario: res,
+                        error: null
+                      };
+                      this.usuarioActual = res;
+                      this.mainService.usuarioActual = this.usuarioActual;
+                      this.mainService.authenticationSub.next(true);
+                      let inicioSesion = new InicioSesion();
+                      inicioSesion.usuario = res;
+                      inicioSesion.sucursal =
+                        this.mainService?.sucursalActual;
+                      inicioSesion.horaInicio = new Date();
+                      inicioSesion.token = localStorage.getItem('pushToken')
+                      inicioSesion.creadoEn = new Date();
+                      const deviceId = this.getOrCreateDeviceId();
+                      inicioSesion.idDispositivo = deviceId;
 
-                        if (
-                          res?.inicioSesion != null &&
-                          res?.inicioSesion?.idDispositivo == deviceId &&
-                          res?.inicioSesion?.sucursal != null
-                        ) {
-                          console.log('Dispositivo conocido encontrado');
-                        } else {
-                          console.log('Nuevo disposito encontrado');
-                          (
-                            await this.usuarioService.onSaveInicioSesion(
-                              inicioSesion.toInput()
-                            )
-                          ).subscribe((res) => {
-                            console.log(res);
-                            this.mainService.usuarioActual.inicioSesion = res;
-                          });
-                        }
-                        if (password == '123') {
-                          this.popverService
-                            .open(
-                              CambiarContrasenhaDialogComponent,
-                              this.usuarioActual,
-                              PopoverSize.XS
-                            )
-                            .then((res2) => {
-                              if (res2?.data?.id != null) {
-                                response.usuario = res2.data;
-                                this.usuarioActual = res2.data;
-                                window.location.reload();
-                              } else {
-                                obs.next(response);
-                              }
-                            });
-                        } else {
-                          obs.next(response);
-                        }
+                      if (
+                        res?.inicioSesion != null &&
+                        res?.inicioSesion?.idDispositivo == deviceId &&
+                        res?.inicioSesion?.sucursal != null
+                      ) {
+                        console.log('Dispositivo conocido encontrado');
                       } else {
+                        console.log('Nuevo disposito encontrado');
+                        (
+                          await this.usuarioService.onSaveInicioSesion(
+                            inicioSesion.toInput()
+                          )
+                        ).subscribe((res) => {
+                          console.log(res);
+                          this.mainService.usuarioActual.inicioSesion = res;
+                        });
                       }
-                    });
-                }
-              }, 500);
+                      if (password == '123') {
+                        this.popverService
+                          .open(
+                            CambiarContrasenhaDialogComponent,
+                            this.usuarioActual,
+                            PopoverSize.XS
+                          )
+                          .then((res2) => {
+                            if (res2?.data?.id != null) {
+                              response.usuario = res2.data;
+                              this.usuarioActual = res2.data;
+                              window.location.reload();
+                            } else {
+                              obs.next(response);
+                            }
+                          });
+                      } else {
+                        obs.next(response);
+                      }
+                    } else {
+                    }
+                  });
+              }
             }
           },
           (error) => {
@@ -203,6 +203,7 @@ export class LoginService {
           (res) => {
             localStorage.setItem('token', null);
             localStorage.setItem('usuarioId', null);
+            localStorage.removeItem('sucursalPersistida');
             sessionStorage.setItem('justLoggedOut', 'true');
             this.usuarioActual = null;
             this.router.navigate(['']);
@@ -216,6 +217,7 @@ export class LoginService {
       } else {
         localStorage.setItem('token', null);
         localStorage.setItem('usuarioId', null);
+        localStorage.removeItem('sucursalPersistida');
         sessionStorage.setItem('justLoggedOut', 'true');
         this.usuarioActual = null;
         this.router.navigate(['']);

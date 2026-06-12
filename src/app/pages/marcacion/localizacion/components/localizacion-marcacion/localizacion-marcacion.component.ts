@@ -13,6 +13,8 @@ import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
 import { GeoLocationService, GeoProgress, GeoResult } from 'src/app/services/geo-location.service';
 import * as L from 'leaflet';
+import { MainService } from 'src/app/services/main.service';
+import { MarcacionService } from '../../../marcar-horario/service/marcacion.service';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -33,22 +35,28 @@ export class LocalizacionMarcacionComponent implements OnInit {
 
   map: L.Map;
   userPosition: { lat: number; lng: number };
-  isLoading = null;
+  isLoading = false;
   isInBodega = false;
   selectedBodega: Sucursal;
   distanciaMetros: number | null = null;
   mapReady = false;
 
+  accuracyColor = 'medium';
+  accuracyLabel = '';
+
   gpsAccuracy: number | null = null;
+  formattedAccuracy = '';
   gpsMessage = '';
   gpsStatus: string = '';
   gpsReadingsCollected = 0;
   gpsReadingsNeeded = 5;
+  gpsReadingsNeededArray: number[] = [];
   gpsError = false;
+  formattedDistancia = '';
 
   private userIcon = L.divIcon({
     className: 'custom-div-icon',
-    html: `<div style='background-color: #4285F4; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);'></div>`,
+    html: `<div style='background-color: #2dd36f; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);'></div>`,
     iconSize: [20, 20],
     iconAnchor: [10, 10]
   });
@@ -60,7 +68,9 @@ export class LocalizacionMarcacionComponent implements OnInit {
     private sucursalService: SucursalService,
     private router: Router,
     private ngZone: NgZone,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private mainService: MainService,
+    private marcacionService: MarcacionService
   ) { }
 
   ngOnInit() {
@@ -89,6 +99,8 @@ export class LocalizacionMarcacionComponent implements OnInit {
           if (progress.status === 'error') {
             this.gpsError = true;
           }
+          this.actualizarAccuracyInfo();
+          this.gpsReadingsNeededArray = Array(this.gpsReadingsNeeded).fill(0);
           this.cdr.detectChanges();
         });
       }
@@ -105,12 +117,11 @@ export class LocalizacionMarcacionComponent implements OnInit {
 
     this.gpsAccuracy = result.accuracy;
     this.userPosition = { lat: result.latitude, lng: result.longitude };
+    this.actualizarAccuracyInfo();
     this.cdr.detectChanges();
 
-    setTimeout(() => {
-      this.initMap();
-      this.evaluateSucursales(result);
-    }, 100);
+    this.initMap();
+    this.evaluateSucursales(result);
   }
 
   private initMap() {
@@ -139,8 +150,8 @@ export class LocalizacionMarcacionComponent implements OnInit {
     if (this.gpsAccuracy) {
       L.circle([this.userPosition.lat, this.userPosition.lng], {
         radius: this.gpsAccuracy,
-        color: '#4285F4',
-        fillColor: '#4285F430',
+        color: '#2dd36f',
+        fillColor: '#2dd36f30',
         fillOpacity: 0.2,
         weight: 1
       }).addTo(this.map);
@@ -157,7 +168,7 @@ export class LocalizacionMarcacionComponent implements OnInit {
   }
 
   private async evaluateSucursales(geoResult: GeoResult) {
-    (await this.sucursalService.onGetAllSucursales()).subscribe(sucRes => {
+    (await this.sucursalService.onGetAllSucursales()).pipe(untilDestroyed(this)).subscribe(sucRes => {
       if (!sucRes?.length || !this.userPosition) return;
 
       const sucursalesConDistancia = sucRes
@@ -177,7 +188,7 @@ export class LocalizacionMarcacionComponent implements OnInit {
         const masCercana = sucursalesConDistancia[0];
         this.distanciaMetros = Math.round(masCercana.distancia);
 
-        const radioSucursal = 20;
+        const radioSucursal = 33;
         const isMatch = this.geoLocation.checkIfLocationMatches(
           +masCercana.sucursal.localizacion.split(',')[0],
           +masCercana.sucursal.localizacion.split(',')[1],
@@ -191,22 +202,34 @@ export class LocalizacionMarcacionComponent implements OnInit {
         } else {
           this.isInBodega = false;
         }
+
+        this.formattedDistancia = this.distanciaMetros >= 1000
+          ? (this.distanciaMetros / 1000).toFixed(2) + ' km'
+          : this.distanciaMetros + ' m';
       }
     });
   }
 
-  getAccuracyColor(): string {
-    if (!this.gpsAccuracy) return 'medium';
-    if (this.gpsAccuracy <= GeoLocationService.MAX_ACCURACY) return 'success';
-    if (this.gpsAccuracy <= 50) return 'warning';
-    return 'danger';
-  }
+  actualizarAccuracyInfo(): void {
+    if (!this.gpsAccuracy) {
+      this.accuracyColor = 'medium';
+      this.accuracyLabel = '';
+      this.formattedAccuracy = '';
+      return;
+    }
 
-  getAccuracyLabel(): string {
-    if (!this.gpsAccuracy) return '';
-    if (this.gpsAccuracy <= GeoLocationService.MAX_ACCURACY) return 'Excelente';
-    if (this.gpsAccuracy <= 50) return 'Aceptable';
-    return 'Baja';
+    this.formattedAccuracy = this.gpsAccuracy.toFixed(0);
+
+    if (this.gpsAccuracy <= GeoLocationService.MAX_ACCURACY) {
+      this.accuracyColor = 'success';
+      this.accuracyLabel = 'Excelente';
+    } else if (this.gpsAccuracy <= 50) {
+      this.accuracyColor = 'warning';
+      this.accuracyLabel = 'Aceptable';
+    } else {
+      this.accuracyColor = 'danger';
+      this.accuracyLabel = 'Baja';
+    }
   }
 
   onTryAgain() {
@@ -223,6 +246,10 @@ export class LocalizacionMarcacionComponent implements OnInit {
   }
 
   onConfirmar() {
+    const isAdmin = this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN';
+    if (isAdmin) {
+      this.marcacionService.sucursalPersistida = this.selectedBodega;
+    }
     this.router.navigate(['identificacion/' + this.selectedBodega?.id], {
       relativeTo: this.route,
       queryParamsHandling: 'preserve'

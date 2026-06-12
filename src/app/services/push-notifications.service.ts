@@ -11,6 +11,7 @@ import { FCM } from '@capacitor-community/fcm';
 import { MainService } from './main.service';
 import { UsuarioService } from './usuario.service';
 import { Router } from '@angular/router';
+import { NotificacionService as NotificacionesUsuarioService } from '../pages/notificaciones/notificacion.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,8 +21,18 @@ export class PushNotificationsService {
     private plf: Platform,
     private mainService: MainService,
     private usuarioService: UsuarioService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private notificacionesUsuarioService: NotificacionesUsuarioService
+  ) {
+    this.mainService.authenticationSub.subscribe((auth) => {
+      if (auth) {
+        const token = localStorage.getItem('pushToken');
+        if (token) {
+          this.updatePushTokenInBackend(token);
+        }
+      }
+    });
+  }
 
   initPush() {
     if (!this.plf.platforms().includes('mobileweb')) {
@@ -61,7 +72,9 @@ export class PushNotificationsService {
     // Push registration listener
     PushNotifications.addListener('registration', (token: Token) => {
       console.log('Push registration success, token: ' + token.value);
-      // You might want to send the token to your backend
+      this.mainService.setPushToken(token.value);
+      localStorage.setItem('pushToken', token.value);
+      this.updatePushTokenInBackend(token.value);
     });
 
     // Handle registration errors
@@ -72,7 +85,7 @@ export class PushNotificationsService {
     // Handle push notifications received while the app is open
     PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
       console.log('Push notification received: ' + JSON.stringify(notification));
-      // You can show a toast or local notification here if needed
+      this.notificacionesUsuarioService.refrescarConteoNoLeidas();
     });
 
     // Handle when a push notification is tapped by the user
@@ -100,6 +113,24 @@ export class PushNotificationsService {
         attempts--;
       }
     }, 1000);
+  }
+
+  private async updatePushTokenInBackend(token: string) {
+    const usuario = this.mainService.usuarioActual;
+    if (usuario && usuario.inicioSesion) {
+      console.log('Updating push token in backend for current session');
+      const inicioSesionInput = {
+        id: usuario.inicioSesion.id,
+        token: token
+      };
+      (await this.usuarioService.onSaveInicioSesion(inicioSesionInput as any)).subscribe(
+        (res) => {
+          console.log('Push token updated successfully in backend');
+          usuario.inicioSesion.token = token;
+        },
+        (err) => console.error('Failed to update push token in backend', err)
+      );
+    }
   }
 }
 // export class PushNotificationsService {

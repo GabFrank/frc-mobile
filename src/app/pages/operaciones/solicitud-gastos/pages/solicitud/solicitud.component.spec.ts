@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { QrScannerDialogComponent } from './qr-scanner-dialog.component';
+import { SolicitudComponent } from './solicitud.component';
 
-describe('QrScannerDialogComponent', () => {
-  let component: QrScannerDialogComponent;
-  let fixture: ComponentFixture<QrScannerDialogComponent>;
+describe('SolicitudComponent', () => {
+  let component: SolicitudComponent;
+  let fixture: ComponentFixture<SolicitudComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ QrScannerDialogComponent ],
+      declarations: [ SolicitudComponent ],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(QrScannerDialogComponent);
+    fixture = TestBed.createComponent(SolicitudComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

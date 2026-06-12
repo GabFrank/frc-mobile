@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Cliente } from 'src/app/domains/cliente/cliente.model';
 import { EstadoVentaCredito } from 'src/app/domains/venta-credito/venta-credito.model';
 import { VentaCreditoService } from 'src/app/graphql/financiero/venta-credito/venta-credito.service';
@@ -8,6 +8,7 @@ import { ClienteService } from 'src/app/graphql/personas/cliente/graphql/cliente
 import { MainService } from 'src/app/services/main.service';
 import { LoginService } from 'src/app/services/login.service';
 
+@UntilDestroy()
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -18,7 +19,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   totalAbiertos = 0;
   creditoDisponible = 0;
   porcentajeGastado = 0;
-  private subscriptions: Subscription[] = [];
 
   constructor(
     private mainService: MainService,
@@ -48,53 +48,49 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   async cargarDatosConvenio() {
-    // Clear old subscriptions to avoid memory leaks when called repeatedly (e.g. from ionViewWillEnter)
-    this.subscriptions.forEach(sub => sub.unsubscribe());
-    this.subscriptions = [];
-
     const personaId = this.mainService.usuarioActual?.persona?.id;
     if (!personaId) return;
 
-    const subCliente = (await this.clienteService.onGetByPersonaId(personaId)).subscribe(async (cliente) => {
-      this.cliente = cliente;
-      if (cliente) {
-        this.calcularTotalGlobal(cliente.id);
-      }
-    });
-    this.subscriptions.push(subCliente);
+    (await this.clienteService.onGetByPersonaId(personaId))
+      .pipe(untilDestroyed(this))
+      .subscribe(async (cliente) => {
+        this.cliente = cliente;
+        if (cliente) {
+          this.calcularTotalGlobal(cliente.id);
+        }
+      });
   }
 
   async calcularTotalGlobal(clienteId: number) {
-    const subVentaCredito = (await this.ventaCreditoService.onGetPorClienteId(
+    (await this.ventaCreditoService.onGetPorClienteId(
       clienteId,
       EstadoVentaCredito.ABIERTO,
       null,
       null
-    )).subscribe((res: any) => {
-      if (res != null) {
-        const todosLosConvenios = Array.isArray(res) ? res : res.getContent;
-        
-        this.totalAbiertos = 0;
-        todosLosConvenios?.forEach((vc: any) => {
-          this.totalAbiertos += vc.valorTotal;
-        });
-        
-        if (this.cliente) {
-          this.creditoDisponible = this.cliente.credito - this.totalAbiertos;
-          this.porcentajeGastado = (this.totalAbiertos / this.cliente.credito) * 100;
-          if (this.porcentajeGastado > 100) this.porcentajeGastado = 100;
-        }
-      }
-    });
+    ))
+      .pipe(untilDestroyed(this))
+      .subscribe((res: any) => {
+        if (res != null) {
+          const todosLosConvenios = Array.isArray(res) ? res : res.getContent;
 
-    this.subscriptions.push(subVentaCredito);
+          this.totalAbiertos = 0;
+          todosLosConvenios?.forEach((vc: any) => {
+            this.totalAbiertos += vc.valorTotal;
+          });
+
+          if (this.cliente) {
+            this.creditoDisponible = this.cliente.credito - this.totalAbiertos;
+            this.porcentajeGastado = (this.totalAbiertos / this.cliente.credito) * 100;
+            if (this.porcentajeGastado > 100) this.porcentajeGastado = 100;
+          }
+        }
+      });
   }
 
   ngOnDestroy() {
     if (this.intervalId) {
       clearInterval(this.intervalId);
     }
-    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   goToListaConvenios() {
