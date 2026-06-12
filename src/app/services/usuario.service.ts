@@ -145,20 +145,26 @@ export class UsuarioService {
     return this.genericService.onSave(this.saveInicioSesion, entity);
   }
 
-  async onSaveUsuarioImage(id: number, type: string, image: string, embedding?: number[]) {
+  async onSaveUsuarioImage(
+    id: number,
+    type: string,
+    image: string,
+    embedding?: number[],
+    showLoading: boolean = true
+  ) {
     return await this.genericService.onCustomSave(this.saveUsuarioImage, {
       id,
       type,
       image,
       embedding
-    });
+    }, showLoading);
   }
 
-  async onGetUsuarioImages(id: number, type: string) {
+  async onGetUsuarioImages(id: number, type: string, showLoading: boolean = true) {
     return await this.genericService.onCustomGet(this.getUsuarioImages, {
       id,
       type
-    });
+    }, false, showLoading);
   }
 
   async getIsUserFaceAuth(id: number) {
