@@ -3,18 +3,30 @@ import { Human, Config, Result } from '@vladmandic/human';
 import { FaceDetection, Face, ClassificationMode } from '@capacitor-mlkit/face-detection';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 
+export interface DescriptorConScore {
+    embedding: number[];
+    score: number;
+}
+
+export interface CapturaFacial {
+    imageBase64: string;
+    embedding: number[];
+    score: number;
+}
+
 @Injectable({
     providedIn: 'root'
 })
 export class FaceRecognitionService {
     private human: Human | null = null;
+    private initPromise: Promise<void> | null = null;
     private config: Partial<Config> = {
         backend: 'webgl',
         modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/models/',
         filter: { enabled: true, equalization: false },
         face: {
             enabled: true,
-            detector: { rotation: false },
+            detector: { rotation: true },
             mesh: { enabled: true },
             attention: { enabled: false },
             iris: { enabled: false },
@@ -30,11 +42,46 @@ export class FaceRecognitionService {
     };
 
     async init(): Promise<void> {
-        if (!this.human) {
+        if (this.human) {
+            return;
+        }
+        if (this.initPromise) {
+            return this.initPromise;
+        }
+
+        this.initPromise = (async () => {
             this.human = new Human(this.config);
+            await this.human.init();
             await this.human.load();
             await this.human.warmup();
-        }
+        })().catch((err) => {
+            this.human = null;
+            this.initPromise = null;
+            throw err;
+        });
+
+        return this.initPromise;
+    }
+
+    async prepararImagen(dataUrl: string, maxSize = 640): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                const escala = Math.min(1, maxSize / Math.max(img.width, img.height));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.round(img.width * escala);
+                canvas.height = Math.round(img.height * escala);
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    reject(new Error('No se pudo preparar la imagen'));
+                    return;
+                }
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL('image/jpeg', 0.85));
+            };
+            img.onerror = () => reject(new Error('No se pudo cargar la imagen'));
+            img.src = dataUrl;
+        });
     }
 
     async detect(input: HTMLImageElement | HTMLVideoElement): Promise<Result> {
@@ -43,6 +90,11 @@ export class FaceRecognitionService {
     }
 
     async getDescriptor(input: HTMLImageElement | HTMLVideoElement | string): Promise<number[] | null> {
+        const resultado = await this.getDescriptorConScore(input);
+        return resultado?.embedding ?? null;
+    }
+
+    async getDescriptorConScore(input: HTMLImageElement | HTMLVideoElement | string): Promise<DescriptorConScore | null> {
         await this.init();
 
         let result: Result;
@@ -60,9 +112,51 @@ export class FaceRecognitionService {
         }
 
         if (result.face && result.face.length > 0) {
-            return result.face[0].embedding as unknown as number[];
+            const face = result.face[0];
+            const embedding = Array.from(face.embedding as unknown as number[]);
+            if (embedding.length === 0) {
+                return null;
+            }
+            return {
+                embedding,
+                score: face.score ?? 0
+            };
         }
         return null;
+    }
+
+    fusionarEmbeddings(capturas: CapturaFacial[], scoreMinimo: number = 0.3): number[] | null {
+        const validas = capturas.filter(
+            c => c.score >= scoreMinimo && c.embedding?.length > 0
+        );
+        if (validas.length === 0) {
+            return null;
+        }
+
+        const dim = validas[0].embedding.length;
+        const promedio = new Array(dim).fill(0);
+        let pesoTotal = 0;
+
+        for (const captura of validas) {
+            const peso = captura.score;
+            pesoTotal += peso;
+            for (let i = 0; i < dim; i++) {
+                promedio[i] += captura.embedding[i] * peso;
+            }
+        }
+
+        for (let i = 0; i < dim; i++) {
+            promedio[i] /= pesoTotal;
+        }
+
+        const magnitud = Math.sqrt(promedio.reduce((sum, val) => sum + val * val, 0));
+        if (magnitud > 0) {
+            for (let i = 0; i < dim; i++) {
+                promedio[i] /= magnitud;
+            }
+        }
+
+        return promedio;
     }
 
     similarity(embedding1: number[], embedding2: number[]): number {
