@@ -48,6 +48,10 @@ android {
             excludes += 'META-INF/NOTICE.txt'
             excludes += 'META-INF/notice.txt'
         }
+        // Requerido para compatibilidad con páginas de memoria de 16 KB (Android 15+)
+        jniLibs {
+            useLegacyPackaging = false
+        }
     }
 }
 
