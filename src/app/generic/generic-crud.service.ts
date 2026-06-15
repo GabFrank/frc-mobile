@@ -492,13 +492,14 @@ export class GenericCrudService {
         .pipe(untilDestroyed(this))
         .subscribe((res) => {
           this.cargandoService.close(loading);
-          if (res.errors == null) {
+          const result = res.data?.['data'];
+          if (res.errors == null && result === true) {
             this.notificacionService.open(
               'Guardado con éxito',
               TipoNotificacion.SUCCESS,
               2
             );
-            obs.next(res.data['data']);
+            obs.next(result);
           } else {
             this.notificacionService.open(
               'Ups!! Algo salió mal',

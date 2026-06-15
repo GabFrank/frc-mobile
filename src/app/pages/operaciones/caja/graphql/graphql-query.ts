@@ -457,6 +457,12 @@ export const abrirCajaDesdeServidorQuery = gql`
   }
 `;
 
+export const cerrarCajaDesdeServidorQuery = gql`
+  mutation cerrarCajaDesdeServidor($input:PdvCajaInput!, $conteoInput: ConteoInput!, $conteoMonedaInputList: [ConteoMonedaInput], $cajaId: ID!) {
+    data: abrirCajaDesdeServidor(input:$input, conteoInput: $conteoInput, conteoMonedaInputList: $conteoMonedaInputList, cajaId: $cajaId)
+  }
+`;
+
 export const deleteCajaQuery = gql`
   mutation deletePdvCaja($id: ID!, $sucId: ID) {
     data: deletePdvCaja(id: $id, sucId:$sucId)

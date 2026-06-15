@@ -13,6 +13,8 @@ export const sucursalesQuery = gql
       usuario{
         id
       }
+      ip
+      puerto
     }
   }`;
 
@@ -29,6 +31,8 @@ export const sucursalesSearch = gql
       usuario{
         id
       }
+      ip
+      puerto
     }
   }`
 
@@ -45,6 +49,8 @@ export const sucursalQuery = gql
       usuario{
         id
       }
+      ip
+      puerto
     }
   }`
 
@@ -53,6 +59,8 @@ export const sucursalQuery = gql
     data : sucursalActual{
       id
       nombre
+      ip
+      puerto
     }
   }`
 

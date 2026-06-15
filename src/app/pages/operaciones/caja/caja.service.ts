@@ -17,7 +17,8 @@ import { DeleteCajaGQL } from "./graphql/deleleCaja";
 import { ImprimirBalanceGQL } from "./graphql/imprimirBalance";
 import { SaveCajaGQL } from "./graphql/saveCaja";
 import { SaveCajaPorSucursalGQL } from "./graphql/saveCajaPorSucursal";
-// import { AbrirCajaGQL } from "./graphql/abrirCaja";
+import { AbrirCajaGQL } from "./graphql/abrirCaja";
+import { CerrarCajaGQL } from "./graphql/cerrarCaja";
 
 @UntilDestroy({ checkProperties: true })
 @Injectable({
@@ -42,7 +43,8 @@ export class CajaService {
     private notificacionService: NotificacionService,
     private onSaveCajaPorSucursal: SaveCajaPorSucursalGQL,
     private cajasPorUsuario: CajasPorUsuarioIdGQL,
-    // private abrirCaja: AbrirCajaGQL
+    private abrirCaja: AbrirCajaGQL,
+    private cerrarCaja: CerrarCajaGQL
   ) {
 
   }
@@ -141,8 +143,13 @@ export class CajaService {
       });
   }
 
-  // async onAbrirCaja(cajaInput, conteoInput, conteoMonedaInputList): Promise<Observable<any>> {
-  //   return await this.genericService.onCustomSave(this.abrirCaja, { input: cajaInput, conteoInput: conteoInput, conteoMonedaInputList: conteoMonedaInputList });
-  // }
+  async onAbrirCaja(cajaInput, conteoInput, conteoMonedaInputList): Promise<Observable<any>> {
+    return await this.genericService.onCustomSave(this.abrirCaja, { input: cajaInput, conteoInput: conteoInput, conteoMonedaInputList: conteoMonedaInputList });
+  }
+
+  async onCerrarCaja(cajaId, sucursalId, conteoInput, conteoMonedaInputList): Promise<Observable<any>> {
+    const input = { sucursalId };
+    return await this.genericService.onCustomSave(this.cerrarCaja, { input, conteoInput, conteoMonedaInputList, cajaId });
+  }
 
 }

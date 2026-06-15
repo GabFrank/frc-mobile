@@ -24,6 +24,7 @@ export class PdvCaja {
   toInput(): PdvCajaInput {
     let input = new PdvCajaInput;
     input.id = this.id
+    input.sucursalId = this.sucursalId
     input.descripcion = this.descripcion
     input.activo = this.activo
     input.estado = this.estado
@@ -42,6 +43,7 @@ export class PdvCaja {
 
 export class PdvCajaInput {
   id: number;
+  sucursalId: number;
   descripcion: string
   activo: boolean
   estado: PdvCajaEstado
