@@ -7,7 +7,7 @@
     </ion-buttons>
     <ion-title style="text-align: center; padding-left: 47px; padding-right: 0;">Editar Perfil</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="saveProfile()">Guardar</ion-button>
+      <ion-button (click)="actualizarFotoPerfil()">Actualizar</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -18,7 +18,7 @@
       <ion-avatar class="avatar">
         <img [src]="src === '' ? '/assets/avatar.svg' : src " />
       </ion-avatar>
-      <ion-icon class="camera-icon" name="camera" (click)="presentActionSheet()"></ion-icon>
+      <ion-icon class="camera-icon" name="camera" (click)="actualizarFotoPerfil()"></ion-icon>
       <div class="nickname">{{ selectedUsuario?.nickname }}</div>
     </div>
 

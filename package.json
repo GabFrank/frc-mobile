@@ -16,6 +16,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "refresh": "ng build && npx cap sync && npx cap copy",
+    "build:android:debug": "ng build && npx cap sync android && cd android && ./gradlew assembleDebug",
     "clean-install": "npx rimraf node_modules package-lock.json && npm cache clean --force && npm install --legacy-peer-deps"
   },
   "private": true,
