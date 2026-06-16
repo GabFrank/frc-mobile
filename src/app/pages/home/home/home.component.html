@@ -7,10 +7,8 @@
           type="button"
           class="credit-visibility-btn"
           (click)="toggleCreditoVisibilidad($event)"
-          [attr.aria-label]="mostrarCredito ? 'Ocultar valores' : 'Mostrar valores'">
-          <span class="material-symbols-outlined">
-            {{ mostrarCredito ? 'visibility' : 'visibility_off' }}
-          </span>
+          [attr.aria-label]="etiquetaVisibilidadCredito">
+          <span class="material-symbols-outlined">{{ iconoVisibilidadCredito }}</span>
         </button>
       </div>
       <ion-card-title>
@@ -22,11 +20,13 @@
     </ion-card-header>
 
     <ion-card-content>
-      <div class="progress-track" role="progressbar"
-        [attr.aria-valuenow]="mostrarCredito ? porcentajeGastado : null"
+      <div
+        class="progress-track"
+        role="progressbar"
+        [attr.aria-valuenow]="valorProgresoAria"
         aria-valuemin="0"
         aria-valuemax="100">
-        <div class="progress-indicator" [style.width.%]="mostrarCredito ? porcentajeGastado : 0"></div>
+        <div class="progress-indicator" [style.width.%]="anchoProgreso"></div>
       </div>
 
       <div class="credit-details">
@@ -58,7 +58,10 @@
     </ion-card-content>
   </ion-card>
 
-  <a class="caja-shortcut" routerLink="/operaciones/caja">
+  <a
+    *ngIf="puedeAccederCaja"
+    class="caja-shortcut"
+    routerLink="/operaciones/caja">
     <ion-ripple-effect></ion-ripple-effect>
     <div class="caja-shortcut__icon">
       <span class="material-symbols-outlined">point_of_sale</span>
@@ -81,7 +84,12 @@
       class="action-card mat-elevated"
       [routerLink]="action.route">
       <ion-ripple-effect></ion-ripple-effect>
-      <div class="icon-wrapper" [ngClass]="action.colorClass">
+      <div
+        class="icon-wrapper"
+        [class.tone-red]="action.toneRed"
+        [class.tone-amber]="action.toneAmber"
+        [class.tone-blue]="action.toneBlue"
+        [class.tone-orange]="action.toneOrange">
         <span class="material-symbols-outlined">{{ action.icon }}</span>
       </div>
       <span class="action-label">{{ action.label }}</span>

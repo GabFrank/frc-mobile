@@ -76,7 +76,7 @@
               <ion-icon name="barbell-outline" slot="start"></ion-icon>
               <ion-label>Operaciones</ion-label>
             </ion-item>
-            <ion-item slot="content" [routerLink]="['/operaciones/caja']" (click)="closeMenu()"
+            <ion-item slot="content" *ngIf="puedeAccederCaja" [routerLink]="['/operaciones/caja']" (click)="closeMenu()"
               style="padding-left: 10%">
               <ion-icon name="cash-outline" slot="start"></ion-icon>
               <ion-label>Caja</ion-label>
