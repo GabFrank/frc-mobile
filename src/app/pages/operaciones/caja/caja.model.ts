@@ -92,3 +92,8 @@ export class CajaBalance {
   diferenciaRs: number;
   diferenciaDs: number;
 }
+
+export interface CajaFilialOperacionResult {
+  exito: boolean;
+  cajaId: number;
+}

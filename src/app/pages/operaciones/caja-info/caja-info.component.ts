@@ -80,14 +80,27 @@ export class CajaInfoComponent implements OnInit {
         conteo.toInput(),
         conteo.toInpuList()
       )).pipe(untilDestroyed(this)).subscribe(saveRes => {
-        if (saveRes) {
-          this.dialogoService.open('Caja Cerrada', 'La caja se cerró correctamente.', false);
-          this.cajaService.onGetById(this.selectedCaja.id, sucursalId).then(obs => {
+        if (saveRes?.exito) {
+          const cajaIdCerrada = saveRes.cajaId ?? this.selectedCaja.id;
+          this.cajaService.onGetByIdFromFilial(cajaIdCerrada, sucursalId).then(obs => {
             obs.pipe(untilDestroyed(this)).subscribe(caja => {
               if (caja != null) {
                 this.selectedCaja = caja;
                 this.cajaService.selectedCaja = caja;
                 this.onSelectCaja(caja);
+                setTimeout(() => {
+                  this.cajaService.onImprimirBalance(cajaIdCerrada, sucursalId, false)
+                    .pipe(untilDestroyed(this))
+                    .subscribe(exito => {
+                      if (exito) {
+                        this.dialogoService.open('Caja Cerrada', 'La caja se cerró correctamente y el balance fue impreso.', false);
+                      } else {
+                        this.dialogoService.open('Caja Cerrada', 'La caja se cerró correctamente, pero no se pudo imprimir el balance.', false);
+                      }
+                    });
+                }, 500);
+              } else {
+                this.dialogoService.open('Caja Cerrada', 'La caja se cerró correctamente.', false);
               }
             });
           });
@@ -96,6 +109,13 @@ export class CajaInfoComponent implements OnInit {
         }
       });
     });
+  }
+
+  imprimirBalance() {
+    const sucursalId = this.selectedCaja?.sucursal?.id || this.selectedCaja?.sucursalId;
+    this.cajaService.onImprimirBalance(this.selectedCaja.id, sucursalId, true)
+      .pipe(untilDestroyed(this))
+      .subscribe();
   }
 
   adicionarConteoApertura() {

@@ -453,13 +453,131 @@ export const savePdvCajaPorSucursal = gql`
 
 export const abrirCajaDesdeServidorQuery = gql`
   mutation abrirCajaDesdeServidor($input:PdvCajaInput!, $conteoInput: ConteoInput!, $conteoMonedaInputList: [ConteoMonedaInput]) {
-    data: abrirCajaDesdeServidor(input:$input, conteoInput: $conteoInput, conteoMonedaInputList: $conteoMonedaInputList)
+    data: abrirCajaDesdeServidor(input:$input, conteoInput: $conteoInput, conteoMonedaInputList: $conteoMonedaInputList) {
+      exito
+      cajaId
+    }
   }
 `;
 
 export const cerrarCajaDesdeServidorQuery = gql`
   mutation cerrarCajaDesdeServidor($input:PdvCajaInput!, $conteoInput: ConteoInput!, $conteoMonedaInputList: [ConteoMonedaInput], $cajaId: ID!) {
-    data: abrirCajaDesdeServidor(input:$input, conteoInput: $conteoInput, conteoMonedaInputList: $conteoMonedaInputList, cajaId: $cajaId)
+    data: abrirCajaDesdeServidor(input:$input, conteoInput: $conteoInput, conteoMonedaInputList: $conteoMonedaInputList, cajaId: $cajaId) {
+      exito
+      cajaId
+    }
+  }
+`;
+
+export const cajasAbiertasDesdeFilialesQuery = gql`
+  query ($id: ID!) {
+    data: cajasAbiertasPorUsuarioDesdeFiliales(id: $id) {
+      id
+      descripcion
+      activo
+      estado
+      tuvoProblema
+      fechaApertura
+      fechaCierre
+      observacion
+      sucursalId
+      maletin {
+        id
+        descripcion
+      }
+      creadoEn
+      usuario {
+        id
+        persona {
+          nombre
+        }
+      }
+      conteoApertura {
+        id
+        observacion
+        creadoEn
+      }
+      conteoCierre {
+        id
+        observacion
+        creadoEn
+      }
+      sucursal {
+        id
+        nombre
+      }
+    }
+  }
+`;
+
+export const pdvCajaDesdeFilialQuery = gql`
+  query ($id: ID!, $sucId: ID!) {
+    data: pdvCajaDesdeFilial(id: $id, sucursalId: $sucId) {
+      id
+      descripcion
+      activo
+      estado
+      tuvoProblema
+      fechaApertura
+      fechaCierre
+      observacion
+      sucursalId
+      maletin {
+        id
+        descripcion
+      }
+      creadoEn
+      usuario {
+        id
+        persona {
+          nombre
+        }
+      }
+      conteoApertura {
+        id
+        observacion
+        creadoEn
+        conteoMonedaList {
+          id
+          monedaBilletes {
+            id
+            moneda {
+              id
+              denominacion
+            }
+            valor
+          }
+          cantidad
+        }
+      }
+      conteoCierre {
+        id
+        observacion
+        creadoEn
+        conteoMonedaList {
+          id
+          monedaBilletes {
+            id
+            moneda {
+              id
+              denominacion
+            }
+            valor
+          }
+          cantidad
+        }
+      }
+      balance {
+        totalGeneral
+        diferenciaGs
+        diferenciaRs
+        diferenciaDs
+      }
+      sucursal {
+        id
+        nombre
+      }
+    }
   }
 `;
 

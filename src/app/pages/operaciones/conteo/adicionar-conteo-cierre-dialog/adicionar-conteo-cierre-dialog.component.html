@@ -34,7 +34,7 @@
       </ion-list-header>
       <ion-item *ngFor="let item of guaraniList">
         <ion-label>{{ item.valor | number }} Gs.</ion-label>
-        <ion-input type="number" placeholder="Cantidad" formControlName="{{ item.valor }}" slot="end" style="text-align: right;"></ion-input>
+        <ion-input type="number" min="0" inputmode="numeric" placeholder="Cantidad" formControlName="{{ item.valor }}" slot="end" style="text-align: right;"></ion-input>
       </ion-item>
     </ion-list>
   </div>
@@ -46,7 +46,7 @@
       </ion-list-header>
       <ion-item *ngFor="let item of realList">
         <ion-label>{{ item.valor | number }} Rs.</ion-label>
-        <ion-input type="number" placeholder="Cantidad" formControlName="{{ item.valor }}" slot="end" style="text-align: right;"></ion-input>
+        <ion-input type="number" min="0" inputmode="numeric" placeholder="Cantidad" formControlName="{{ item.valor }}" slot="end" style="text-align: right;"></ion-input>
       </ion-item>
     </ion-list>
   </div>
@@ -58,7 +58,7 @@
       </ion-list-header>
       <ion-item *ngFor="let item of dolarList">
         <ion-label>{{ item.valor | number }} U$D</ion-label>
-        <ion-input type="number" placeholder="Cantidad" formControlName="{{ item.valor }}" slot="end" style="text-align: right;"></ion-input>
+        <ion-input type="number" min="0" inputmode="numeric" placeholder="Cantidad" formControlName="{{ item.valor }}" slot="end" style="text-align: right;"></ion-input>
       </ion-item>
     </ion-list>
   </div>
