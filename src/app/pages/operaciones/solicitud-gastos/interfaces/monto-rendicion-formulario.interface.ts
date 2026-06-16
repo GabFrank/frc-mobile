@@ -1,7 +1,6 @@
-export interface DetalleGastoFormulario {
+export interface MontoRendicionFormulario {
   id: number;
   monto: number | null;
   monedaId: number | null;
-  formaPago: string | null;
   montoTexto: string;
 }

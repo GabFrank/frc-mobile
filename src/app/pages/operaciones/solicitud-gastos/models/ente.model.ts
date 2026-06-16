@@ -1,4 +1,4 @@
-export type TipoEnte = 'VEHICULO' | 'MUEBLE' | 'INMUEBLE';
+export type TipoEnte = 'VEHICULO' | 'MUEBLE' | 'INMUEBLE' | 'EQUIPO';
 
 export class Ente {
   id?: number;
@@ -27,6 +27,16 @@ export class Inmueble {
   nombreAsignado?: string;
 }
 
-export type ActivoBusqueda = Vehiculo | Mueble | Inmueble;
+export class Equipo {
+  id: number;
+  identificador?: string;
+  descripcion?: string;
+  modelo?: {
+    descripcion?: string;
+    marca?: { descripcion?: string };
+  };
+}
 
-export type ModuloPadreGasto = 'VEHICULO' | 'MUEBLE' | 'INMUEBLE' | 'PERSONAS' | 'OTRO';
+export type ActivoBusqueda = Vehiculo | Mueble | Inmueble | Equipo;
+
+export type ModuloPadreGasto = 'VEHICULO' | 'MUEBLE' | 'INMUEBLE' | 'EQUIPOS' | 'PERSONAS' | 'OTRO';
