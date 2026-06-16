@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
-import { ActionSheetController, NavController } from '@ionic/angular';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { ModalController, NavController } from '@ionic/angular';
 import { MainService } from 'src/app/services/main.service';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
 import { UsuarioService } from 'src/app/services/usuario.service';
 import { FaceRecognitionService } from 'src/app/services/face-recognition.service';
+import { CapturaPerfilFacialComponent } from '../captura-perfil-facial/captura-perfil-facial.component';
 
 @Component({
   selector: 'app-informaciones-personales-dashboard',
@@ -25,7 +25,7 @@ export class InformacionesPersonalesDashboardComponent implements OnInit {
 
   constructor(
     private navCtrl: NavController,
-    private actionSheetController: ActionSheetController,
+    private modalController: ModalController,
     private mainService: MainService,
     private usuarioService: UsuarioService,
     private faceRecognitionService: FaceRecognitionService
@@ -40,75 +40,46 @@ export class InformacionesPersonalesDashboardComponent implements OnInit {
         this.emailControl.setValue(this.selectedUsuario?.email)
         this.phoneControl.setValue(this.selectedUsuario?.persona?.telefono)
         this.birthDateControl.setValue(this.selectedUsuario?.persona?.nacimiento);
-
-        (await this.usuarioService.onGetUsuarioImages(this.selectedUsuario.id, 'perfil')).subscribe(imgs => {
-          if (imgs && imgs.length > 0) {
-            this.src = imgs[0];
-          }
-        })
+        await this.cargarFotoPerfil();
       })
     }
-  }
-
-  async presentActionSheet() {
-    const actionSheet = await this.actionSheetController.create({
-      header: 'Seleccione una opción',
-      buttons: [
-        {
-          text: 'Tomar foto',
-          icon: 'camera',
-          handler: () => {
-            this.captureImage(CameraSource.Camera)
-          },
-        },
-        {
-          text: 'Elegir foto existente',
-          icon: 'image',
-          handler: () => {
-            this.captureImage(CameraSource.Photos)
-          },
-        },
-      ],
-    });
-    await actionSheet.present();
   }
 
   goBack() {
     this.navCtrl.back();
   }
 
-  async saveProfile() {
-    if (this.src != null && this.src != "") {
-      let embedding: number[] = null;
-      try {
-        const descriptor = await this.faceRecognitionService.getDescriptor(this.src);
-        if (descriptor) {
-          embedding = descriptor;
-        }
-      } catch (e) {
-        console.error("Error generating embedding", e);
+  async actualizarFotoPerfil(): Promise<void> {
+    if (!this.selectedUsuario?.id) {
+      return;
+    }
+
+    const modal = await this.modalController.create({
+      component: CapturaPerfilFacialComponent,
+      componentProps: {
+        usuarioId: this.selectedUsuario.id,
+      },
+    });
+
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
+    if (data?.actualizada) {
+      if (data.fotoFrontal) {
+        this.src = data.fotoFrontal;
       }
-
-      (await this.usuarioService.onSaveUsuarioImage(this.selectedUsuario.id, 'perfil', this.src, embedding)).subscribe(res => {
-
-      })
+      await this.cargarFotoPerfil();
     }
   }
 
-  async captureImage(source: CameraSource) {
-    try {
-      const image = await Camera.getPhoto({
-        quality: 90,
-        allowEditing: false,
-        resultType: CameraResultType.DataUrl,
-        source,
-      });
-
-      this.src = image.dataUrl;
-
-    } catch (error) {
-      console.error('Error capturing or saving image:', error);
+  private async cargarFotoPerfil(): Promise<void> {
+    if (!this.selectedUsuario?.id) {
+      return;
     }
+    (await this.usuarioService.onGetUsuarioImages(this.selectedUsuario.id, 'perfil', false))
+      .subscribe(imgs => {
+        if (imgs && imgs.length > 0) {
+          this.src = imgs[0];
+        }
+      });
   }
 }
-
