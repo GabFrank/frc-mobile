@@ -63,6 +63,13 @@ export interface ConfiguracionNotificacion {
     esObligatorio: boolean;
 }
 
+export const DESCRIPCION_POR_TIPO_NOTIFICACION: Record<string, string> = {
+    RETIRO: 'Notificacion de retiro realizado en sucursal',
+    VENTA_TRANSFERENCIA: 'Notificacion de venta con pago por transferencia',
+    VENTA_STOCK_CRITICO: 'Notificacion de venta con producto en stock cero o negativo',
+    VENTA_CREDITO_CLIENTE: 'Notificacion de compra a credito propia',
+};
+
 export interface MisConfiguracionesNotificacionResponse {
     misConfiguracionesNotificacion: ConfiguracionNotificacion[];
 }
