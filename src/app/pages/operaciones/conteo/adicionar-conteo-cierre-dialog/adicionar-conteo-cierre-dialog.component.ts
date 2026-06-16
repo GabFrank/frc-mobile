@@ -2,24 +2,20 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DialogoService } from 'src/app/services/dialogo.service';
-import { MainService } from 'src/app/services/main.service';
 import { ModalService } from 'src/app/services/modal.service';
-import { PdvCaja } from '../../caja/caja.model';
-import { CajaService } from '../../caja/caja.service';
 import { MonedaBillete } from '../../moneda/moneda-billetes/moneda-billetes.model';
 import { Moneda } from '../../moneda/moneda.model';
 import { MonedaService } from '../../moneda/moneda.service';
 import { ConteoMoneda } from '../conteo-moneda/conteo-moneda.model';
 import { Conteo } from '../conteo.model';
-import { ConteoService } from '../conteo.service';
 
 @UntilDestroy()
 @Component({
-  selector: 'app-adicionar-conteo-dialog',
-  templateUrl: './adicionar-conteo-dialog.component.html',
-  styleUrls: ['./adicionar-conteo-dialog.component.scss'],
+  selector: 'app-adicionar-conteo-cierre-dialog',
+  templateUrl: './adicionar-conteo-cierre-dialog.component.html',
+  styleUrls: ['./adicionar-conteo-cierre-dialog.component.scss'],
 })
-export class AdicionarConteoDialogComponent implements OnInit {
+export class AdicionarConteoCierreDialogComponent implements OnInit {
 
   @ViewChild('rs') rsInput: ElementRef;
 
@@ -30,10 +26,6 @@ export class AdicionarConteoDialogComponent implements OnInit {
   totalGs = 0;
   totalRs = 0;
   totalDs = 0;
-  selectedCaja: PdvCaja;
-  selectedConteo: Conteo;
-
-  isApertura = false;
 
   gsFormGroup: UntypedFormGroup;
   rsFormGroup: UntypedFormGroup;
@@ -46,19 +38,11 @@ export class AdicionarConteoDialogComponent implements OnInit {
   real: Moneda;
   dolar: Moneda;
 
-
   constructor(
     private modalService: ModalService,
     private dialogoService: DialogoService,
-    private monedaService: MonedaService,
-    private conteoService: ConteoService,
-    private cajaService: CajaService,
-    private mainService: MainService
+    private monedaService: MonedaService
   ) {
-
-    if (cajaService.selectedCaja != null) {
-      this.selectedCaja = cajaService.selectedCaja
-    }
     this.gsFormGroup = new UntypedFormGroup({
       '500': new UntypedFormControl(null, [Validators.min(0)]),
       '1000': new UntypedFormControl(null, [Validators.min(0)]),
@@ -68,7 +52,7 @@ export class AdicionarConteoDialogComponent implements OnInit {
       '20000': new UntypedFormControl(null, [Validators.min(0)]),
       '50000': new UntypedFormControl(null, [Validators.min(0)]),
       '100000': new UntypedFormControl(null, [Validators.min(0)]),
-    })
+    });
     this.rsFormGroup = new UntypedFormGroup({
       '0.05': new UntypedFormControl(null, [Validators.min(0)]),
       '0.1': new UntypedFormControl(null, [Validators.min(0)]),
@@ -82,7 +66,7 @@ export class AdicionarConteoDialogComponent implements OnInit {
       '50': new UntypedFormControl(null, [Validators.min(0)]),
       '100': new UntypedFormControl(null, [Validators.min(0)]),
       '200': new UntypedFormControl(null, [Validators.min(0)]),
-    })
+    });
     this.dsFormGroup = new UntypedFormGroup({
       '1': new UntypedFormControl(null, [Validators.min(0)]),
       '5': new UntypedFormControl(null, [Validators.min(0)]),
@@ -90,44 +74,38 @@ export class AdicionarConteoDialogComponent implements OnInit {
       '20': new UntypedFormControl(null, [Validators.min(0)]),
       '50': new UntypedFormControl(null, [Validators.min(0)]),
       '100': new UntypedFormControl(null, [Validators.min(0)]),
-    })
+    });
 
-    this.cargarMonedas()
+    this.cargarMonedas();
   }
 
   ngOnInit() {
-    if (this.data && this.data.apertura) {
-      this.isApertura = true;
-    } else if (this.cajaService.selectedCaja == null) {
-      this.modalService.closeModal(null);
-    }
-
-    this.gsFormGroup.valueChanges.pipe(untilDestroyed(this)).subscribe(res => {
-      this.sumarGs()
-    })
-    this.rsFormGroup.valueChanges.pipe(untilDestroyed(this)).subscribe(res => {
-      this.sumarRs()
-    })
-    this.dsFormGroup.valueChanges.pipe(untilDestroyed(this)).subscribe(res => {
-      this.sumarDs()
-    })
+    this.gsFormGroup.valueChanges.pipe(untilDestroyed(this)).subscribe(() => {
+      this.sumarGs();
+    });
+    this.rsFormGroup.valueChanges.pipe(untilDestroyed(this)).subscribe(() => {
+      this.sumarRs();
+    });
+    this.dsFormGroup.valueChanges.pipe(untilDestroyed(this)).subscribe(() => {
+      this.sumarDs();
+    });
   }
 
   async cargarMonedas() {
     (await this.monedaService.onGetAll()).pipe(untilDestroyed(this)).subscribe((res) => {
       if (res != null) {
-        let monedaList: Moneda[] = res;
+        const monedaList: Moneda[] = res;
         monedaList.forEach((m) => {
           switch (m.denominacion) {
-            case "GUARANI":
+            case 'GUARANI':
               this.guarani = m;
               this.guaraniList = m.monedaBilleteList;
               break;
-            case "REAL":
+            case 'REAL':
               this.real = m;
               this.realList = m.monedaBilleteList;
               break;
-            case "DOLAR":
+            case 'DOLAR':
               this.dolar = m;
               this.dolarList = m.monedaBilleteList;
               break;
@@ -140,7 +118,7 @@ export class AdicionarConteoDialogComponent implements OnInit {
   }
 
   onBack() {
-    this.modalService.closeModal(null)
+    this.modalService.closeModal(null);
   }
 
   tabClick(e) {
@@ -177,43 +155,27 @@ export class AdicionarConteoDialogComponent implements OnInit {
   }
 
   onGuardar() {
-    let conteo = new Conteo();
+    const conteo = new Conteo();
     conteo.totalGs = this.totalGs;
     conteo.totalRs = this.totalRs;
     conteo.totalDs = this.totalDs;
-    conteo.conteoMonedaList = this.createMonedaBilletes()
-    this.dialogoService.open('Atención', 'Estas seguro que deseas guardar este conteo?').then(res => {
+    conteo.conteoMonedaList = this.createMonedaBilletes();
+    this.dialogoService.open('Atención', 'Estas seguro que deseas guardar este conteo de cierre?').then(res => {
       if (res.role == 'aceptar') {
-        if (this.cajaService.selectedCaja != null) {
-          this.conteoService
-            .onSave(
-              conteo,
-              this.cajaService.selectedCaja?.id,
-              this.isApertura,
-              this.cajaService.selectedCaja?.sucursal?.id || this.cajaService.selectedCaja?.sucursalId
-            )
-            .pipe(untilDestroyed(this))
-            .subscribe((res) => {
-              if (res != null) {
-                this.modalService.closeModal(res)
-              }
-            });
-        } else {
-          this.modalService.closeModal({conteo: conteo})
-        }
+        this.modalService.closeModal({ conteo });
       }
-    })
+    });
   }
 
   onCancel() {
-    this.modalService.closeModal(null)
+    this.modalService.closeModal(null);
   }
 
   createMonedaBilletes() {
     this.conteoMonedaList = [];
     this.guaraniList?.forEach((e) => {
-      let conteoMoneda = new ConteoMoneda();
-      let cantidad = this.toPositiveNumber(this.gsFormGroup.get(`${e.valor}`)?.value);
+      const conteoMoneda = new ConteoMoneda();
+      const cantidad = this.toPositiveNumber(this.gsFormGroup.get(`${e.valor}`)?.value);
       if (cantidad > 0) {
         conteoMoneda.cantidad = cantidad;
         conteoMoneda.monedaBilletes = e;
@@ -221,10 +183,8 @@ export class AdicionarConteoDialogComponent implements OnInit {
       }
     });
     this.realList?.forEach((e) => {
-      let conteoMoneda = new ConteoMoneda();
-      let cantidad = this.toPositiveNumber(this.rsFormGroup.get(
-        `${e.valor}`
-      )?.value);
+      const conteoMoneda = new ConteoMoneda();
+      const cantidad = this.toPositiveNumber(this.rsFormGroup.get(`${e.valor}`)?.value);
       if (cantidad > 0) {
         conteoMoneda.cantidad = cantidad;
         conteoMoneda.monedaBilletes = e;
@@ -232,10 +192,8 @@ export class AdicionarConteoDialogComponent implements OnInit {
       }
     });
     this.dolarList?.forEach((e) => {
-      let conteoMoneda = new ConteoMoneda();
-      let cantidad = this.toPositiveNumber(this.dsFormGroup.get(
-        `${e.valor}`
-      )?.value);
+      const conteoMoneda = new ConteoMoneda();
+      const cantidad = this.toPositiveNumber(this.dsFormGroup.get(`${e.valor}`)?.value);
       if (cantidad > 0) {
         conteoMoneda.cantidad = cantidad;
         conteoMoneda.monedaBilletes = e;

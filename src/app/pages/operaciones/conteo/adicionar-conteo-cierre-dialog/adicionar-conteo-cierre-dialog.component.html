@@ -5,7 +5,7 @@
         <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Conteo Inicial</ion-title>
+    <ion-title>Conteo de Cierre</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="onGuardar()">Guardar</ion-button>
     </ion-buttons>
@@ -27,7 +27,6 @@
 </ion-header>
 
 <ion-content>
-  <!-- GUARANIES -->
   <div *ngIf="moneda === 'gs'" [formGroup]="gsFormGroup">
     <ion-list>
       <ion-list-header>
@@ -40,7 +39,6 @@
     </ion-list>
   </div>
 
-  <!-- REALES -->
   <div *ngIf="moneda === 'rs'" [formGroup]="rsFormGroup">
     <ion-list>
       <ion-list-header>
@@ -53,7 +51,6 @@
     </ion-list>
   </div>
 
-  <!-- DOLARES -->
   <div *ngIf="moneda === 'ds'" [formGroup]="dsFormGroup">
     <ion-list>
       <ion-list-header>
