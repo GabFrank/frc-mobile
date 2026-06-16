@@ -63,10 +63,15 @@
           <ion-item button class="dark2" *ngIf="requiereEnteActivo" (click)="abrirModalEnteActivo($event)">
             <ion-icon slot="start" [name]="iconoEnteActivo"></ion-icon>
             <ion-label>
-              <h3>{{ etiquetaEnteActivo }}</h3>
-              <p>{{ textoEnteActivo || ('Seleccionar ' + etiquetaEnteActivo.toLowerCase()) }}</p>
+              <h3>{{ etiquetaEnteActivo }} vinculado</h3>
+              <p>{{ textoEnteActivo || placeholderEnteActivo }}</p>
             </ion-label>
             <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+          </ion-item>
+          <ion-item *ngIf="requiereEnteActivo && !enteId" lines="none" class="dark2">
+            <ion-note color="warning">
+              Este tipo de gasto requiere seleccionar un {{ etiquetaEnteActivoLower }}.
+            </ion-note>
           </ion-item>
         </ion-list>
       </app-seccion-accordion>
@@ -108,7 +113,7 @@
             <ion-item class="dark1" lines="none">
               <ion-label position="stacked">Monto</ion-label>
               <ion-input type="text" inputmode="decimal" placeholder="Ingrese el monto"
-                [ngModel]="obtenerMontoTexto(item)" (ngModelChange)="alCambiarMontoTexto(item, $event)"
+                [(ngModel)]="item.montoTexto" (ngModelChange)="alCambiarMontoTexto(item, $event)"
                 (ionBlur)="alPerderFocoMonto(item)"></ion-input>
             </ion-item>
             <ion-button fill="clear" class="remove-btn" [disabled]="gastoItems.length === 1"
@@ -159,7 +164,7 @@
     <app-buscador-modal [abierto]="isTipoGastoModalOpen" [config]="servicio.configTipoGasto" [valorSeleccionadoId]="tipoGastoId"
       (seleccionar)="seleccionarTipoGasto($event)" (cerrar)="cerrarModalTipoGasto()"></app-buscador-modal>
 
-    <app-buscador-modal *ngIf="servicio.configActivo" [abierto]="isEnteActivoModalOpen"
+    <app-buscador-modal *ngIf="requiereEnteActivo && servicio.configActivo" [abierto]="isEnteActivoModalOpen"
       [config]="servicio.configActivo" [valorSeleccionadoId]="activoReferenciaId"
       (seleccionar)="seleccionarEnteActivo($event)" (cerrar)="cerrarModalEnteActivo()"></app-buscador-modal>
 

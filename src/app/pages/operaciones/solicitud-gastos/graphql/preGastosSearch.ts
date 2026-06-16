@@ -36,6 +36,7 @@ export class FilterPreGastosGQL extends Query<any> {
         hasPrevious
         getContent {
           id
+          sucursalId
           descripcion
           estado
           montoSolicitado

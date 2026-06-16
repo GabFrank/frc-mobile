@@ -17,6 +17,10 @@ import { ProveedorSearchByPersonaPageGQL, ProveedorPageResponse } from '../graph
 import { SavePreGastoGQL } from '../graphql/savePreGasto';
 import { TipoGastosGQL } from '../graphql/tipoGastos';
 import { FilterPreGastosGQL } from '../graphql/preGastosSearch';
+import { PreGastoPorIdGQL } from '../graphql/preGastoPorId';
+import { ConfirmarRetiroFuncionarioGQL } from '../graphql/confirmarRetiroFuncionario';
+import { SaveGastoRendicionGQL } from '../graphql/saveGastoRendicion';
+import { GastoRendicionInput, PreGasto } from '../models/pre-gasto.model';
 import {
   PreGastoDetalleFinanzasInput,
   PreGastoInput,
@@ -32,11 +36,13 @@ import {
 import { VehiculoSearchPageGQL, VehiculoPageResponse } from '../graphql/vehiculoSearchPage';
 import { MuebleSearchPageGQL, MueblePageResponse } from '../graphql/muebleSearchPage';
 import { InmuebleSearchPageGQL, InmueblePageResponse } from '../graphql/inmuebleSearchPage';
+import { EquipoSearchPageGQL, EquipoPageResponse } from '../graphql/equipoSearchPage';
 import { EnteByReferenciaIdGQL } from '../graphql/enteByReferenciaId';
 import { SaveEnteGQL } from '../graphql/saveEnte';
 import {
   ActivoBusqueda,
   Ente,
+  Equipo,
   Inmueble,
   ModuloPadreGasto,
   Mueble,
@@ -51,6 +57,7 @@ export type ProveedorPageDto = NonNullable<ProveedorPageResponse['data']>;
 export type VehiculoPageDto = NonNullable<VehiculoPageResponse['data']>;
 export type MueblePageDto = NonNullable<MueblePageResponse['data']>;
 export type InmueblePageDto = NonNullable<InmueblePageResponse['data']>;
+export type EquipoPageDto = NonNullable<EquipoPageResponse['data']>;
 
 
 @Injectable({
@@ -98,7 +105,10 @@ export class SolicitudGastosService {
     items: [],
     campoTexto: (t) => t.descripcion || '',
     campoId: (t) => t.id,
-    campoSubtexto: (t) => `ID: ${t.id}`,
+    campoSubtexto: (t) => {
+      const modulo = t.moduloPadre ? ` · ${this.etiquetaModuloPadre(t.moduloPadre)}` : '';
+      return `ID: ${t.id}${modulo}`;
+    },
   };
 
   configSucursal: BuscadorModalConfigLocal<SucursalItem> = {
@@ -123,6 +133,7 @@ export class SolicitudGastosService {
     private vehiculoSearchPageGQL: VehiculoSearchPageGQL,
     private muebleSearchPageGQL: MuebleSearchPageGQL,
     private inmuebleSearchPageGQL: InmuebleSearchPageGQL,
+    private equipoSearchPageGQL: EquipoSearchPageGQL,
     private enteByReferenciaIdGQL: EnteByReferenciaIdGQL,
     private saveEnteGQL: SaveEnteGQL,
     private sucursalService: SucursalService,
@@ -131,6 +142,9 @@ export class SolicitudGastosService {
     private mainService: MainService,
     private notificacionService: NotificacionService,
     private filterPreGastosGQL: FilterPreGastosGQL,
+    private preGastoPorIdGQL: PreGastoPorIdGQL,
+    private confirmarRetiroGQL: ConfirmarRetiroFuncionarioGQL,
+    private saveGastoRendicionGQL: SaveGastoRendicionGQL,
   ) { }
 
   async cargarDatosIniciales(): Promise<void> {
@@ -176,8 +190,18 @@ export class SolicitudGastosService {
     this.configSucursal = { ...this.configSucursal, items: [...this.sucursales] };
   }
 
+  tipoEnteDesdeModuloPadre(moduloPadre?: ModuloPadreGasto | null): TipoEnte | null {
+    if (moduloPadre === 'VEHICULO' || moduloPadre === 'MUEBLE' || moduloPadre === 'INMUEBLE') {
+      return moduloPadre;
+    }
+    if (moduloPadre === 'EQUIPOS') {
+      return 'EQUIPO';
+    }
+    return null;
+  }
+
   requiereModuloPadreActivo(moduloPadre?: ModuloPadreGasto | null): boolean {
-    return moduloPadre === 'VEHICULO' || moduloPadre === 'MUEBLE' || moduloPadre === 'INMUEBLE';
+    return this.tipoEnteDesdeModuloPadre(moduloPadre) != null;
   }
 
   etiquetaModuloPadre(moduloPadre?: ModuloPadreGasto | null): string {
@@ -188,6 +212,8 @@ export class SolicitudGastosService {
         return 'Mueble';
       case 'INMUEBLE':
         return 'Inmueble';
+      case 'EQUIPOS':
+        return 'Equipo';
       default:
         return 'Activo';
     }
@@ -199,6 +225,8 @@ export class SolicitudGastosService {
         return 'cube-outline';
       case 'INMUEBLE':
         return 'business-outline';
+      case 'EQUIPOS':
+        return 'hardware-chip-outline';
       default:
         return 'car-outline';
     }
@@ -241,6 +269,20 @@ export class SolicitudGastosService {
       return;
     }
 
+    if (moduloPadre === 'EQUIPOS') {
+      this.configActivo = {
+        modo: 'paginado',
+        titulo: `Buscar ${titulo}`,
+        placeholder: 'Buscar equipo por identificador o descripción',
+        icono,
+        campoTexto: (e) => this.textoEquipo(e as Equipo),
+        campoId: (e) => e.id,
+        campoSubtexto: (e) => `ID: ${e.id}`,
+        cargarPagina: (texto, pagina) => this.cargarPaginaEquipos(texto, pagina),
+      };
+      return;
+    }
+
     this.configActivo = {
       modo: 'paginado',
       titulo: `Buscar ${titulo}`,
@@ -260,11 +302,17 @@ export class SolicitudGastosService {
     if (moduloPadre === 'MUEBLE') {
       return ((activo as Mueble).descripcion || '').toUpperCase();
     }
+    if (moduloPadre === 'EQUIPOS') {
+      return this.textoEquipo(activo as Equipo);
+    }
     return ((activo as Inmueble).nombreAsignado || '').toUpperCase();
   }
 
   async resolverEnteDesdeActivo(moduloPadre: ModuloPadreGasto, referenciaId: number): Promise<Ente> {
-    const tipoEnte = moduloPadre as TipoEnte;
+    const tipoEnte = this.tipoEnteDesdeModuloPadre(moduloPadre);
+    if (!tipoEnte) {
+      throw new Error('El tipo de gasto no admite vinculación a un activo');
+    }
     const enteExistente = await this.buscarEntePorReferencia(tipoEnte, referenciaId);
     if (enteExistente?.id) {
       return enteExistente;
@@ -376,10 +424,60 @@ export class SolicitudGastosService {
       await this.resolverObservable(respuesta$);
       this.notificacionService.success('Solicitud de gasto creada');
     } catch (err) {
-      const mensaje = this.extraerMensajeError(err);
+      const mensaje = this.extraerMensajeErrorPrivado(err);
       this.notificacionService.danger(mensaje || 'Error al guardar la solicitud de gasto');
       throw err;
     }
+  }
+
+  async obtenerPreGastoPorId(id: number, sucId?: number): Promise<PreGasto> {
+    const obs = await this.genericService.onGet<PreGasto>(
+      this.preGastoPorIdGQL,
+      { id, sucId },
+      false
+    );
+    const resultado = await this.resolverObservable(obs);
+    if (!resultado) {
+      throw new Error('Solicitud no encontrada');
+    }
+    return resultado;
+  }
+
+  async confirmarRetiroFuncionario(input: {
+    preGastoId: number;
+    sucursalId: number;
+    qrToken: string;
+    funcionarioPersonaId: number;
+  }): Promise<PreGasto> {
+    const res = await this.confirmarRetiroGQL
+      .mutate({ input }, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
+      .pipe(first())
+      .toPromise();
+    if (res?.errors?.length) {
+      throw new Error(res.errors[0]?.message || 'No se pudo confirmar el retiro');
+    }
+    const resultado = res?.data?.data;
+    if (!resultado) {
+      throw new Error('No se pudo confirmar el retiro');
+    }
+    return resultado;
+  }
+
+  async guardarGastoRendicion(input: GastoRendicionInput): Promise<void> {
+    if (input.usuarioId == null) {
+      input.usuarioId = this.mainService?.usuarioActual?.id;
+    }
+    const res = await this.saveGastoRendicionGQL
+      .mutate({ input }, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
+      .pipe(first())
+      .toPromise();
+    if (res?.errors?.length) {
+      throw new Error(res.errors[0]?.message || 'No se pudo guardar la rendición');
+    }
+  }
+
+  extraerMensajeError(error: unknown): string | null {
+    return this.extraerMensajeErrorPrivado(error);
   }
 
   async getMisSolicitudes(page = 0, size = 15, inicio?: string, fin?: string): Promise<any> {
@@ -390,7 +488,7 @@ export class SolicitudGastosService {
         size,
         inicio,
         fin,
-        estados: ["PENDIENTE", "AUTORIZADO", "RECHAZADO", "ENVIADO_A_TESORERIA"]
+        estados: ["PENDIENTE", "AUTORIZADO", "RECHAZADO", "TRAMITE", "ENVIADO_A_TESORERIA"]
       },
       false
     );
@@ -458,6 +556,19 @@ export class SolicitudGastosService {
     };
   }
 
+  async cargarPaginaEquipos(texto: string, pagina: number): Promise<{ items: Equipo[]; hayMas: boolean }> {
+    const obs = await this.genericService.onGet<EquipoPageDto>(
+      this.equipoSearchPageGQL,
+      { texto: texto ?? '', page: pagina, size: TAM_PAGINA_BUSQUEDA },
+      false,
+    );
+    const resultado = await this.resolverObservable(obs);
+    return {
+      items: resultado?.getContent ?? [],
+      hayMas: resultado?.hasNext === true,
+    };
+  }
+
   private async buscarEntePorReferencia(tipoEnte: TipoEnte, referenciaId: number): Promise<Ente | null> {
     const obs = await this.genericService.onGet<Ente>(
       this.enteByReferenciaIdGQL,
@@ -465,6 +576,24 @@ export class SolicitudGastosService {
       false,
     );
     return (await this.resolverObservable(obs)) ?? null;
+  }
+
+  private textoEquipo(equipo: Equipo): string {
+    const identificador = (equipo.identificador || '').toUpperCase();
+    const descripcion = (equipo.descripcion || '').toUpperCase();
+    const marca = (equipo.modelo?.marca?.descripcion || '').toUpperCase();
+    const modelo = (equipo.modelo?.descripcion || '').toUpperCase();
+    const detalle = [marca, modelo].filter(Boolean).join(' ');
+    if (identificador && detalle) {
+      return `${identificador} - ${detalle}`;
+    }
+    if (identificador) {
+      return identificador;
+    }
+    if (descripcion) {
+      return descripcion;
+    }
+    return detalle || `EQUIPO ${equipo.id}`;
   }
 
   private textoVehiculo(vehiculo: Vehiculo): string {
@@ -491,7 +620,7 @@ export class SolicitudGastosService {
     return Number.isNaN(cajaId) ? undefined : cajaId;
   }
 
-  private extraerMensajeError(error: unknown): string | null {
+  private extraerMensajeErrorPrivado(error: unknown): string | null {
     const err = error as { graphQLErrors?: Array<{ message?: string }>; message?: string };
     if (err?.graphQLErrors?.length && err.graphQLErrors[0]?.message) {
       return err.graphQLErrors[0].message ?? null;

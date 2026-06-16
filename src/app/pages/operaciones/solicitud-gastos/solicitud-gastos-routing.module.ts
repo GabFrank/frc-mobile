@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { NuevoSolicitudGastosComponent } from './pages/nuevo-solicitud-gastos/nuevo-solicitud-gastos.component';
 import { SolicitudComponent } from './pages/solicitud/solicitud.component';
 import { ListSolicitudGastosComponent } from './pages/list-solicitud-gastos/list-solicitud-gastos.component';
+import { DetalleSolicitudGastosComponent } from './pages/detalle-solicitud-gastos/detalle-solicitud-gastos.component';
 
 const routes: Routes = [
   {
@@ -16,6 +17,10 @@ const routes: Routes = [
   {
     path: 'nuevo-solicitud-gastos',
     component: NuevoSolicitudGastosComponent
+  },
+  {
+    path: 'detalle/:id/:sucursalId',
+    component: DetalleSolicitudGastosComponent
   }
 ];
 
