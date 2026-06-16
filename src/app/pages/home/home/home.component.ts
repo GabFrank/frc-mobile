@@ -8,6 +8,14 @@ import { ClienteService } from 'src/app/graphql/personas/cliente/graphql/cliente
 import { MainService } from 'src/app/services/main.service';
 import { LoginService } from 'src/app/services/login.service';
 
+interface QuickAction {
+  label: string;
+  route: (string | boolean)[];
+  icon: string;
+  colorClass: string;
+  roles?: string[];
+}
+
 @UntilDestroy()
 @Component({
   selector: 'app-home',
@@ -19,6 +27,35 @@ export class HomeComponent implements OnInit, OnDestroy {
   totalAbiertos = 0;
   creditoDisponible = 0;
   porcentajeGastado = 0;
+  mostrarCredito = false;
+
+  private readonly allQuickActions: QuickAction[] = [
+    {
+      label: 'Ver Producto',
+      route: ['/producto/buscar', 'true'],
+      icon: 'barcode_scanner',
+      colorClass: 'tone-red',
+    },
+    {
+      label: 'Consultar Precio',
+      route: ['/producto/consultar-precio'],
+      icon: 'sell',
+      colorClass: 'tone-amber',
+    },
+    {
+      label: 'Control Inventario',
+      route: ['/inventario/control-inventario'],
+      icon: 'inventory_2',
+      colorClass: 'tone-blue',
+      roles: ['VER INVENTARIO'],
+    },
+    {
+      label: 'Productos Vencidos',
+      route: ['/producto/productos-vencidos'],
+      icon: 'event_busy',
+      colorClass: 'tone-orange',
+    },
+  ];
 
   constructor(
     private mainService: MainService,
@@ -28,12 +65,27 @@ export class HomeComponent implements OnInit, OnDestroy {
     public loginService: LoginService
   ) { }
 
-  private intervalId: any;
+  get quickActions(): QuickAction[] {
+    return this.allQuickActions.filter((action) => {
+      if (!action.roles?.length) {
+        return true;
+      }
+      return action.roles.some((role) =>
+        this.loginService.usuarioActual?.roles?.includes(role)
+      );
+    });
+  }
+
+  get quickActionsOddCount(): boolean {
+    return this.quickActions.length % 2 !== 0;
+  }
+
+  private intervalId: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit() {
     this.intervalId = setInterval(() => {
       if (this.mainService.usuarioActual) {
-        clearInterval(this.intervalId);
+        clearInterval(this.intervalId!);
         this.intervalId = null;
         this.cargarDatosConvenio();
       }
@@ -42,7 +94,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ionViewWillEnter() {
     if (this.mainService.usuarioActual && !this.intervalId) {
-      // Refresh context when returning to home, only if not already attempting on init
       this.cargarDatosConvenio();
     }
   }
@@ -95,5 +146,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   goToListaConvenios() {
     this.router.navigate(['/mis-finanzas/list-convenio']);
+  }
+
+  toggleCreditoVisibilidad(event: Event) {
+    event.stopPropagation();
+    this.mostrarCredito = !this.mostrarCredito;
   }
 }
