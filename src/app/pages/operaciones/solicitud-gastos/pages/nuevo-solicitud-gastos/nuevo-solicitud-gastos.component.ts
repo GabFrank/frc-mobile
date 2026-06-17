@@ -4,10 +4,9 @@ import { Persona } from 'src/app/domains/personas/persona.model';
 import { Proveedor } from 'src/app/pages/personas/proveedor/proveedor.model';
 import { TipoGasto } from '../../models/tipo-gasto.model';
 import { ActivoBusqueda, ModuloPadreGasto } from '../../models/ente.model';
-import {
-  SolicitudGastosService,
-} from '../../services/solicitud-gastos.service';
+import { SolicitudGastosService } from '../../services/solicitud-gastos.service';
 import { SucursalItem, DetalleGastoFormulario } from '../../interfaces';
+import { NotificacionService } from 'src/app/services/notificacion.service';
 
 @Component({
   selector: 'app-nuevo-solicitud-gastos',
@@ -16,9 +15,14 @@ import { SucursalItem, DetalleGastoFormulario } from '../../interfaces';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NuevoSolicitudGastosComponent implements OnInit {
-  gastoItems: DetalleGastoFormulario[] = [{ id: 1, monto: null, monedaId: null, formaPago: null }];
+  gastoItems: DetalleGastoFormulario[] = [{
+    id: 1,
+    monto: null,
+    monedaId: null,
+    formaPago: null,
+    montoTexto: '',
+  }];
   private nextGastoId = 2;
-  private montoTextoPorItemId: Record<number, string> = {};
 
   beneficiarioTipo: 'PERSONA' | 'PROVEEDOR' = 'PERSONA';
   isPersonaBenefModalOpen = false;
@@ -31,6 +35,11 @@ export class NuevoSolicitudGastosComponent implements OnInit {
   tipoGastoId: number | null = null;
   textoTipoGasto = '';
   moduloPadreTipoGasto: ModuloPadreGasto | null = null;
+  requiereEnteActivo = false;
+  etiquetaEnteActivo = '';
+  etiquetaEnteActivoLower = '';
+  iconoEnteActivo = 'cube-outline';
+  placeholderEnteActivo = '';
   enteId: number | null = null;
   activoReferenciaId: number | null = null;
   textoEnteActivo = '';
@@ -47,9 +56,10 @@ export class NuevoSolicitudGastosComponent implements OnInit {
 
   constructor(
     public servicio: SolicitudGastosService,
+    private notificacion: NotificacionService,
     private cdr: ChangeDetectorRef,
     private router: Router
-  ) { }
+  ) {}
 
   async ngOnInit(): Promise<void> {
     try {
@@ -65,7 +75,7 @@ export class NuevoSolicitudGastosComponent implements OnInit {
   agregarDetalleGasto(): void {
     this.gastoItems = [
       ...this.gastoItems,
-      { id: this.nextGastoId++, monto: null, monedaId: null, formaPago: null },
+      { id: this.nextGastoId++, monto: null, monedaId: null, formaPago: null, montoTexto: '' },
     ];
     this.cdr.markForCheck();
   }
@@ -75,7 +85,6 @@ export class NuevoSolicitudGastosComponent implements OnInit {
       return;
     }
     this.gastoItems = this.gastoItems.filter((item) => item.id !== id);
-    delete this.montoTextoPorItemId[id];
     this.cdr.markForCheck();
   }
 
@@ -83,7 +92,7 @@ export class NuevoSolicitudGastosComponent implements OnInit {
     const monedaId = this.normalizarNumero(valor);
     item.monedaId = monedaId;
     if (item.monto != null) {
-      this.montoTextoPorItemId[item.id] = this.formatearMonto(item.monto, monedaId);
+      item.montoTexto = this.formatearMonto(item.monto, monedaId);
     }
     this.cdr.markForCheck();
   }
@@ -92,31 +101,18 @@ export class NuevoSolicitudGastosComponent implements OnInit {
     const textoIngresado = (texto ?? '').toString();
     const monto = this.parsearMonto(textoIngresado, item.monedaId);
     item.monto = monto;
-    this.montoTextoPorItemId[item.id] = monto == null ? '' : this.formatearMonto(monto, item.monedaId);
+    item.montoTexto = monto == null ? '' : this.formatearMonto(monto, item.monedaId);
     this.cdr.markForCheck();
   }
 
   alPerderFocoMonto(item: DetalleGastoFormulario): void {
     if (item.monto == null) {
-      this.montoTextoPorItemId[item.id] = '';
+      item.montoTexto = '';
       this.cdr.markForCheck();
       return;
     }
-    this.montoTextoPorItemId[item.id] = this.formatearMonto(item.monto, item.monedaId);
+    item.montoTexto = this.formatearMonto(item.monto, item.monedaId);
     this.cdr.markForCheck();
-  }
-
-  obtenerMontoTexto(item: DetalleGastoFormulario): string {
-    const texto = this.montoTextoPorItemId[item.id];
-    if (texto !== undefined) {
-      return texto;
-    }
-    if (item.monto == null) {
-      return '';
-    }
-    const formateado = this.formatearMonto(item.monto, item.monedaId);
-    this.montoTextoPorItemId[item.id] = formateado;
-    return formateado;
   }
 
   abrirModalPersonaBeneficiaria(event?: Event): void {
@@ -165,18 +161,6 @@ export class NuevoSolicitudGastosComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  get requiereEnteActivo(): boolean {
-    return this.servicio.requiereModuloPadreActivo(this.moduloPadreTipoGasto);
-  }
-
-  get etiquetaEnteActivo(): string {
-    return this.servicio.etiquetaModuloPadre(this.moduloPadreTipoGasto);
-  }
-
-  get iconoEnteActivo(): string {
-    return this.servicio.iconoModuloPadre(this.moduloPadreTipoGasto);
-  }
-
   abrirModalEnteActivo(event?: Event): void {
     event?.stopPropagation();
     this.servicio.prepararConfigActivo(this.moduloPadreTipoGasto);
@@ -215,10 +199,12 @@ export class NuevoSolicitudGastosComponent implements OnInit {
   }
 
   seleccionarTipoGasto(tipo: TipoGasto): void {
-    this.tipoGastoId = Number(tipo.id);
-    this.textoTipoGasto = (tipo.descripcion || '').toString().toUpperCase();
-    this.moduloPadreTipoGasto = tipo.moduloPadre ?? null;
+    const tipoCompleto = this.servicio.tiposGasto.find((item) => Number(item.id) === Number(tipo.id)) ?? tipo;
+    this.tipoGastoId = Number(tipoCompleto.id);
+    this.textoTipoGasto = (tipoCompleto.descripcion || '').toString().toUpperCase();
+    this.moduloPadreTipoGasto = tipoCompleto.moduloPadre ?? null;
     this.limpiarEnteActivo();
+    this.actualizarUiEnteActivo();
     this.servicio.prepararConfigActivo(this.moduloPadreTipoGasto);
     this.cerrarModalTipoGasto();
     this.cdr.markForCheck();
@@ -235,7 +221,10 @@ export class NuevoSolicitudGastosComponent implements OnInit {
       this.textoEnteActivo = this.servicio.textoActivoSeleccionado(this.moduloPadreTipoGasto, activo);
       this.cerrarModalEnteActivo();
       this.cdr.markForCheck();
-    } catch {
+    } catch (err) {
+      const mensaje = this.servicio.extraerMensajeError(err);
+      this.notificacion.danger(mensaje || 'No se pudo vincular el activo seleccionado');
+      this.cdr.markForCheck();
     }
   }
 
@@ -272,6 +261,16 @@ export class NuevoSolicitudGastosComponent implements OnInit {
 
   cancelar(): void {
     this.router.navigate(['/operaciones/solicitud-gastos']);
+  }
+
+  private actualizarUiEnteActivo(): void {
+    this.requiereEnteActivo = this.servicio.requiereModuloPadreActivo(this.moduloPadreTipoGasto);
+    this.etiquetaEnteActivo = this.servicio.etiquetaModuloPadre(this.moduloPadreTipoGasto);
+    this.etiquetaEnteActivoLower = this.etiquetaEnteActivo.toLowerCase();
+    this.iconoEnteActivo = this.servicio.iconoModuloPadre(this.moduloPadreTipoGasto);
+    this.placeholderEnteActivo = this.requiereEnteActivo
+      ? `Seleccionar ${this.etiquetaEnteActivoLower}`
+      : '';
   }
 
   private limpiarEnteActivo(): void {

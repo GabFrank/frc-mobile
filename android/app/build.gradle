@@ -1,5 +1,24 @@
 apply plugin: 'com.android.application'
 
+// 16 KB page size (Google Play, apps targeting Android 15+):
+// Forzar las deps de Google cuyas .so prebuilt no estaban alineadas a 16KB.
+// useLegacyPackaging=false (packagingOptions) alinea las .so en el ZIP, pero
+// la alineacion del segmento ELF de cada .so la traen estas versiones nuevas.
+// - androidx.camera 1.4.0  -> libimage_processing_util_jni.so (lo pinea capacitor-mlkit a 1.1.0)
+// - mlkit barcode-scanning 17.3.0 -> libbarhopper (default del plugin: 17.1.0)
+// - mlkit face-detection 16.1.7
+// Las versiones son drop-in (mismo API). Ver research 2026-06-11.
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.camera:camera-core:1.4.0'
+        force 'androidx.camera:camera-camera2:1.4.0'
+        force 'androidx.camera:camera-lifecycle:1.4.0'
+        force 'androidx.camera:camera-view:1.4.0'
+        force 'com.google.mlkit:barcode-scanning:17.3.0'
+        force 'com.google.mlkit:face-detection:16.1.7'
+    }
+}
+
 android {
     namespace "com.sistemasinformaticos.frc"
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -7,7 +26,7 @@ android {
         applicationId "com.sistemasinformaticos.frc"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 7
+        versionCode 8
         versionName "3.0.9"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
@@ -47,6 +66,10 @@ android {
             excludes += 'META-INF/NOTICE'
             excludes += 'META-INF/NOTICE.txt'
             excludes += 'META-INF/notice.txt'
+        }
+        // Requerido para compatibilidad con páginas de memoria de 16 KB (Android 15+)
+        jniLibs {
+            useLegacyPackaging = false
         }
     }
 }

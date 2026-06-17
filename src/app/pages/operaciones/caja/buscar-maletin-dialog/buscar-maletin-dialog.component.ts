@@ -10,7 +10,7 @@ import { ModalService } from 'src/app/services/modal.service';
 import { CajaService } from '../caja.service';
 
 export class BuscarMaletinData {
-
+  sucursalId?: number;
 }
 
 @Component({
@@ -51,7 +51,14 @@ export class BuscarMaletinDialogComponent implements OnInit, AfterViewInit {
   }
 
   async onBuscarClick() {
-    (await this.maletinService.onGetPorDescripcion(this.codigoControl.value)).subscribe(res => {
+    let obs$;
+    if (this.data && this.data.sucursalId) {
+      obs$ = await this.maletinService.onGetPorDescripcionPorSucursal(this.codigoControl.value, this.data.sucursalId);
+    } else {
+      obs$ = await this.maletinService.onGetPorDescripcion(this.codigoControl.value);
+    }
+
+    obs$.subscribe(res => {
       if (res != null) {
         this.selectedMaletin = res;
         if (this.selectedMaletin.abierto == true) {

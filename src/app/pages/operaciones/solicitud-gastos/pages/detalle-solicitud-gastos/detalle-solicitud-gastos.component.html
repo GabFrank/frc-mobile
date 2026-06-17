@@ -1,0 +1,100 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="transparent">
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Solicitud nro. {{ solicitud?.id || preGastoId }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding detalle-content">
+  <div *ngIf="cargando" class="estado-carga">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Cargando...</p>
+  </div>
+
+  <ng-container *ngIf="!cargando && solicitud">
+    <ion-card class="card-estado">
+      <ion-card-content>
+        <div class="fila-estado">
+          <ion-badge [color]="badgeColorEstado">
+            {{ solicitud.estadoEtiqueta || solicitud.estado }}
+          </ion-badge>
+          <span class="fecha">{{ solicitud.creadoEn | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <h2>{{ solicitud.descripcion || 'Sin descripción' }}</h2>
+        <p class="subtexto">{{ solicitud.tipoGasto?.descripcion }} · {{ solicitud.sucursalCaja?.nombre }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card class="card-resumen">
+      <ion-card-header (click)="toggleResumen()">
+        <div class="resumen-header">
+          <ion-card-title>Resumen financiero</ion-card-title>
+          <ion-icon [name]="mostrarResumen ? 'chevron-up' : 'chevron-down'"></ion-icon>
+        </div>
+      </ion-card-header>
+      <ion-card-content *ngIf="mostrarResumen">
+        <div class="resumen-moneda" *ngFor="let moneda of resumenMontosPorMoneda">
+          <div class="resumen-moneda-titulo">{{ moneda.etiquetaMoneda }} ({{ moneda.simboloMoneda || '-' }})</div>
+          <div class="resumen-fila">
+            <span class="etiqueta">Solicitado</span>
+            <span class="valor">{{ moneda.simboloMoneda }} {{ moneda.solicitadoTexto }}</span>
+          </div>
+          <div class="resumen-fila">
+            <span class="etiqueta">Retirado</span>
+            <span class="valor">{{ moneda.simboloMoneda }} {{ moneda.retiradoTexto }}</span>
+          </div>
+          <div class="resumen-fila">
+            <span class="etiqueta">Gastado</span>
+            <span class="valor">{{ moneda.simboloMoneda }} {{ moneda.gastadoTexto }}</span>
+          </div>
+          <div class="resumen-fila destacado">
+            <span class="etiqueta">Saldo a devolver</span>
+            <span class="valor">{{ moneda.simboloMoneda }} {{ moneda.saldoDevolverTexto }}</span>
+          </div>
+        </div>
+        <div class="resumen-fila" *ngIf="solicitud.estadoRendicion">
+          <span class="etiqueta">Estado rendición</span>
+          <span class="valor">{{ solicitud.estadoRendicion }}</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="acciones" *ngIf="puedeEscanearRetiro">
+      <ion-button expand="block" color="primary" [disabled]="escaneando" (click)="onEscanearQrRetiro()">
+        <ion-icon slot="start" name="qr-code-outline"></ion-icon>
+        Escanear QR de retiro
+      </ion-button>
+      <p class="hint">Escanee el QR que muestra el cajero en caja para confirmar el retiro.</p>
+    </div>
+
+    <div class="acciones" *ngIf="mostrarEsperaEntrega">
+      <ion-note color="success">Retiro confirmado. Espere la entrega de efectivo en caja.</ion-note>
+    </div>
+
+    <div class="acciones" *ngIf="puedeAgregarRendicion">
+      <ion-button expand="block" color="secondary" (click)="onAgregarRendicion()">
+        <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+        Rendir gasto
+      </ion-button>
+    </div>
+
+    <ion-card *ngIf="solicitud.rendiciones?.length">
+      <ion-card-header>
+        <ion-card-title>Rendiciones ({{ solicitud.rendiciones.length }})</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="rendicion-item" *ngFor="let r of solicitud.rendiciones">
+          <div class="rendicion-top">
+            <strong>{{ r.tipoGasto?.descripcion || 'Gasto' }}</strong>
+            <span>{{ simboloMonedaPrincipal }} {{ r.montoTotal | number:'1.0-0' }}</span>
+          </div>
+          <small>{{ r.creadoEn | date:'dd/MM/yyyy HH:mm' }}</small>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+</ion-content>

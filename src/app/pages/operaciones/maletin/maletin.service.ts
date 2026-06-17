@@ -20,7 +20,8 @@ export class MaletinService {
     private genericCrud: GenericCrudService,
     private saveMaletin: SaveMaletinGQL,
     private deleteMaletin: DeleteMaletinGQL,
-    private getMaletinPorDescripcion: MaletinPorDescripcionPorSucursalGQL
+    private getMaletinPorDescripcion: MaletinPorDescripcionGQL,
+    private getMaletinPorDescripcionPorSucursal: MaletinPorDescripcionPorSucursalGQL
   ) { }
 
   async onGetAll(): Promise<Observable<any>>{
@@ -33,6 +34,10 @@ export class MaletinService {
 
   async onGetPorDescripcion(texto): Promise<Observable<any>>{
     return await this.genericCrud.onGetByTexto(this.getMaletinPorDescripcion, texto)
+  }
+
+  async onGetPorDescripcionPorSucursal(texto, sucId): Promise<Observable<any>>{
+    return await this.genericCrud.onGetByTextoPorSucursal(this.getMaletinPorDescripcionPorSucursal, texto, sucId)
   }
 
   async onSave(input: MaletinInput): Promise<Observable<any>>{

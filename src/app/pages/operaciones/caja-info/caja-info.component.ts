@@ -15,7 +15,8 @@ import { BuscarMaletinData, BuscarMaletinDialogComponent } from '../caja/buscar-
 import { PdvCaja, PdvCajaInput } from '../caja/caja.model';
 import { CajaService } from '../caja/caja.service';
 import { AdicionarConteoDialogComponent } from '../conteo/adicionar-conteo-dialog/adicionar-conteo-dialog.component';
-import { ConteoService } from '../conteo/conteo.service';
+import { AdicionarConteoCierreDialogComponent } from '../conteo/adicionar-conteo-cierre-dialog/adicionar-conteo-cierre-dialog.component';
+import { Conteo } from '../conteo/conteo.model';
 import { Maletin } from '../maletin/maletin.model';
 import { MaletinService } from '../maletin/maletin.service';
 
@@ -43,8 +44,7 @@ export class CajaInfoComponent implements OnInit {
     private dialogoService: DialogoService,
     private maletinService: MaletinService,
     private notificacionService: NotificacionService,
-    private popoverService: PopOverService,
-    private conteoService: ConteoService
+    private popoverService: PopOverService
   ) { }
 
   ngOnInit() {
@@ -67,17 +67,55 @@ export class CajaInfoComponent implements OnInit {
   }
 
   adicionarConteoCierre() {
-    this.modalService.openModal(AdicionarConteoDialogComponent).then(res => {
-      console.log(res);
-      if (res['data'] != null) {
-        this.selectedCaja.conteoCierre = res['data'];
-        this.conteoService.onSave(res['data'], this.selectedCaja?.id, false, this.selectedCaja?.sucursal?.id).subscribe(res2 => {
-          if(res2!=null){
-            this.selectedCaja.conteoCierre = res2;
-          }
-        })
+    this.modalService.openModal(AdicionarConteoCierreDialogComponent).then(async res => {
+      const conteo: Conteo = res['data']?.conteo;
+      if (conteo == null) {
+        return;
       }
-    })
+      conteo.usuario = this.mainService.usuarioActual;
+      const sucursalId = this.selectedCaja?.sucursal?.id || this.selectedCaja?.sucursalId;
+      (await this.cajaService.onCerrarCaja(
+        this.selectedCaja.id,
+        sucursalId,
+        conteo.toInput(),
+        conteo.toInpuList()
+      )).pipe(untilDestroyed(this)).subscribe(saveRes => {
+        if (saveRes?.exito) {
+          const cajaIdCerrada = saveRes.cajaId ?? this.selectedCaja.id;
+          this.cajaService.onGetByIdFromFilial(cajaIdCerrada, sucursalId).then(obs => {
+            obs.pipe(untilDestroyed(this)).subscribe(caja => {
+              if (caja != null) {
+                this.selectedCaja = caja;
+                this.cajaService.selectedCaja = caja;
+                this.onSelectCaja(caja);
+                setTimeout(() => {
+                  this.cajaService.onImprimirBalance(cajaIdCerrada, sucursalId, false)
+                    .pipe(untilDestroyed(this))
+                    .subscribe(exito => {
+                      if (exito) {
+                        this.dialogoService.open('Caja Cerrada', 'La caja se cerró correctamente y el balance fue impreso.', false);
+                      } else {
+                        this.dialogoService.open('Caja Cerrada', 'La caja se cerró correctamente, pero no se pudo imprimir el balance.', false);
+                      }
+                    });
+                }, 500);
+              } else {
+                this.dialogoService.open('Caja Cerrada', 'La caja se cerró correctamente.', false);
+              }
+            });
+          });
+        } else {
+          this.dialogoService.open('Error', 'No se pudo cerrar la caja en la filial.', false);
+        }
+      });
+    });
+  }
+
+  imprimirBalance() {
+    const sucursalId = this.selectedCaja?.sucursal?.id || this.selectedCaja?.sucursalId;
+    this.cajaService.onImprimirBalance(this.selectedCaja.id, sucursalId, true)
+      .pipe(untilDestroyed(this))
+      .subscribe();
   }
 
   adicionarConteoApertura() {

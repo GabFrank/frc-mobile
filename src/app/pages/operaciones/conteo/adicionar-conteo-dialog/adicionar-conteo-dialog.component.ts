@@ -58,8 +58,6 @@ export class AdicionarConteoDialogComponent implements OnInit {
 
     if (cajaService.selectedCaja != null) {
       this.selectedCaja = cajaService.selectedCaja
-    } else {
-      modalService.closeModal(null)
     }
     this.gsFormGroup = new UntypedFormGroup({
       '500': new UntypedFormControl(null, [Validators.min(0)]),
@@ -98,7 +96,11 @@ export class AdicionarConteoDialogComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.isApertura = this.data == true;
+    if (this.data && this.data.apertura) {
+      this.isApertura = true;
+    } else if (this.cajaService.selectedCaja == null) {
+      this.modalService.closeModal(null);
+    }
 
     this.gsFormGroup.valueChanges.pipe(untilDestroyed(this)).subscribe(res => {
       this.sumarGs()
@@ -145,24 +147,32 @@ export class AdicionarConteoDialogComponent implements OnInit {
     this.moneda = e;
   }
 
+  private toPositiveNumber(value: any): number {
+    const parsedValue = Number(value);
+    if (Number.isNaN(parsedValue) || parsedValue < 0) {
+      return 0;
+    }
+    return parsedValue;
+  }
+
   sumarGs() {
     this.totalGs = 0;
     Object.keys(this.gsFormGroup.controls).forEach(key => {
-      this.totalGs += this.gsFormGroup.controls[key].value * +key;
+      this.totalGs += this.toPositiveNumber(this.gsFormGroup.controls[key].value) * +key;
     });
   }
 
   sumarRs() {
     this.totalRs = 0;
     Object.keys(this.rsFormGroup.controls).forEach(key => {
-      this.totalRs += this.rsFormGroup.controls[key].value * +key;
+      this.totalRs += this.toPositiveNumber(this.rsFormGroup.controls[key].value) * +key;
     });
   }
 
   sumarDs() {
     this.totalDs = 0;
     Object.keys(this.dsFormGroup.controls).forEach(key => {
-      this.totalDs += this.dsFormGroup.controls[key].value * +key;
+      this.totalDs += this.toPositiveNumber(this.dsFormGroup.controls[key].value) * +key;
     });
   }
 
@@ -176,7 +186,12 @@ export class AdicionarConteoDialogComponent implements OnInit {
       if (res.role == 'aceptar') {
         if (this.cajaService.selectedCaja != null) {
           this.conteoService
-            .onSave(conteo, this.cajaService.selectedCaja?.id, this.isApertura, this.cajaService.selectedCaja.sucursal.id)
+            .onSave(
+              conteo,
+              this.cajaService.selectedCaja?.id,
+              this.isApertura,
+              this.cajaService.selectedCaja?.sucursal?.id || this.cajaService.selectedCaja?.sucursalId
+            )
             .pipe(untilDestroyed(this))
             .subscribe((res) => {
               if (res != null) {
@@ -198,8 +213,8 @@ export class AdicionarConteoDialogComponent implements OnInit {
     this.conteoMonedaList = [];
     this.guaraniList?.forEach((e) => {
       let conteoMoneda = new ConteoMoneda();
-      let cantidad = this.gsFormGroup.get(`${e.valor}`)?.value;
-      if (cantidad != null) {
+      let cantidad = this.toPositiveNumber(this.gsFormGroup.get(`${e.valor}`)?.value);
+      if (cantidad > 0) {
         conteoMoneda.cantidad = cantidad;
         conteoMoneda.monedaBilletes = e;
         this.conteoMonedaList.push(conteoMoneda);
@@ -207,10 +222,10 @@ export class AdicionarConteoDialogComponent implements OnInit {
     });
     this.realList?.forEach((e) => {
       let conteoMoneda = new ConteoMoneda();
-      let cantidad = this.rsFormGroup.get(
-        `${e.valor}`.replace(".", "")
-      )?.value;
-      if (cantidad != null) {
+      let cantidad = this.toPositiveNumber(this.rsFormGroup.get(
+        `${e.valor}`
+      )?.value);
+      if (cantidad > 0) {
         conteoMoneda.cantidad = cantidad;
         conteoMoneda.monedaBilletes = e;
         this.conteoMonedaList.push(conteoMoneda);
@@ -218,10 +233,10 @@ export class AdicionarConteoDialogComponent implements OnInit {
     });
     this.dolarList?.forEach((e) => {
       let conteoMoneda = new ConteoMoneda();
-      let cantidad = this.dsFormGroup.get(
-        `${e.valor}`.replace(".", "")
-      )?.value;
-      if (cantidad != null) {
+      let cantidad = this.toPositiveNumber(this.dsFormGroup.get(
+        `${e.valor}`
+      )?.value);
+      if (cantidad > 0) {
         conteoMoneda.cantidad = cantidad;
         conteoMoneda.monedaBilletes = e;
         this.conteoMonedaList.push(conteoMoneda);

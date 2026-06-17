@@ -31,6 +31,7 @@ import { filter } from 'rxjs/operators';
 import { timer } from 'rxjs';
 import { Channel, ChannelService } from './services/channel.service';
 import { NotificacionService as NotificacionesUsuarioService } from './pages/notificaciones/notificacion.service';
+import { RoleService } from './domains/personas/roles/role.service';
 
 export class Pageable {
   getPageNumber: number;
@@ -74,6 +75,7 @@ export class AppComponent implements OnInit, OnDestroy {
   fabMenuOpen = false;
   marcacionRoute: string[] = ['/marcacion'];
   conteoNoLeidas = 0;
+  puedeAccederCaja = false;
 
   loadingOpen = false; // track loading dialog state
   dialog: any;
@@ -100,7 +102,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private actionSheetCtrl: ActionSheetController,
     private toastCtrl: ToastController,
     private notificacionesUsuarioService: NotificacionesUsuarioService,
-    private serverConnectionService: ServerConnectionService
+    private serverConnectionService: ServerConnectionService,
+    private roleService: RoleService
   ) {
     this.isDev = isDevMode();
 
@@ -194,10 +197,14 @@ export class AppComponent implements OnInit, OnDestroy {
     this.pushNotificacionService.initPush();
     this.updateFabPosition(this.router.url);
     this.actualizarMarcacionRoute();
+    this.actualizarPermisosUsuario();
 
     this.mainService.authenticationSub
       .pipe(untilDestroyed(this))
-      .subscribe(() => this.actualizarMarcacionRoute());
+      .subscribe(() => {
+        this.actualizarMarcacionRoute();
+        this.actualizarPermisosUsuario();
+      });
 
     this.router.events
       .pipe(
@@ -360,6 +367,12 @@ export class AppComponent implements OnInit, OnDestroy {
   private actualizarMarcacionRoute(): void {
     const isAdmin = this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN';
     this.marcacionRoute = isAdmin ? ['/marcacion/ingreso-persona'] : ['/marcacion'];
+  }
+
+  private actualizarPermisosUsuario(): void {
+    this.puedeAccederCaja = this.roleService.puedeAccederCaja(
+      this.loginService.usuarioActual?.roles
+    );
   }
 
   openPagarScanner() {

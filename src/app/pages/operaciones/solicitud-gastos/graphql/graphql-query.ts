@@ -93,6 +93,25 @@ export const inmuebleSearchPageQuery = gql`
   }
 `;
 
+export const equipoSearchPageQuery = gql`
+  query equipoSearchPage($texto: String, $page: Int!, $size: Int!) {
+    data: equipoSearchPage(texto: $texto, page: $page, size: $size) {
+      hasNext
+      getContent {
+        id
+        identificador
+        descripcion
+        modelo {
+          descripcion
+          marca {
+            descripcion
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const enteByReferenciaIdQuery = gql`
   query enteByReferenciaId($tipoEnte: TipoEnte!, $referenciaId: ID!) {
     data: enteByReferenciaId(tipoEnte: $tipoEnte, referenciaId: $referenciaId) {
@@ -113,6 +132,76 @@ export const saveEnteMutation = gql`
       referenciaId
       descripcion
       activo
+    }
+  }
+`;
+
+export const preGastoPorIdQuery = gql`
+  query preGasto($id: ID!, $sucId: ID) {
+    data: preGasto(id: $id, sucId: $sucId) {
+      id
+      sucursalId
+      descripcion
+      estado
+      montoSolicitado
+      montoRetirado
+      montoGastado
+      saldoDevolver
+      estadoEtiqueta
+      estadoRendicion
+      qrToken
+      retiroConfirmadoEn
+      cajaId
+      creadoEn
+      funcionario { id nombre }
+      tipoGasto { id descripcion moduloPadre }
+      moneda { id simbolo denominacion }
+      sucursalCaja { id nombre }
+      finanzas { monto moneda { simbolo denominacion } }
+      gasto {
+        retiroGs
+        retiroRs
+        retiroDs
+        vueltoGs
+        vueltoRs
+        vueltoDs
+      }
+      rendiciones {
+        id
+        montoTotal
+        fotoFacturaUrl
+        fotoProductoUrl
+        fotosFacturaUrls
+        fotosProductoUrls
+        kmActual
+        litros
+        precioPorLitro
+        ubicacionProvisoria
+        establecimientoAlimentacion
+        creadoEn
+        tipoGasto { id descripcion }
+      }
+    }
+  }
+`;
+
+export const confirmarRetiroFuncionarioMutation = gql`
+  mutation confirmarRetiroFuncionarioPreGasto($input: ConfirmarRetiroFuncionarioInput!) {
+    data: confirmarRetiroFuncionarioPreGasto(input: $input) {
+      id
+      sucursalId
+      estado
+      retiroConfirmadoEn
+    }
+  }
+`;
+
+export const saveGastoRendicionMutation = gql`
+  mutation saveGastoRendicion($input: GastoRendicionInput!) {
+    data: saveGastoRendicion(input: $input) {
+      id
+      montoTotal
+      creadoEn
     }
   }
 `;

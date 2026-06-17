@@ -39,11 +39,11 @@
   </div>
 
   <div *ngIf="!cargando && solicitudes.length > 0" class="list-container">
-    <ion-card *ngFor="let item of solicitudes" class="request-card animate__animated animate__fadeInUp">
+    <ion-card *ngFor="let item of solicitudes" class="request-card animate__animated animate__fadeInUp" (click)="onVerDetalle(item)">
       <ion-card-content>
         <div class="card-header">
           <div class="id-badge">#{{ item.id }}</div>
-          <ion-badge [color]="getBadgeColor(item.estado)">
+          <ion-badge [color]="item.estadoBadgeColor">
             {{ item.estadoEtiqueta || item.estado }}
           </ion-badge>
         </div>
@@ -59,7 +59,7 @@
             <ion-icon name="calendar-outline"></ion-icon>
             <span>{{ item.creadoEn | date:'dd/MM/yyyy HH:mm' }}</span>
           </div>
-          <ion-button fill="clear" color="success" (click)="onShareWhatsApp(item)" style="margin: 0; margin-left: auto; height: 30px;">
+          <ion-button fill="clear" color="success" (click)="onShareWhatsApp(item); $event.stopPropagation()" style="margin: 0; margin-left: auto; height: 30px;">
             <ion-icon slot="icon-only" name="logo-whatsapp" style="font-size: 22px;"></ion-icon>
           </ion-button>
         </div>
@@ -70,9 +70,7 @@
             <span class="value">{{ item.montoSolicitado | number:'1.0-2' }}</span>
           </div>
           <div class="qr-container">
-            <ion-button fill="clear" color="primary" class="qr-button" (click)="onShowQR(item.id)">
-              <ion-icon slot="icon-only" name="qr-code-outline"></ion-icon>
-            </ion-button>
+            <ion-icon name="chevron-forward-outline" color="medium"></ion-icon>
           </div>
         </div>
       </ion-card-content>

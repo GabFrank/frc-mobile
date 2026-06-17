@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MisConfiguracionesNotificacionQueryService } from '../graphql/mis-configuraciones-notificacion-query.service';
 import { ActualizarPreferenciaNotificacionMutationService } from '../graphql/actualizar-preferencia-notificacion-mutation.service';
-import { ConfiguracionNotificacion } from '../models/notificacion.model';
+import { ConfiguracionNotificacion, DESCRIPCION_POR_TIPO_NOTIFICACION } from '../models/notificacion.model';
 import { ToastController, LoadingController } from '@ionic/angular';
 
 @Component({
@@ -13,11 +13,6 @@ export class PreferenciasComponent implements OnInit {
 
   configuraciones: ConfiguracionNotificacion[] = [];
   loading = false;
-  private readonly descripcionPorTipo: Record<string, string> = {
-    RETIRO: 'Notificacion de retiro realizado en sucursal',
-    VENTA_TRANSFERENCIA: 'Notificacion de venta con pago por transferencia',
-    VENTA_STOCK_CRITICO: 'Notificacion de venta con producto en stock cero o negativo'
-  };
 
   constructor(
     private misConfiguracionesQuery: MisConfiguracionesNotificacionQueryService,
@@ -36,7 +31,7 @@ export class PreferenciasComponent implements OnInit {
       this.configuraciones = result.data.misConfiguracionesNotificacion
         .map(c => ({
           ...c,
-          descripcion: c.descripcion || this.descripcionPorTipo[c.tipo] || c.tipo
+          descripcion: c.descripcion || DESCRIPCION_POR_TIPO_NOTIFICACION[c.tipo] || c.tipo
         }))
         .sort((a, b) => a.descripcion.localeCompare(b.descripcion));
       this.loading = false;
