@@ -192,7 +192,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
                   const similarity = this.faceRecognitionService.similarity(currentEmbedding, storedEmbedding);
                   this.similarityPercent = Math.round(similarity * 100);
 
-                  if (similarity >= 0.6) {
+                  if (similarity >= 0.55) {
                     this.isVerified = true;
                     this.verificationMessage = `Identidad verificada (${this.similarityPercent}% similitud)`;
                     this.captureSnapshot();

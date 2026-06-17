@@ -8,13 +8,17 @@ import { NuevoSolicitudGastosComponent } from './pages/nuevo-solicitud-gastos/nu
 import { ComponentsModule } from 'src/app/components/components.module';
 import { SolicitudComponent } from './pages/solicitud/solicitud.component';
 import { ListSolicitudGastosComponent } from './pages/list-solicitud-gastos/list-solicitud-gastos.component';
+import { DetalleSolicitudGastosComponent } from './pages/detalle-solicitud-gastos/detalle-solicitud-gastos.component';
+import { AgregarRendicionGastoComponent } from './pages/agregar-rendicion-gasto/agregar-rendicion-gasto.component';
 
 
 @NgModule({
   declarations: [
     NuevoSolicitudGastosComponent,
     SolicitudComponent,
-    ListSolicitudGastosComponent
+    ListSolicitudGastosComponent,
+    DetalleSolicitudGastosComponent,
+    AgregarRendicionGastoComponent
   ],
   imports: [
     CommonModule,

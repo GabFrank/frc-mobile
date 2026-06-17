@@ -8,6 +8,7 @@ import { IonicModule } from '@ionic/angular';
 import { ComponentsModule } from 'src/app/components/components.module';
 import { CajaInfoComponent } from './caja-info/caja-info.component';
 import { AdicionarConteoDialogComponent } from './conteo/adicionar-conteo-dialog/adicionar-conteo-dialog.component';
+import { AdicionarConteoCierreDialogComponent } from './conteo/adicionar-conteo-cierre-dialog/adicionar-conteo-cierre-dialog.component';
 import { BuscarMaletinDialogComponent } from './caja/buscar-maletin-dialog/buscar-maletin-dialog.component';
 import { StockPorSucursalDialogComponent } from './movimiento-stock/stock-por-sucursal-dialog/stock-por-sucursal-dialog.component';
 
@@ -17,6 +18,7 @@ import { StockPorSucursalDialogComponent } from './movimiento-stock/stock-por-su
     CajaComponent,
     CajaInfoComponent,
     AdicionarConteoDialogComponent,
+    AdicionarConteoCierreDialogComponent,
     BuscarMaletinDialogComponent
   ],
   imports: [

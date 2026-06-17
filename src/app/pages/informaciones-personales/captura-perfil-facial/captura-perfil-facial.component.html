@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button
+        (click)="cerrar()"
+        [disabled]="procesando"
+      >
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Foto de perfil facial</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="captura-container">
+    <p class="descripcion">
+      Para actualizar su foto de perfil debe capturar <strong>3 fotos</strong> con la cámara.
+      La última debe ser mirando de frente.
+    </p>
+
+    <div class="progress-steps">
+      <div
+        *ngFor="let step of pasos"
+        class="step-indicator"
+        [class.step-complete]="step < paso"
+        [class.step-active]="step === paso"
+        [class.step-pending]="step > paso"
+      ></div>
+    </div>
+
+    <p class="instruccion">{{ instruccionActual }}</p>
+
+    <div class="preview-container" *ngIf="previewUrl">
+      <img [src]="previewUrl" alt="Vista previa" />
+    </div>
+
+    <ion-button
+      expand="block"
+      shape="round"
+      (click)="capturar()"
+      [disabled]="procesando"
+    >
+      <ion-spinner *ngIf="procesando" name="crescent"></ion-spinner>
+      <span *ngIf="!procesando">{{ textoBoton }}</span>
+    </ion-button>
+  </div>
+</ion-content>

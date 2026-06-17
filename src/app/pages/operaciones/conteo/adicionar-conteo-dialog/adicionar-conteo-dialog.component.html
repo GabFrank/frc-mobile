@@ -1,51 +1,68 @@
-<!-- <ion-header>
-  <ion-toolbar>
+<ion-header>
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-button (click)="goBack()">
-        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      <ion-button (click)="onCancel()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title style="text-align: center;">Editar Perfil</ion-title>
+    <ion-title>Conteo Inicial</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="saveProfile()">Guardar</ion-button>
+      <ion-button (click)="onGuardar()">Guardar</ion-button>
     </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar>
+    <ion-segment [(ngModel)]="moneda" (ionChange)="tabClick(moneda)">
+      <ion-segment-button value="gs">
+        <ion-label>Guaraníes</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="rs">
+        <ion-label>Reales</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="ds">
+        <ion-label>Dólares</ion-label>
+      </ion-segment-button>
+    </ion-segment>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <div class="container">
-    <div class="avatar-container" (click)="presentActionSheet()">
-      <ion-avatar class="avatar">
-        <img src="assets/dummy-avatar.png" />
-      </ion-avatar>
-      <ion-icon class="camera-icon" name="camera"></ion-icon>
-    </div>
-
+  <!-- GUARANIES -->
+  <div *ngIf="moneda === 'gs'" [formGroup]="gsFormGroup">
     <ion-list>
-      <ion-item>
-        <ion-label position="stacked">Nombre Completo</ion-label>
-        <ion-input type="text" [formControl]="fullNameControl" required></ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="stacked">Email</ion-label>
-        <ion-input type="email" [formControl]="emailControl"></ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="stacked">Teléfono</ion-label>
-        <ion-input type="tel" [formControl]="phoneControl"></ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="stacked">Fecha de nacimiento</ion-label>
-        <ion-datetime
-          displayFormat="DD/MM/YYYY"
-          pickerFormat="DD MMMM YYYY"
-          [formControl]="birthDateControl"
-          required
-        ></ion-datetime>
+      <ion-list-header>
+        <ion-label color="primary"><strong>Total: {{ totalGs | number }} Gs.</strong></ion-label>
+      </ion-list-header>
+      <ion-item *ngFor="let item of guaraniList">
+        <ion-label>{{ item.valor | number }} Gs.</ion-label>
+        <ion-input type="number" min="0" inputmode="numeric" placeholder="Cantidad" formControlName="{{ item.valor }}" slot="end" style="text-align: right;"></ion-input>
       </ion-item>
     </ion-list>
   </div>
-</ion-content> -->
+
+  <!-- REALES -->
+  <div *ngIf="moneda === 'rs'" [formGroup]="rsFormGroup">
+    <ion-list>
+      <ion-list-header>
+        <ion-label color="primary"><strong>Total: {{ totalRs | number }} Rs.</strong></ion-label>
+      </ion-list-header>
+      <ion-item *ngFor="let item of realList">
+        <ion-label>{{ item.valor | number }} Rs.</ion-label>
+        <ion-input type="number" min="0" inputmode="numeric" placeholder="Cantidad" formControlName="{{ item.valor }}" slot="end" style="text-align: right;"></ion-input>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <!-- DOLARES -->
+  <div *ngIf="moneda === 'ds'" [formGroup]="dsFormGroup">
+    <ion-list>
+      <ion-list-header>
+        <ion-label color="primary"><strong>Total: {{ totalDs | number }} U$D</strong></ion-label>
+      </ion-list-header>
+      <ion-item *ngFor="let item of dolarList">
+        <ion-label>{{ item.valor | number }} U$D</ion-label>
+        <ion-input type="number" min="0" inputmode="numeric" placeholder="Cantidad" formControlName="{{ item.valor }}" slot="end" style="text-align: right;"></ion-input>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content>

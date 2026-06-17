@@ -481,8 +481,11 @@ export class GenericCrudService {
         });
     });
   }
-  async onCustomSave(gql: Mutation, data): Promise<Observable<any>> {
-    let loading = await this.cargandoService.open(null, false);
+  async onCustomSave(gql: Mutation, data, showLoading: boolean = true): Promise<Observable<any>> {
+    let loading: any = null;
+    if (showLoading) {
+      loading = await this.cargandoService.open(null, false);
+    }
     return new Observable((obs) => {
       gql
         .mutate(data, {
@@ -490,23 +493,46 @@ export class GenericCrudService {
           errorPolicy: 'all'
         })
         .pipe(untilDestroyed(this))
-        .subscribe((res) => {
-          this.cargandoService.close(loading);
-          if (res.errors == null) {
-            this.notificacionService.open(
-              'Guardado con éxito',
-              TipoNotificacion.SUCCESS,
-              2
-            );
-            obs.next(res.data['data']);
-          } else {
-            this.notificacionService.open(
-              'Ups!! Algo salió mal',
-              TipoNotificacion.DANGER,
-              2
-            );
-            console.log(res);
-            obs.next(null);
+        .subscribe({
+          next: (res) => {
+            if (loading) {
+              this.cargandoService.close(loading);
+            }
+            if (res.errors == null) {
+              if (showLoading) {
+                this.notificacionService.open(
+                  'Guardado con éxito',
+                  TipoNotificacion.SUCCESS,
+                  2
+                );
+              }
+              obs.next(res.data['data']);
+            } else {
+              if (showLoading) {
+                this.notificacionService.open(
+                  'Ups!! Algo salió mal',
+                  TipoNotificacion.DANGER,
+                  2
+                );
+              }
+              console.log(res.errors);
+              obs.error(res.errors);
+            }
+            obs.complete();
+          },
+          error: (err) => {
+            if (loading) {
+              this.cargandoService.close(loading);
+            }
+            console.error(err);
+            if (showLoading) {
+              this.notificacionService.open(
+                'Ups!! Algo salió mal',
+                TipoNotificacion.DANGER,
+                2
+              );
+            }
+            obs.error(err);
           }
         });
     });

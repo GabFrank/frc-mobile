@@ -1,0 +1,175 @@
+:host {
+  --accent-green: #1fdf64;
+  --accent-red: #ff3b30;
+  --field-bg: #181818;
+  --field-border: #2a2a2a;
+  --field-height: 58px;
+  --field-radius: 8px;
+}
+
+ion-item.dark2,
+.monto-field ::ng-deep ion-item.dark2 {
+  --background: var(--field-bg);
+  --border-color: var(--field-border);
+  --padding-start: 12px;
+  --inner-padding-end: 8px;
+  --min-height: var(--field-height);
+  border-radius: var(--field-radius);
+  margin-bottom: 0;
+  box-shadow: inset 0 0 0 1px rgba(31, 223, 100, 0.05);
+}
+
+ion-item.dark2 ion-label[position='stacked'],
+.monto-field ::ng-deep ion-item.dark2 ion-label[position='stacked'] {
+  margin-bottom: 6px;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+}
+
+.montos-section {
+  margin-bottom: 12px;
+}
+
+.section-label {
+  display: block;
+  padding: 0 4px 8px;
+  color: #b0b0b0;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.monto-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.monto-fields {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 0;
+}
+
+.monto-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  &--moneda {
+    flex: 1.15;
+  }
+
+  &--monto {
+    flex: 1;
+  }
+}
+
+.monto-field app-selector-generico,
+.monto-field .monto-input-item {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.monto-field ::ng-deep ion-item.dark2 {
+  width: 100%;
+}
+
+.monto-input-item {
+  --highlight-color-focused: var(--accent-green);
+}
+
+.monto-input-item ion-input {
+  --padding-top: 0;
+  --padding-bottom: 2px;
+}
+
+.monto-actions {
+  flex: 0 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--field-height);
+  margin-bottom: 1px;
+}
+
+.btn-add,
+.btn-remove {
+  margin: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.btn-add {
+  --color: var(--accent-green);
+}
+
+.btn-add ion-icon {
+  font-size: 1.75rem;
+}
+
+.btn-remove {
+  --color: var(--accent-red);
+}
+
+.btn-remove ion-icon {
+  font-size: 1.6rem;
+}
+
+.campo-item {
+  margin-bottom: 8px;
+}
+
+.fotos {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.foto-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.foto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.foto-item {
+  position: relative;
+}
+
+.preview {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: var(--field-radius);
+  background: #1e1e1e;
+}
+
+.btn-remove-foto {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  margin: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+  --color: var(--accent-red);
+}
+
+.btn-remove-foto ion-icon {
+  font-size: 1.5rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+}
+
+.btn-guardar {
+  margin-top: 20px;
+}

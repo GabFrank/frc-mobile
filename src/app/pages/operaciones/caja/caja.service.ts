@@ -5,7 +5,6 @@ import { GenericCrudService } from "src/app/generic/generic-crud.service";
 import { CargandoService } from "src/app/services/cargando.service";
 import { MainService } from "src/app/services/main.service";
 import { NotificacionService, TipoNotificacion } from "src/app/services/notificacion.service";
-import { environment } from "src/environments/environment";
 import { PdvCaja, CajaBalance, PdvCajaInput } from "./caja.model";
 import { BalancePorFechaGQL } from "./graphql/balancePorFecha";
 import { CajaPorIdGQL } from "./graphql/cajaPorId";
@@ -17,7 +16,10 @@ import { DeleteCajaGQL } from "./graphql/deleleCaja";
 import { ImprimirBalanceGQL } from "./graphql/imprimirBalance";
 import { SaveCajaGQL } from "./graphql/saveCaja";
 import { SaveCajaPorSucursalGQL } from "./graphql/saveCajaPorSucursal";
-// import { AbrirCajaGQL } from "./graphql/abrirCaja";
+import { AbrirCajaGQL } from "./graphql/abrirCaja";
+import { CerrarCajaGQL } from "./graphql/cerrarCaja";
+import { CajasAbiertasDesdeFilialesGQL } from "./graphql/cajasAbiertasDesdeFiliales";
+import { PdvCajaDesdeFilialGQL } from "./graphql/pdvCajaDesdeFilial";
 
 @UntilDestroy({ checkProperties: true })
 @Injectable({
@@ -42,7 +44,10 @@ export class CajaService {
     private notificacionService: NotificacionService,
     private onSaveCajaPorSucursal: SaveCajaPorSucursalGQL,
     private cajasPorUsuario: CajasPorUsuarioIdGQL,
-    // private abrirCaja: AbrirCajaGQL
+    private abrirCaja: AbrirCajaGQL,
+    private cerrarCaja: CerrarCajaGQL,
+    private cajasAbiertasDesdeFiliales: CajasAbiertasDesdeFilialesGQL,
+    private pdvCajaDesdeFilial: PdvCajaDesdeFilialGQL
   ) {
 
   }
@@ -96,8 +101,16 @@ export class CajaService {
     return await this.genericService.onGetById(this.cajasPorUsuario, id, page, size);
   }
 
+  async onGetByIdFromFilial(id, sucursalId): Promise<Observable<PdvCaja>> {
+    return await this.genericService.onGetById(this.pdvCajaDesdeFilial, id, null, null, sucursalId);
+  }
+
+  async onGetByUsuarioIdAndAbiertoDesdeFiliales(id): Promise<Observable<PdvCaja[]>> {
+    return await this.genericService.onGetById(this.cajasAbiertasDesdeFiliales, id);
+  }
+
   async onGetByUsuarioIdAndAbierto(id): Promise<Observable<PdvCaja[]>> {
-    return await this.genericService.onGetById(this.cajaPorUsuarioIdAndAbierto, id);
+    return this.onGetByUsuarioIdAndAbiertoDesdeFiliales(id);
   }
 
   async onGetByUsuarioIdAndAbiertoPorSucursal(id, sucId): Promise<Observable<PdvCaja>> {
@@ -124,25 +137,43 @@ export class CajaService {
     return await this.genericService.onDelete(this.deleteCaja, id, showDialog);
   }
 
-  onImprimirBalance(id) {
-    return this.imprimirBalance
-      .fetch(
-        {
-          id,
-          printerName: environment['printers']['ticket'],
-          cajaName: environment['local']
-        },
-        {
-          fetchPolicy: "no-cache",
-          errorPolicy: "all",
-        }
-      ).pipe(untilDestroyed(this))
-      .subscribe((res) => {
-      });
+  onImprimirBalance(id, sucursalId?, mostrarNotificacion = true): Observable<any> {
+    return new Observable((obs) => {
+      this.imprimirBalance
+        .fetch(
+          {
+            id,
+            printerName: null,
+            local: null,
+            sucId: sucursalId
+          },
+          {
+            fetchPolicy: "no-cache",
+            errorPolicy: "all",
+          }
+        ).pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          const exito = res.errors == null && res.data?.['imprimirBalance'] != null;
+          if (mostrarNotificacion) {
+            if (exito) {
+              this.notificacionService.success('Balance enviado a imprimir');
+            } else {
+              this.notificacionService.open('No se pudo imprimir el balance', TipoNotificacion.DANGER, 2);
+            }
+          }
+          obs.next(exito);
+          obs.complete();
+        });
+    });
   }
 
-  // async onAbrirCaja(cajaInput, conteoInput, conteoMonedaInputList): Promise<Observable<any>> {
-  //   return await this.genericService.onCustomSave(this.abrirCaja, { input: cajaInput, conteoInput: conteoInput, conteoMonedaInputList: conteoMonedaInputList });
-  // }
+  async onAbrirCaja(cajaInput, conteoInput, conteoMonedaInputList): Promise<Observable<any>> {
+    return await this.genericService.onCustomSave(this.abrirCaja, { input: cajaInput, conteoInput: conteoInput, conteoMonedaInputList: conteoMonedaInputList });
+  }
+
+  async onCerrarCaja(cajaId, sucursalId, conteoInput, conteoMonedaInputList): Promise<Observable<any>> {
+    const input = { sucursalId };
+    return await this.genericService.onCustomSave(this.cerrarCaja, { input, conteoInput, conteoMonedaInputList, cajaId });
+  }
 
 }
