@@ -11,6 +11,7 @@ import { MarcacionService } from '../../../marcar-horario/service/marcacion.serv
 import { MarcacionInput, TipoMarcacion } from '../../../marcar-horario/models/marcacion.model';
 import { Result } from '@vladmandic/human';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
+import { EmbeddingGaleria, parsearGaleriaFacial } from 'src/app/services/embedding-galeria.util';
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -36,7 +37,6 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   similarityPercent: number | null = null;
   isVerified = false;
   verificationMessage = '';
-  isPrimerRegistro = false;
   snapshotUrl: string | null = null;
   currentTime: Date;
   formattedTime = '';
@@ -48,7 +48,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   livenessColor = 'primary';
   private hasBlinked = false;
   private modelInitPromise: Promise<void> | null = null;
-  private storedEmbeddingPromise: Promise<number[] | null> | null = null;
+  private storedGaleriaPromise: Promise<EmbeddingGaleria | null> | null = null;
 
   constructor(
     private usuarioService: UsuarioService,
@@ -74,7 +74,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     });
 
     this.modelInitPromise = this.faceRecognitionService.init();
-    this.storedEmbeddingPromise = this.getStoredEmbedding();
+    this.storedGaleriaPromise = this.cargarGaleriaReferencia();
     this.startCamera();
 
     this.currentTime = this.horaServidorService.obtenerHoraActual();
@@ -184,12 +184,15 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
               const currentEmbedding = result.face[0].embedding as unknown as number[];
 
               if (currentEmbedding && currentEmbedding.length > 0) {
-                const storedEmbedding = this.storedEmbeddingPromise
-                  ? await this.storedEmbeddingPromise
-                  : await this.getStoredEmbedding();
+                const galeriaReferencia = this.storedGaleriaPromise
+                  ? await this.storedGaleriaPromise
+                  : await this.cargarGaleriaReferencia();
 
-                if (storedEmbedding) {
-                  const similarity = this.faceRecognitionService.similarity(currentEmbedding, storedEmbedding);
+                if (galeriaReferencia) {
+                  const similarity = this.faceRecognitionService.calcularMejorSimilitudConGaleria(
+                    currentEmbedding,
+                    galeriaReferencia
+                  );
                   this.similarityPercent = Math.round(similarity * 100);
 
                   if (similarity >= 0.55) {
@@ -202,12 +205,9 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
                     this.verificationMessage = `No coincide (${this.similarityPercent}% similitud)`;
                   }
                 } else {
-                  this.isVerified = true;
-                  this.isPrimerRegistro = true;
-                  this.similarityPercent = 100;
-                  this.verificationMessage = 'Primer registro facial - verificado';
-                  this.captureSnapshot();
-                  return;
+                  this.isVerified = false;
+                  this.similarityPercent = null;
+                  this.verificationMessage = 'Sin registro facial. Configure su perfil con 3 fotos antes de marcar.';
                 }
               }
             }
@@ -229,42 +229,49 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     }
   }
 
-  private storedEmbeddingCache: number[] | null = null;
-  private storedEmbeddingLoaded = false;
+  private storedGaleriaCache: EmbeddingGaleria | null = null;
+  private storedGaleriaLoaded = false;
 
-  async getStoredEmbedding(): Promise<number[] | null> {
-    if (this.storedEmbeddingLoaded) {
-      return this.storedEmbeddingCache;
+  async cargarGaleriaReferencia(): Promise<EmbeddingGaleria | null> {
+    if (this.storedGaleriaLoaded) {
+      return this.storedGaleriaCache;
     }
 
     try {
-      const perfilImages = await new Promise<string[]>((resolve, reject) => {
-        this.usuarioService.onGetUsuarioImages(
-          this.usuarioId,
-          'perfil'
-        ).then(obs => {
-          obs.subscribe({
-            next: imgs => resolve(imgs),
-            error: err => reject(err)
-          });
-        });
-      });
-
-      if (perfilImages && perfilImages.length > 0) {
-        const descriptor = await this.faceRecognitionService.getDescriptor(perfilImages[0]);
-        if (descriptor) {
-          this.storedEmbeddingCache = descriptor;
-          this.storedEmbeddingLoaded = true;
-          console.log('Descriptor de referencia obtenido de imagen de perfil');
-          return descriptor;
-        }
+      const usuario = await this.obtenerUsuarioConEmbedding();
+      const galeriaDesdeBd = parsearGaleriaFacial(usuario?.persona?.embeddingFacial);
+      if (galeriaDesdeBd) {
+        this.storedGaleriaCache = galeriaDesdeBd;
+        this.storedGaleriaLoaded = true;
+        console.log('Galería facial cargada desde base de datos');
+        return galeriaDesdeBd;
       }
     } catch (e) {
-      console.warn('No se encontró imagen de perfil:', e);
+      console.warn('No se pudo cargar galería facial desde BD:', e);
     }
 
-    this.storedEmbeddingLoaded = true;
+    this.storedGaleriaLoaded = true;
     return null;
+  }
+
+  private async obtenerUsuarioConEmbedding(): Promise<Usuario | null> {
+    if (this.usuarioIdentificado?.persona?.embeddingFacial) {
+      return this.usuarioIdentificado;
+    }
+    if (this.usuarioId === this.mainService.usuarioActual?.id && this.mainService.usuarioActual?.persona?.embeddingFacial) {
+      return this.mainService.usuarioActual;
+    }
+
+    return await new Promise<Usuario | null>((resolve) => {
+      this.usuarioService.onGetUsuario(this.usuarioId).subscribe({
+        next: (res: Usuario) => {
+          this.usuarioIdentificado = res;
+          this.actualizarNombreUsuario();
+          resolve(res);
+        },
+        error: () => resolve(null)
+      });
+    });
   }
 
   actualizarTipoLabel(): void {
@@ -311,26 +318,6 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       const embedding = this.detection.face[0].embedding as unknown as number[];
       const now = this.horaServidorService.obtenerHoraActual();
       const fechaLocal = this.toLocalIsoString(now);
-
-      if (this.isPrimerRegistro && this.snapshotUrl) {
-        try {
-          (await this.usuarioService.onSaveUsuarioImage(
-            this.usuarioId,
-            'perfil',
-            this.snapshotUrl,
-            embedding
-          )).subscribe({
-            next: (res) => {
-              console.log('Foto de perfil guardada con embedding en primer registro facial');
-            },
-            error: (err) => {
-              console.error('Error al guardar foto de perfil:', err);
-            }
-          });
-        } catch (e) {
-          console.error('Error al guardar foto de perfil en primer registro:', e);
-        }
-      }
 
       const input: MarcacionInput = {
         usuarioId: this.usuarioId,

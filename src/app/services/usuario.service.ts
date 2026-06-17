@@ -150,13 +150,15 @@ export class UsuarioService {
     type: string,
     image: string,
     embedding?: number[],
-    showLoading: boolean = true
+    showLoading: boolean = true,
+    embeddingGaleriaJson?: string
   ) {
     return await this.genericService.onCustomSave(this.saveUsuarioImage, {
       id,
       type,
       image,
-      embedding
+      embedding,
+      embeddingGaleriaJson
     }, showLoading);
   }
 

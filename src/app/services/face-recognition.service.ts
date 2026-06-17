@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Human, Config, Result } from '@vladmandic/human';
 import { FaceDetection, Face, ClassificationMode } from '@capacitor-mlkit/face-detection';
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { EmbeddingGaleria, extraerVectoresGaleria } from './embedding-galeria.util';
 
 export interface DescriptorConScore {
     embedding: number[];
@@ -125,43 +126,24 @@ export class FaceRecognitionService {
         return null;
     }
 
-    fusionarEmbeddings(capturas: CapturaFacial[], scoreMinimo: number = 0.3): number[] | null {
-        const validas = capturas.filter(
-            c => c.score >= scoreMinimo && c.embedding?.length > 0
-        );
-        if (validas.length === 0) {
-            return null;
-        }
-
-        const dim = validas[0].embedding.length;
-        const promedio = new Array(dim).fill(0);
-        let pesoTotal = 0;
-
-        for (const captura of validas) {
-            const peso = captura.score;
-            pesoTotal += peso;
-            for (let i = 0; i < dim; i++) {
-                promedio[i] += captura.embedding[i] * peso;
-            }
-        }
-
-        for (let i = 0; i < dim; i++) {
-            promedio[i] /= pesoTotal;
-        }
-
-        const magnitud = Math.sqrt(promedio.reduce((sum, val) => sum + val * val, 0));
-        if (magnitud > 0) {
-            for (let i = 0; i < dim; i++) {
-                promedio[i] /= magnitud;
-            }
-        }
-
-        return promedio;
-    }
-
     similarity(embedding1: number[], embedding2: number[]): number {
         if (!embedding1 || !embedding2) return 0;
         return this.human?.match.similarity(embedding1, embedding2) || 0;
+    }
+
+    calcularMejorSimilitudConGaleria(embedding: number[], galeria: EmbeddingGaleria): number {
+        const vectores = extraerVectoresGaleria(galeria);
+        if (!embedding?.length || vectores.length === 0) {
+            return 0;
+        }
+        let maxima = 0;
+        for (const referencia of vectores) {
+            const similitud = this.similarity(embedding, referencia);
+            if (similitud > maxima) {
+                maxima = similitud;
+            }
+        }
+        return maxima;
     }
 
     async fastDetectFace(base64Image: string): Promise<Face[]> {
