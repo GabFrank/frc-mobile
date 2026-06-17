@@ -94,6 +94,11 @@ jobs:
           releaseFiles: app-release.aab
           track: ${{ inputs.track }}
           status: completed
+          # Google Play rechaza el auto-send-for-review cuando el edit tiene
+          # declaraciones pendientes (p.ej. cambios de permisos del PR #52).
+          # Sube los cambios como draft; mandar a revisión desde Play Console
+          # la primera vez. Subidas posteriores vuelven a ser instantáneas.
+          changesNotSentForReview: true
 
       - name: Summary
         if: always()
