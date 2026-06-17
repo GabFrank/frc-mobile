@@ -258,6 +258,7 @@ export class LoginService {
                   if (usuarioRes?.id != null) {
                     this.usuarioActual = usuarioRes;
                     this.mainService.usuarioActual = this.usuarioActual;
+                    this.mainService.authenticationSub.next(true);
                     obs.next({ usuario: usuarioRes, error: null });
                   } else {
                     obs.next({ usuario: null, error: null });
