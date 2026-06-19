@@ -11,7 +11,19 @@ import { MarcacionService } from '../../../marcar-horario/service/marcacion.serv
 import { MarcacionInput, TipoMarcacion } from '../../../marcar-horario/models/marcacion.model';
 import { Result } from '@vladmandic/human';
 import { Usuario } from 'src/app/domains/personas/usuario.model';
-import { EmbeddingGaleria, parsearGaleriaFacial } from 'src/app/services/embedding-galeria.util';
+import {
+  EmbeddingGaleria,
+  FrameCalidadFacial,
+  FRAMES_MINIMOS_VERIFICACION,
+  HITS_CONSECUTIVOS_VERIFICACION,
+  parsearGaleriaFacial,
+  SCORE_MINIMO_DETECCION,
+  SCORE_MINIMO_FRAME,
+  SCORE_MINIMO_GALERIA,
+  promediarEmbeddingsConScore,
+  scorePromedioFrames,
+  UMBRAL_SIMILITUD_FACIAL
+} from 'src/app/services/embedding-galeria.util';
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -42,13 +54,12 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   formattedTime = '';
   private timeInterval: ReturnType<typeof setInterval>;
 
-  livenessStep: 'BLINK' | 'DONE' = 'BLINK';
-  livenessInstruction = 'Parpadee para verificar';
-  livenessIcon = 'eye-outline';
-  livenessColor = 'primary';
-  private hasBlinked = false;
   private modelInitPromise: Promise<void> | null = null;
   private storedGaleriaPromise: Promise<EmbeddingGaleria | null> | null = null;
+  private framesVerificacion: FrameCalidadFacial[] = [];
+  private hitsConsecutivosVerificacion = 0;
+  private embeddingVerificado: number[] | null = null;
+  private embeddingScoreVerificado: number | null = null;
 
   constructor(
     private usuarioService: UsuarioService,
@@ -89,13 +100,12 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
     this.cameraActive = true;
     this.isVerified = false;
     this.similarityPercent = null;
-    this.verificationMessage = '';
+    this.verificationMessage = 'Mire de frente a la cámara';
     this.snapshotUrl = null;
-    this.livenessStep = 'BLINK';
-    this.livenessInstruction = 'Parpadee para verificar';
-    this.livenessIcon = 'eye-outline';
-    this.livenessColor = 'primary';
-    this.hasBlinked = false;
+    this.framesVerificacion = [];
+    this.hitsConsecutivosVerificacion = 0;
+    this.embeddingVerificado = null;
+    this.embeddingScoreVerificado = null;
     this.actualizarHeaderTitle();
 
     this.videoElement = await this.getVideoElementWithRetry();
@@ -133,10 +143,9 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
   }
 
   private lastDetectTime = 0;
-  private canvasElement: HTMLCanvasElement;
 
   async detectAndVerify() {
-    if (!this.cameraActive || !this.videoElement) return;
+    if (!this.cameraActive || !this.videoElement || this.isVerified) return;
 
     try {
       if (this.modelInitPromise) {
@@ -145,88 +154,90 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       }
 
       const now = Date.now();
-      if (now - this.lastDetectTime > 250) {
+      if (now - this.lastDetectTime > 400) {
         this.lastDetectTime = now;
 
-        if (!this.canvasElement) {
-          this.canvasElement = document.createElement('canvas');
-        }
-        this.canvasElement.width = this.videoElement.videoWidth;
-        this.canvasElement.height = this.videoElement.videoHeight;
-        const ctx = this.canvasElement.getContext('2d');
-        ctx.drawImage(this.videoElement, 0, 0, this.canvasElement.width, this.canvasElement.height);
+        const result = await this.faceRecognitionService.detect(this.videoElement);
+        this.detection = result;
 
-        const base64Image = this.canvasElement.toDataURL('image/jpeg', 0.7);
+        if (!result.face || result.face.length === 0) {
+          this.reiniciarAcumulacionVerificacion();
+          this.isVerified = false;
+          this.similarityPercent = null;
+          this.verificationMessage = 'Posicione su rostro frente a la cámara';
+        } else {
+          const face = result.face[0];
+          const score = face.score != null && face.score > 0 ? face.score : 0.6;
+          const currentEmbedding = Array.from(face.embedding as unknown as number[]);
 
-        const faces = await this.faceRecognitionService.fastDetectFace(base64Image);
+          if (!currentEmbedding.length) {
+            this.verificationMessage = 'Procesando rostro, mantenga la posición...';
+          } else {
+            const galeriaReferencia = this.storedGaleriaPromise
+              ? await this.storedGaleriaPromise
+              : await this.cargarGaleriaReferencia();
 
-        if (faces && faces.length > 0) {
-          const face = faces[0];
+            if (!galeriaReferencia) {
+              this.isVerified = false;
+              this.similarityPercent = null;
+              this.verificationMessage = 'Sin registro facial. Configure su perfil con 3 fotos antes de marcar.';
+            } else {
+              const similarity = this.faceRecognitionService.calcularMejorSimilitudConGaleria(
+                currentEmbedding,
+                galeriaReferencia
+              );
+              this.similarityPercent = Math.round(similarity * 100);
 
-          if (!this.hasBlinked) {
-            const leftEyeClosed = face.leftEyeOpenProbability !== undefined && face.leftEyeOpenProbability < 0.2;
-            const rightEyeClosed = face.rightEyeOpenProbability !== undefined && face.rightEyeOpenProbability < 0.2;
+              if (similarity < UMBRAL_SIMILITUD_FACIAL) {
+                this.reiniciarAcumulacionVerificacion();
+                this.isVerified = false;
+                this.verificationMessage = `Similitud insuficiente (${this.similarityPercent}%)`;
+              } else if (score < SCORE_MINIMO_DETECCION) {
+                this.reiniciarAcumulacionVerificacion();
+                this.isVerified = false;
+                this.verificationMessage = `Coincidencia ${this.similarityPercent}%. Mejore iluminación.`;
+              } else if (score < SCORE_MINIMO_FRAME) {
+                this.verificationMessage = `Coincidencia ${this.similarityPercent}%. Acérquese un poco más.`;
+              } else {
+                this.hitsConsecutivosVerificacion++;
+                this.framesVerificacion.push({ embedding: currentEmbedding, score });
+                if (this.framesVerificacion.length > 5) {
+                  this.framesVerificacion.shift();
+                }
 
-            if (leftEyeClosed || rightEyeClosed) {
-              this.hasBlinked = true;
-              this.livenessStep = 'DONE';
-              this.livenessInstruction = 'Verificación completa';
-              this.livenessIcon = 'checkmark-done-outline';
-              this.livenessColor = 'success';
-            }
-          }
+                this.verificationMessage = `Verificando identidad... (${this.similarityPercent}%)`;
 
-          if (this.livenessStep === 'DONE') {
-            const result = await this.faceRecognitionService.detect(this.videoElement);
-            this.detection = result;
-
-            if (result.face && result.face.length > 0) {
-              const currentEmbedding = result.face[0].embedding as unknown as number[];
-
-              if (currentEmbedding && currentEmbedding.length > 0) {
-                const galeriaReferencia = this.storedGaleriaPromise
-                  ? await this.storedGaleriaPromise
-                  : await this.cargarGaleriaReferencia();
-
-                if (galeriaReferencia) {
-                  const similarity = this.faceRecognitionService.calcularMejorSimilitudConGaleria(
-                    currentEmbedding,
-                    galeriaReferencia
-                  );
-                  this.similarityPercent = Math.round(similarity * 100);
-
-                  if (similarity >= 0.55) {
+                if (
+                  this.hitsConsecutivosVerificacion >= HITS_CONSECUTIVOS_VERIFICACION
+                  && this.framesVerificacion.length >= FRAMES_MINIMOS_VERIFICACION
+                ) {
+                  const embeddingPromedio = promediarEmbeddingsConScore(this.framesVerificacion);
+                  if (embeddingPromedio) {
+                    this.embeddingVerificado = embeddingPromedio;
+                    this.embeddingScoreVerificado = scorePromedioFrames(this.framesVerificacion);
                     this.isVerified = true;
                     this.verificationMessage = `Identidad verificada (${this.similarityPercent}% similitud)`;
                     this.captureSnapshot();
                     return;
-                  } else {
-                    this.isVerified = false;
-                    this.verificationMessage = `No coincide (${this.similarityPercent}% similitud)`;
                   }
-                } else {
-                  this.isVerified = false;
-                  this.similarityPercent = null;
-                  this.verificationMessage = 'Sin registro facial. Configure su perfil con 3 fotos antes de marcar.';
                 }
               }
             }
-          } else {
-            this.verificationMessage = this.livenessInstruction;
           }
-        } else {
-          this.isVerified = false;
-          this.similarityPercent = null;
-          this.verificationMessage = 'Posicione su rostro frente a la cámara';
         }
       }
     } catch (e) {
       console.error('Error en detección:', e);
     }
 
-    if (this.cameraActive) {
+    if (this.cameraActive && !this.isVerified) {
       requestAnimationFrame(() => this.detectAndVerify());
     }
+  }
+
+  private reiniciarAcumulacionVerificacion(): void {
+    this.hitsConsecutivosVerificacion = 0;
+    this.framesVerificacion = [];
   }
 
   private storedGaleriaCache: EmbeddingGaleria | null = null;
@@ -243,7 +254,6 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       if (galeriaDesdeBd) {
         this.storedGaleriaCache = galeriaDesdeBd;
         this.storedGaleriaLoaded = true;
-        console.log('Galería facial cargada desde base de datos');
         return galeriaDesdeBd;
       }
     } catch (e) {
@@ -308,14 +318,15 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.detection || !this.detection.face || this.detection.face.length === 0) {
+    const embedding = this.embeddingVerificado
+      ?? (this.detection?.face?.[0]?.embedding as unknown as number[] | undefined);
+    if (!embedding?.length) {
       this.notificacionService.warn('No se detectó ningún rostro.');
       return;
     }
 
     this.isLoading = true;
     try {
-      const embedding = this.detection.face[0].embedding as unknown as number[];
       const now = this.horaServidorService.obtenerHoraActual();
       const fechaLocal = this.toLocalIsoString(now);
 
@@ -323,7 +334,7 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
         usuarioId: this.usuarioId,
         tipo: this.tipo,
         sucursalId: this.sucursalId,
-        embedding: embedding,
+        embedding,
         distanciaSucursalMetros: 0,
         esSalidaAlmuerzo: this.esSalidaAlmuerzo,
         sucursalEntradaId: this.sucursalId
@@ -337,10 +348,22 @@ export class IdentificacionMarcacionComponent implements OnInit, OnDestroy {
       }
 
       (await this.marcacionService.onSaveMarcacion(input)).subscribe({
-        next: (res) => {
+        next: async () => {
           this.isLoading = false;
           this.stopCamera();
           this.notificacionService.success(`${this.tipoLabel} registrada correctamente`);
+
+          if (this.embeddingScoreVerificado != null && this.embeddingScoreVerificado >= SCORE_MINIMO_GALERIA) {
+            try {
+              await this.usuarioService.onIncorporarEmbeddingMarcacion(
+                this.usuarioId,
+                embedding,
+                this.embeddingScoreVerificado
+              );
+            } catch (error) {
+              console.warn('No se pudo enriquecer la galería facial tras marcación', error);
+            }
+          }
 
           setTimeout(() => {
             const isAdmin = this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN';

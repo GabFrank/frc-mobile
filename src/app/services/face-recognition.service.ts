@@ -27,7 +27,7 @@ export class FaceRecognitionService {
         filter: { enabled: true, equalization: false },
         face: {
             enabled: true,
-            detector: { rotation: true },
+            detector: { rotation: true, maxDetected: 1 },
             mesh: { enabled: true },
             attention: { enabled: false },
             iris: { enabled: false },

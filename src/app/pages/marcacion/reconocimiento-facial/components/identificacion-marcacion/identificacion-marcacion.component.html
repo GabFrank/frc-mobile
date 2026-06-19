@@ -18,19 +18,15 @@
       <div style="font-size: 1em; font-weight: bold;">{{ nombreUsuario }}</div>
     </div>
 
-    <div class="similarity-indicator" *ngIf="similarityPercent !== null">
+    <div class="similarity-indicator" *ngIf="similarityPercent !== null || verificationMessage">
       <div class="similarity-bar">
-        <div class="similarity-fill" [style.width.%]="similarityPercent" [class.similarity-success]="isVerified"
+        <div class="similarity-fill" [style.width.%]="similarityPercent ?? 0" [class.similarity-success]="isVerified"
           [class.similarity-fail]="!isVerified">
         </div>
       </div>
-      <div class="similarity-text" [class.text-success]="isVerified" [class.text-fail]="!isVerified">
+      <div class="similarity-text" [class.text-success]="isVerified" [class.text-fail]="!isVerified && similarityPercent !== null">
         {{ verificationMessage }}
       </div>
-    </div>
-    <div class="liveness-instruction" *ngIf="cameraActive && !isVerified">
-      <ion-icon [name]="livenessIcon" [color]="livenessColor"></ion-icon>
-      <span [style.color]="'var(--ion-color-' + livenessColor + ')'">{{ livenessInstruction }}</span>
     </div>
 
     <div class="camera-container">

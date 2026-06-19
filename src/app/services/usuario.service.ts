@@ -18,6 +18,7 @@ import {
 import { SaveUsuarioImageGQL } from '../graphql/personas/usuario/graphql/saveUsuarioImage';
 import { GetUsuarioImagesGQL } from '../graphql/personas/usuario/graphql/getUsuarioImages';
 import { IsUserFaceAuthGQL } from '../graphql/personas/usuario/graphql/isUserFaceAuth';
+import { IncorporarEmbeddingMarcacionGQL } from '../graphql/personas/usuario/graphql/incorporarEmbeddingMarcacion';
 
 @UntilDestroy()
 @Injectable({
@@ -35,7 +36,8 @@ export class UsuarioService {
     private saveInicioSesion: SaveInicioSesionGQL,
     private saveUsuarioImage: SaveUsuarioImageGQL,
     private getUsuarioImages: GetUsuarioImagesGQL,
-    private isUserFaceAuth: IsUserFaceAuthGQL // private mainService: MainService
+    private isUserFaceAuth: IsUserFaceAuthGQL,
+    private incorporarEmbeddingMarcacion: IncorporarEmbeddingMarcacionGQL
   ) { }
 
   onGetUsuario(id: number): Observable<any> {
@@ -171,5 +173,13 @@ export class UsuarioService {
 
   async getIsUserFaceAuth(id: number) {
     return await this.genericService.onCustomGet(this.isUserFaceAuth, { id });
+  }
+
+  async onIncorporarEmbeddingMarcacion(usuarioId: number, embedding: number[], score: number) {
+    return await this.genericService.onCustomSave(this.incorporarEmbeddingMarcacion, {
+      usuarioId,
+      embedding,
+      score
+    }, false);
   }
 }
