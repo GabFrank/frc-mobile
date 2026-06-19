@@ -248,7 +248,7 @@ export class LocalizacionMarcacionComponent implements OnInit {
   onConfirmar() {
     const isAdmin = this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN';
     if (isAdmin) {
-      this.marcacionService.sucursalPersistida = this.selectedBodega;
+      this.marcacionService.guardarSucursalPersistida(this.selectedBodega);
     }
     this.router.navigate(['identificacion/' + this.selectedBodega?.id], {
       relativeTo: this.route,

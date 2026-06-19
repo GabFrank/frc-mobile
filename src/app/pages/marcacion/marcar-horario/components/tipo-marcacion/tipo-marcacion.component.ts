@@ -246,8 +246,9 @@ export class TipoMarcacionComponent implements OnInit {
 
   onLocalizacion(tipo: string, esSalidaAlmuerzo: boolean = false) {
     const isLoggedAsAdmin = this.mainService.usuarioActual?.nickname?.toUpperCase() === 'ADMIN';
-    if (isLoggedAsAdmin && this.marcacionService.sucursalPersistida) {
-      this.router.navigate(['/marcacion/localizacion/true/identificacion/' + this.marcacionService.sucursalPersistida.id], {
+    const sucursalPersistida = this.marcacionService.obtenerSucursalPersistida();
+    if (isLoggedAsAdmin && sucursalPersistida) {
+      this.router.navigate(['/marcacion/localizacion/true/identificacion/' + sucursalPersistida.id], {
         queryParams: { tipo, esSalidaAlmuerzo, usuarioId: this.usuarioId },
         queryParamsHandling: 'merge'
       });

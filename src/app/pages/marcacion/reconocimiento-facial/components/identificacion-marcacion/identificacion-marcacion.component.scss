@@ -132,6 +132,18 @@ video,
   color: #f44336;
 }
 
+.aviso-tercero {
+  color: #ffb74d;
+  text-align: center;
+  margin: 0 16px 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 183, 77, 0.12);
+  border: 1px solid rgba(255, 183, 77, 0.3);
+}
+
 .liveness-instruction {
   display: flex;
   align-items: center;

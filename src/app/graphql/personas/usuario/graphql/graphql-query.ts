@@ -220,7 +220,29 @@ export const saveUsuarioImageQuery = gql`
 
 export const incorporarEmbeddingMarcacionQuery = gql`
   mutation ($usuarioId: ID!, $embedding: [Float]!, $score: Float!) {
-    data: incorporarEmbeddingMarcacion(usuarioId: $usuarioId, embedding: $embedding, score: $score)
+    data: incorporarEmbeddingMarcacion(usuarioId: $usuarioId, embedding: $embedding, score: $score) {
+      resultado
+      mensaje
+    }
+  }
+`;
+
+export const usuarioPorEmbeddingQuery = gql`
+  query ($embedding: [Float], $excludeIds: [Int]) {
+    data: usuarioPorEmbedding(embedding: $embedding, excludeIds: $excludeIds) {
+      usuario {
+        id
+        nickname
+        activo
+        persona {
+          id
+          nombre
+          imagenes
+          embeddingFacial
+        }
+      }
+      similitud
+    }
   }
 `;
 

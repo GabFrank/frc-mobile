@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { Marcacion, MarcacionInput, Jornada } from '../models/marcacion.model';
 import { SaveMarcacionGQL } from '../graphql/saveMarcacion';
 import { GetMarcacionesPorUsuarioGQL } from '../graphql/getMarcacionesPorUsuario';
@@ -7,39 +7,53 @@ import { GetJornadasPorUsuarioGQL } from '../graphql/getJornadasPorUsuario';
 import { GenericCrudService } from 'src/app/generic/generic-crud.service';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 
+const SUCURSAL_PERSISTIDA_STORAGE_KEY = 'sucursalPersistida';
+
 @Injectable({
     providedIn: 'root',
 })
 export class MarcacionService {
 
-    private _sucursalPersistida: Sucursal | null = null;
+    private readonly genericCrudService = inject(GenericCrudService);
+    private readonly saveMarcacionGQL = inject(SaveMarcacionGQL);
+    private readonly getMarcacionesPorUsuarioGQL = inject(GetMarcacionesPorUsuarioGQL);
+    private readonly getJornadasPorUsuarioGQL = inject(GetJornadasPorUsuarioGQL);
 
-    get sucursalPersistida(): Sucursal | null {
-        if (!this._sucursalPersistida) {
-            const saved = localStorage.getItem('sucursalPersistida');
-            if (saved) {
-                this._sucursalPersistida = JSON.parse(saved);
-            }
-        }
-        return this._sucursalPersistida;
+    private readonly sucursalPersistidaSubject = new BehaviorSubject<Sucursal | null>(
+        this.cargarSucursalPersistidaDesdeStorage()
+    );
+
+    readonly sucursalPersistida$ = this.sucursalPersistidaSubject.asObservable();
+
+    obtenerSucursalPersistida(): Sucursal | null {
+        return this.sucursalPersistidaSubject.value;
     }
 
-    set sucursalPersistida(val: Sucursal | null) {
-        this._sucursalPersistida = val;
-        if (val) {
-            localStorage.setItem('sucursalPersistida', JSON.stringify(val));
-        } else {
-            localStorage.removeItem('sucursalPersistida');
+    guardarSucursalPersistida(sucursal: Sucursal | null): void {
+        this.sucursalPersistidaSubject.next(sucursal);
+        if (sucursal) {
+            localStorage.setItem(SUCURSAL_PERSISTIDA_STORAGE_KEY, JSON.stringify(sucursal));
+            return;
         }
+        localStorage.removeItem(SUCURSAL_PERSISTIDA_STORAGE_KEY);
     }
 
-    constructor(
+    limpiarSucursalPersistida(): void {
+        this.guardarSucursalPersistida(null);
+    }
 
-        private genericCrudService: GenericCrudService,
-        private saveMarcacionGQL: SaveMarcacionGQL,
-        private getMarcacionesPorUsuarioGQL: GetMarcacionesPorUsuarioGQL,
-        private getJornadasPorUsuarioGQL: GetJornadasPorUsuarioGQL
-    ) { }
+    private cargarSucursalPersistidaDesdeStorage(): Sucursal | null {
+        const saved = localStorage.getItem(SUCURSAL_PERSISTIDA_STORAGE_KEY);
+        if (!saved) {
+            return null;
+        }
+        try {
+            return JSON.parse(saved) as Sucursal;
+        } catch {
+            localStorage.removeItem(SUCURSAL_PERSISTIDA_STORAGE_KEY);
+            return null;
+        }
+    }
 
     async onSaveMarcacion(input: MarcacionInput): Promise<Observable<Marcacion>> {
         return await this.genericCrudService.onSave(this.saveMarcacionGQL, input);

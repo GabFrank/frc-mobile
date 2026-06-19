@@ -33,6 +33,11 @@
                 "glob": "*.{bin,json}",
                 "input": "node_modules/ngx-scanner-face/models",
                 "output": "./models"
+              },
+              {
+                "glob": "**/*.wasm",
+                "input": "node_modules/@tensorflow/tfjs-backend-wasm/dist/",
+                "output": "/assets/tfjs-wasm/"
               }
             ],
             "styles": [
