@@ -212,6 +212,12 @@ export const saveInicioSesionGQL = gql`
   }
 `;
 
+export const actualizarTokenFcmGQL = gql`
+  mutation actualizarTokenFcm($tokenFcm: String!, $idDispositivo: String) {
+    data: actualizarTokenFcm(tokenFcm: $tokenFcm, idDispositivo: $idDispositivo)
+  }
+`;
+
 export const saveUsuarioImageQuery = gql`
   mutation ($id: ID!, $type: String!, $image: String!, $embedding: [Float], $embeddingGaleriaJson: String) {
     data: saveUsuarioImage(id: $id, type: $type, image: $image, embedding: $embedding, embeddingGaleriaJson: $embeddingGaleriaJson)

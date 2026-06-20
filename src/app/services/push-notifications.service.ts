@@ -9,27 +9,31 @@ import {
 
 import { FCM } from '@capacitor-community/fcm';
 import { MainService } from './main.service';
-import { UsuarioService } from './usuario.service';
 import { Router } from '@angular/router';
 import { NotificacionService as NotificacionesUsuarioService } from '../pages/notificaciones/notificacion.service';
+import { GenericCrudService } from '../generic/generic-crud.service';
+import { ActualizarTokenFcmGQL } from '../graphql/personas/usuario/graphql/actualizarTokenFcm';
+import { SaveInicioSesionGQL } from '../graphql/personas/usuario/graphql/saveInicioSesion';
+import { TipoDispositivo } from '../domains/configuracion/enums/tipo-dispositivo.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PushNotificationsService {
+  private syncingToken = false;
+
   constructor(
     private plf: Platform,
     private mainService: MainService,
-    private usuarioService: UsuarioService,
     private router: Router,
-    private notificacionesUsuarioService: NotificacionesUsuarioService
+    private notificacionesUsuarioService: NotificacionesUsuarioService,
+    private genericService: GenericCrudService,
+    private actualizarTokenFcmGQL: ActualizarTokenFcmGQL,
+    private saveInicioSesionGQL: SaveInicioSesionGQL
   ) {
     this.mainService.authenticationSub.subscribe((auth) => {
       if (auth) {
-        const token = localStorage.getItem('pushToken');
-        if (token) {
-          this.updatePushTokenInBackend(token);
-        }
+        void this.syncTokenToBackend();
       }
     });
   }
@@ -46,57 +50,132 @@ export class PushNotificationsService {
         .then(() => console.log('Subscribed to clientes'))
         .catch((err) => console.error('Subscription failed: clientes', err));
 
-      FCM.getToken().then((t) => {
-        localStorage.setItem('pushToken', t.token);
-        console.log('FCM Token:', t.token);
-      });
+      void this.refreshFcmToken();
+    }
+  }
+
+  async syncTokenToBackend(): Promise<void> {
+    if (this.syncingToken || this.plf.platforms().includes('mobileweb')) {
+      return;
+    }
+    if (!localStorage.getItem('token')) {
+      return;
+    }
+
+    this.syncingToken = true;
+    try {
+      const fcmToken = await this.refreshFcmToken();
+      if (!fcmToken) {
+        return;
+      }
+
+      const usuario = this.mainService.usuarioActual;
+      const deviceId = localStorage.getItem('deviceId');
+
+      await this.runMutation(
+        this.genericService.onCustomSave(
+          this.actualizarTokenFcmGQL,
+          { tokenFcm: fcmToken, idDispositivo: deviceId },
+          false
+        )
+      );
+
+      if (usuario?.inicioSesion?.id) {
+        const inicioSesionInput = {
+          id: usuario.inicioSesion.id,
+          usuarioId: usuario.id,
+          sucursalId: usuario.inicioSesion.sucursal?.id,
+          idDispositivo: usuario.inicioSesion.idDispositivo ?? deviceId,
+          tipoDespositivo:
+            usuario.inicioSesion.tipoDespositivo ??
+            (this.plf.is('ios') ? TipoDispositivo.IOS : TipoDispositivo.ANDROID),
+          token: fcmToken
+        };
+
+        const sesionActualizada = await this.runMutation(
+          this.genericService.onCustomSave(
+            this.saveInicioSesionGQL,
+            { entity: inicioSesionInput },
+            false
+          )
+        );
+        usuario.inicioSesion = sesionActualizada;
+      }
+    } catch (err) {
+      console.error('Failed to sync push token in backend', err);
+    } finally {
+      this.syncingToken = false;
+    }
+  }
+
+  private runMutation<T>(observablePromise: Promise<import('rxjs').Observable<T>>): Promise<T> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const observable = await observablePromise;
+        observable.subscribe({
+          next: (value) => resolve(value),
+          error: (err) => reject(err)
+        });
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  private async refreshFcmToken(): Promise<string | null> {
+    try {
+      const result = await FCM.getToken();
+      const token = result?.token;
+      if (!token) {
+        return null;
+      }
+      localStorage.setItem('pushToken', token);
+      this.mainService.setPushToken(token);
+      return token;
+    } catch (err) {
+      console.error('Failed to obtain FCM token', err);
+      return localStorage.getItem('pushToken');
     }
   }
 
   private async registerPush() {
     console.log('Initializing Push Notifications');
 
-    // Request permission for push notifications
     const permissionResult = await PushNotifications.requestPermissions();
 
     if (permissionResult.receive === 'granted') {
-      // Permission granted, register for push notifications
       await PushNotifications.register();
       console.log('Push Notifications permission granted');
     } else {
       console.warn('Push Notifications permission denied');
-      // You may want to guide users to enable notifications in settings
       return;
     }
 
-    // Push registration listener
-    PushNotifications.addListener('registration', (token: Token) => {
-      console.log('Push registration success, token: ' + token.value);
-      this.mainService.setPushToken(token.value);
-      localStorage.setItem('pushToken', token.value);
-      this.updatePushTokenInBackend(token.value);
+    PushNotifications.addListener('registration', (_token: Token) => {
+      void this.syncTokenToBackend();
     });
 
-    // Handle registration errors
     PushNotifications.addListener('registrationError', (error: any) => {
       console.error('Error on registration: ' + JSON.stringify(error));
     });
 
-    // Handle push notifications received while the app is open
-    PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
-      console.log('Push notification received: ' + JSON.stringify(notification));
-      this.notificacionesUsuarioService.refrescarConteoNoLeidas();
-    });
-
-    // Handle when a push notification is tapped by the user
-    PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
-      console.log('Push action performed: ' + JSON.stringify(notification));
-
-      // Handling navigation upon push action
-      if (notification.notification.data?.path) {
-        this.navigateTo(notification.notification.data.path);
+    PushNotifications.addListener(
+      'pushNotificationReceived',
+      (notification: PushNotificationSchema) => {
+        console.log('Push notification received: ' + JSON.stringify(notification));
+        this.notificacionesUsuarioService.refrescarConteoNoLeidas();
       }
-    });
+    );
+
+    PushNotifications.addListener(
+      'pushNotificationActionPerformed',
+      (notification: ActionPerformed) => {
+        console.log('Push action performed: ' + JSON.stringify(notification));
+        if (notification.notification.data?.path) {
+          this.navigateTo(notification.notification.data.path);
+        }
+      }
+    );
   }
 
   private navigateTo(path: string) {
@@ -109,113 +188,8 @@ export class PushNotificationsService {
         this.router.navigate([path]);
         clearInterval(interval);
       } else {
-        console.log('User not available yet, retrying...');
         attempts--;
       }
     }, 1000);
   }
-
-  private async updatePushTokenInBackend(token: string) {
-    const usuario = this.mainService.usuarioActual;
-    if (usuario && usuario.inicioSesion) {
-      console.log('Updating push token in backend for current session');
-      const inicioSesionInput = {
-        id: usuario.inicioSesion.id,
-        token: token
-      };
-      (await this.usuarioService.onSaveInicioSesion(inicioSesionInput as any)).subscribe(
-        (res) => {
-          console.log('Push token updated successfully in backend');
-          usuario.inicioSesion.token = token;
-        },
-        (err) => console.error('Failed to update push token in backend', err)
-      );
-    }
-  }
 }
-// export class PushNotificationsService {
-//   constructor(
-//     private plf: Platform,
-//     private mainService: MainService,
-//     private usuarioService: UsuarioService,
-//     private router: Router
-//   ) {}
-
-//   initPush() {
-//     if (!this.plf.platforms().includes('mobileweb')) {
-//       this.registerPush();
-//       FCM.subscribeTo({ topic: 'funcionarios' })
-//         .then((r) => console.log('sub con exito a funcionarios'))
-//         .catch((err) =>
-//           console.log(err, 'ocurrio un problemma al sub en funcionario')
-//         );
-//       FCM.subscribeTo({ topic: 'clientes' })
-//         .then((r) => console.log('sub con exito a clientes'))
-//         .catch((err) =>
-//           console.log(err, 'ocurrio un problemma al sub en funcionario')
-//         );
-
-//       FCM.getToken().then((t) => {
-//         localStorage.setItem('pushToken', t.token);
-//         console.log(t.token);
-//       });
-//     }
-//   }
-
-//   private async registerPush() {
-//     console.log('Initializing HomePage');
-
-//     // Request permission to use push notifications
-//     // iOS will prompt user and return if they granted permission or not
-//     // Android will just grant without prompting
-//     await PushNotifications.requestPermissions().then(async (result) => {
-//       if (result.receive === 'granted') {
-//         // Register with Apple / Google to receive push via APNS/FCM
-//         await PushNotifications.register();
-//       } else {
-//         // Show some error
-//       }
-//     });
-
-//     // On success, we should be able to receive notifications
-//     PushNotifications.addListener('registration', async (token: Token) => {
-//       console.log('Push registration success, token: ' + token.value);
-//     });
-
-//     // Some issue with our setup and push will not work
-//     PushNotifications.addListener('registrationError', (error: any) => {
-//       console.log('Error on registration: ' + JSON.stringify(error));
-//     });
-
-//     // Show us the notification payload if the app is open on our device
-//     PushNotifications.addListener(
-//       'pushNotificationReceived',
-//       (notification: PushNotificationSchema) => {
-//         console.log('Push received: ' + JSON.stringify(notification));
-//       }
-//     );
-
-//     // Method called when tapping on a notification
-//     PushNotifications.addListener(
-//       'pushNotificationActionPerformed',
-//       (notification: ActionPerformed) => {
-//         console.log('Push action performed: ' + JSON.stringify(notification));
-//         let time = null;
-//         let attemps = 5;
-//         if (notification.notification.data?.path != null) {
-//           time = setInterval(() => {
-//             if (attemps == 0) clearInterval(time);
-//             if (this.mainService.usuarioActual != null) {
-//               console.log('usuario actual existe');
-//               this.router.navigate([notification.notification.data?.path]);
-//               clearInterval(time);
-//             } else {
-//               console.log('usuario actual no existe');
-//               attemps--;
-//             }
-//           }, 1000);
-//         }
-//       }
-//     );
-//   }
-// }
