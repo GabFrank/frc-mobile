@@ -8,7 +8,7 @@ import {
   HttpErrorResponse,
   HttpHeaders
 } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Observable } from 'rxjs';
 import { Usuario } from '../domains/personas/usuario.model';
@@ -20,6 +20,7 @@ import { CargandoService } from './cargando.service';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { InicioSesion } from '../domains/configuracion/inicio-sesion.model';
 import { generateUUID } from '../generic/utils/string-utils';
+import { MarcacionService } from '../pages/marcacion/marcar-horario/service/marcacion.service';
 
 export interface LoginResponse {
   usuario?: Usuario;
@@ -31,6 +32,8 @@ export interface LoginResponse {
   providedIn: 'root'
 })
 export class LoginService {
+  private readonly marcacionService = inject(MarcacionService);
+
   usuarioActual: Usuario;
   pushToken = null;
   httpOptions = {
@@ -203,7 +206,7 @@ export class LoginService {
           (res) => {
             localStorage.setItem('token', null);
             localStorage.setItem('usuarioId', null);
-            localStorage.removeItem('sucursalPersistida');
+            this.marcacionService.limpiarSucursalPersistida();
             sessionStorage.setItem('justLoggedOut', 'true');
             this.usuarioActual = null;
             this.router.navigate(['']);
@@ -217,7 +220,7 @@ export class LoginService {
       } else {
         localStorage.setItem('token', null);
         localStorage.setItem('usuarioId', null);
-        localStorage.removeItem('sucursalPersistida');
+        this.marcacionService.limpiarSucursalPersistida();
         sessionStorage.setItem('justLoggedOut', 'true');
         this.usuarioActual = null;
         this.router.navigate(['']);

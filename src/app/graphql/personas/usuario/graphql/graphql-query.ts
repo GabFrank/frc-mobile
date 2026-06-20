@@ -52,6 +52,7 @@ export const usuarioQuery = gql`
         email
         nacimiento
         imagenes
+        embeddingFacial
       }
       password
       creadoEn
@@ -212,8 +213,36 @@ export const saveInicioSesionGQL = gql`
 `;
 
 export const saveUsuarioImageQuery = gql`
-  mutation ($id: ID!, $type: String!, $image: String!, $embedding: [Float]) {
-    data: saveUsuarioImage(id: $id, type: $type, image: $image, embedding: $embedding)
+  mutation ($id: ID!, $type: String!, $image: String!, $embedding: [Float], $embeddingGaleriaJson: String) {
+    data: saveUsuarioImage(id: $id, type: $type, image: $image, embedding: $embedding, embeddingGaleriaJson: $embeddingGaleriaJson)
+  }
+`;
+
+export const incorporarEmbeddingMarcacionQuery = gql`
+  mutation ($usuarioId: ID!, $embedding: [Float]!, $score: Float!) {
+    data: incorporarEmbeddingMarcacion(usuarioId: $usuarioId, embedding: $embedding, score: $score) {
+      resultado
+      mensaje
+    }
+  }
+`;
+
+export const usuarioPorEmbeddingQuery = gql`
+  query ($embedding: [Float], $excludeIds: [Int]) {
+    data: usuarioPorEmbedding(embedding: $embedding, excludeIds: $excludeIds) {
+      usuario {
+        id
+        nickname
+        activo
+        persona {
+          id
+          nombre
+          imagenes
+          embeddingFacial
+        }
+      }
+      similitud
+    }
   }
 `;
 

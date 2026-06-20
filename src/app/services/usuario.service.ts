@@ -18,6 +18,9 @@ import {
 import { SaveUsuarioImageGQL } from '../graphql/personas/usuario/graphql/saveUsuarioImage';
 import { GetUsuarioImagesGQL } from '../graphql/personas/usuario/graphql/getUsuarioImages';
 import { IsUserFaceAuthGQL } from '../graphql/personas/usuario/graphql/isUserFaceAuth';
+import { IncorporarEmbeddingMarcacionGQL } from '../graphql/personas/usuario/graphql/incorporarEmbeddingMarcacion';
+import { IncorporarEmbeddingMarcacionResult } from '../pages/marcacion/reconocimiento-facial/models/incorporar-embedding-result.model';
+import { UsuarioPorEmbeddingGQL, UsuarioSimilitud } from '../graphql/personas/usuario/graphql/usuarioPorEmbedding';
 
 @UntilDestroy()
 @Injectable({
@@ -35,7 +38,9 @@ export class UsuarioService {
     private saveInicioSesion: SaveInicioSesionGQL,
     private saveUsuarioImage: SaveUsuarioImageGQL,
     private getUsuarioImages: GetUsuarioImagesGQL,
-    private isUserFaceAuth: IsUserFaceAuthGQL // private mainService: MainService
+    private isUserFaceAuth: IsUserFaceAuthGQL,
+    private incorporarEmbeddingMarcacion: IncorporarEmbeddingMarcacionGQL,
+    private usuarioPorEmbedding: UsuarioPorEmbeddingGQL
   ) { }
 
   onGetUsuario(id: number): Observable<any> {
@@ -150,13 +155,15 @@ export class UsuarioService {
     type: string,
     image: string,
     embedding?: number[],
-    showLoading: boolean = true
+    showLoading: boolean = true,
+    embeddingGaleriaJson?: string
   ) {
     return await this.genericService.onCustomSave(this.saveUsuarioImage, {
       id,
       type,
       image,
-      embedding
+      embedding,
+      embeddingGaleriaJson
     }, showLoading);
   }
 
@@ -169,5 +176,43 @@ export class UsuarioService {
 
   async getIsUserFaceAuth(id: number) {
     return await this.genericService.onCustomGet(this.isUserFaceAuth, { id });
+  }
+
+  async onIncorporarEmbeddingMarcacion(
+    usuarioId: number,
+    embedding: number[],
+    score: number
+  ): Promise<IncorporarEmbeddingMarcacionResult> {
+    const obs = await this.genericService.onCustomSave(this.incorporarEmbeddingMarcacion, {
+      usuarioId,
+      embedding,
+      score
+    }, false);
+    return obs.toPromise();
+  }
+
+  onGetUsuarioPorEmbedding(embedding: number[], excludeIds: number[] = []): Promise<UsuarioSimilitud | null> {
+    return new Promise((resolve) => {
+      this.usuarioPorEmbedding
+        .fetch(
+          { embedding, excludeIds },
+          { fetchPolicy: 'no-cache', errorPolicy: 'all' }
+        )
+        .pipe(untilDestroyed(this))
+        .subscribe({
+          next: (res) => {
+            if (res?.errors?.length) {
+              console.warn('usuarioPorEmbedding errors', res.errors);
+              resolve(null);
+              return;
+            }
+            resolve(res?.data?.data ?? null);
+          },
+          error: (err) => {
+            console.error('usuarioPorEmbedding error', err);
+            resolve(null);
+          }
+        });
+    });
   }
 }
