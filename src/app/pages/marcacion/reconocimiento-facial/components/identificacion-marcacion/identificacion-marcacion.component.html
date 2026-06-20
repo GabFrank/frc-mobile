@@ -18,10 +18,6 @@
       <div style="font-size: 1em; font-weight: bold;">{{ nombreUsuario }}</div>
     </div>
 
-    <div *ngIf="esMarcacionTercero" class="aviso-tercero">
-      Debe presentarse el rostro de <strong>{{ nombreUsuario }}</strong> (similitud mínima 75%).
-    </div>
-
     <div class="similarity-indicator" *ngIf="similarityPercent !== null || verificationMessage">
       <div class="similarity-bar">
         <div class="similarity-fill" [style.width.%]="similarityPercent ?? 0" [class.similarity-success]="isVerified"

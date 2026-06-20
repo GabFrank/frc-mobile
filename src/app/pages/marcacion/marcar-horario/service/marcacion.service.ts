@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Marcacion, MarcacionInput, Jornada } from '../models/marcacion.model';
+import { Marcacion, MarcacionInput, Jornada, EstadoMarcacionUsuario } from '../models/marcacion.model';
 import { SaveMarcacionGQL } from '../graphql/saveMarcacion';
 import { GetMarcacionesPorUsuarioGQL } from '../graphql/getMarcacionesPorUsuario';
 import { GetJornadasPorUsuarioGQL } from '../graphql/getJornadasPorUsuario';
+import { GetEstadoMarcacionUsuarioGQL } from '../graphql/getEstadoMarcacionUsuario';
 import { GenericCrudService } from 'src/app/generic/generic-crud.service';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 
@@ -18,6 +19,7 @@ export class MarcacionService {
     private readonly saveMarcacionGQL = inject(SaveMarcacionGQL);
     private readonly getMarcacionesPorUsuarioGQL = inject(GetMarcacionesPorUsuarioGQL);
     private readonly getJornadasPorUsuarioGQL = inject(GetJornadasPorUsuarioGQL);
+    private readonly getEstadoMarcacionUsuarioGQL = inject(GetEstadoMarcacionUsuarioGQL);
 
     private readonly sucursalPersistidaSubject = new BehaviorSubject<Sucursal | null>(
         this.cargarSucursalPersistidaDesdeStorage()
@@ -65,6 +67,10 @@ export class MarcacionService {
 
     async onGetJornadasPorUsuario(usuarioId: number, fechaInicio?: string, fechaFin?: string): Promise<Observable<Jornada[]>> {
         return await this.genericCrudService.onGetCustom(this.getJornadasPorUsuarioGQL, { usuarioId, fechaInicio, fechaFin });
+    }
+
+    async onGetEstadoMarcacionUsuario(usuarioId: number): Promise<Observable<EstadoMarcacionUsuario>> {
+        return await this.genericCrudService.onGetCustom(this.getEstadoMarcacionUsuarioGQL, { usuarioId });
     }
 }
 
