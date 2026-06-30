@@ -26,6 +26,7 @@ import {
   PreGastoInput,
   SucursalItem,
   DatosSolicitudGasto,
+  DetalleGastoFormulario,
 } from '../interfaces';
 import { TipoGasto } from '../models/tipo-gasto.model';
 import { OpcionSeleccion } from 'src/app/components/selector-generico/selector-generico.component';
@@ -49,6 +50,18 @@ import {
   TipoEnte,
   Vehiculo,
 } from '../models/ente.model';
+import {
+  etiquetaModuloPadre,
+  requiereEnteActivo,
+  tipoEnteDesdeModuloPadre,
+} from '../utils/tipo-gasto-modulo-reglas.util';
+import { EnteFinancialSummaryGQL } from '../graphql/enteFinancialSummary';
+import {
+  construirVistaResumenFinanciero,
+  EnteFinancialSummaryResponse,
+  parsearFechaVencimientoSugerida,
+  ResumenFinancieroEnteVista,
+} from '../utils/ente-financial-summary.util';
 
 export const TAM_PAGINA_BUSQUEDA = 25;
 
@@ -145,6 +158,7 @@ export class SolicitudGastosService {
     private preGastoPorIdGQL: PreGastoPorIdGQL,
     private confirmarRetiroGQL: ConfirmarRetiroFuncionarioGQL,
     private saveGastoRendicionGQL: SaveGastoRendicionGQL,
+    private enteFinancialSummaryGQL: EnteFinancialSummaryGQL,
   ) { }
 
   async cargarDatosIniciales(): Promise<void> {
@@ -191,32 +205,118 @@ export class SolicitudGastosService {
   }
 
   tipoEnteDesdeModuloPadre(moduloPadre?: ModuloPadreGasto | null): TipoEnte | null {
-    if (moduloPadre === 'VEHICULO' || moduloPadre === 'MUEBLE' || moduloPadre === 'INMUEBLE') {
-      return moduloPadre;
-    }
-    if (moduloPadre === 'EQUIPOS') {
-      return 'EQUIPO';
-    }
-    return null;
+    return tipoEnteDesdeModuloPadre(moduloPadre);
   }
 
   requiereModuloPadreActivo(moduloPadre?: ModuloPadreGasto | null): boolean {
-    return this.tipoEnteDesdeModuloPadre(moduloPadre) != null;
+    return requiereEnteActivo(moduloPadre);
   }
 
   etiquetaModuloPadre(moduloPadre?: ModuloPadreGasto | null): string {
-    switch (moduloPadre) {
-      case 'VEHICULO':
-        return 'Vehículo';
-      case 'MUEBLE':
-        return 'Mueble';
-      case 'INMUEBLE':
-        return 'Inmueble';
-      case 'EQUIPOS':
-        return 'Equipo';
-      default:
-        return 'Activo';
+    return etiquetaModuloPadre(moduloPadre);
+  }
+
+  async cargarResumenFinancieroEnte(
+    enteId: number,
+    tipoGastoId?: number | null
+  ): Promise<{ summary: EnteFinancialSummaryResponse; vista: ResumenFinancieroEnteVista } | null> {
+    const obs = await this.genericService.onGet<EnteFinancialSummaryResponse>(
+      this.enteFinancialSummaryGQL,
+      { enteId, tipoGastoId: tipoGastoId ?? null },
+      false
+    );
+    const summary = await this.resolverObservable(obs);
+    if (!summary) {
+      return null;
     }
+    return {
+      summary,
+      vista: construirVistaResumenFinanciero(summary),
+    };
+  }
+
+  aplicarAutocompletadoSolicitud(
+    summary: EnteFinancialSummaryResponse,
+    gastoItems: DetalleGastoFormulario[],
+    contexto: {
+      descripcion: string;
+      fechaVencimiento: string;
+      beneficiarioTipo: 'PERSONA' | 'PROVEEDOR';
+      beneficiarioProveedorId: number | null;
+      textoProveedorBeneficiario: string;
+    }
+  ): {
+    descripcion: string;
+    fechaVencimiento: string;
+    gastoItems: DetalleGastoFormulario[];
+    beneficiarioTipo: 'PERSONA' | 'PROVEEDOR';
+    beneficiarioProveedorId: number | null;
+    textoProveedorBeneficiario: string;
+  } {
+    const descripcion = summary.descripcionSugerida || contexto.descripcion;
+    const fechaVencimiento = parsearFechaVencimientoSugerida(summary.fechaVencimientoSugerida)
+      || contexto.fechaVencimiento;
+
+    const items = [...gastoItems];
+    if (items.length > 0 && summary.autocompletarMonto !== false && summary.montoSugerido != null) {
+      const primerItem = { ...items[0] };
+      const monedaId = summary.monedaId != null
+        ? Number(summary.monedaId)
+        : this.obtenerIdGuarani();
+      if (monedaId != null) {
+        primerItem.monedaId = monedaId;
+      }
+      primerItem.monto = Number(summary.montoSugerido);
+      primerItem.montoTexto = this.formatearMontoInterno(primerItem.monto, primerItem.monedaId);
+      items[0] = primerItem;
+    }
+
+    let beneficiarioTipo = contexto.beneficiarioTipo;
+    let beneficiarioProveedorId = contexto.beneficiarioProveedorId;
+    let textoProveedorBeneficiario = contexto.textoProveedorBeneficiario;
+
+    if (summary.proveedorId != null) {
+      beneficiarioTipo = 'PROVEEDOR';
+      beneficiarioProveedorId = Number(summary.proveedorId);
+      textoProveedorBeneficiario = (summary.proveedorNombre || '').toString().toUpperCase();
+    }
+
+    return {
+      descripcion,
+      fechaVencimiento,
+      gastoItems: items,
+      beneficiarioTipo,
+      beneficiarioProveedorId,
+      textoProveedorBeneficiario,
+    };
+  }
+
+  private formatearMontoInterno(monto: number, monedaId: number | null): string {
+    const precision = this.obtenerPrecisionMoneda(monedaId);
+    return new Intl.NumberFormat('es-PY', {
+      minimumFractionDigits: precision,
+      maximumFractionDigits: precision,
+    }).format(monto);
+  }
+
+  private obtenerPrecisionMoneda(monedaId: number | null): number {
+    if (!monedaId) {
+      return 0;
+    }
+    const opcion = this.opcionesMoneda.find((item) => Number(item.valor) === Number(monedaId));
+    const texto = (opcion?.texto || '').toUpperCase();
+    if (texto.includes('GUARANI') || texto.includes('₲')) {
+      return 0;
+    }
+    return 2;
+  }
+
+  private obtenerIdGuarani(): number | null {
+    const opcionGuarani = this.opcionesMoneda.find((opcion) => {
+      const texto = (opcion.texto || '').toUpperCase();
+      return texto.includes('GUARANI') || texto.includes('₲') || texto.includes('GS.');
+    });
+    return opcionGuarani ? Number(opcionGuarani.valor) : null;
   }
 
   iconoModuloPadre(moduloPadre?: ModuloPadreGasto | null): string {

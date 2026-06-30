@@ -6,4 +6,6 @@ export class TipoGasto {
   activo?: boolean;
   autorizacion?: boolean;
   moduloPadre?: ModuloPadreGasto;
+  tipoNaturaleza?: string;
+  esPagoCuotaActivo?: boolean;
 }

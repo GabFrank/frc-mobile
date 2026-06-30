@@ -39,4 +39,17 @@ export class Equipo {
 
 export type ActivoBusqueda = Vehiculo | Mueble | Inmueble | Equipo;
 
-export type ModuloPadreGasto = 'VEHICULO' | 'MUEBLE' | 'INMUEBLE' | 'EQUIPOS' | 'PERSONAS' | 'OTRO';
+export type ModuloPadreGasto =
+  | 'VEHICULO'
+  | 'MUEBLE'
+  | 'INMUEBLE'
+  | 'EQUIPOS'
+  | 'PERSONAS'
+  | 'ANDE'
+  | 'JUNTA_SANEAMIENTO'
+  | 'IMPUESTO'
+  | 'INTERNET'
+  | 'SEGURIDAD'
+  | 'BASURA'
+  | 'SEGURO'
+  | 'OTRO';

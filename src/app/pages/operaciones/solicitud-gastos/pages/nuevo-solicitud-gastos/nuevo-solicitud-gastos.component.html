@@ -26,11 +26,11 @@
             <ion-label position="stacked">Beneficiario</ion-label>
             <ion-segment [(ngModel)]="beneficiarioTipo" mode="md"
               (ngModelChange)="cambiarTipoBeneficiario($event)">
-              <ion-segment-button value="PERSONA" (click)="cambiarTipoBeneficiario('PERSONA')">
-                <ion-label>Persona</ion-label>
-              </ion-segment-button>
               <ion-segment-button value="PROVEEDOR" (click)="cambiarTipoBeneficiario('PROVEEDOR')">
                 <ion-label>Proveedor</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="PERSONA" (click)="cambiarTipoBeneficiario('PERSONA')">
+                <ion-label>Persona</ion-label>
               </ion-segment-button>
             </ion-segment>
           </ion-item>
@@ -73,6 +73,32 @@
               Este tipo de gasto requiere seleccionar un {{ etiquetaEnteActivoLower }}.
             </ion-note>
           </ion-item>
+          <ion-item *ngIf="cargandoResumenEnte" lines="none" class="dark2">
+            <ion-spinner slot="start" name="crescent"></ion-spinner>
+            <ion-label>Cargando datos del activo...</ion-label>
+          </ion-item>
+          <ion-card *ngIf="resumenFinancieroEnte" class="resumen-financiero-card dark2">
+            <ion-card-header>
+              <ion-card-subtitle>{{ resumenFinancieroEnte.titulo }}</ion-card-subtitle>
+              <ion-card-title>{{ resumenFinancieroEnte.descripcion }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p *ngIf="resumenFinancieroEnte.notificacion">
+                <ion-text color="warning">{{ resumenFinancieroEnte.notificacion }}</ion-text>
+              </p>
+              <p>Total: {{ resumenFinancieroEnte.montoTotalTexto }}</p>
+              <p>Pendiente: {{ resumenFinancieroEnte.montoPendienteTexto }}</p>
+              <p *ngIf="resumenFinancieroEnte.mostrarCuotas">Plan: {{ resumenFinancieroEnte.cuotaTexto }}</p>
+              <p *ngIf="resumenFinancieroEnte.cuotasFaltantesTexto">
+                {{ resumenFinancieroEnte.cuotasFaltantesTexto }}
+              </p>
+              <p *ngIf="resumenFinancieroEnte.montoCuotaTexto">
+                Monto cuota: {{ resumenFinancieroEnte.montoCuotaTexto }}
+              </p>
+              <p *ngIf="resumenFinancieroEnte.proveedorTexto">Proveedor: {{ resumenFinancieroEnte.proveedorTexto }}</p>
+              <p>Vencimiento: {{ resumenFinancieroEnte.vencimientoTexto }}</p>
+            </ion-card-content>
+          </ion-card>
         </ion-list>
       </app-seccion-accordion>
 

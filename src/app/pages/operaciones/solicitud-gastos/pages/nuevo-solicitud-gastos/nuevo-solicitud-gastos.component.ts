@@ -7,6 +7,7 @@ import { ActivoBusqueda, ModuloPadreGasto } from '../../models/ente.model';
 import { SolicitudGastosService } from '../../services/solicitud-gastos.service';
 import { SucursalItem, DetalleGastoFormulario } from '../../interfaces';
 import { NotificacionService } from 'src/app/services/notificacion.service';
+import { ResumenFinancieroEnteVista } from '../../utils/ente-financial-summary.util';
 
 @Component({
   selector: 'app-nuevo-solicitud-gastos',
@@ -24,7 +25,7 @@ export class NuevoSolicitudGastosComponent implements OnInit {
   }];
   private nextGastoId = 2;
 
-  beneficiarioTipo: 'PERSONA' | 'PROVEEDOR' = 'PERSONA';
+  beneficiarioTipo: 'PERSONA' | 'PROVEEDOR' = 'PROVEEDOR';
   isPersonaBenefModalOpen = false;
   isProveedorBenefModalOpen = false;
   isTipoGastoModalOpen = false;
@@ -53,6 +54,8 @@ export class NuevoSolicitudGastosComponent implements OnInit {
   nivelUrgencia = 'NORMAL';
   descripcion = '';
   guardando = false;
+  resumenFinancieroEnte: ResumenFinancieroEnteVista | null = null;
+  cargandoResumenEnte = false;
 
   constructor(
     public servicio: SolicitudGastosService,
@@ -204,6 +207,7 @@ export class NuevoSolicitudGastosComponent implements OnInit {
     this.textoTipoGasto = (tipoCompleto.descripcion || '').toString().toUpperCase();
     this.moduloPadreTipoGasto = tipoCompleto.moduloPadre ?? null;
     this.limpiarEnteActivo();
+    this.limpiarResumenFinanciero();
     this.actualizarUiEnteActivo();
     this.servicio.prepararConfigActivo(this.moduloPadreTipoGasto);
     this.cerrarModalTipoGasto();
@@ -220,10 +224,53 @@ export class NuevoSolicitudGastosComponent implements OnInit {
       this.activoReferenciaId = Number(activo.id);
       this.textoEnteActivo = this.servicio.textoActivoSeleccionado(this.moduloPadreTipoGasto, activo);
       this.cerrarModalEnteActivo();
+      await this.cargarResumenFinancieroEnte();
       this.cdr.markForCheck();
     } catch (err) {
       const mensaje = this.servicio.extraerMensajeError(err);
       this.notificacion.danger(mensaje || 'No se pudo vincular el activo seleccionado');
+      this.cdr.markForCheck();
+    }
+  }
+
+  private async cargarResumenFinancieroEnte(): Promise<void> {
+    if (!this.enteId) {
+      return;
+    }
+    this.cargandoResumenEnte = true;
+    this.resumenFinancieroEnte = null;
+    this.cdr.markForCheck();
+    try {
+      const resultado = await this.servicio.cargarResumenFinancieroEnte(this.enteId, this.tipoGastoId);
+      if (!resultado) {
+        return;
+      }
+      this.resumenFinancieroEnte = resultado.vista;
+      const autocompletado = this.servicio.aplicarAutocompletadoSolicitud(
+        resultado.summary,
+        this.gastoItems,
+        {
+          descripcion: this.descripcion,
+          fechaVencimiento: this.fechaVencimiento,
+          beneficiarioTipo: this.beneficiarioTipo,
+          beneficiarioProveedorId: this.beneficiarioProveedorId,
+          textoProveedorBeneficiario: this.textoProveedorBeneficiario,
+        }
+      );
+      this.descripcion = autocompletado.descripcion;
+      this.fechaVencimiento = autocompletado.fechaVencimiento;
+      this.gastoItems = autocompletado.gastoItems;
+      this.beneficiarioTipo = autocompletado.beneficiarioTipo;
+      this.beneficiarioProveedorId = autocompletado.beneficiarioProveedorId;
+      this.textoProveedorBeneficiario = autocompletado.textoProveedorBeneficiario;
+      if (autocompletado.beneficiarioTipo === 'PROVEEDOR') {
+        this.beneficiarioPersonaId = null;
+        this.textoPersonaBeneficiaria = '';
+      }
+    } catch {
+      this.notificacion.danger('No se pudieron cargar los datos financieros del activo');
+    } finally {
+      this.cargandoResumenEnte = false;
       this.cdr.markForCheck();
     }
   }
@@ -277,6 +324,12 @@ export class NuevoSolicitudGastosComponent implements OnInit {
     this.enteId = null;
     this.activoReferenciaId = null;
     this.textoEnteActivo = '';
+    this.limpiarResumenFinanciero();
+  }
+
+  private limpiarResumenFinanciero(): void {
+    this.resumenFinancieroEnte = null;
+    this.cargandoResumenEnte = false;
   }
 
   private parsearMonto(texto: string, monedaId: number | null): number | null {
