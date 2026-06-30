@@ -73,11 +73,11 @@
               Este tipo de gasto requiere seleccionar un {{ etiquetaEnteActivoLower }}.
             </ion-note>
           </ion-item>
-          <ion-item *ngIf="cargandoResumenEnte" lines="none" class="dark2">
+          <ion-item *ngIf="mostrarTarjetaCuotasActivo && cargandoResumenEnte" lines="none" class="dark2">
             <ion-spinner slot="start" name="crescent"></ion-spinner>
             <ion-label>Cargando datos del activo...</ion-label>
           </ion-item>
-          <ion-card *ngIf="resumenFinancieroEnte" class="resumen-financiero-card dark2">
+          <ion-card *ngIf="mostrarTarjetaCuotasActivo && resumenFinancieroEnte" class="resumen-financiero-card dark2">
             <ion-card-header>
               <ion-card-subtitle>{{ resumenFinancieroEnte.titulo }}</ion-card-subtitle>
               <ion-card-title>{{ resumenFinancieroEnte.descripcion }}</ion-card-title>

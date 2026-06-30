@@ -4,6 +4,7 @@ import { Persona } from 'src/app/domains/personas/persona.model';
 import { Proveedor } from 'src/app/pages/personas/proveedor/proveedor.model';
 import { TipoGasto } from '../../models/tipo-gasto.model';
 import { ActivoBusqueda, ModuloPadreGasto } from '../../models/ente.model';
+import { mostrarTarjetaCuotasActivoEnSolicitud } from '../../utils/tipo-gasto-modulo-reglas.util';
 import { SolicitudGastosService } from '../../services/solicitud-gastos.service';
 import { SucursalItem, DetalleGastoFormulario } from '../../interfaces';
 import { NotificacionService } from 'src/app/services/notificacion.service';
@@ -36,6 +37,8 @@ export class NuevoSolicitudGastosComponent implements OnInit {
   tipoGastoId: number | null = null;
   textoTipoGasto = '';
   moduloPadreTipoGasto: ModuloPadreGasto | null = null;
+  tipoNaturalezaTipoGasto: string | null = null;
+  esPagoCuotaActivoTipoGasto: boolean | null = null;
   requiereEnteActivo = false;
   etiquetaEnteActivo = '';
   etiquetaEnteActivoLower = '';
@@ -56,6 +59,7 @@ export class NuevoSolicitudGastosComponent implements OnInit {
   guardando = false;
   resumenFinancieroEnte: ResumenFinancieroEnteVista | null = null;
   cargandoResumenEnte = false;
+  mostrarTarjetaCuotasActivo = false;
 
   constructor(
     public servicio: SolicitudGastosService,
@@ -206,6 +210,8 @@ export class NuevoSolicitudGastosComponent implements OnInit {
     this.tipoGastoId = Number(tipoCompleto.id);
     this.textoTipoGasto = (tipoCompleto.descripcion || '').toString().toUpperCase();
     this.moduloPadreTipoGasto = tipoCompleto.moduloPadre ?? null;
+    this.tipoNaturalezaTipoGasto = tipoCompleto.tipoNaturaleza ?? null;
+    this.esPagoCuotaActivoTipoGasto = tipoCompleto.esPagoCuotaActivo ?? null;
     this.limpiarEnteActivo();
     this.limpiarResumenFinanciero();
     this.actualizarUiEnteActivo();
@@ -245,7 +251,9 @@ export class NuevoSolicitudGastosComponent implements OnInit {
       if (!resultado) {
         return;
       }
-      this.resumenFinancieroEnte = resultado.vista;
+      if (this.mostrarTarjetaCuotasActivo) {
+        this.resumenFinancieroEnte = resultado.vista;
+      }
       const autocompletado = this.servicio.aplicarAutocompletadoSolicitud(
         resultado.summary,
         this.gastoItems,
@@ -318,6 +326,11 @@ export class NuevoSolicitudGastosComponent implements OnInit {
     this.placeholderEnteActivo = this.requiereEnteActivo
       ? `Seleccionar ${this.etiquetaEnteActivoLower}`
       : '';
+    this.mostrarTarjetaCuotasActivo = mostrarTarjetaCuotasActivoEnSolicitud(
+      this.moduloPadreTipoGasto,
+      this.tipoNaturalezaTipoGasto,
+      this.esPagoCuotaActivoTipoGasto,
+    );
   }
 
   private limpiarEnteActivo(): void {

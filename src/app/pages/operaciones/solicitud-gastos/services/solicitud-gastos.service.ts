@@ -253,7 +253,7 @@ export class SolicitudGastosService {
     beneficiarioProveedorId: number | null;
     textoProveedorBeneficiario: string;
   } {
-    const descripcion = summary.descripcionSugerida || contexto.descripcion;
+    const descripcion = contexto.descripcion;
     const fechaVencimiento = parsearFechaVencimientoSugerida(summary.fechaVencimientoSugerida)
       || contexto.fechaVencimiento;
 

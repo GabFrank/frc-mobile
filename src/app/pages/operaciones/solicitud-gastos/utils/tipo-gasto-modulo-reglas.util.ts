@@ -25,8 +25,19 @@ const MODULOS_SERVICIO_CONTINUO: ModuloPadreGasto[] = [
   'SEGURO',
 ];
 
+const MODULOS_PADRE_CON_CUOTAS_ACTIVO: ModuloPadreGasto[] = [
+  'INMUEBLE',
+  'MUEBLE',
+  'VEHICULO',
+  'EQUIPOS',
+];
+
 export function esModuloServicioContinuo(modulo?: ModuloPadreGasto | string | null): boolean {
   return MODULOS_SERVICIO_CONTINUO.includes(modulo as ModuloPadreGasto);
+}
+
+export function esGastoContinuoRecurrente(naturaleza?: string | null): boolean {
+  return naturaleza === 'CONTINUO' || naturaleza === 'RECURRENTE';
 }
 
 export function etiquetaModuloPadre(modulo?: ModuloPadreGasto | string | null): string {
@@ -77,4 +88,22 @@ export function tipoEnteDesdeModuloPadre(
 
 export function requiereEnteActivo(modulo?: ModuloPadreGasto | string | null): boolean {
   return tipoEnteDesdeModuloPadre(modulo) != null;
+}
+
+export function esModuloPadreConCuotasActivo(modulo?: ModuloPadreGasto | string | null): boolean {
+  return MODULOS_PADRE_CON_CUOTAS_ACTIVO.includes(modulo as ModuloPadreGasto);
+}
+
+export function mostrarTarjetaCuotasActivoEnSolicitud(
+  modulo?: ModuloPadreGasto | string | null,
+  naturaleza?: TipoNaturalezaGasto | string | null,
+  esPagoCuotaActivo?: boolean | null,
+): boolean {
+  if (!esModuloPadreConCuotasActivo(modulo)) {
+    return false;
+  }
+  if (typeof esPagoCuotaActivo === 'boolean') {
+    return esPagoCuotaActivo;
+  }
+  return esGastoContinuoRecurrente(naturaleza);
 }
