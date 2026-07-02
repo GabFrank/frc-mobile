@@ -394,11 +394,12 @@ export const productosVencidosQuery = gql`
     $zonaIdList: [Int]
     $usuarioIdList: [ID]
     $productoIdList: [ID]
+    $fuenteVerdadList: [FuenteVerdadVencimiento]
     $soloRealmenteVencidos: Boolean
     $page: Int
     $size: Int
   ) {
-    productosVencidos(
+    data: productosVencidos(
       startDate: $startDate
       endDate: $endDate
       sucursalIdList: $sucursalIdList
@@ -406,6 +407,7 @@ export const productosVencidosQuery = gql`
       zonaIdList: $zonaIdList
       usuarioIdList: $usuarioIdList
       productoIdList: $productoIdList
+      fuenteVerdadList: $fuenteVerdadList
       soloRealmenteVencidos: $soloRealmenteVencidos
       page: $page
       size: $size
@@ -423,43 +425,32 @@ export const productosVencidosQuery = gql`
       }
       getContent {
         id
-        inventarioProducto {
-          id
-          inventario {
-            id
-            sucursal {
-              id
-              nombre
-            }
-          }
-        }
-        zona {
-          id
-          descripcion
-        }
-        sector {
-          id
-          descripcion
-        }
-        presentacion {
-          id
-          cantidad
-          imagenPrincipal
-          producto {
-            id
-            descripcion
-            codigoPrincipal
-          }
-        }
+        presentacionId
+        presentacionCantidad
+        productoId
+        productoDescripcion
+        codigoBarras
         cantidad
-        cantidadFisica
         vencimiento
-        estado
-        creadoEn
-        usuario {
-          id
-          nickname
-        }
+        inventarioProductoId
+        sucursalId
+        sucursalNombre
+        sectorDescripcion
+        zonaDescripcion
+        usuarioId
+        usuarioNickname
+        fuenteVerdad
+        origenId
+        fechaFuente
+        inventarioId
+        cantidadInventario
+        vencimientoInventario
+        referenciaInventario
+        detalleFuente
+        diasVencimiento
+        diasVencimientoTexto
+        vencimientoColor
+        diasVencimientoClase
       }
     }
   }
