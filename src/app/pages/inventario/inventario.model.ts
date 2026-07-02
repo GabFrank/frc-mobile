@@ -154,3 +154,48 @@ export class ProductoSaldoDto {
   saldoTotal: number;
   imagenPrincipal?: string;
 }
+
+export interface ProductoVencidoView {
+  id: number;
+  presentacionId: number;
+  presentacionCantidad: number;
+  productoId: number;
+  productoDescripcion: string;
+  codigoBarras: string;
+  cantidad: number;
+  vencimiento: string;
+  inventarioProductoId: number;
+  sucursalId: number;
+  sucursalNombre: string;
+  sectorDescripcion: string;
+  zonaDescripcion: string;
+  usuarioId: number;
+  usuarioNickname: string;
+  fuenteVerdad: string;
+  origenId: number;
+  fechaFuente: string;
+  inventarioId: number;
+  cantidadInventario: number;
+  vencimientoInventario: string;
+  referenciaInventario: string;
+  detalleFuente: string;
+  diasVencimiento: number;
+  diasVencimientoTexto: string;
+  vencimientoColor: string;
+  diasVencimientoClase: string;
+}
+
+export interface ProductoVencidoViewPage {
+  getTotalPages: number;
+  getTotalElements: number;
+  getNumberOfElements: number;
+  isFirst: boolean;
+  isLast: boolean;
+  hasNext: boolean;
+  hasPrevious: boolean;
+  getContent: ProductoVencidoView[];
+  getPageable: {
+    getPageNumber: number;
+    getPageSize: number;
+  };
+}
