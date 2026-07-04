@@ -23,7 +23,7 @@ jobs:
     environment: ${{ inputs.track == 'production' && 'production' || inputs.track == 'beta' && 'beta' || 'alpha' }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Resolve version
         id: resolve
@@ -92,7 +92,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
           packageName: com.sistemasinformaticos.frc
           releaseFiles: app-release.aab
-          track: ${{ inputs.track }}
+          tracks: ${{ inputs.track }}
           status: completed
           # Google Play rechaza el auto-send-for-review cuando el edit tiene
           # declaraciones pendientes (p.ej. cambios de permisos del PR #52).
