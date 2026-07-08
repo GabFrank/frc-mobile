@@ -1,0 +1,50 @@
+ion-segment {
+  margin-bottom: 12px;
+}
+
+.proveedor-box {
+  margin-bottom: 8px;
+}
+
+.proveedor-selected {
+  --background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.acciones-scan {
+  margin: 16px 0 8px;
+}
+
+.items-header {
+  margin-top: 12px;
+
+  h4 {
+    margin: 0 0 4px;
+    font-weight: 600;
+  }
+}
+
+.empty {
+  text-align: center;
+  opacity: 0.6;
+  margin-top: 40px;
+
+  ion-icon {
+    font-size: 48px;
+  }
+
+  p {
+    margin-top: 8px;
+  }
+}
+
+.footer-actions {
+  display: flex;
+  gap: 8px;
+  padding: 4px 8px;
+
+  ion-button {
+    flex: 1;
+    margin: 0;
+  }
+}

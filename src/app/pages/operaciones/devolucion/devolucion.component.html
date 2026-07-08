@@ -1,0 +1,116 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Nueva devolución</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-segment [value]="tipo" (ionChange)="onTipoChange($event)">
+    <ion-segment-button [value]="TipoDevolucion.SIN_PROVEEDOR">
+      <ion-label>Sin proveedor</ion-label>
+    </ion-segment-button>
+    <ion-segment-button [value]="TipoDevolucion.CON_PROVEEDOR">
+      <ion-label>Con proveedor</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <div *ngIf="tipo === TipoDevolucion.CON_PROVEEDOR" class="proveedor-box">
+    <div *ngIf="selectedProveedor == null">
+      <ion-item lines="none">
+        <ion-input
+          [(ngModel)]="proveedorTexto"
+          placeholder="Nombre o documento del proveedor"
+          (keyup.enter)="onBuscarProveedor()"></ion-input>
+        <ion-button slot="end" (click)="onBuscarProveedor()" [disabled]="buscandoProveedor">
+          <ion-icon slot="icon-only" name="search-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <ion-list *ngIf="proveedoresList.length > 0">
+        <ion-item
+          button
+          *ngFor="let p of proveedoresList"
+          (click)="onSelectProveedor(p)">
+          <ion-label>
+            {{ p.persona?.nombre }}
+            <p *ngIf="p.persona?.documento">{{ p.persona?.documento }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <ion-item *ngIf="selectedProveedor != null" lines="none" class="proveedor-selected">
+      <ion-label>
+        <strong>{{ selectedProveedor.persona?.nombre }}</strong>
+        <p *ngIf="selectedProveedor.persona?.documento">{{ selectedProveedor.persona?.documento }}</p>
+      </ion-label>
+      <ion-button slot="end" fill="clear" color="medium" (click)="onQuitarProveedor()">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </div>
+
+  <ion-item>
+    <ion-label position="stacked">Motivo general</ion-label>
+    <ion-input [(ngModel)]="motivo" placeholder="Opcional"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="stacked">Observación</ion-label>
+    <ion-textarea [(ngModel)]="observacion" rows="2" placeholder="Opcional"></ion-textarea>
+  </ion-item>
+
+  <div class="acciones-scan">
+    <ion-button expand="block" (click)="onEscanear()">
+      <ion-icon slot="start" name="barcode-outline"></ion-icon>
+      Escanear producto
+    </ion-button>
+  </div>
+
+  <div class="items-header" *ngIf="items.length > 0">
+    <h4>Productos ({{ items.length }})</h4>
+  </div>
+
+  <ion-list *ngIf="items.length > 0">
+    <ion-item *ngFor="let item of items; let i = index">
+      <ion-label class="ion-text-wrap">
+        <strong>{{ item.producto?.descripcion }}</strong>
+        <p>{{ item.presentacion?.descripcion }} · Cant: {{ item.cantidad }}</p>
+        <p>Avería: {{ item.motivoAveria?.descripcion }}</p>
+        <p *ngIf="item.vencimiento">Vence: {{ item.vencimiento }}</p>
+        <p *ngIf="item.lote">Lote: {{ item.lote }}</p>
+      </ion-label>
+      <ion-button slot="end" fill="clear" color="danger" (click)="onEliminarItem(i)">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <div class="empty" *ngIf="items.length === 0">
+    <ion-icon name="cube-outline"></ion-icon>
+    <p>Escaneá un producto para agregarlo a la devolución</p>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <div class="footer-actions">
+      <ion-button
+        expand="block"
+        fill="outline"
+        [disabled]="guardando || items.length === 0"
+        (click)="onGuardar(true)">
+        Guardar y separar
+      </ion-button>
+      <ion-button
+        expand="block"
+        [disabled]="guardando || items.length === 0"
+        (click)="onGuardar(false)">
+        Guardar devolución
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>
