@@ -3,12 +3,14 @@ import { AppUpdate, AppUpdateAvailability } from '@capawesome/capacitor-app-upda
 
 export const getCurrentAppVersion = async () => {
   const result = await AppUpdate.getAppUpdateInfo();
-  return result.currentVersion;
+  // Cap 7 (@capawesome/capacitor-app-update v7) separó version name y code.
+  // El consumidor compara numéricamente (+current < +latest), así que es el versionCode.
+  return result.currentVersionCode;
 };
 
 export const getAvailableAppVersion = async () => {
   const result = await AppUpdate.getAppUpdateInfo();
-  return result.availableVersion;
+  return result.availableVersionCode;
 };
 
 export const openAppStore = async () => {
