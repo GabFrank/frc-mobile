@@ -76,3 +76,11 @@ export const aprobarVacacionMobileMutation = gql`
     data: aprobarVacacionMobile(periodoId: $periodoId, aprobadorUsuarioId: $aprobadorUsuarioId) { id estado }
   }
 `;
+
+export const misMarcacionesMobileQuery = gql`
+  query ($usuarioId: ID!) {
+    data: misMarcacionesMobile(usuarioId: $usuarioId) {
+      id fecha minutosTrabajados minutosExtras minutosLlegadaTardia estado
+    }
+  }
+`;

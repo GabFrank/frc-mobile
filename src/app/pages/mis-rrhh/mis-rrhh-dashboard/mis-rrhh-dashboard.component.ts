@@ -19,6 +19,7 @@ export class MisRrhhDashboardComponent implements OnInit {
   recibos: any[] = [];
   vales: any[] = [];
   vacaciones: any[] = [];
+  marcaciones: any[] = [];
 
   constructor(
     private rrhhService: RrhhMobileService,
@@ -43,6 +44,11 @@ export class MisRrhhDashboardComponent implements OnInit {
     if (this.segmento === 'recibos') { this.cargarRecibos(); }
     else if (this.segmento === 'vales') { this.cargarVales(); }
     else if (this.segmento === 'vacaciones') { this.cargarVacaciones(); }
+    else if (this.segmento === 'marcaciones') { this.cargarMarcaciones(); }
+  }
+
+  async cargarMarcaciones() {
+    (await this.rrhhService.onGetMarcaciones(this.usuarioId)).subscribe(res => { this.marcaciones = res || []; });
   }
 
   async cargarRecibos() {

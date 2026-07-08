@@ -48,6 +48,7 @@
     <ion-segment-button value="recibos"><ion-label>Recibos</ion-label></ion-segment-button>
     <ion-segment-button value="vales"><ion-label>Vales</ion-label></ion-segment-button>
     <ion-segment-button value="vacaciones"><ion-label>Vacaciones</ion-label></ion-segment-button>
+    <ion-segment-button value="marcaciones"><ion-label>Marcaciones</ion-label></ion-segment-button>
   </ion-segment>
 
   <!-- Recibos -->
@@ -84,5 +85,17 @@
       <ion-note slot="end">{{ (vac.diasGenerados - vac.diasGozados) }} disp.</ion-note>
     </ion-item>
     <ion-item *ngIf="vacaciones.length === 0"><ion-label class="vacio">Sin vacaciones devengadas</ion-label></ion-item>
+  </ion-list>
+
+  <!-- Marcaciones -->
+  <ion-list *ngIf="segmento === 'marcaciones'">
+    <ion-item *ngFor="let m of marcaciones">
+      <ion-label>
+        <h2>{{ m.fecha }}</h2>
+        <p>Trabajado: {{ m.minutosTrabajados || 0 }} min — Extra: {{ m.minutosExtras || 0 }} min</p>
+      </ion-label>
+      <ion-note slot="end" *ngIf="m.minutosLlegadaTardia > 0" color="danger">Tarde {{ m.minutosLlegadaTardia }}m</ion-note>
+    </ion-item>
+    <ion-item *ngIf="marcaciones.length === 0"><ion-label class="vacio">Sin marcaciones</ion-label></ion-item>
   </ion-list>
 </ion-content>
