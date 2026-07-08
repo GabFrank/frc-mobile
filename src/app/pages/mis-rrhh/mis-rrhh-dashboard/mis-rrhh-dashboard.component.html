@@ -1,0 +1,88 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Mis RRHH</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Resumen -->
+  <ion-card *ngIf="resumen">
+    <ion-card-header>
+      <ion-card-subtitle>{{ resumen.nombre }}</ion-card-subtitle>
+      <ion-card-title>Mi resumen</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item lines="none">
+        <ion-icon name="sunny-outline" slot="start"></ion-icon>
+        <ion-label>Saldo de vacaciones</ion-label>
+        <ion-note slot="end">{{ resumen.saldoVacacionesDias }} días</ion-note>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-icon name="cash-outline" slot="start"></ion-icon>
+        <ion-label>Vales pendientes</ion-label>
+        <ion-note slot="end">{{ resumen.valesPendientesCantidad }} ({{ resumen.valesPendientesMonto | number:'1.0-0' }})</ion-note>
+      </ion-item>
+      <ion-item lines="none" *ngIf="resumen.ultimoReciboPeriodo">
+        <ion-icon name="receipt-outline" slot="start"></ion-icon>
+        <ion-label>Último recibo</ion-label>
+        <ion-note slot="end">{{ resumen.ultimoReciboPeriodo }} — {{ resumen.ultimoReciboNeto | number:'1.0-0' }}</ion-note>
+      </ion-item>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Acciones -->
+  <div class="acciones">
+    <ion-button expand="block" fill="outline" (click)="solicitarVale()">
+      <ion-icon name="cash-outline" slot="start"></ion-icon> Solicitar vale
+    </ion-button>
+    <ion-button expand="block" fill="outline" (click)="solicitarVacacion()">
+      <ion-icon name="airplane-outline" slot="start"></ion-icon> Solicitar vacaciones
+    </ion-button>
+  </div>
+
+  <!-- Segmento -->
+  <ion-segment [(ngModel)]="segmento" (ionChange)="onSegmentChange()">
+    <ion-segment-button value="recibos"><ion-label>Recibos</ion-label></ion-segment-button>
+    <ion-segment-button value="vales"><ion-label>Vales</ion-label></ion-segment-button>
+    <ion-segment-button value="vacaciones"><ion-label>Vacaciones</ion-label></ion-segment-button>
+  </ion-segment>
+
+  <!-- Recibos -->
+  <ion-list *ngIf="segmento === 'recibos'">
+    <ion-item *ngFor="let r of recibos" button (click)="verRecibo(r)">
+      <ion-label>
+        <h2>{{ r.periodo }}</h2>
+        <p>Neto: {{ r.totalNeto | number:'1.0-0' }}</p>
+      </ion-label>
+      <ion-icon name="document-text-outline" slot="end"></ion-icon>
+    </ion-item>
+    <ion-item *ngIf="recibos.length === 0"><ion-label class="vacio">Sin recibos pagados</ion-label></ion-item>
+  </ion-list>
+
+  <!-- Vales -->
+  <ion-list *ngIf="segmento === 'vales'">
+    <ion-item *ngFor="let v of vales">
+      <ion-label>
+        <h2>{{ v.monto | number:'1.0-0' }}</h2>
+        <p>{{ v.fecha }} — {{ v.esAdelanto ? 'Adelanto' : 'Vale' }}</p>
+      </ion-label>
+      <ion-badge slot="end" [color]="v.estado === 'DESCONTADO' ? 'medium' : (v.estado === 'ANULADO' ? 'danger' : 'primary')">{{ v.estado }}</ion-badge>
+    </ion-item>
+    <ion-item *ngIf="vales.length === 0"><ion-label class="vacio">Sin vales</ion-label></ion-item>
+  </ion-list>
+
+  <!-- Vacaciones -->
+  <ion-list *ngIf="segmento === 'vacaciones'">
+    <ion-item *ngFor="let vac of vacaciones">
+      <ion-label>
+        <h2>Año de servicio {{ vac.anioServicio }}</h2>
+        <p>Generados: {{ vac.diasGenerados }} — Gozados: {{ vac.diasGozados }}</p>
+      </ion-label>
+      <ion-note slot="end">{{ (vac.diasGenerados - vac.diasGozados) }} disp.</ion-note>
+    </ion-item>
+    <ion-item *ngIf="vacaciones.length === 0"><ion-label class="vacio">Sin vacaciones devengadas</ion-label></ion-item>
+  </ion-list>
+</ion-content>

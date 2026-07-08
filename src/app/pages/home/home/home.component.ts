@@ -74,6 +74,12 @@ export class HomeComponent implements OnInit, OnDestroy {
       icon: 'event_busy',
       toneOrange: true,
     },
+    {
+      label: 'Mis RRHH',
+      route: ['/mis-rrhh'],
+      icon: 'badge',
+      toneBlue: true,
+    },
   ];
 
   private intervalId: ReturnType<typeof setInterval> | null = null;
