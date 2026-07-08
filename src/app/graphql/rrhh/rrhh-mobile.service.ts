@@ -8,6 +8,9 @@ import { MisVacacionesMobileGQL } from './MisVacacionesMobile';
 import { ImprimirReciboLiquidacionGQL } from './ImprimirReciboLiquidacion';
 import { SolicitarValeMobileGQL } from './SolicitarValeMobile';
 import { SolicitarVacacionMobileGQL } from './SolicitarVacacionMobile';
+import { ValesPendientesAprobacionMobileGQL } from './ValesPendientesAprobacionMobile';
+import { VacacionesPendientesAprobacionMobileGQL } from './VacacionesPendientesAprobacionMobile';
+import { AprobarVacacionMobileGQL } from './AprobarVacacionMobile';
 
 @Injectable({ providedIn: 'root' })
 export class RrhhMobileService {
@@ -20,7 +23,10 @@ export class RrhhMobileService {
     private misVacacionesGQL: MisVacacionesMobileGQL,
     private imprimirReciboGQL: ImprimirReciboLiquidacionGQL,
     private solicitarValeGQL: SolicitarValeMobileGQL,
-    private solicitarVacacionGQL: SolicitarVacacionMobileGQL
+    private solicitarVacacionGQL: SolicitarVacacionMobileGQL,
+    private valesPendientesGQL: ValesPendientesAprobacionMobileGQL,
+    private vacacionesPendientesGQL: VacacionesPendientesAprobacionMobileGQL,
+    private aprobarVacacionGQL: AprobarVacacionMobileGQL
   ) { }
 
   async onGetResumen(usuarioId): Promise<Observable<any>> {
@@ -49,5 +55,17 @@ export class RrhhMobileService {
 
   async onSolicitarVacacion(usuarioId, desde, hasta): Promise<Observable<any>> {
     return this.genericService.onCustomSave(this.solicitarVacacionGQL, { usuarioId, desde, hasta });
+  }
+
+  async onGetValesPendientes(): Promise<Observable<any>> {
+    return this.genericService.onCustomGet(this.valesPendientesGQL, {}, null, false);
+  }
+
+  async onGetVacacionesPendientes(): Promise<Observable<any>> {
+    return this.genericService.onCustomGet(this.vacacionesPendientesGQL, {}, null, false);
+  }
+
+  async onAprobarVacacion(periodoId, aprobadorUsuarioId): Promise<Observable<any>> {
+    return this.genericService.onCustomSave(this.aprobarVacacionGQL, { periodoId, aprobadorUsuarioId });
   }
 }

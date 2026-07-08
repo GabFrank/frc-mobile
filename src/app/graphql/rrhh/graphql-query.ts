@@ -53,3 +53,26 @@ export const solicitarVacacionMobileMutation = gql`
     }
   }
 `;
+
+export const valesPendientesAprobacionMobileQuery = gql`
+  query {
+    data: valesPendientesAprobacionMobile {
+      id monto fecha esAdelanto funcionario { id persona { id nombre } }
+    }
+  }
+`;
+
+export const vacacionesPendientesAprobacionMobileQuery = gql`
+  query {
+    data: vacacionesPendientesAprobacionMobile {
+      id fechaDesde fechaHasta diasUsados estado
+      vacacion { id funcionario { id persona { id nombre } } }
+    }
+  }
+`;
+
+export const aprobarVacacionMobileMutation = gql`
+  mutation ($periodoId: ID!, $aprobadorUsuarioId: ID) {
+    data: aprobarVacacionMobile(periodoId: $periodoId, aprobadorUsuarioId: $aprobadorUsuarioId) { id estado }
+  }
+`;

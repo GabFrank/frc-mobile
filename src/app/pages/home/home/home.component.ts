@@ -80,6 +80,13 @@ export class HomeComponent implements OnInit, OnDestroy {
       icon: 'badge',
       toneBlue: true,
     },
+    {
+      label: 'Aprobaciones RRHH',
+      route: ['/mis-rrhh/aprobaciones'],
+      icon: 'fact_check',
+      toneAmber: true,
+      roles: [ROLES.DIRECTIVO, ROLES.ADMIN],
+    },
   ];
 
   private intervalId: ReturnType<typeof setInterval> | null = null;

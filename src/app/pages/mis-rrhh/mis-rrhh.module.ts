@@ -5,9 +5,10 @@ import { IonicModule } from '@ionic/angular';
 import { ComponentsModule } from 'src/app/components/components.module';
 import { MisRrhhRoutingModule } from './mis-rrhh-routing.module';
 import { MisRrhhDashboardComponent } from './mis-rrhh-dashboard/mis-rrhh-dashboard.component';
+import { AprobacionesRrhhComponent } from './aprobaciones-rrhh/aprobaciones-rrhh.component';
 
 @NgModule({
-  declarations: [MisRrhhDashboardComponent],
+  declarations: [MisRrhhDashboardComponent, AprobacionesRrhhComponent],
   imports: [
     CommonModule,
     MisRrhhRoutingModule,
