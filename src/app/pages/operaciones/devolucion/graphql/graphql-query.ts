@@ -28,8 +28,8 @@ export const saveDevolucionItemMutation = gql`
 export const avanzarEstadoDevolucionMutation = gql`
   mutation avanzarEstadoDevolucion(
     $devolucionId: ID!
-    $estado: String!
-    $usuarioId: ID!
+    $estado: DevolucionEstado!
+    $usuarioId: ID
   ) {
     data: avanzarEstadoDevolucion(
       devolucionId: $devolucionId
