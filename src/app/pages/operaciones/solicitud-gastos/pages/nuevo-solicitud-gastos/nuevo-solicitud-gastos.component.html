@@ -1,172 +1,299 @@
-<ion-header>
+<ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Nueva solicitud de gasto</ion-title>
-    <ion-buttons slot="end">
-      <ion-button fill="clear">
-        <ion-icon name="document-text-outline"></ion-icon>
-      </ion-button>
+    <ion-buttons slot="start">
+      <ion-back-button
+        defaultHref="/operaciones/solicitud-gastos"
+        text=""
+        aria-label="Volver"
+      ></ion-back-button>
     </ion-buttons>
+    <ion-title>Nueva solicitud de gasto</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="solicitud-gastos-content">
-  <div class="content-wrapper">
-    <ion-accordion-group [multiple]="true">
-      <app-seccion-accordion valor="identificacion" icono="person-outline" titulo="Identificacion"
-        subtitulo="Solicitante (tu usuario), beneficiario y tipo de gasto">
-        <ion-list lines="full">
-          <ion-item class="dark2">
-            <ion-icon slot="start" name="person-outline"></ion-icon>
+  <form class="content-wrapper" [formGroup]="form" novalidate>
+    <ion-accordion-group [multiple]="true" value="identificacion">
+      <app-seccion-accordion
+        valor="identificacion"
+        icono="person-outline"
+        titulo="Identificación"
+        subtitulo="Solicitante, beneficiario y tipo de gasto"
+      >
+        <ion-list lines="none">
+          <ion-item class="campo" lines="none">
+            <ion-icon slot="start" name="person-outline" aria-hidden="true"></ion-icon>
             <ion-label>
-              <h3>Solicitante</h3>
-              <p>{{ textoResponsable || 'Sin persona en sesión' }}</p>
+              <p class="campo-etiqueta">Solicitante</p>
+              <h3 class="campo-valor">{{ textoResponsable || 'Sin persona en sesión' }}</h3>
             </ion-label>
           </ion-item>
-          <ion-item class="dark2">
-            <ion-label position="stacked">Beneficiario</ion-label>
-            <ion-segment [(ngModel)]="beneficiarioTipo" mode="md"
-              (ngModelChange)="cambiarTipoBeneficiario($event)">
-              <ion-segment-button value="PROVEEDOR" (click)="cambiarTipoBeneficiario('PROVEEDOR')">
+
+          <ion-item class="campo" lines="none">
+            <ion-label position="stacked">Tipo de beneficiario</ion-label>
+            <ion-segment formControlName="beneficiarioTipo" mode="md" class="segmento">
+              <ion-segment-button value="PROVEEDOR">
                 <ion-label>Proveedor</ion-label>
               </ion-segment-button>
-              <ion-segment-button value="PERSONA" (click)="cambiarTipoBeneficiario('PERSONA')">
+              <ion-segment-button value="PERSONA">
                 <ion-label>Persona</ion-label>
               </ion-segment-button>
             </ion-segment>
           </ion-item>
-          <ion-item button class="dark2" *ngIf="beneficiarioTipo === 'PERSONA'"
-            (click)="abrirModalPersonaBeneficiaria($event)">
-            <ion-icon slot="start" name="person-outline"></ion-icon>
+
+          <ion-item
+            button
+            class="campo"
+            lines="none"
+            *ngIf="beneficiarioTipo === 'PERSONA'"
+            [class.campo-invalido]="errorBeneficiarioPersona"
+            (click)="abrirModalPersonaBeneficiaria($event)"
+          >
+            <ion-icon slot="start" name="person-circle-outline" aria-hidden="true"></ion-icon>
             <ion-label>
-              <h3>Persona beneficiaria</h3>
-              <p>{{ textoPersonaBeneficiaria || 'Seleccionar persona' }}</p>
+              <p class="campo-etiqueta">Persona beneficiaria *</p>
+              <h3 class="campo-valor">{{ textoPersonaBeneficiaria || 'Seleccionar persona' }}</h3>
             </ion-label>
-            <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+            <ion-icon slot="end" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
           </ion-item>
-          <ion-item button class="dark2" *ngIf="beneficiarioTipo === 'PROVEEDOR'"
-            (click)="abrirModalProveedorBeneficiario($event)">
-            <ion-icon slot="start" name="business-outline"></ion-icon>
+
+          <ion-item
+            button
+            class="campo"
+            lines="none"
+            *ngIf="beneficiarioTipo === 'PROVEEDOR'"
+            [class.campo-invalido]="errorBeneficiarioProveedor"
+            (click)="abrirModalProveedorBeneficiario($event)"
+          >
+            <ion-icon slot="start" name="business-outline" aria-hidden="true"></ion-icon>
             <ion-label>
-              <h3>Proveedor beneficiario</h3>
-              <p>{{ textoProveedorBeneficiario || 'Seleccionar proveedor' }}</p>
+              <p class="campo-etiqueta">Proveedor beneficiario *</p>
+              <h3 class="campo-valor">{{ textoProveedorBeneficiario || 'Seleccionar proveedor' }}</h3>
             </ion-label>
-            <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+            <ion-icon slot="end" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
           </ion-item>
-          <ion-item button class="dark2" (click)="abrirModalTipoGasto($event)">
-            <ion-icon slot="start" name="pricetag-outline"></ion-icon>
+          <p class="mensaje-error" *ngIf="errorBeneficiarioPersona" role="alert">
+            Seleccione la persona beneficiaria.
+          </p>
+          <p class="mensaje-error" *ngIf="errorBeneficiarioProveedor" role="alert">
+            Seleccione el proveedor beneficiario.
+          </p>
+
+          <ion-item
+            button
+            class="campo"
+            lines="none"
+            [class.campo-invalido]="errorTipoGasto"
+            (click)="abrirModalTipoGasto($event)"
+          >
+            <ion-icon slot="start" name="pricetag-outline" aria-hidden="true"></ion-icon>
             <ion-label>
-              <h3>Tipo de gasto</h3>
-              <p>{{ textoTipoGasto || 'Seleccionar tipo de gasto' }}</p>
+              <p class="campo-etiqueta">Tipo de gasto *</p>
+              <h3 class="campo-valor">{{ textoTipoGasto || 'Seleccionar tipo de gasto' }}</h3>
             </ion-label>
-            <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+            <ion-icon slot="end" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
           </ion-item>
-          <ion-item button class="dark2" *ngIf="requiereEnteActivo" (click)="abrirModalEnteActivo($event)">
-            <ion-icon slot="start" [name]="iconoEnteActivo"></ion-icon>
+          <p class="mensaje-error" *ngIf="errorTipoGasto" role="alert">
+            Seleccione un tipo de gasto.
+          </p>
+
+          <ion-item
+            button
+            class="campo"
+            lines="none"
+            *ngIf="requiereEnteActivo"
+            [class.campo-invalido]="errorEnte"
+            (click)="abrirModalEnteActivo($event)"
+          >
+            <ion-icon slot="start" [name]="iconoEnteActivo" aria-hidden="true"></ion-icon>
             <ion-label>
-              <h3>{{ etiquetaEnteActivo }} vinculado</h3>
-              <p>{{ textoEnteActivo || placeholderEnteActivo }}</p>
+              <p class="campo-etiqueta">{{ etiquetaEnteActivo }} vinculado *</p>
+              <h3 class="campo-valor">{{ textoEnteActivo || placeholderEnteActivo }}</h3>
             </ion-label>
-            <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+            <ion-icon slot="end" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
           </ion-item>
-          <ion-item *ngIf="requiereEnteActivo && !enteId" lines="none" class="dark2">
-            <ion-note color="warning">
-              Este tipo de gasto requiere seleccionar un {{ etiquetaEnteActivoLower }}.
-            </ion-note>
+          <p class="mensaje-error" *ngIf="errorEnte" role="alert">
+            Este tipo de gasto requiere seleccionar un {{ etiquetaEnteActivoLower }}.
+          </p>
+
+          <ion-item *ngIf="mostrarTarjetaCuotasActivo && cargandoResumenEnte" lines="none" class="campo">
+            <ion-spinner slot="start" name="crescent" aria-hidden="true"></ion-spinner>
+            <ion-label>Cargando datos del activo…</ion-label>
           </ion-item>
-          <ion-item *ngIf="mostrarTarjetaCuotasActivo && cargandoResumenEnte" lines="none" class="dark2">
-            <ion-spinner slot="start" name="crescent"></ion-spinner>
-            <ion-label>Cargando datos del activo...</ion-label>
-          </ion-item>
-          <ion-card *ngIf="mostrarTarjetaCuotasActivo && resumenFinancieroEnte" class="resumen-financiero-card dark2">
-            <ion-card-header>
-              <ion-card-subtitle>{{ resumenFinancieroEnte.titulo }}</ion-card-subtitle>
-              <ion-card-title>{{ resumenFinancieroEnte.descripcion }}</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <p *ngIf="resumenFinancieroEnte.notificacion">
-                <ion-text color="warning">{{ resumenFinancieroEnte.notificacion }}</ion-text>
-              </p>
-              <p>Total: {{ resumenFinancieroEnte.montoTotalTexto }}</p>
-              <p>Pendiente: {{ resumenFinancieroEnte.montoPendienteTexto }}</p>
-              <p *ngIf="resumenFinancieroEnte.mostrarCuotas">Plan: {{ resumenFinancieroEnte.cuotaTexto }}</p>
-              <p *ngIf="resumenFinancieroEnte.cuotasFaltantesTexto">
-                {{ resumenFinancieroEnte.cuotasFaltantesTexto }}
-              </p>
-              <p *ngIf="resumenFinancieroEnte.montoCuotaTexto">
-                Monto cuota: {{ resumenFinancieroEnte.montoCuotaTexto }}
-              </p>
-              <p *ngIf="resumenFinancieroEnte.proveedorTexto">Proveedor: {{ resumenFinancieroEnte.proveedorTexto }}</p>
-              <p>Vencimiento: {{ resumenFinancieroEnte.vencimientoTexto }}</p>
-            </ion-card-content>
-          </ion-card>
+
+          <div class="resumen-financiero" *ngIf="mostrarTarjetaCuotasActivo && resumenFinancieroEnte">
+            <p class="resumen-titulo">{{ resumenFinancieroEnte.titulo }}</p>
+            <p class="resumen-subtitulo">{{ resumenFinancieroEnte.descripcion }}</p>
+            <p class="resumen-alerta" *ngIf="resumenFinancieroEnte.notificacion">
+              {{ resumenFinancieroEnte.notificacion }}
+            </p>
+            <div class="resumen-linea">
+              <span>Total</span><span>{{ resumenFinancieroEnte.montoTotalTexto }}</span>
+            </div>
+            <div class="resumen-linea">
+              <span>Pendiente</span><span>{{ resumenFinancieroEnte.montoPendienteTexto }}</span>
+            </div>
+            <div class="resumen-linea" *ngIf="resumenFinancieroEnte.mostrarCuotas">
+              <span>Plan</span><span>{{ resumenFinancieroEnte.cuotaTexto }}</span>
+            </div>
+            <div class="resumen-linea" *ngIf="resumenFinancieroEnte.cuotasFaltantesTexto">
+              <span>Cuotas</span><span>{{ resumenFinancieroEnte.cuotasFaltantesTexto }}</span>
+            </div>
+            <div class="resumen-linea" *ngIf="resumenFinancieroEnte.montoCuotaTexto">
+              <span>Monto cuota</span><span>{{ resumenFinancieroEnte.montoCuotaTexto }}</span>
+            </div>
+            <div class="resumen-linea" *ngIf="resumenFinancieroEnte.proveedorTexto">
+              <span>Proveedor</span><span>{{ resumenFinancieroEnte.proveedorTexto }}</span>
+            </div>
+            <div class="resumen-linea">
+              <span>Vencimiento</span><span>{{ resumenFinancieroEnte.vencimientoTexto }}</span>
+            </div>
+          </div>
         </ion-list>
       </app-seccion-accordion>
 
-      <app-seccion-accordion valor="montos" icono="wallet-outline" titulo="Montos y pago"
-        subtitulo="Vencimiento y composicion de montos">
-        <ion-list lines="full">
-          <ion-item class="dark2">
-            <ion-label position="stacked">Fecha de vencimiento</ion-label>
-            <ion-datetime-button datetime="fecha-vencimiento"></ion-datetime-button>
-          </ion-item>
-        </ion-list>
+      <app-seccion-accordion
+        valor="montos"
+        icono="wallet-outline"
+        titulo="Montos y pago"
+        subtitulo="Composición de montos por moneda y forma de pago"
+      >
+        <div class="totales" *ngIf="resumenPorMoneda.length">
+          <p class="totales-titulo">Total solicitado</p>
+          <div class="totales-linea" *ngFor="let total of resumenPorMoneda; trackBy: trackByMoneda">
+            <span class="totales-moneda">{{ total.etiqueta }}</span>
+            <span class="totales-monto">{{ total.total }}</span>
+          </div>
+        </div>
+
+        <p class="mensaje-error" *ngIf="errorMonedasRepetidas" role="alert">
+          No repita la misma moneda en más de un detalle.
+        </p>
 
         <div class="section-inline-header">
-          <ion-note>Detalle de montos</ion-note>
-          <ion-button fill="clear" class="inline-action-btn" (click)="agregarDetalleGasto()">
-            <ion-icon name="add-circle"></ion-icon>
+          <span class="subseccion-titulo">Detalle de montos</span>
+          <ion-button
+            fill="clear"
+            size="small"
+            class="inline-action-btn"
+            aria-label="Agregar detalle de monto"
+            (click)="agregarDetalleGasto()"
+          >
+            <ion-icon slot="icon-only" name="add-circle-outline"></ion-icon>
           </ion-button>
         </div>
 
-        <ion-card *ngFor="let item of gastoItems; let i = index" class="gasto-item-card dark2">
-          <ion-card-header>
-            <ion-card-subtitle>Detalle {{ i + 1 }}</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
+        <div formArrayName="detalles">
+          <div
+            class="gasto-item"
+            *ngFor="let grupo of detallesControles; index as i; trackBy: trackByDetalle"
+            [formGroupName]="i"
+          >
+            <div class="gasto-item-header">
+              <span class="gasto-item-titulo">Detalle {{ i + 1 }}</span>
+              <ion-button
+                fill="clear"
+                size="small"
+                class="remove-btn"
+                [disabled]="detallesControles.length === 1"
+                aria-label="Quitar este detalle"
+                (click)="quitarDetalleGasto(i)"
+              >
+                <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-button>
+            </div>
+
             <ion-grid class="nested-grid">
               <ion-row>
                 <ion-col size="6">
-                  <app-selector-generico etiqueta="Moneda" placeholder="Moneda"
-                    [opciones]="servicio.opcionesMoneda" [valor]="item.monedaId"
-                    (valorChange)="alCambiarMoneda(item, $event)"></app-selector-generico>
+                  <app-selector-generico
+                    etiqueta="Moneda *"
+                    placeholder="Moneda"
+                    [opciones]="servicio.opcionesMoneda"
+                    [valor]="detallesVista[i].monedaId"
+                    (valorChange)="alCambiarMonedaDetalle(i, $event)"
+                  ></app-selector-generico>
                 </ion-col>
                 <ion-col size="6">
-                  <app-selector-generico etiqueta="Forma de pago" placeholder="Forma de pago"
-                    [opciones]="servicio.opcionesFormaPago" [(valor)]="item.formaPago"></app-selector-generico>
+                  <app-selector-generico
+                    etiqueta="Forma de pago *"
+                    placeholder="Forma de pago"
+                    [opciones]="servicio.opcionesFormaPago"
+                    [valor]="detallesVista[i].formaPago"
+                    (valorChange)="alCambiarFormaPagoDetalle(i, $event)"
+                  ></app-selector-generico>
                 </ion-col>
               </ion-row>
             </ion-grid>
-            <ion-item class="dark1" lines="none">
-              <ion-label position="stacked">Monto</ion-label>
-              <ion-input type="text" inputmode="decimal" placeholder="Ingrese el monto"
-                [(ngModel)]="item.montoTexto" (ngModelChange)="alCambiarMontoTexto(item, $event)"
-                (ionBlur)="alPerderFocoMonto(item)"></ion-input>
+
+            <ion-item class="campo campo-monto" lines="none" [class.campo-invalido]="detallesVista[i].errorMonto">
+              <ion-label position="stacked">Monto *</ion-label>
+              <ion-input
+                type="text"
+                inputmode="decimal"
+                placeholder="Ingrese el monto"
+                formControlName="montoTexto"
+                (ionBlur)="alPerderFocoMonto(i)"
+              ></ion-input>
             </ion-item>
-            <ion-button fill="clear" class="remove-btn" [disabled]="gastoItems.length === 1"
-              (click)="quitarDetalleGasto(item.id)">
-              <ion-icon name="remove-circle" slot="start"></ion-icon>
-              Quitar detalle
-            </ion-button>
-          </ion-card-content>
-        </ion-card>
+            <p class="mensaje-error" *ngIf="detallesVista[i].errorMonto" role="alert">
+              Ingrese un monto mayor a cero.
+            </p>
+            <p class="mensaje-error" *ngIf="detallesVista[i].errorMoneda" role="alert">
+              Seleccione la moneda.
+            </p>
+            <p class="mensaje-error" *ngIf="detallesVista[i].errorFormaPago" role="alert">
+              Seleccione la forma de pago.
+            </p>
+          </div>
+        </div>
       </app-seccion-accordion>
 
-      <app-seccion-accordion valor="detalle" icono="list-outline" titulo="Detalle final"
-        subtitulo="Sucursal, urgencia y descripcion">
-        <ion-list lines="full">
-          <ion-item button class="dark2" (click)="abrirModalSucursal($event)">
-            <ion-icon slot="start" name="location-outline"></ion-icon>
+      <app-seccion-accordion
+        valor="detalle"
+        icono="list-outline"
+        titulo="Detalle final"
+        subtitulo="Sucursal de retiro, urgencia y descripción"
+      >
+        <ion-list lines="none">
+          <ion-item
+            button
+            class="campo"
+            lines="none"
+            [class.campo-invalido]="errorSucursal"
+            (click)="abrirModalSucursal($event)"
+          >
+            <ion-icon slot="start" name="location-outline" aria-hidden="true"></ion-icon>
             <ion-label>
-              <h3>Sucursal de retiro</h3>
-              <p>{{ selectedSucursal || 'Seleccionar sucursal' }}</p>
+              <p class="campo-etiqueta">Sucursal de retiro *</p>
+              <h3 class="campo-valor">{{ selectedSucursal || 'Seleccionar sucursal' }}</h3>
             </ion-label>
-            <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+            <ion-icon slot="end" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
           </ion-item>
-          <app-selector-generico etiqueta="Nivel de urgencia" placeholder="Seleccionar urgencia"
-            [opciones]="servicio.opcionesUrgencia" [(valor)]="nivelUrgencia"></app-selector-generico>
-          <ion-item class="dark2">
-            <ion-label position="stacked">Descripcion</ion-label>
-            <ion-textarea rows="4" placeholder="Escriba una descripcion" [(ngModel)]="descripcion"></ion-textarea>
+          <p class="mensaje-error" *ngIf="errorSucursal" role="alert">
+            Seleccione una sucursal de retiro.
+          </p>
+
+          <ion-item class="campo" lines="none">
+            <ion-label position="stacked">Fecha de vencimiento</ion-label>
+            <ion-datetime-button datetime="fecha-vencimiento" aria-label="Elegir fecha de vencimiento"></ion-datetime-button>
+          </ion-item>
+
+          <app-selector-generico
+            etiqueta="Nivel de urgencia"
+            placeholder="Seleccionar urgencia"
+            [opciones]="servicio.opcionesUrgencia"
+            [valor]="nivelUrgenciaValor"
+            (valorChange)="alCambiarUrgencia($event)"
+          ></app-selector-generico>
+
+          <ion-item class="campo" lines="none">
+            <ion-label position="stacked">Descripción</ion-label>
+            <ion-textarea
+              rows="4"
+              placeholder="Escriba una descripción del gasto"
+              formControlName="descripcion"
+            ></ion-textarea>
           </ion-item>
         </ion-list>
       </app-seccion-accordion>
@@ -174,40 +301,81 @@
 
     <ion-modal [keepContentsMounted]="true" cssClass="vencimiento-modal">
       <ng-template>
-        <ion-datetime id="fecha-vencimiento" presentation="date" locale="es-PY" [showDefaultButtons]="true"
-          doneText="Listo" cancelText="Cerrar" [(ngModel)]="fechaVencimiento"></ion-datetime>
+        <ion-datetime
+          id="fecha-vencimiento"
+          presentation="date"
+          locale="es-PY"
+          [showDefaultButtons]="true"
+          doneText="Listo"
+          cancelText="Cerrar"
+          formControlName="fechaVencimiento"
+        ></ion-datetime>
       </ng-template>
     </ion-modal>
 
-    <app-buscador-modal [abierto]="isPersonaBenefModalOpen" [config]="servicio.configPersonaBenef"
-      [valorSeleccionadoId]="beneficiarioPersonaId" (seleccionar)="seleccionarPersonaBeneficiaria($event)"
-      (cerrar)="cerrarModalPersonaBeneficiaria()"></app-buscador-modal>
+    <app-buscador-modal
+      [abierto]="isPersonaBenefModalOpen"
+      [config]="servicio.configPersonaBenef"
+      [valorSeleccionadoId]="beneficiarioPersonaId"
+      (seleccionar)="seleccionarPersonaBeneficiaria($event)"
+      (cerrar)="cerrarModalPersonaBeneficiaria()"
+    ></app-buscador-modal>
 
-    <app-buscador-modal [abierto]="isProveedorBenefModalOpen" [config]="servicio.configProveedorBenef"
-      [valorSeleccionadoId]="beneficiarioProveedorId" (seleccionar)="seleccionarProveedorBeneficiario($event)"
-      (cerrar)="cerrarModalProveedorBeneficiario()"></app-buscador-modal>
+    <app-buscador-modal
+      [abierto]="isProveedorBenefModalOpen"
+      [config]="servicio.configProveedorBenef"
+      [valorSeleccionadoId]="beneficiarioProveedorId"
+      (seleccionar)="seleccionarProveedorBeneficiario($event)"
+      (cerrar)="cerrarModalProveedorBeneficiario()"
+    ></app-buscador-modal>
 
-    <app-buscador-modal [abierto]="isTipoGastoModalOpen" [config]="servicio.configTipoGasto" [valorSeleccionadoId]="tipoGastoId"
-      (seleccionar)="seleccionarTipoGasto($event)" (cerrar)="cerrarModalTipoGasto()"></app-buscador-modal>
+    <app-buscador-modal
+      [abierto]="isTipoGastoModalOpen"
+      [config]="servicio.configTipoGasto"
+      [valorSeleccionadoId]="tipoGastoId"
+      (seleccionar)="seleccionarTipoGasto($event)"
+      (cerrar)="cerrarModalTipoGasto()"
+    ></app-buscador-modal>
 
-    <app-buscador-modal *ngIf="requiereEnteActivo && servicio.configActivo" [abierto]="isEnteActivoModalOpen"
-      [config]="servicio.configActivo" [valorSeleccionadoId]="activoReferenciaId"
-      (seleccionar)="seleccionarEnteActivo($event)" (cerrar)="cerrarModalEnteActivo()"></app-buscador-modal>
+    <app-buscador-modal
+      *ngIf="requiereEnteActivo && servicio.configActivo"
+      [abierto]="isEnteActivoModalOpen"
+      [config]="servicio.configActivo"
+      [valorSeleccionadoId]="activoReferenciaId"
+      (seleccionar)="seleccionarEnteActivo($event)"
+      (cerrar)="cerrarModalEnteActivo()"
+    ></app-buscador-modal>
 
-    <app-buscador-modal [abierto]="isSucursalModalOpen" [config]="servicio.configSucursal"
-      [valorSeleccionadoId]="selectedSucursalId" (seleccionar)="seleccionarSucursal($event)"
-      (cerrar)="cerrarModalSucursal()"></app-buscador-modal>
-  </div>
+    <app-buscador-modal
+      [abierto]="isSucursalModalOpen"
+      [config]="servicio.configSucursal"
+      [valorSeleccionadoId]="selectedSucursalId"
+      (seleccionar)="seleccionarSucursal($event)"
+      (cerrar)="cerrarModalSucursal()"
+    ></app-buscador-modal>
+  </form>
 </ion-content>
 
-<ion-footer class="footer-actions">
+<ion-footer class="footer-actions ion-no-border">
   <ion-toolbar>
-    <ion-button expand="block" class="btn-success action-btn" [disabled]="guardando" (click)="enviarSolicitud()">
-      <ion-icon slot="start" name="send-outline"></ion-icon>
-      Enviar solicitud
+    <ion-button
+      expand="block"
+      class="action-btn btn-enviar"
+      [disabled]="guardando || !puedeEnviar"
+      (click)="enviarSolicitud()"
+    >
+      <ion-spinner *ngIf="guardando" slot="start" name="crescent" aria-hidden="true"></ion-spinner>
+      <ion-icon *ngIf="!guardando" slot="start" name="send-outline" aria-hidden="true"></ion-icon>
+      {{ guardando ? 'Enviando…' : 'Enviar solicitud' }}
     </ion-button>
-    <ion-button expand="block" fill="outline" class="action-btn cancel-btn" (click)="cancelar()">
-      <ion-icon slot="start" name="close-outline"></ion-icon>
+    <ion-button
+      expand="block"
+      fill="outline"
+      class="action-btn cancel-btn"
+      [disabled]="guardando"
+      (click)="cancelar()"
+    >
+      <ion-icon slot="start" name="close-outline" aria-hidden="true"></ion-icon>
       Cancelar
     </ion-button>
   </ion-toolbar>

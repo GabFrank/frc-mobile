@@ -27,7 +27,13 @@ import {
   SucursalItem,
   DatosSolicitudGasto,
   DetalleGastoFormulario,
+  PaginaResultado,
 } from '../interfaces';
+import {
+  formatearMonto,
+  idGuaraniDesdeOpciones,
+  precisionMonedaPorId,
+} from '../utils/monto-moneda.util';
 import { TipoGasto } from '../models/tipo-gasto.model';
 import { OpcionSeleccion } from 'src/app/components/selector-generico/selector-generico.component';
 import {
@@ -292,31 +298,11 @@ export class SolicitudGastosService {
   }
 
   private formatearMontoInterno(monto: number, monedaId: number | null): string {
-    const precision = this.obtenerPrecisionMoneda(monedaId);
-    return new Intl.NumberFormat('es-PY', {
-      minimumFractionDigits: precision,
-      maximumFractionDigits: precision,
-    }).format(monto);
-  }
-
-  private obtenerPrecisionMoneda(monedaId: number | null): number {
-    if (!monedaId) {
-      return 0;
-    }
-    const opcion = this.opcionesMoneda.find((item) => Number(item.valor) === Number(monedaId));
-    const texto = (opcion?.texto || '').toUpperCase();
-    if (texto.includes('GUARANI') || texto.includes('₲')) {
-      return 0;
-    }
-    return 2;
+    return formatearMonto(monto, precisionMonedaPorId(this.opcionesMoneda, monedaId));
   }
 
   private obtenerIdGuarani(): number | null {
-    const opcionGuarani = this.opcionesMoneda.find((opcion) => {
-      const texto = (opcion.texto || '').toUpperCase();
-      return texto.includes('GUARANI') || texto.includes('₲') || texto.includes('GS.');
-    });
-    return opcionGuarani ? Number(opcionGuarani.valor) : null;
+    return idGuaraniDesdeOpciones(this.opcionesMoneda);
   }
 
   iconoModuloPadre(moduloPadre?: ModuloPadreGasto | null): string {
@@ -580,8 +566,13 @@ export class SolicitudGastosService {
     return this.extraerMensajeErrorPrivado(error);
   }
 
-  async getMisSolicitudes(page = 0, size = 15, inicio?: string, fin?: string): Promise<any> {
-    const obs = await this.genericService.onGet<any>(
+  async getMisSolicitudes(
+    page = 0,
+    size = 15,
+    inicio?: string,
+    fin?: string,
+  ): Promise<PaginaResultado<PreGasto>> {
+    const obs = await this.genericService.onGet<PaginaResultado<PreGasto>>(
       this.filterPreGastosGQL,
       {
         page,
