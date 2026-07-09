@@ -210,15 +210,18 @@ export class DevolucionComponent implements OnInit {
       .pipe(first(), untilDestroyed(this))
       .subscribe(
         async (res: Devolucion) => {
-          this.guardando = false;
           if (res != null) {
             if (pasarASeparado) {
+              // Mantener guardando=true hasta que termine (o falle) el segundo
+              // mutation, para no re-habilitar los botones mientras avanza el
+              // estado y evitar crear una devolución duplicada por doble tap.
               await this.avanzarASeparado(res);
             } else {
               this.notificacionService.success('Devolución creada');
               this.limpiar();
             }
           }
+          this.guardando = false;
         },
         () => {
           this.guardando = false;
@@ -226,14 +229,24 @@ export class DevolucionComponent implements OnInit {
       );
   }
 
-  private async avanzarASeparado(devolucion: Devolucion) {
-    const usuarioId = this.mainService.usuarioActual?.id ?? +localStorage.getItem('usuarioId');
-    (await this.devolucionService.onAvanzarEstado(devolucion.id, EstadoDevolucion.SEPARADO, usuarioId))
-      .pipe(first(), untilDestroyed(this))
-      .subscribe(() => {
-        this.notificacionService.success('Devolución creada y separada');
-        this.limpiar();
-      });
+  private avanzarASeparado(devolucion: Devolucion): Promise<void> {
+    return new Promise<void>(async (resolve) => {
+      const usuarioId = this.mainService.usuarioActual?.id ?? +localStorage.getItem('usuarioId');
+      (await this.devolucionService.onAvanzarEstado(devolucion.id, EstadoDevolucion.SEPARADO, usuarioId))
+        .pipe(first(), untilDestroyed(this))
+        .subscribe(
+          () => {
+            this.notificacionService.success('Devolución creada y separada');
+            this.limpiar();
+            resolve();
+          },
+          () => {
+            // La devolución ya quedó creada en PENDIENTE y el servicio ya notificó
+            // el error. No recrear: sólo resolvemos para re-habilitar el botón.
+            resolve();
+          }
+        );
+    });
   }
 
   private limpiar() {
