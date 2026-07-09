@@ -32,6 +32,10 @@ const routes: Routes = [
   {
     path: 'devolucion',
     loadChildren: () => import('./devolucion/devolucion.module').then(m => m.DevolucionModule)
+  },
+  {
+    path: 'retiro-proveedor',
+    loadChildren: () => import('./devolucion/retiro-proveedor/retiro-proveedor.module').then(m => m.RetiroProveedorModule)
   }
 ];
 
