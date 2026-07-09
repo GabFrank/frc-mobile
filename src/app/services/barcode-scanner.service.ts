@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Platform } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
 import { BarcodeScanner, BarcodeFormat } from '@capacitor-mlkit/barcode-scanning';
 import { from, Observable, of } from 'rxjs';
 import { finalize } from 'rxjs/operators';
@@ -16,7 +16,6 @@ export interface BarcodeScanResult {
 })
 export class BarcodeScannerService {
   constructor(
-    private platform: Platform,
     private serverConnectionService: ServerConnectionService
   ) { }
 
@@ -31,10 +30,11 @@ export class BarcodeScannerService {
   }
 
   private isNativePlatform(): boolean {
-    return (
-      this.platform.is('capacitor') &&
-      (this.platform.is('android') || this.platform.is('ios'))
-    );
+    // Usar la API de Capacitor, no Platform.is('capacitor') de Ionic: en este
+    // stack (Ionic 6 + Capacitor 7) Platform.is('capacitor') devuelve false
+    // dentro de la app nativa y el scanner nunca se disparaba. El resto de los
+    // servicios nativos del proyecto ya usan Capacitor.isNativePlatform().
+    return Capacitor.isNativePlatform();
   }
 
   private beginNativeScanUi(): void {
@@ -44,7 +44,7 @@ export class BarcodeScannerService {
   private async scanNative(): Promise<BarcodeScanResult> {
     this.beginNativeScanUi();
     try {
-      if (this.platform.is('android')) {
+      if (Capacitor.getPlatform() === 'android') {
         const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable();
         if (!available) {
           await BarcodeScanner.installGoogleBarcodeScannerModule();
@@ -79,8 +79,10 @@ export class BarcodeScannerService {
       }
 
       return { text: '', format: '', cancelled: true };
-    } catch (error) {
-      console.error('Google ML Kit Scan Error:', error);
+    } catch (error: any) {
+      console.error('Google ML Kit Scan Error:',
+        error?.message ?? String(error),
+        'code=', error?.code);
       return { text: '', format: '', cancelled: true };
     }
   }
