@@ -27,6 +27,14 @@
 
     </activity>
 
+    <!-- Play policy (Android 16 / pantallas grandes): la libreria ML Kit code-scanner declara
+         esta activity con screenOrientation="portrait", que Android 16 marca como restriccion
+         de orientacion en dispositivos de pantalla grande (foldables/tablets). Se remueve el
+         atributo para que la activity siga la orientacion del dispositivo. -->
+    <activity
+      android:name="com.google.mlkit.vision.codescanner.internal.GmsBarcodeScanningDelegateActivity"
+      tools:remove="android:screenOrientation" />
+
     <provider
       android:name="androidx.core.content.FileProvider"
       android:authorities="${applicationId}.fileprovider"

@@ -134,7 +134,10 @@ export class LoginComponent implements OnInit {
             this.onSelectUsuarioAndDismiss(res.usuario)
           });
         } else {
-          this.error = res.error['message'] || "Error al iniciar sesión";
+          this.error =
+            res.error?.error?.message ||
+            res.error?.message ||
+            "Error al iniciar sesión";
           this.notificacionService.open(this.error, TipoNotificacion.DANGER, 10)
         }
       }, (err) => {

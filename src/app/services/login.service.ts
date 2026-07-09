@@ -213,15 +213,23 @@ export class LoginService {
                     }
                   });
               }
+            } else {
+              const response: LoginResponse = {
+                usuario: null,
+                error: this.buildAuthErrorResponse(
+                  res?.['message'] || res?.['mensaje']
+                )
+              };
+              obs.next(response);
             }
           },
           (error) => {
             this.cargandoService.close(loading);
             let response: LoginResponse = {
               usuario: null,
-              error: error
+              error: this.normalizeLoginError(error)
             };
-            obs.next(error);
+            obs.next(response);
           }
         );
     });
@@ -303,6 +311,60 @@ export class LoginService {
           (res) => resolve(res),
           () => resolve(null)
         );
+    });
+  }
+
+  private normalizeLoginError(error: HttpErrorResponse): HttpErrorResponse {
+    if (!error) {
+      return this.buildServerErrorResponse(
+        'Error de conexión con el servidor. Verifique la configuración.'
+      );
+    }
+
+    const serverMessage =
+      error?.error?.message ||
+      error?.error?.mensaje ||
+      error?.message ||
+      '';
+    const normalized = String(serverMessage).toLowerCase();
+    const isInvalidCredentials =
+      error?.status === 401 ||
+      normalized.includes('contrase') ||
+      normalized.includes('credencial') ||
+      normalized.includes('bad credential') ||
+      normalized.includes('usuario no existe') ||
+      normalized.includes('unauthorized');
+
+    if (isInvalidCredentials) {
+      return this.buildAuthErrorResponse();
+    }
+
+    if (error?.status === 0) {
+      return this.buildServerErrorResponse(
+        'Error de conexión con el servidor. Verifique la configuración.'
+      );
+    }
+
+    return this.buildServerErrorResponse(
+      'No se pudo iniciar sesión por un error del servidor. Intente nuevamente.'
+    );
+  }
+
+  private buildAuthErrorResponse(
+    message: string = 'Usuario o contraseña incorrectos. Verifique e intente nuevamente.'
+  ): HttpErrorResponse {
+    return new HttpErrorResponse({
+      status: 401,
+      statusText: 'Unauthorized',
+      error: { message }
+    });
+  }
+
+  private buildServerErrorResponse(message: string): HttpErrorResponse {
+    return new HttpErrorResponse({
+      status: 500,
+      statusText: 'Server Error',
+      error: { message }
     });
   }
 }
