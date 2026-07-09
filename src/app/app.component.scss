@@ -1,5 +1,27 @@
 .new-background-color {
   --background: #f44336 !important;
+  --min-height: 52px !important;
+  --padding-top: 0 !important;
+  --padding-bottom: 0 !important;
+  --ion-safe-area-top: 0px !important;
+
+  ion-row {
+    min-height: 52px;
+    align-items: center;
+    width: 100%;
+  }
+
+  img {
+    max-height: 40px !important;
+  }
+}
+
+// Elimina el padding/alto interno del contenedor del toolbar (lo que dejaba
+// espacio rojo de mas arriba y abajo del logo)
+.new-background-color::part(container) {
+  min-height: 52px;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .contact-popover .popover-content {
@@ -199,9 +221,9 @@ ion-footer {
   ion-tab-bar {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     --background: #1a1a1a;
-    height: 56px;
-    padding-bottom: 0;
-    --padding-bottom: 0;
+    height: 58px;
+    padding-bottom: 4px;
+    --padding-bottom: 4px;
     overflow: visible;
 
     ion-tab-button {
