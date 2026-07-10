@@ -1,0 +1,47 @@
+ion-note[slot="error"] {
+  display: block;
+  font-size: 0.8em;
+  color: var(--ion-color-danger);
+}
+
+ion-card {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.camara-button {
+  --background: #f44336 !important;
+}
+
+.save-button {
+  --background: #43a047;
+}
+
+.camara-placeholder {
+  border:2px dashed #f44336; 
+  border-radius:8px; 
+  padding:24px; 
+  text-align:center; 
+  margin-bottom:12px; 
+  color:#f44336;
+}
+
+.camera-icon {
+  font-size:40px; 
+  display:block; 
+  margin:0 auto 8px;
+}
+
+.camera-text {
+  margin:0; 
+  font-size:0.9em; 
+  font-weight:500;
+}
+
+.foto-preview {
+  width:100%; 
+  max-height:200px; 
+  object-fit:cover; 
+  border-radius:8px; 
+  margin-bottom:12px;
+}

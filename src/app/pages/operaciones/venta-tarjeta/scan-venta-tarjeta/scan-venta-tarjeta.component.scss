@@ -1,0 +1,15 @@
+ion-content {
+  --padding-top: 16px;
+}
+
+.scan-button {
+  --background: #f44336 !important;
+}
+
+.scan-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding-top: 32px;
+}
