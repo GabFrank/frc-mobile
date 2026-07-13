@@ -42,6 +42,51 @@ export const avanzarEstadoDevolucionMutation = gql`
   }
 `;
 
+export const devolucionConFiltrosQuery = gql`
+  query devolucionConFiltros(
+    $proveedorId: ID
+    $sucursalId: ID
+    $estado: DevolucionEstado
+    $usuarioId: ID
+    $page: Int
+    $size: Int
+  ) {
+    data: devolucionConFiltros(
+      proveedorId: $proveedorId
+      sucursalId: $sucursalId
+      estado: $estado
+      usuarioId: $usuarioId
+      page: $page
+      size: $size
+    ) {
+      hasNext
+      getTotalElements
+      getContent {
+        id
+        tipo
+        estado
+        identificador
+        fecha
+        motivo
+        sucursalOrigen {
+          id
+          nombre
+        }
+        sucursalUbicacion {
+          id
+          nombre
+        }
+        proveedor {
+          id
+          persona {
+            nombre
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const motivosAveriaActivosQuery = gql`
   query motivosAveriaActivos {
     data: motivosAveriaActivos {

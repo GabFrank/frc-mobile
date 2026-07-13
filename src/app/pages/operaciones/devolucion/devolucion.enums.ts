@@ -6,6 +6,7 @@ export enum TipoDevolucion {
 export enum EstadoDevolucion {
   PENDIENTE = 'PENDIENTE',
   SEPARADO = 'SEPARADO',
+  COLECTADO = 'COLECTADO',
   RETIRADO = 'RETIRADO',
   CANJEADO = 'CANJEADO',
   ACREDITADO = 'ACREDITADO',

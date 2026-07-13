@@ -2,14 +2,12 @@ import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { first } from 'rxjs/operators';
-import { Codigo } from 'src/app/domains/productos/codigo.model';
 import { Presentacion } from 'src/app/domains/productos/presentacion.model';
 import { Producto } from 'src/app/domains/productos/producto.model';
 import { dateToString } from 'src/app/generic/utils/dateUtils';
-import { CodigoService } from 'src/app/pages/codigo/codigo.service';
 import { Proveedor } from 'src/app/pages/personas/proveedor/proveedor.model';
 import { ProveedorService } from 'src/app/pages/personas/proveedor/proveedor.service';
-import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
+import { SearchProductoDialogComponent } from 'src/app/pages/producto/search-producto-dialog/search-producto-dialog.component';
 import { DialogoService } from 'src/app/services/dialogo.service';
 import { MainService } from 'src/app/services/main.service';
 import { ModalService, ModalSize } from 'src/app/services/modal.service';
@@ -46,8 +44,6 @@ export class DevolucionComponent implements OnInit {
     private _location: Location,
     private devolucionService: DevolucionService,
     private proveedorService: ProveedorService,
-    private codigoService: CodigoService,
-    private barcodeScanner: BarcodeScannerService,
     private modalService: ModalService,
     private dialogoService: DialogoService,
     private notificacionService: NotificacionService,
@@ -104,29 +100,23 @@ export class DevolucionComponent implements OnInit {
     this.selectedProveedor = null;
   }
 
-  onEscanear() {
-    this.barcodeScanner.scan().subscribe((res) => {
-      if (!res.cancelled && res.text != null && res.text !== '') {
-        this.onBuscarProductoPorCodigo(res.text);
-      }
-    });
-  }
-
-  async onBuscarProductoPorCodigo(codigoBarra: string) {
-    (await this.codigoService.onGetCodigoPorCodigo(codigoBarra))
-      .pipe(untilDestroyed(this))
-      .subscribe((codigos: Codigo[]) => {
-        if (codigos && codigos.length > 0) {
-          const codigo = codigos[0];
-          const presentacion = codigo.presentacion;
-          const producto = presentacion?.producto;
-          if (producto == null) {
-            this.notificacionService.warn('Producto no encontrado');
-            return;
-          }
-          this.abrirDialogoItem(producto, presentacion);
-        } else {
-          this.notificacionService.warn('Producto no encontrado');
+  /**
+   * Agregar producto: abre el buscador (mismo patrón que inventarios/transferencias)
+   * que enciende la cámara por defecto y deja buscar a mano si se cancela el scan.
+   * Devuelve { producto, presentacion } al elegir.
+   */
+  onAgregarProducto() {
+    const sucursalId = this.mainService.sucursalActual?.id;
+    this.modalService
+      .openModal(
+        SearchProductoDialogComponent,
+        { data: { mostrarPrecio: false, sucursalId } },
+        ModalSize.LARGE
+      )
+      .then((res) => {
+        const sel = res?.data;
+        if (sel?.producto && sel?.presentacion) {
+          this.abrirDialogoItem(sel.producto, sel.presentacion);
         }
       });
   }
@@ -219,6 +209,7 @@ export class DevolucionComponent implements OnInit {
             } else {
               this.notificacionService.success('Devolución creada');
               this.limpiar();
+              this._location.back();
             }
           }
           this.guardando = false;
@@ -238,6 +229,7 @@ export class DevolucionComponent implements OnInit {
           () => {
             this.notificacionService.success('Devolución creada y separada');
             this.limpiar();
+            this._location.back();
             resolve();
           },
           () => {
