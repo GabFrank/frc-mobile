@@ -26,7 +26,8 @@
       [ngModel]="sucursalOrigen"
       [compareWith]="compareSucursal"
       (ionChange)="onSucursalChange($event)"
-      interface="popover"
+      interface="alert"
+      [interfaceOptions]="{ header: 'Sucursal de origen' }"
     >
       <ion-select-option *ngFor="let s of sucursales" [value]="s">
         {{ s.nombre }}

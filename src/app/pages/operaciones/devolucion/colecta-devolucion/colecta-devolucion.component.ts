@@ -148,12 +148,14 @@ export class ColectaDevolucionComponent implements OnInit {
               const fail = (r?.resultados || []).filter((x) => !x.ok);
               if (fail.length === 0) {
                 this.notificacionService.success(`${okCount} colectada(s)`);
+                // Al finalizar, volver a la pantalla padre de devoluciones.
+                this._location.back();
               } else {
                 this.notificacionService.warn(
                   `${okCount} ok, ${fail.length} con error`
                 );
+                this.cargarCandidatas();
               }
-              this.cargarCandidatas();
             },
             () => {
               this.procesando = false;

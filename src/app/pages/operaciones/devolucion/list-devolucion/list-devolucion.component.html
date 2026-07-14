@@ -14,7 +14,8 @@
         placeholder="Todas"
         [(ngModel)]="sucursalId"
         (ionChange)="onFiltrar()"
-        interface="popover"
+        interface="alert"
+        [interfaceOptions]="{ header: 'Sucursal' }"
       >
         <ion-select-option [value]="null">Todas</ion-select-option>
         <ion-select-option *ngFor="let s of sucursales" [value]="s.id">

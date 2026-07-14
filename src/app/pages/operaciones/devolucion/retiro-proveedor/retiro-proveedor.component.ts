@@ -32,6 +32,8 @@ export class RetiroProveedorComponent implements OnInit {
   sucursales: Sucursal[] = [];
   selectedSucursalId: number | null = null; // null = Todas
 
+  permitirManual = true; // config: verificar caja sin escanear
+
   consolidado: RetiroProveedorConsolidado;
   cajas: RetiroCajaView[] = [];
   verificadasCount = 0;
@@ -58,6 +60,24 @@ export class RetiroProveedorComponent implements OnInit {
           (s) => s.nombre != 'SERVIDOR' && s.nombre != 'COMPRAS'
         );
       });
+    (await this.retiroProveedorService.onGetConfiguracion())
+      .pipe(untilDestroyed(this))
+      .subscribe((cfg) => {
+        // Default liberar (true) si la config no vino.
+        this.permitirManual = cfg?.retiroPermitirSeleccionManual !== false;
+      });
+  }
+
+  /** Verificacion manual (sin escanear), si la config lo permite. */
+  onToggleManual(caja: RetiroCajaView) {
+    if (!this.permitirManual) return;
+    if (caja.verificada) {
+      caja.verificada = false;
+      this.verificadasCount = Math.max(0, this.verificadasCount - 1);
+    } else {
+      caja.verificada = true;
+      this.verificadasCount++;
+    }
   }
 
   onSucursalChange(ev: any) {

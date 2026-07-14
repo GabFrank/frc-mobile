@@ -31,6 +31,14 @@ export const retiroProveedorConsolidadoQuery = gql`
   }
 `;
 
+export const devolucionConfiguracionQuery = gql`
+  query devolucionConfiguracion {
+    data: devolucionConfiguracion {
+      retiroPermitirSeleccionManual
+    }
+  }
+`;
+
 export const retirarDevolucionesEnBloqueMutation = gql`
   mutation retirarDevolucionesEnBloque($devolucionIds: [ID!]!, $usuarioId: ID) {
     data: retirarDevolucionesEnBloque(devolucionIds: $devolucionIds, usuarioId: $usuarioId) {

@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import { GenericCrudService } from 'src/app/generic/generic-crud.service';
 import { RetirarDevolucionesEnBloqueGQL } from './graphql/retirarDevolucionesEnBloque';
 import { RetiroProveedorConsolidadoGQL } from './graphql/retiroProveedorConsolidado';
+import { DevolucionConfiguracionGQL } from './graphql/devolucionConfiguracion';
 import { RetiroBloqueResultado, RetiroProveedorConsolidado } from './retiro-proveedor.model';
 
 @Injectable({
@@ -12,8 +13,13 @@ export class RetiroProveedorService {
   constructor(
     private genericService: GenericCrudService,
     private retiroProveedorConsolidadoGQL: RetiroProveedorConsolidadoGQL,
-    private retirarDevolucionesEnBloqueGQL: RetirarDevolucionesEnBloqueGQL
+    private retirarDevolucionesEnBloqueGQL: RetirarDevolucionesEnBloqueGQL,
+    private devolucionConfiguracionGQL: DevolucionConfiguracionGQL
   ) {}
+
+  async onGetConfiguracion(): Promise<Observable<{ retiroPermitirSeleccionManual: boolean }>> {
+    return await this.genericService.onGetCustom(this.devolucionConfiguracionGQL, {});
+  }
 
   async onGetConsolidado(
     proveedorId: number,

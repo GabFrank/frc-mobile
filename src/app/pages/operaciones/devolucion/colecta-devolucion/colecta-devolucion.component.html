@@ -15,7 +15,8 @@
         [ngModel]="sucursalOrigen"
         [compareWith]="compareSucursal"
         (ionChange)="onOrigenChange($event)"
-        interface="popover"
+        interface="alert"
+        [interfaceOptions]="{ header: 'Sucursal de origen' }"
       >
         <ion-select-option *ngFor="let s of sucursales" [value]="s">{{ s.nombre }}</ion-select-option>
       </ion-select>
@@ -25,7 +26,8 @@
         [ngModel]="sucursalDestino"
         [compareWith]="compareSucursal"
         (ionChange)="onDestinoChange($event)"
-        interface="popover"
+        interface="alert"
+        [interfaceOptions]="{ header: 'Depósito destino' }"
       >
         <ion-select-option *ngFor="let s of sucursales" [value]="s">{{ s.nombre }}</ion-select-option>
       </ion-select>

@@ -51,7 +51,8 @@
         placeholder="Todas"
         [ngModel]="selectedSucursalId"
         (ionChange)="onSucursalChange($event)"
-        interface="popover"
+        interface="alert"
+        [interfaceOptions]="{ header: 'Sucursal' }"
       >
         <ion-select-option [value]="null">Todas</ion-select-option>
         <ion-select-option *ngFor="let s of sucursales" [value]="s.id">
@@ -77,6 +78,9 @@
     <ion-progress-bar
       [value]="cajas.length > 0 ? verificadasCount / cajas.length : 0"
       color="success"></ion-progress-bar>
+    <p class="hint-manual" *ngIf="permitirManual">
+      Escaneá las cajas o tocá una para verificarla manualmente.
+    </p>
   </div>
 
   <div class="acciones-scan" *ngIf="selectedProveedor != null && cajas.length > 0">
@@ -88,7 +92,12 @@
 
   <!-- Listado de cajas separadas -->
   <ion-list *ngIf="cajas.length > 0">
-    <ion-item *ngFor="let caja of cajas" [class.verificada]="caja.verificada">
+    <ion-item
+      *ngFor="let caja of cajas"
+      [class.verificada]="caja.verificada"
+      [button]="permitirManual"
+      [detail]="false"
+      (click)="onToggleManual(caja)">
       <ion-icon
         slot="start"
         [name]="caja.verificada ? 'checkmark-circle' : 'ellipse-outline'"
