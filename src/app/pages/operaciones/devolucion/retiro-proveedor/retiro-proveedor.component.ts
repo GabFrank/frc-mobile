@@ -1,7 +1,9 @@
 import { Location } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { first } from 'rxjs/operators';
+import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
+import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
 import { Proveedor } from 'src/app/pages/personas/proveedor/proveedor.model';
 import { ProveedorService } from 'src/app/pages/personas/proveedor/proveedor.service';
 import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
@@ -21,11 +23,14 @@ import { RetiroProveedorService } from './retiro-proveedor.service';
   templateUrl: './retiro-proveedor.component.html',
   styleUrls: ['./retiro-proveedor.component.scss'],
 })
-export class RetiroProveedorComponent {
+export class RetiroProveedorComponent implements OnInit {
   proveedorTexto: string;
   proveedoresList: Proveedor[] = [];
   selectedProveedor: Proveedor;
   buscandoProveedor = false;
+
+  sucursales: Sucursal[] = [];
+  selectedSucursalId: number | null = null; // null = Todas
 
   consolidado: RetiroProveedorConsolidado;
   cajas: RetiroCajaView[] = [];
@@ -41,8 +46,25 @@ export class RetiroProveedorComponent {
     private proveedorService: ProveedorService,
     private barcodeScanner: BarcodeScannerService,
     private notificacionService: NotificacionService,
-    private mainService: MainService
+    private mainService: MainService,
+    private sucursalService: SucursalService
   ) {}
+
+  async ngOnInit() {
+    (await this.sucursalService.onGetAllSucursales())
+      .pipe(untilDestroyed(this))
+      .subscribe((res) => {
+        this.sucursales = (res || []).filter(
+          (s) => s.nombre != 'SERVIDOR' && s.nombre != 'COMPRAS'
+        );
+      });
+  }
+
+  onSucursalChange(ev: any) {
+    const val = ev?.detail?.value;
+    this.selectedSucursalId = val == null ? null : +val;
+    if (this.selectedProveedor != null) this.cargarConsolidado();
+  }
 
   async onBuscarProveedor() {
     const texto = this.proveedorTexto?.trim();
@@ -83,7 +105,10 @@ export class RetiroProveedorComponent {
     this.cajas = [];
     this.verificadasCount = 0;
     this.resultados = [];
-    (await this.retiroProveedorService.onGetConsolidado(this.selectedProveedor.id))
+    (await this.retiroProveedorService.onGetConsolidado(
+      this.selectedProveedor.id,
+      this.selectedSucursalId ?? undefined
+    ))
       .pipe(first(), untilDestroyed(this))
       .subscribe(
         (res: RetiroProveedorConsolidado) => {

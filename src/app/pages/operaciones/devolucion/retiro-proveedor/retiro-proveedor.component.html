@@ -18,7 +18,7 @@
           [(ngModel)]="proveedorTexto"
           placeholder="Nombre o documento del proveedor"
           (keyup.enter)="onBuscarProveedor()"></ion-input>
-        <ion-button slot="end" (click)="onBuscarProveedor()" [disabled]="buscandoProveedor">
+        <ion-button slot="end" class="btn-success" (click)="onBuscarProveedor()" [disabled]="buscandoProveedor">
           <ion-icon slot="icon-only" name="search-outline"></ion-icon>
         </ion-button>
       </ion-item>
@@ -44,6 +44,21 @@
         <ion-icon slot="icon-only" name="close-outline"></ion-icon>
       </ion-button>
     </ion-item>
+
+    <ion-item *ngIf="selectedProveedor != null">
+      <ion-label position="stacked">Sucursal</ion-label>
+      <ion-select
+        placeholder="Todas"
+        [ngModel]="selectedSucursalId"
+        (ionChange)="onSucursalChange($event)"
+        interface="popover"
+      >
+        <ion-select-option [value]="null">Todas</ion-select-option>
+        <ion-select-option *ngFor="let s of sucursales" [value]="s.id">
+          {{ s.nombre }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
   </div>
 
   <div class="cargando" *ngIf="cargando">
@@ -65,7 +80,7 @@
   </div>
 
   <div class="acciones-scan" *ngIf="selectedProveedor != null && cajas.length > 0">
-    <ion-button expand="block" (click)="onEscanearCaja()">
+    <ion-button expand="block" class="btn-success" (click)="onEscanearCaja()">
       <ion-icon slot="start" name="barcode-outline"></ion-icon>
       Escanear caja
     </ion-button>
@@ -121,6 +136,7 @@
     <div class="footer-actions">
       <ion-button
         expand="block"
+        class="btn-success"
         [disabled]="guardando || verificadasCount === 0"
         (click)="onConfirmarRetiro()">
         Confirmar retiro
