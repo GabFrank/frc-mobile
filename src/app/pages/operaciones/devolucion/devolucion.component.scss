@@ -1,5 +1,11 @@
 ion-segment {
   margin-bottom: 12px;
+  // Alinear con el theming de la app (verde), no el azul primary de Ionic.
+  --indicator-color: #43a047;
+}
+
+ion-segment-button {
+  --color-checked: #43a047;
 }
 
 .proveedor-box {

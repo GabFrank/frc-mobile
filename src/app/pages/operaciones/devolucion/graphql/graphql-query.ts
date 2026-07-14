@@ -141,6 +141,32 @@ export const deleteDevolucionItemMutation = gql`
   }
 `;
 
+export const etiquetasSeparadoPdfQuery = gql`
+  query etiquetasSeparadoPdf($devolucionId: ID!) {
+    data: etiquetasSeparadoPdf(devolucionId: $devolucionId)
+  }
+`;
+
+export const colectarDevolucionesEnBloqueMutation = gql`
+  mutation colectarDevolucionesEnBloque(
+    $devolucionIds: [ID!]!
+    $sucursalDestinoId: ID!
+    $usuarioId: ID
+  ) {
+    data: colectarDevolucionesEnBloque(
+      devolucionIds: $devolucionIds
+      sucursalDestinoId: $sucursalDestinoId
+      usuarioId: $usuarioId
+    ) {
+      resultados {
+        id
+        ok
+        mensaje
+      }
+    }
+  }
+`;
+
 export const motivosAveriaActivosQuery = gql`
   query motivosAveriaActivos {
     data: motivosAveriaActivos {

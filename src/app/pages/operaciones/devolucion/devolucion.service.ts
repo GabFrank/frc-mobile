@@ -10,6 +10,8 @@ import { MotivosAveriaActivosGQL } from './graphql/motivosAveriaActivos';
 import { DevolucionConFiltrosGQL } from './graphql/devolucionConFiltros';
 import { DevolucionByIdGQL } from './graphql/devolucionById';
 import { DeleteDevolucionItemGQL } from './graphql/deleteDevolucionItem';
+import { EtiquetasSeparadoPdfGQL } from './graphql/etiquetasSeparadoPdf';
+import { ColectarDevolucionesEnBloqueGQL } from './graphql/colectarDevolucionesEnBloque';
 
 @Injectable({
   providedIn: 'root',
@@ -23,7 +25,9 @@ export class DevolucionService {
     private motivosAveriaActivosGQL: MotivosAveriaActivosGQL,
     private devolucionConFiltrosGQL: DevolucionConFiltrosGQL,
     private devolucionByIdGQL: DevolucionByIdGQL,
-    private deleteDevolucionItemGQL: DeleteDevolucionItemGQL
+    private deleteDevolucionItemGQL: DeleteDevolucionItemGQL,
+    private etiquetasSeparadoPdfGQL: EtiquetasSeparadoPdfGQL,
+    private colectarDevolucionesEnBloqueGQL: ColectarDevolucionesEnBloqueGQL
   ) {}
 
   async onGetDevolucionById(id: number): Promise<Observable<Devolucion>> {
@@ -32,6 +36,24 @@ export class DevolucionService {
 
   async onDeleteDevolucionItem(id: number): Promise<Observable<boolean>> {
     return await this.genericService.onCustomSave(this.deleteDevolucionItemGQL, { id });
+  }
+
+  /** PDF A4 (base64) de etiquetas de separado para identificacion. */
+  async onGetEtiquetasSeparadoPdf(devolucionId: number): Promise<Observable<string>> {
+    return await this.genericService.onGetCustom(this.etiquetasSeparadoPdfGQL, { devolucionId });
+  }
+
+  /** Colecta interna en bloque: mueve las devoluciones separadas a un deposito. */
+  async onColectarEnBloque(
+    devolucionIds: number[],
+    sucursalDestinoId: number,
+    usuarioId?: number
+  ): Promise<Observable<{ resultados: { id: number; ok: boolean; mensaje: string }[] }>> {
+    return await this.genericService.onCustomSave(
+      this.colectarDevolucionesEnBloqueGQL,
+      { devolucionIds, sucursalDestinoId, usuarioId: usuarioId ?? null },
+      false
+    );
   }
 
   /** Lista paginada de devoluciones filtrada por usuario/sucursal/estado. */

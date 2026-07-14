@@ -1,11 +1,16 @@
 <ion-header>
-  <ion-toolbar color="primary">
+  <ion-toolbar>
     <ion-buttons slot="start">
       <ion-button (click)="onVolver()">
         <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>Devoluciones</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onColecta()">
+        <ion-icon slot="icon-only" name="cube-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
   <ion-toolbar>
     <div class="filtros">
@@ -74,7 +79,7 @@
   </ion-infinite-scroll>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button color="primary" (click)="onNueva()">
+    <ion-fab-button class="btn-success" (click)="onNueva()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>

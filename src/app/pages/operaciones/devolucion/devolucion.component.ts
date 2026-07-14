@@ -16,6 +16,7 @@ import { ModalService, ModalSize } from 'src/app/services/modal.service';
 import { NotificacionService } from 'src/app/services/notificacion.service';
 import { DevolucionItemDialogComponent, DevolucionItemDialogData } from './devolucion-item-dialog/devolucion-item-dialog.component';
 import { EstadoDevolucion, TipoDevolucion } from './devolucion.enums';
+import { ImpresionEtiquetaService } from './impresion-etiqueta.service';
 import { Devolucion, DevolucionInput, DevolucionItemDraft, DevolucionItemInput, MotivoAveria } from './devolucion.model';
 import { DevolucionService } from './devolucion.service';
 
@@ -53,7 +54,8 @@ export class DevolucionComponent implements OnInit {
     private modalService: ModalService,
     private dialogoService: DialogoService,
     private notificacionService: NotificacionService,
-    private mainService: MainService
+    private mainService: MainService,
+    private impresionEtiquetaService: ImpresionEtiquetaService
   ) {}
 
   ngOnInit() {
@@ -262,8 +264,9 @@ export class DevolucionComponent implements OnInit {
       (await this.devolucionService.onAvanzarEstado(devolucion.id, EstadoDevolucion.SEPARADO, usuarioId))
         .pipe(first(), untilDestroyed(this))
         .subscribe(
-          () => {
+          async () => {
             this.notificacionService.success('Devolución creada y separada');
+            await this.impresionEtiquetaService.preguntarEImprimir(devolucion.id);
             this.limpiar();
             this._location.back();
             resolve();

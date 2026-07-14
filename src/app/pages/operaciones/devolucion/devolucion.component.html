@@ -41,7 +41,7 @@
           [(ngModel)]="proveedorTexto"
           placeholder="Nombre o documento del proveedor"
           (keyup.enter)="onBuscarProveedor()"></ion-input>
-        <ion-button slot="end" (click)="onBuscarProveedor()" [disabled]="buscandoProveedor">
+        <ion-button slot="end" class="btn-success" (click)="onBuscarProveedor()" [disabled]="buscandoProveedor">
           <ion-icon slot="icon-only" name="search-outline"></ion-icon>
         </ion-button>
       </ion-item>
@@ -86,7 +86,7 @@
   </ion-item>
 
   <div class="acciones-scan">
-    <ion-button expand="block" color="primary" (click)="onAgregarProducto()">
+    <ion-button expand="block" class="btn-success" (click)="onAgregarProducto()">
       <ion-icon slot="start" name="add-circle-outline"></ion-icon>
       Agregar producto
     </ion-button>
@@ -123,14 +123,14 @@
       <ion-button
         expand="block"
         fill="outline"
-        color="primary"
+        class="btn-success-flat"
         [disabled]="guardando || items.length === 0"
         (click)="onGuardar(true)">
         Guardar y separar
       </ion-button>
       <ion-button
         expand="block"
-        color="primary"
+        class="btn-success"
         [disabled]="guardando || items.length === 0"
         (click)="onGuardar(false)">
         Guardar devolución

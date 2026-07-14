@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -30,6 +31,7 @@ export class ListDevolucionComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private _location: Location,
     private devolucionService: DevolucionService,
     private sucursalService: SucursalService,
     private mainService: MainService
@@ -103,8 +105,12 @@ export class ListDevolucionComponent implements OnInit {
     this.router.navigate(['/operaciones/devolucion/detalle', d.id]);
   }
 
+  onColecta(): void {
+    this.router.navigate(['/operaciones/devolucion/colecta']);
+  }
+
   onVolver(): void {
-    this.router.navigate(['/home']);
+    this._location.back();
   }
 
   private colorEstado(estado: string): string {

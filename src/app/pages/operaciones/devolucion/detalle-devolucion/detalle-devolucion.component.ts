@@ -1,5 +1,6 @@
+import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { first } from 'rxjs/operators';
 import { Presentacion } from 'src/app/domains/productos/presentacion.model';
@@ -14,6 +15,7 @@ import {
   DevolucionItemDialogData,
 } from '../devolucion-item-dialog/devolucion-item-dialog.component';
 import { EstadoDevolucion } from '../devolucion.enums';
+import { ImpresionEtiquetaService } from '../impresion-etiqueta.service';
 import {
   Devolucion,
   DevolucionItemDraft,
@@ -43,12 +45,13 @@ export class DetalleDevolucionComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    private _location: Location,
     private devolucionService: DevolucionService,
     private modalService: ModalService,
     private dialogoService: DialogoService,
     private notificacionService: NotificacionService,
-    private mainService: MainService
+    private mainService: MainService,
+    private impresionEtiquetaService: ImpresionEtiquetaService
   ) {}
 
   ngOnInit() {
@@ -215,6 +218,7 @@ export class DetalleDevolucionComponent implements OnInit {
               if (r != null) {
                 this.notificacionService.success('Devolución separada');
                 this.cargar(this.devolucion.id);
+                this.impresionEtiquetaService.preguntarEImprimir(this.devolucion.id);
               }
             },
             () => {
@@ -225,6 +229,6 @@ export class DetalleDevolucionComponent implements OnInit {
   }
 
   onVolver() {
-    this.router.navigate(['/operaciones/devolucion']);
+    this._location.back();
   }
 }

@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { DevolucionComponent } from './devolucion.component';
 import { ListDevolucionComponent } from './list-devolucion/list-devolucion.component';
 import { DetalleDevolucionComponent } from './detalle-devolucion/detalle-devolucion.component';
+import { ColectaDevolucionComponent } from './colecta-devolucion/colecta-devolucion.component';
 
 const routes: Routes = [
   {
@@ -12,6 +13,10 @@ const routes: Routes = [
   {
     path: 'nueva',
     component: DevolucionComponent,
+  },
+  {
+    path: 'colecta',
+    component: ColectaDevolucionComponent,
   },
   {
     path: 'detalle/:id',
