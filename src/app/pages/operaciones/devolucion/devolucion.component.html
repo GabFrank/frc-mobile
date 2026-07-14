@@ -19,6 +19,21 @@
     </ion-segment-button>
   </ion-segment>
 
+  <ion-item>
+    <ion-label position="stacked">Sucursal de origen</ion-label>
+    <ion-select
+      placeholder="Seleccione sucursal"
+      [ngModel]="sucursalOrigen"
+      [compareWith]="compareSucursal"
+      (ionChange)="onSucursalChange($event)"
+      interface="popover"
+    >
+      <ion-select-option *ngFor="let s of sucursales" [value]="s">
+        {{ s.nombre }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
   <div *ngIf="tipo === TipoDevolucion.CON_PROVEEDOR" class="proveedor-box">
     <div *ngIf="selectedProveedor == null">
       <ion-item lines="none">
@@ -30,11 +45,16 @@
           <ion-icon slot="icon-only" name="search-outline"></ion-icon>
         </ion-button>
       </ion-item>
+      <div *ngIf="proveedoresList.length > 0" class="proveedor-resultados-hint">
+        Tocá un proveedor para seleccionarlo
+      </div>
       <ion-list *ngIf="proveedoresList.length > 0">
         <ion-item
           button
+          detail="true"
           *ngFor="let p of proveedoresList"
           (click)="onSelectProveedor(p)">
+          <ion-icon slot="start" name="business-outline" color="medium"></ion-icon>
           <ion-label>
             {{ p.persona?.nombre }}
             <p *ngIf="p.persona?.documento">{{ p.persona?.documento }}</p>
@@ -44,7 +64,9 @@
     </div>
 
     <ion-item *ngIf="selectedProveedor != null" lines="none" class="proveedor-selected">
+      <ion-icon slot="start" name="checkmark-circle" color="success"></ion-icon>
       <ion-label>
+        <small class="proveedor-selected-cap">Proveedor seleccionado</small>
         <strong>{{ selectedProveedor.persona?.nombre }}</strong>
         <p *ngIf="selectedProveedor.persona?.documento">{{ selectedProveedor.persona?.documento }}</p>
       </ion-label>

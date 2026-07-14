@@ -6,9 +6,24 @@ ion-segment {
   margin-bottom: 8px;
 }
 
+.proveedor-resultados-hint {
+  font-size: 12px;
+  opacity: 0.7;
+  padding: 6px 12px 2px;
+}
+
 .proveedor-selected {
-  --background: rgba(255, 255, 255, 0.05);
+  --background: rgba(45, 211, 111, 0.12);
+  border: 1px solid var(--ion-color-success);
   border-radius: 8px;
+}
+
+.proveedor-selected-cap {
+  display: block;
+  font-size: 11px;
+  color: var(--ion-color-success);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .acciones-scan {

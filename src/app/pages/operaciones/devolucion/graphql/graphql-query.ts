@@ -87,6 +87,60 @@ export const devolucionConFiltrosQuery = gql`
   }
 `;
 
+export const devolucionByIdQuery = gql`
+  query devolucion($id: ID!) {
+    data: devolucion(id: $id) {
+      id
+      tipo
+      estado
+      identificador
+      fecha
+      motivo
+      observacion
+      sucursalOrigen {
+        id
+        nombre
+      }
+      sucursalUbicacion {
+        id
+        nombre
+      }
+      proveedor {
+        id
+        persona {
+          nombre
+          documento
+        }
+      }
+      items {
+        id
+        cantidad
+        lote
+        vencimiento
+        motivo
+        producto {
+          id
+          descripcion
+        }
+        presentacion {
+          id
+          cantidad
+        }
+        motivoAveria {
+          id
+          descripcion
+        }
+      }
+    }
+  }
+`;
+
+export const deleteDevolucionItemMutation = gql`
+  mutation deleteDevolucionItem($id: ID!) {
+    data: deleteDevolucionItem(id: $id)
+  }
+`;
+
 export const motivosAveriaActivosQuery = gql`
   query motivosAveriaActivos {
     data: motivosAveriaActivos {

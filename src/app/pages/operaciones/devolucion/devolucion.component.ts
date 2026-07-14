@@ -2,6 +2,8 @@ import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { first } from 'rxjs/operators';
+import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
+import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
 import { Presentacion } from 'src/app/domains/productos/presentacion.model';
 import { Producto } from 'src/app/domains/productos/producto.model';
 import { dateToString } from 'src/app/generic/utils/dateUtils';
@@ -38,12 +40,16 @@ export class DevolucionComponent implements OnInit {
   motivosAveria: MotivoAveria[] = [];
   items: DevolucionItemDraft[] = [];
 
+  sucursales: Sucursal[] = [];
+  sucursalOrigen: Sucursal;
+
   guardando = false;
 
   constructor(
     private _location: Location,
     private devolucionService: DevolucionService,
     private proveedorService: ProveedorService,
+    private sucursalService: SucursalService,
     private modalService: ModalService,
     private dialogoService: DialogoService,
     private notificacionService: NotificacionService,
@@ -52,6 +58,28 @@ export class DevolucionComponent implements OnInit {
 
   ngOnInit() {
     this.cargarMotivosAveria();
+    this.cargarSucursales();
+  }
+
+  async cargarSucursales() {
+    (await this.sucursalService.onGetAllSucursales())
+      .pipe(untilDestroyed(this))
+      .subscribe((res) => {
+        this.sucursales = (res || []).filter(
+          (s) => s.nombre != 'SERVIDOR' && s.nombre != 'COMPRAS'
+        );
+        // Preseleccionar la sucursal del usuario logueado.
+        const actualId = this.mainService.sucursalActual?.id;
+        this.sucursalOrigen =
+          this.sucursales.find((s) => s.id === actualId) ?? this.sucursales[0];
+      });
+  }
+
+  compareSucursal = (a: Sucursal, b: Sucursal): boolean => a?.id === b?.id;
+
+  onSucursalChange(ev: any) {
+    const id = ev?.detail?.value?.id;
+    this.sucursalOrigen = this.sucursales.find((s) => s.id === id) ?? ev?.detail?.value;
   }
 
   async cargarMotivosAveria() {
@@ -106,7 +134,11 @@ export class DevolucionComponent implements OnInit {
    * Devuelve { producto, presentacion } al elegir.
    */
   onAgregarProducto() {
-    const sucursalId = this.mainService.sucursalActual?.id;
+    if (this.sucursalOrigen == null) {
+      this.notificacionService.warn('Seleccione la sucursal de origen');
+      return;
+    }
+    const sucursalId = this.sucursalOrigen?.id;
     this.modalService
       .openModal(
         SearchProductoDialogComponent,
@@ -132,7 +164,7 @@ export class DevolucionComponent implements OnInit {
       motivosAveria: this.motivosAveria,
     };
     this.modalService
-      .openModal(DevolucionItemDialogComponent, data, ModalSize.MEDIUM)
+      .openModal(DevolucionItemDialogComponent, data, ModalSize.LARGE)
       .then((res) => {
         const draft: DevolucionItemDraft = res?.data;
         if (draft != null) {
@@ -161,9 +193,13 @@ export class DevolucionComponent implements OnInit {
       this.notificacionService.warn('Agregue al menos un producto');
       return null;
     }
+    if (this.sucursalOrigen == null) {
+      this.notificacionService.warn('Seleccione la sucursal de origen');
+      return null;
+    }
 
     const usuarioId = this.mainService.usuarioActual?.id ?? +localStorage.getItem('usuarioId');
-    const sucursalOrigenId = this.mainService.sucursalActual?.id;
+    const sucursalOrigenId = this.sucursalOrigen?.id;
 
     const itemsInput: DevolucionItemInput[] = this.items.map((it) => ({
       id: null,

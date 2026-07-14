@@ -7,9 +7,10 @@ import { DevolucionRoutingModule } from './devolucion-routing.module';
 import { DevolucionComponent } from './devolucion.component';
 import { DevolucionItemDialogComponent } from './devolucion-item-dialog/devolucion-item-dialog.component';
 import { ListDevolucionComponent } from './list-devolucion/list-devolucion.component';
+import { DetalleDevolucionComponent } from './detalle-devolucion/detalle-devolucion.component';
 
 @NgModule({
-  declarations: [DevolucionComponent, DevolucionItemDialogComponent, ListDevolucionComponent],
+  declarations: [DevolucionComponent, DevolucionItemDialogComponent, ListDevolucionComponent, DetalleDevolucionComponent],
   imports: [
     CommonModule,
     DevolucionRoutingModule,

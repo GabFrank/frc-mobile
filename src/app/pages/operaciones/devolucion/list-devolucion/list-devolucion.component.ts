@@ -99,6 +99,10 @@ export class ListDevolucionComponent implements OnInit {
     this.router.navigate(['/operaciones/devolucion/nueva']);
   }
 
+  onAbrir(d: any): void {
+    this.router.navigate(['/operaciones/devolucion/detalle', d.id]);
+  }
+
   onVolver(): void {
     this.router.navigate(['/home']);
   }
