@@ -8,6 +8,7 @@ import { VentasTarjetaPorCajaGQL } from './graphql/ventasTarjetaPorCaja';
 import { VentaTarjetaPorVentaIdGQL } from './graphql/ventaTarjetaPorVentaId';
 import { VentaTarjetaPorIdGQL } from './graphql/ventaTarjetaPorId';
 import { CountVentasTarjetaSinRegistrarGQL } from './graphql/countVentasTarjetaSinRegistrar';
+import { GetConfiguracionVentaTarjetaGQL } from './graphql/getConfiguracionVentaTarjeta';
 
 @Injectable({ providedIn: 'root' })
 export class VentaTarjetaService {
@@ -18,8 +19,19 @@ export class VentaTarjetaService {
     private ventasTarjetaPorCajaGQL: VentasTarjetaPorCajaGQL,
     private ventaTarjetaPorVentaIdGQL: VentaTarjetaPorVentaIdGQL,
     private ventaTarjetaPorIdGQL: VentaTarjetaPorIdGQL,
-    private countVentasTarjetaSinRegistrarGQL: CountVentasTarjetaSinRegistrarGQL
+    private countVentasTarjetaSinRegistrarGQL: CountVentasTarjetaSinRegistrarGQL,
+    private getConfiguracionVentaTarjetaGQL: GetConfiguracionVentaTarjetaGQL
   ) {}
+
+  /**
+   * Consulta en vivo (sin cache) si el flujo de venta con tarjeta (escaneo QR +
+   * registro) está habilitado globalmente. Configurable desde el desktop.
+   */
+  onGetConfiguracionHabilitada(): Observable<boolean> {
+    return this.getConfiguracionVentaTarjetaGQL
+      .fetch({}, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
+      .pipe(map(res => res.data?.['data']?.habilitado === true));
+  }
 
   onSave(input: VentaTarjetaInput): Observable<VentaTarjeta> {
     return this.saveVentaTarjetaGQL

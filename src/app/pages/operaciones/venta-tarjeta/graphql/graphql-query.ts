@@ -79,3 +79,12 @@ export const countVentasTarjetaSinRegistrarQuery = gql`
     data: countVentasTarjetaSinRegistrar(cajaId: $id, sucId: $sucId)
   }
 `;
+
+export const configuracionVentaTarjetaQuery = gql`
+  {
+    data: configuracionVentaTarjeta {
+      id
+      habilitado
+    }
+  }
+`;
