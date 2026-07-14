@@ -51,8 +51,8 @@
   <ion-item *ngIf="candidatas.length > 0" lines="full" class="sel-todas">
     <ion-checkbox
       slot="start"
-      [checked]="todasSeleccionadas"
-      (ionChange)="toggleTodas()"
+      [ngModel]="todas"
+      (ngModelChange)="onTodasChange($event)"
     ></ion-checkbox>
     <ion-label>Seleccionar todas ({{ candidatas.length }})</ion-label>
   </ion-item>
@@ -61,8 +61,8 @@
     <ion-item *ngFor="let d of candidatas" lines="full">
       <ion-checkbox
         slot="start"
-        [checked]="seleccion.has(d.id)"
-        (ionChange)="toggle(d.id)"
+        [ngModel]="d._sel"
+        (ngModelChange)="onItemChange(d, $event)"
       ></ion-checkbox>
       <ion-label class="ion-text-wrap">
         <strong>{{ d.identificador || '#' + d.id }}</strong>
@@ -79,10 +79,10 @@
       <ion-button
         expand="block"
         class="btn-success"
-        [disabled]="procesando || seleccion.size === 0"
+        [disabled]="procesando || selCount === 0"
         (click)="onColectar()">
         <ion-icon slot="start" name="cube-outline"></ion-icon>
-        Colectar {{ seleccion.size > 0 ? '(' + seleccion.size + ')' : '' }}
+        Colectar {{ selCount > 0 ? '(' + selCount + ')' : '' }}
       </ion-button>
     </div>
   </ion-toolbar>

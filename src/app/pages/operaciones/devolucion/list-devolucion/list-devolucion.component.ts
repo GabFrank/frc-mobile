@@ -105,10 +105,6 @@ export class ListDevolucionComponent implements OnInit {
     this.router.navigate(['/operaciones/devolucion/detalle', d.id]);
   }
 
-  onColecta(): void {
-    this.router.navigate(['/operaciones/devolucion/colecta']);
-  }
-
   onVolver(): void {
     this._location.back();
   }
