@@ -13,6 +13,7 @@ import { BuscarMaletinDialogComponent } from './buscar-maletin-dialog/buscar-mal
 import { AdicionarConteoDialogComponent } from '../conteo/adicionar-conteo-dialog/adicionar-conteo-dialog.component';
 import { PdvCaja, PdvCajaEstado } from './caja.model';
 import { DialogoService } from 'src/app/services/dialogo.service';
+import { VentaTarjetaService } from '../venta-tarjeta/venta-tarjeta.service';
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -25,6 +26,7 @@ export class CajaComponent implements OnInit {
 
   tentativas = 0;
   dialog: any;
+  ventaTarjetaHabilitada = false;
 
 
   constructor(
@@ -34,10 +36,16 @@ export class CajaComponent implements OnInit {
     private sucursalService: SucursalService,
     private mainService: MainService,
     private modalService: ModalService,
-    private dialogoService: DialogoService
+    private dialogoService: DialogoService,
+    private ventaTarjetaService: VentaTarjetaService
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.ventaTarjetaService.onGetConfiguracionHabilitada().subscribe({
+      next: (habilitado) => this.ventaTarjetaHabilitada = habilitado,
+      error: () => this.ventaTarjetaHabilitada = false
+    });
+  }
 
   async buscarCaja() {
     const sucursal = await this.seleccionarSucursal();
