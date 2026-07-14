@@ -80,12 +80,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       icon: 'assignment_return',
       toneRed: true,
     },
-    {
-      label: 'Retiro Devoluciones',
-      route: ['/operaciones/retiro-proveedor'],
-      icon: 'local_shipping',
-      toneBlue: true,
-    },
   ];
 
   private intervalId: ReturnType<typeof setInterval> | null = null;

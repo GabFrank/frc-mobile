@@ -1,11 +1,11 @@
 .filtros {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
   padding: 0 12px;
 
   ion-select {
-    flex: 1;
-    max-width: 50%;
+    width: 100%;
+    max-width: 100%;
   }
 }
 
