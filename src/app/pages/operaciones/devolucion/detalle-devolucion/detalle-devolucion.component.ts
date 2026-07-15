@@ -67,9 +67,12 @@ export class DetalleDevolucionComponent implements OnInit {
   async cargarMotivosAveria() {
     (await this.devolucionService.onGetMotivosAveriaActivos())
       .pipe(untilDestroyed(this))
-      .subscribe((res) => {
-        if (res != null) this.motivosAveria = res.filter((m) => m.activo);
-      });
+      .subscribe(
+        (res) => {
+          if (res != null) this.motivosAveria = res.filter((m) => m.activo);
+        },
+        () => {}
+      );
   }
 
   async cargar(id: number) {

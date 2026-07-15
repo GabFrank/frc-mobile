@@ -168,6 +168,7 @@ export class HistorialOperacionesComponent implements OnInit {
           },
           () => {
             this.procesando = false;
+            this.notificacionService.danger('No se pudo revertir la operación');
           }
         );
       });
@@ -192,6 +193,7 @@ export class HistorialOperacionesComponent implements OnInit {
             },
             () => {
               this.procesando = false;
+              this.notificacionService.danger('No se pudo revertir la devolución');
             }
           );
       });

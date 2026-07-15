@@ -50,7 +50,7 @@
       <ion-select
         placeholder="Todas"
         [(ngModel)]="selectedSucursalId"
-        (ionChange)="onSucursalChange($event)"
+        (ngModelChange)="onSucursalChange($event)"
         interface="alert"
         [interfaceOptions]="{ header: 'Sucursal' }"
       >

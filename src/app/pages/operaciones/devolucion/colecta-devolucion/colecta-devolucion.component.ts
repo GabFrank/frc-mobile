@@ -166,6 +166,7 @@ export class ColectaDevolucionComponent implements OnInit {
             },
             () => {
               this.procesando = false;
+              this.notificacionService.danger('No se pudo colectar');
             }
           );
       });

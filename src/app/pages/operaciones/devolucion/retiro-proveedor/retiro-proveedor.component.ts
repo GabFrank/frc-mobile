@@ -66,10 +66,13 @@ export class RetiroProveedorComponent implements OnInit {
       });
     (await this.retiroProveedorService.onGetConfiguracion())
       .pipe(untilDestroyed(this))
-      .subscribe((cfg) => {
-        // Default liberar (true) si la config no vino.
-        this.permitirManual = cfg?.retiroPermitirSeleccionManual !== false;
-      });
+      .subscribe(
+        (cfg) => {
+          // Default liberar (true) si la config no vino.
+          this.permitirManual = cfg?.retiroPermitirSeleccionManual !== false;
+        },
+        () => {}
+      );
   }
 
   /** Verificacion manual (sin escanear), si la config lo permite. */
@@ -84,9 +87,8 @@ export class RetiroProveedorComponent implements OnInit {
     }
   }
 
-  onSucursalChange(ev: any) {
-    const val = ev?.detail?.value;
-    this.selectedSucursalId = val == null ? null : +val;
+  onSucursalChange(val: number | null) {
+    this.selectedSucursalId = val;
     if (this.selectedProveedor != null) this.cargarConsolidado();
   }
 
