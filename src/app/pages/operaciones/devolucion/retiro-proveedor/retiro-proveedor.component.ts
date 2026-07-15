@@ -9,6 +9,7 @@ import { ProveedorService } from 'src/app/pages/personas/proveedor/proveedor.ser
 import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
 import { MainService } from 'src/app/services/main.service';
 import { NotificacionService } from 'src/app/services/notificacion.service';
+import { PdfViewerService } from 'src/app/services/pdf-viewer.service';
 import {
   RetiroBloqueResultado,
   RetiroCajaView,
@@ -49,7 +50,8 @@ export class RetiroProveedorComponent implements OnInit {
     private barcodeScanner: BarcodeScannerService,
     private notificacionService: NotificacionService,
     private mainService: MainService,
-    private sucursalService: SucursalService
+    private sucursalService: SucursalService,
+    private pdfViewerService: PdfViewerService
   ) {}
 
   async ngOnInit() {
@@ -213,7 +215,8 @@ export class RetiroProveedorComponent implements OnInit {
         (res: RetiroBloqueResultado) => {
           this.guardando = false;
           this.resultados = res?.resultados || [];
-          const ok = this.resultados.filter((r) => r.ok).length;
+          const okIds = this.resultados.filter((r) => r.ok).map((r) => r.id);
+          const ok = okIds.length;
           const total = this.resultados.length;
           if (total > 0 && ok === total) {
             this.notificacionService.success(`Retiro confirmado (${ok}/${total})`);
@@ -222,12 +225,33 @@ export class RetiroProveedorComponent implements OnInit {
           } else {
             this.notificacionService.danger('No se pudo retirar ninguna devolucion');
           }
+          if (ok > 0) {
+            // Sacar de la lista las cajas ya retiradas para no re-enviarlas
+            // (evita el doble submit) y recalcular el conteo verificado.
+            this.cajas = this.cajas.filter((c) => !okIds.includes(c.devolucionId));
+            this.verificadasCount = this.cajas.filter((c) => c.verificada).length;
+            // Bajar el comprobante para compartir con el proveedor.
+            this.descargarRemito(okIds);
+          }
         },
         () => {
           this.guardando = false;
           this.notificacionService.danger('No se pudo confirmar el retiro');
         }
       );
+  }
+
+  private async descargarRemito(devolucionIds: number[]) {
+    (await this.retiroProveedorService.onGetRemito(devolucionIds))
+      .pipe(first(), untilDestroyed(this))
+      .subscribe(async (base64) => {
+        if (base64) {
+          await this.pdfViewerService.openPdfFromBase64(
+            base64,
+            `comprobante_retiro_${devolucionIds.join('-')}.pdf`
+          );
+        }
+      });
   }
 
   onBack() {

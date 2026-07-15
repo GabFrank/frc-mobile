@@ -31,6 +31,12 @@ export const retiroProveedorConsolidadoQuery = gql`
   }
 `;
 
+export const remitoRetiroProveedorQuery = gql`
+  query remitoRetiroProveedor($devolucionIds: [ID!]!) {
+    data: remitoRetiroProveedor(devolucionIds: $devolucionIds)
+  }
+`;
+
 export const devolucionConfiguracionQuery = gql`
   query devolucionConfiguracion {
     data: devolucionConfiguracion {

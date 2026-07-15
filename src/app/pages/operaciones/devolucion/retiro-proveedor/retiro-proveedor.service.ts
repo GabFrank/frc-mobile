@@ -4,6 +4,7 @@ import { GenericCrudService } from 'src/app/generic/generic-crud.service';
 import { RetirarDevolucionesEnBloqueGQL } from './graphql/retirarDevolucionesEnBloque';
 import { RetiroProveedorConsolidadoGQL } from './graphql/retiroProveedorConsolidado';
 import { DevolucionConfiguracionGQL } from './graphql/devolucionConfiguracion';
+import { RemitoRetiroProveedorGQL } from './graphql/remitoRetiroProveedor';
 import { RetiroBloqueResultado, RetiroProveedorConsolidado } from './retiro-proveedor.model';
 
 @Injectable({
@@ -14,11 +15,17 @@ export class RetiroProveedorService {
     private genericService: GenericCrudService,
     private retiroProveedorConsolidadoGQL: RetiroProveedorConsolidadoGQL,
     private retirarDevolucionesEnBloqueGQL: RetirarDevolucionesEnBloqueGQL,
-    private devolucionConfiguracionGQL: DevolucionConfiguracionGQL
+    private devolucionConfiguracionGQL: DevolucionConfiguracionGQL,
+    private remitoRetiroProveedorGQL: RemitoRetiroProveedorGQL
   ) {}
 
   async onGetConfiguracion(): Promise<Observable<{ retiroPermitirSeleccionManual: boolean }>> {
     return await this.genericService.onGetCustom(this.devolucionConfiguracionGQL, {});
+  }
+
+  /** PDF (base64) del comprobante de retiro, para compartir con el proveedor. */
+  async onGetRemito(devolucionIds: number[]): Promise<Observable<string>> {
+    return await this.genericService.onGetCustom(this.remitoRetiroProveedorGQL, { devolucionIds });
   }
 
   async onGetConsolidado(
