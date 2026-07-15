@@ -14,58 +14,72 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <div class="vacio" *ngIf="!cargando && grupos.length === 0">
+  <div class="vacio" *ngIf="!cargando && operaciones.length === 0">
     <ion-icon name="file-tray-outline"></ion-icon>
     <p>No hay {{ esColecta ? 'colectas' : 'retiros' }} en el historial</p>
   </div>
 
-  <div class="grupo" *ngFor="let g of grupos">
-    <div class="grupo-header">
-      <div class="grupo-tit">
-        <strong>{{ g.titulo }}</strong>
-        <small>{{ g.subtitulo }}</small>
-      </div>
-      <ion-button
-        *ngIf="!esColecta"
-        size="small"
-        fill="clear"
-        class="btn-success-flat"
-        (click)="onReimprimirGrupo(g)">
-        <ion-icon slot="start" name="print-outline"></ion-icon>
-        Remito
-      </ion-button>
-    </div>
-
-    <ion-list>
-      <ion-item *ngFor="let it of g.items" lines="full">
-        <ion-label class="ion-text-wrap">
-          <strong>{{ it.identificador }}</strong>
-          <p *ngIf="esColecta">{{ it.origen }} → {{ it.destino }}</p>
-          <p *ngIf="!esColecta">{{ it.origen }}</p>
-          <p class="fecha">
-            {{ (esColecta ? it.colectadoEn : it.fecha) | date: 'dd/MM/yyyy HH:mm' }}
-          </p>
-        </ion-label>
+  <ion-card class="op" *ngFor="let op of operaciones">
+    <ion-card-content>
+      <div class="op-header">
+        <div class="op-tit">
+          <strong>{{ op._titulo }}</strong>
+          <small>
+            {{ op.fecha | date: 'dd/MM/yyyy HH:mm' }}
+            <ion-badge *ngIf="op._revertida" color="danger">Revertida</ion-badge>
+          </small>
+        </div>
         <ion-button
-          *ngIf="esColecta"
-          slot="end"
+          *ngIf="!esColecta && !op._revertida"
+          size="small"
           fill="clear"
           class="btn-success-flat"
-          [disabled]="procesando"
-          (click)="onReimprimirEtiquetas(it)">
-          <ion-icon slot="icon-only" name="pricetags-outline"></ion-icon>
+          (click)="onReimprimir(op)">
+          <ion-icon slot="start" name="print-outline"></ion-icon>
+          Remito
         </ion-button>
+      </div>
+
+      <ion-list lines="none" class="op-lineas">
+        <ion-item *ngFor="let d of op.devoluciones" class="linea">
+          <ion-label class="ion-text-wrap">
+            <strong>{{ d.identificador || '#' + d.id }}</strong>
+            <p *ngIf="esColecta && d.sucursalOrigen">{{ d.sucursalOrigen?.nombre }}</p>
+          </ion-label>
+          <ion-button
+            *ngIf="esColecta"
+            slot="end"
+            fill="clear"
+            class="btn-success-flat"
+            [disabled]="procesando"
+            (click)="onReimprimirEtiquetas(d.id)">
+            <ion-icon slot="icon-only" name="pricetags-outline"></ion-icon>
+          </ion-button>
+          <ion-button
+            *ngIf="!op._revertida"
+            slot="end"
+            fill="clear"
+            color="warning"
+            [disabled]="procesando"
+            (click)="onRevertirLinea(d)">
+            <ion-icon slot="icon-only" name="arrow-undo-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </ion-list>
+
+      <div class="op-acciones" *ngIf="!op._revertida">
         <ion-button
-          slot="end"
-          fill="clear"
+          expand="block"
+          fill="outline"
           color="warning"
           [disabled]="procesando"
-          (click)="onRevertir(it)">
-          <ion-icon slot="icon-only" name="arrow-undo-outline"></ion-icon>
+          (click)="onRevertirOperacion(op)">
+          <ion-icon slot="start" name="arrow-undo-outline"></ion-icon>
+          Revertir {{ esColecta ? 'colecta' : 'retiro' }} completo
         </ion-button>
-      </ion-item>
-    </ion-list>
-  </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
 
   <ion-infinite-scroll (ionInfinite)="onLoadMore($event)" [disabled]="!hayMas">
     <ion-infinite-scroll-content loadingSpinner="bubbles"></ion-infinite-scroll-content>

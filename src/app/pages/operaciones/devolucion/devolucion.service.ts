@@ -14,6 +14,11 @@ import { EtiquetasSeparadoPdfGQL } from './graphql/etiquetasSeparadoPdf';
 import { ColectarDevolucionesEnBloqueGQL } from './graphql/colectarDevolucionesEnBloque';
 import { RevertirEstadoDevolucionGQL } from './graphql/revertirEstadoDevolucion';
 import { RemitoRetiroProveedorGQL } from './graphql/remitoRetiroProveedor';
+import { RetirosDevolucionGQL } from './graphql/retirosDevolucion';
+import { ColectasDevolucionGQL } from './graphql/colectasDevolucion';
+import { RemitoRetiroGQL } from './graphql/remitoRetiro';
+import { RevertirRetiroDevolucionGQL } from './graphql/revertirRetiroDevolucion';
+import { RevertirColectaDevolucionGQL } from './graphql/revertirColectaDevolucion';
 
 @Injectable({
   providedIn: 'root',
@@ -31,8 +36,44 @@ export class DevolucionService {
     private etiquetasSeparadoPdfGQL: EtiquetasSeparadoPdfGQL,
     private colectarDevolucionesEnBloqueGQL: ColectarDevolucionesEnBloqueGQL,
     private revertirEstadoDevolucionGQL: RevertirEstadoDevolucionGQL,
-    private remitoRetiroProveedorGQL: RemitoRetiroProveedorGQL
+    private remitoRetiroProveedorGQL: RemitoRetiroProveedorGQL,
+    private retirosDevolucionGQL: RetirosDevolucionGQL,
+    private colectasDevolucionGQL: ColectasDevolucionGQL,
+    private remitoRetiroGQL: RemitoRetiroGQL,
+    private revertirRetiroDevolucionGQL: RevertirRetiroDevolucionGQL,
+    private revertirColectaDevolucionGQL: RevertirColectaDevolucionGQL
   ) {}
+
+  /** Historial de operaciones de retiro (cabeceras) paginado. */
+  async onGetRetiros(page = 0, size = 20): Promise<Observable<any>> {
+    return await this.genericService.onGetCustom(this.retirosDevolucionGQL, { page, size });
+  }
+
+  /** Historial de operaciones de colecta (cabeceras) paginado. */
+  async onGetColectas(page = 0, size = 20): Promise<Observable<any>> {
+    return await this.genericService.onGetCustom(this.colectasDevolucionGQL, { page, size });
+  }
+
+  /** PDF (base64) del comprobante de una operacion de retiro completa. */
+  async onGetRemitoRetiro(retiroId: number): Promise<Observable<string>> {
+    return await this.genericService.onGetCustom(this.remitoRetiroGQL, { retiroId });
+  }
+
+  async onRevertirRetiro(retiroId: number, usuarioId?: number): Promise<Observable<any>> {
+    return await this.genericService.onCustomSave(
+      this.revertirRetiroDevolucionGQL,
+      { retiroId, usuarioId: usuarioId ?? null },
+      false
+    );
+  }
+
+  async onRevertirColecta(colectaId: number, usuarioId?: number): Promise<Observable<any>> {
+    return await this.genericService.onCustomSave(
+      this.revertirColectaDevolucionGQL,
+      { colectaId, usuarioId: usuarioId ?? null },
+      false
+    );
+  }
 
   /** Revierte la devolucion un estado hacia atras (solo transiciones seguras). */
   async onRevertirEstado(devolucionId: number, usuarioId?: number): Promise<Observable<any>> {

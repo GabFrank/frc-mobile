@@ -103,6 +103,85 @@ export const remitoRetiroProveedorQuery = gql`
   }
 `;
 
+export const remitoRetiroQuery = gql`
+  query remitoRetiro($retiroId: ID!) {
+    data: remitoRetiro(retiroId: $retiroId)
+  }
+`;
+
+export const retirosDevolucionQuery = gql`
+  query retirosDevolucion($page: Int, $size: Int) {
+    data: retirosDevolucion(page: $page, size: $size) {
+      hasNext
+      getTotalElements
+      getContent {
+        id
+        fecha
+        estado
+        proveedor {
+          id
+          persona {
+            nombre
+          }
+        }
+        devoluciones {
+          id
+          identificador
+          estado
+          sucursalOrigen {
+            nombre
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const colectasDevolucionQuery = gql`
+  query colectasDevolucion($page: Int, $size: Int) {
+    data: colectasDevolucion(page: $page, size: $size) {
+      hasNext
+      getTotalElements
+      getContent {
+        id
+        fecha
+        estado
+        sucursalOrigen {
+          id
+          nombre
+        }
+        sucursalDestino {
+          id
+          nombre
+        }
+        devoluciones {
+          id
+          identificador
+          estado
+        }
+      }
+    }
+  }
+`;
+
+export const revertirRetiroDevolucionMutation = gql`
+  mutation revertirRetiroDevolucion($retiroId: ID!, $usuarioId: ID) {
+    data: revertirRetiroDevolucion(retiroId: $retiroId, usuarioId: $usuarioId) {
+      id
+      estado
+    }
+  }
+`;
+
+export const revertirColectaDevolucionMutation = gql`
+  mutation revertirColectaDevolucion($colectaId: ID!, $usuarioId: ID) {
+    data: revertirColectaDevolucion(colectaId: $colectaId, usuarioId: $usuarioId) {
+      id
+      estado
+    }
+  }
+`;
+
 export const devolucionByIdQuery = gql`
   query devolucion($id: ID!) {
     data: devolucion(id: $id) {
