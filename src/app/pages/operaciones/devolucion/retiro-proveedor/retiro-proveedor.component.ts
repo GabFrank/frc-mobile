@@ -1,5 +1,6 @@
 import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { first } from 'rxjs/operators';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
@@ -45,6 +46,7 @@ export class RetiroProveedorComponent implements OnInit {
 
   constructor(
     private _location: Location,
+    private router: Router,
     private retiroProveedorService: RetiroProveedorService,
     private proveedorService: ProveedorService,
     private barcodeScanner: BarcodeScannerService,
@@ -232,6 +234,10 @@ export class RetiroProveedorComponent implements OnInit {
             this.verificadasCount = this.cajas.filter((c) => c.verificada).length;
             // Bajar el comprobante para compartir con el proveedor.
             this.descargarRemito(okIds);
+            // Si ya no quedan cajas pendientes, ir al historial de retiros.
+            if (this.cajas.length === 0) {
+              this.router.navigate(['/operaciones/devolucion/historial-retiros']);
+            }
           }
         },
         () => {

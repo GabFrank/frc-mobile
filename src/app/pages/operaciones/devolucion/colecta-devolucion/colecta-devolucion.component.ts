@@ -1,5 +1,6 @@
 import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { first } from 'rxjs/operators';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
@@ -36,6 +37,7 @@ export class ColectaDevolucionComponent implements OnInit {
 
   constructor(
     private _location: Location,
+    private router: Router,
     private devolucionService: DevolucionService,
     private sucursalService: SucursalService,
     private dialogoService: DialogoService,
@@ -148,8 +150,8 @@ export class ColectaDevolucionComponent implements OnInit {
               const fail = (r?.resultados || []).filter((x) => !x.ok);
               if (fail.length === 0) {
                 this.notificacionService.success(`${okCount} colectada(s)`);
-                // Al finalizar, volver a la pantalla padre de devoluciones.
-                this._location.back();
+                // Al finalizar, ir al historial de colectas.
+                this.router.navigate(['/operaciones/devolucion/historial-colectas']);
               } else {
                 this.notificacionService.warn(
                   `${okCount} ok, ${fail.length} con error`
