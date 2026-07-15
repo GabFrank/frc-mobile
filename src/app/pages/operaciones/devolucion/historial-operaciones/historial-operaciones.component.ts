@@ -71,13 +71,27 @@ export class HistorialOperacionesComponent implements OnInit {
       : await this.devolucionService.onGetRetiros(this.pagina, this.size);
     obs.pipe(first(), untilDestroyed(this)).subscribe((page) => {
       this.cargando = false;
-      const nuevos = (page?.getContent || []).map((op: any) => ({
-        ...op,
-        _titulo: this.esColecta
-          ? op.sucursalOrigen?.nombre + ' → ' + op.sucursalDestino?.nombre
-          : op.proveedor?.persona?.nombre || 'Proveedor',
-        _revertida: op.estado === 'REVERTIDO',
-      }));
+      // Estado en el que deben estar las lineas para poder revertir esta operacion:
+      // colecta -> COLECTADO, retiro -> RETIRADO. Si alguna avanzo mas (ej. una
+      // colecta cuya devolucion ya fue retirada), no se puede revertir.
+      const estadoOp = this.esColecta ? 'COLECTADO' : 'RETIRADO';
+      const nuevos = (page?.getContent || []).map((op: any) => {
+        const revertida = op.estado === 'REVERTIDO';
+        const devs = (op.devoluciones || []).map((d: any) => ({
+          ...d,
+          _rev: !revertida && d.estado === estadoOp,
+        }));
+        const revertible = !revertida && devs.length > 0 && devs.every((d: any) => d.estado === estadoOp);
+        return {
+          ...op,
+          devoluciones: devs,
+          _titulo: this.esColecta
+            ? op.sucursalOrigen?.nombre + ' → ' + op.sucursalDestino?.nombre
+            : op.proveedor?.persona?.nombre || 'Proveedor',
+          _revertida: revertida,
+          _revertible: revertible,
+        };
+      });
       this.operaciones = [...this.operaciones, ...nuevos];
       this.hayMas = page?.hasNext === true;
     });

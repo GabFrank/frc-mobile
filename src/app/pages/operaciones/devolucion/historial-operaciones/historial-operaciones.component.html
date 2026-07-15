@@ -56,7 +56,7 @@
             <ion-icon slot="icon-only" name="pricetags-outline"></ion-icon>
           </ion-button>
           <ion-button
-            *ngIf="!op._revertida"
+            *ngIf="d._rev"
             slot="end"
             fill="clear"
             color="warning"
@@ -67,7 +67,7 @@
         </ion-item>
       </ion-list>
 
-      <div class="op-acciones" *ngIf="!op._revertida">
+      <div class="op-acciones" *ngIf="op._revertible">
         <ion-button
           expand="block"
           fill="outline"
@@ -78,6 +78,13 @@
           Revertir {{ esColecta ? 'colecta' : 'retiro' }} completo
         </ion-button>
       </div>
+
+      <p class="op-nota" *ngIf="!op._revertida && !op._revertible">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        {{ esColecta
+          ? 'No se puede revertir: alguna devolución ya fue retirada por el proveedor.'
+          : 'No se puede revertir: alguna devolución ya fue canjeada o acreditada.' }}
+      </p>
     </ion-card-content>
   </ion-card>
 
