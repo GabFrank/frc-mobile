@@ -86,15 +86,25 @@
   </ng-container>
 </ion-content>
 
-<ion-footer *ngIf="!cargando && esPendiente">
+<ion-footer *ngIf="!cargando && (esPendiente || canDescartar)">
   <ion-toolbar>
     <div class="footer-actions">
       <ion-button
+        *ngIf="esPendiente"
         expand="block"
         class="btn-success"
         [disabled]="procesando || !(devolucion?.items?.length > 0)"
         (click)="onMarcarSeparado()">
         Marcar como separado
+      </ion-button>
+      <ion-button
+        *ngIf="canDescartar"
+        expand="block"
+        class="btn-danger"
+        [disabled]="procesando"
+        (click)="onDescartar()">
+        <ion-icon slot="start" name="trash-outline"></ion-icon>
+        Descartar (merma)
       </ion-button>
     </div>
   </ion-toolbar>

@@ -32,15 +32,18 @@ export class ImpresionEtiquetaService {
     if (res?.role !== 'aceptar') return;
     (await this.devolucionService.onGetEtiquetasSeparadoPdf(devolucionId))
       .pipe(first())
-      .subscribe(async (base64) => {
-        if (base64) {
-          await this.pdfViewerService.openPdfFromBase64(
-            base64,
-            `etiquetas_devolucion_${devolucionId}.pdf`
-          );
-        } else {
-          this.notificacionService.warn('No se pudo generar el PDF de etiquetas');
-        }
-      });
+      .subscribe(
+        async (base64) => {
+          if (base64) {
+            await this.pdfViewerService.openPdfFromBase64(
+              base64,
+              `etiquetas_devolucion_${devolucionId}.pdf`
+            );
+          } else {
+            this.notificacionService.warn('No se pudo generar el PDF de etiquetas');
+          }
+        },
+        () => this.notificacionService.warn('No se pudo generar el PDF de etiquetas')
+      );
   }
 }

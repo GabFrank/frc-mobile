@@ -86,17 +86,22 @@ export class ColectaDevolucionComponent implements OnInit {
       })
     )
       .pipe(first(), untilDestroyed(this))
-      .subscribe((page) => {
-        this.cargando = false;
-        // Solo las CON proveedor pueden colectarse (las sin proveedor se descartan).
-        this.candidatas = (page?.getContent || [])
-          .filter((d: any) => d.proveedor != null)
-          .map((d: any) => ({
-            ...d,
-            _sel: false,
-            _proveedor: d.proveedor?.persona?.nombre || null,
-          }));
-        this.recount();
+      .subscribe({
+        next: (page) => {
+          this.cargando = false;
+          // Solo las CON proveedor pueden colectarse (las sin proveedor se descartan).
+          this.candidatas = (page?.getContent || [])
+            .filter((d: any) => d.proveedor != null)
+            .map((d: any) => ({
+              ...d,
+              _sel: false,
+              _proveedor: d.proveedor?.persona?.nombre || null,
+            }));
+          this.recount();
+        },
+        error: () => {
+          this.cargando = false;
+        },
       });
   }
 

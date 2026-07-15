@@ -2,6 +2,7 @@ import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { first } from 'rxjs/operators';
 import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 import { SucursalService } from 'src/app/domains/empresarial/sucursal/sucursal.service';
 import { MainService } from 'src/app/services/main.service';
@@ -52,32 +53,41 @@ export class ListDevolucionComponent implements OnInit {
     return this.mainService.usuarioActual?.id ?? +localStorage.getItem('usuarioId');
   }
 
-  async cargar(reset = true): Promise<void> {
-    if (reset) {
-      this.pagina = 0;
-      this.devoluciones = [];
-    }
-    this.cargando = true;
-    (
-      await this.devolucionService.onGetDevolucionesConFiltros({
-        usuarioId: this.usuarioId,
-        sucursalId: this.sucursalId ?? undefined,
-        estado: this.estado ?? undefined,
-        page: this.pagina,
-        size: this.size,
-      })
-    )
-      .pipe(untilDestroyed(this))
-      .subscribe((page) => {
-        this.cargando = false;
-        const nuevos = (page?.getContent || []).map((d: any) => ({
-          ...d,
-          _color: this.colorEstado(d.estado),
-          _proveedor: d.proveedor?.persona?.nombre || null,
-        }));
-        this.devoluciones = [...this.devoluciones, ...nuevos];
-        this.hayMas = page?.hasNext === true;
-      });
+  cargar(reset = true): Promise<void> {
+    return new Promise<void>(async (resolve) => {
+      if (reset) {
+        this.pagina = 0;
+        this.devoluciones = [];
+      }
+      this.cargando = true;
+      (
+        await this.devolucionService.onGetDevolucionesConFiltros({
+          usuarioId: this.usuarioId,
+          sucursalId: this.sucursalId ?? undefined,
+          estado: this.estado ?? undefined,
+          page: this.pagina,
+          size: this.size,
+        })
+      )
+        .pipe(first(), untilDestroyed(this))
+        .subscribe({
+          next: (page) => {
+            this.cargando = false;
+            const nuevos = (page?.getContent || []).map((d: any) => ({
+              ...d,
+              _color: this.colorEstado(d.estado),
+              _proveedor: d.proveedor?.persona?.nombre || null,
+            }));
+            this.devoluciones = [...this.devoluciones, ...nuevos];
+            this.hayMas = page?.hasNext === true;
+            resolve();
+          },
+          error: () => {
+            this.cargando = false;
+            resolve();
+          },
+        });
+    });
   }
 
   onFiltrar(): void {

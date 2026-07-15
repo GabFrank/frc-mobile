@@ -250,14 +250,17 @@ export class RetiroProveedorComponent implements OnInit {
   private async descargarRemito(devolucionIds: number[]) {
     (await this.retiroProveedorService.onGetRemito(devolucionIds))
       .pipe(first(), untilDestroyed(this))
-      .subscribe(async (base64) => {
-        if (base64) {
-          await this.pdfViewerService.openPdfFromBase64(
-            base64,
-            `comprobante_retiro_${devolucionIds.join('-')}.pdf`
-          );
-        }
-      });
+      .subscribe(
+        async (base64) => {
+          if (base64) {
+            await this.pdfViewerService.openPdfFromBase64(
+              base64,
+              `comprobante_retiro_${devolucionIds.join('-')}.pdf`
+            );
+          }
+        },
+        () => this.notificacionService.warn('No se pudo generar el comprobante')
+      );
   }
 
   onBack() {

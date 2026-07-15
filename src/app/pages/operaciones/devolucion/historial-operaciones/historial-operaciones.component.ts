@@ -60,40 +60,49 @@ export class HistorialOperacionesComponent implements OnInit {
     return this.mainService.usuarioActual?.id ?? +localStorage.getItem('usuarioId');
   }
 
-  async cargar(reset = true): Promise<void> {
-    if (reset) {
-      this.pagina = 0;
-      this.operaciones = [];
-    }
-    this.cargando = true;
-    const obs = this.esColecta
-      ? await this.devolucionService.onGetColectas(this.pagina, this.size)
-      : await this.devolucionService.onGetRetiros(this.pagina, this.size);
-    obs.pipe(first(), untilDestroyed(this)).subscribe((page) => {
-      this.cargando = false;
+  cargar(reset = true): Promise<void> {
+    return new Promise<void>(async (resolve) => {
+      if (reset) {
+        this.pagina = 0;
+        this.operaciones = [];
+      }
+      this.cargando = true;
+      const obs = this.esColecta
+        ? await this.devolucionService.onGetColectas(this.pagina, this.size)
+        : await this.devolucionService.onGetRetiros(this.pagina, this.size);
       // Estado en el que deben estar las lineas para poder revertir esta operacion:
       // colecta -> COLECTADO, retiro -> RETIRADO. Si alguna avanzo mas (ej. una
       // colecta cuya devolucion ya fue retirada), no se puede revertir.
       const estadoOp = this.esColecta ? 'COLECTADO' : 'RETIRADO';
-      const nuevos = (page?.getContent || []).map((op: any) => {
-        const revertida = op.estado === 'REVERTIDO';
-        const devs = (op.devoluciones || []).map((d: any) => ({
-          ...d,
-          _rev: !revertida && d.estado === estadoOp,
-        }));
-        const revertible = !revertida && devs.length > 0 && devs.every((d: any) => d.estado === estadoOp);
-        return {
-          ...op,
-          devoluciones: devs,
-          _titulo: this.esColecta
-            ? op.sucursalOrigen?.nombre + ' → ' + op.sucursalDestino?.nombre
-            : op.proveedor?.persona?.nombre || 'Proveedor',
-          _revertida: revertida,
-          _revertible: revertible,
-        };
+      obs.pipe(first(), untilDestroyed(this)).subscribe({
+        next: (page) => {
+          this.cargando = false;
+          const nuevos = (page?.getContent || []).map((op: any) => {
+            const revertida = op.estado === 'REVERTIDO';
+            const devs = (op.devoluciones || []).map((d: any) => ({
+              ...d,
+              _rev: !revertida && d.estado === estadoOp,
+            }));
+            const revertible = !revertida && devs.length > 0 && devs.every((d: any) => d.estado === estadoOp);
+            return {
+              ...op,
+              devoluciones: devs,
+              _titulo: this.esColecta
+                ? op.sucursalOrigen?.nombre + ' → ' + op.sucursalDestino?.nombre
+                : op.proveedor?.persona?.nombre || 'Proveedor',
+              _revertida: revertida,
+              _revertible: revertible,
+            };
+          });
+          this.operaciones = [...this.operaciones, ...nuevos];
+          this.hayMas = page?.hasNext === true;
+          resolve();
+        },
+        error: () => {
+          this.cargando = false;
+          resolve();
+        },
       });
-      this.operaciones = [...this.operaciones, ...nuevos];
-      this.hayMas = page?.hasNext === true;
     });
   }
 
@@ -115,21 +124,27 @@ export class HistorialOperacionesComponent implements OnInit {
     if (this.esColecta) return;
     (await this.devolucionService.onGetRemitoRetiro(op.id))
       .pipe(first(), untilDestroyed(this))
-      .subscribe(async (base64) => {
-        if (base64) {
-          await this.pdfViewerService.openPdfFromBase64(base64, `comprobante_retiro_${op.id}.pdf`);
-        }
-      });
+      .subscribe(
+        async (base64) => {
+          if (base64) {
+            await this.pdfViewerService.openPdfFromBase64(base64, `comprobante_retiro_${op.id}.pdf`);
+          }
+        },
+        () => this.notificacionService.warn('No se pudo generar el comprobante')
+      );
   }
 
   async onReimprimirEtiquetas(devolucionId: number) {
     (await this.devolucionService.onGetEtiquetasSeparadoPdf(devolucionId))
       .pipe(first(), untilDestroyed(this))
-      .subscribe(async (base64) => {
-        if (base64) {
-          await this.pdfViewerService.openPdfFromBase64(base64, `etiquetas_devolucion_${devolucionId}.pdf`);
-        }
-      });
+      .subscribe(
+        async (base64) => {
+          if (base64) {
+            await this.pdfViewerService.openPdfFromBase64(base64, `etiquetas_devolucion_${devolucionId}.pdf`);
+          }
+        },
+        () => this.notificacionService.warn('No se pudo generar el PDF de etiquetas')
+      );
   }
 
   /** Revertir toda la operacion. */

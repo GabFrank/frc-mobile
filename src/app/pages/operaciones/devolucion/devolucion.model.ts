@@ -1,6 +1,7 @@
 import { Producto } from 'src/app/domains/productos/producto.model';
 import { Presentacion } from 'src/app/domains/productos/presentacion.model';
 import { Proveedor } from 'src/app/pages/personas/proveedor/proveedor.model';
+import { Sucursal } from 'src/app/domains/empresarial/sucursal/sucursal.model';
 import { EstadoDevolucion, TipoDevolucion } from './devolucion.enums';
 
 export class MotivoAveria {
@@ -29,7 +30,10 @@ export class Devolucion {
   id: number;
   tipo: TipoDevolucion;
   proveedor: Proveedor;
-  sucursalOrigenId: number;
+  sucursalOrigen: Sucursal;
+  sucursalUbicacion?: Sucursal;
+  colectadoEn?: string;
+  identificador?: string;
   fecha: string;
   motivo: string;
   estado: EstadoDevolucion;

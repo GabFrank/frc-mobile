@@ -34,6 +34,7 @@
           size="small"
           fill="clear"
           class="btn-success-flat"
+          [disabled]="procesando"
           (click)="onReimprimir(op)">
           <ion-icon slot="start" name="print-outline"></ion-icon>
           Remito
@@ -82,8 +83,8 @@
       <p class="op-nota" *ngIf="!op._revertida && !op._revertible">
         <ion-icon name="information-circle-outline"></ion-icon>
         {{ esColecta
-          ? 'No se puede revertir: alguna devolución ya fue retirada por el proveedor.'
-          : 'No se puede revertir: alguna devolución ya fue canjeada o acreditada.' }}
+          ? 'No se puede revertir la operación completa: alguna devolución ya fue retirada por el proveedor.'
+          : 'No se puede revertir la operación completa: alguna devolución ya fue canjeada o acreditada.' }}
       </p>
     </ion-card-content>
   </ion-card>

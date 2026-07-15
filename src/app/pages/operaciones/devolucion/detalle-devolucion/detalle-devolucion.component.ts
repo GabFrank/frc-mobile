@@ -91,6 +91,14 @@ export class DetalleDevolucionComponent implements OnInit {
     return this.devolucion?.estado === EstadoDevolucion.PENDIENTE;
   }
 
+  /** Sin proveedor + SEPARADO: puede descartarse (merma) — cierra el flujo. */
+  get canDescartar(): boolean {
+    return (
+      this.devolucion?.estado === EstadoDevolucion.SEPARADO &&
+      this.devolucion?.proveedor == null
+    );
+  }
+
   get colorEstado(): string {
     switch (this.devolucion?.estado) {
       case EstadoDevolucion.PENDIENTE:
@@ -219,6 +227,38 @@ export class DetalleDevolucionComponent implements OnInit {
                 this.notificacionService.success('Devolución separada');
                 this.cargar(this.devolucion.id);
                 this.impresionEtiquetaService.preguntarEImprimir(this.devolucion.id);
+              }
+            },
+            () => {
+              this.procesando = false;
+            }
+          );
+      });
+  }
+
+  /** Descarta (merma) una devolución sin proveedor ya separada. Cierra el flujo. */
+  onDescartar() {
+    this.dialogoService
+      .open('Descartar', '¿Descartar como merma? Genera el gasto de pérdida.', true)
+      .then(async (res) => {
+        if (res.role !== 'aceptar') return;
+        const usuarioId =
+          this.mainService.usuarioActual?.id ?? +localStorage.getItem('usuarioId');
+        this.procesando = true;
+        (
+          await this.devolucionService.onAvanzarEstado(
+            this.devolucion.id,
+            EstadoDevolucion.DESCARTADO,
+            usuarioId
+          )
+        )
+          .pipe(first(), untilDestroyed(this))
+          .subscribe(
+            (r) => {
+              this.procesando = false;
+              if (r != null) {
+                this.notificacionService.success('Devolución descartada');
+                this.cargar(this.devolucion.id);
               }
             },
             () => {
