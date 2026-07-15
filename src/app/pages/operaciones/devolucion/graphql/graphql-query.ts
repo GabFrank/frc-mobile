@@ -68,6 +68,7 @@ export const devolucionConFiltrosQuery = gql`
         identificador
         fecha
         motivo
+        colectadoEn
         sucursalOrigen {
           id
           nombre
@@ -84,6 +85,21 @@ export const devolucionConFiltrosQuery = gql`
         }
       }
     }
+  }
+`;
+
+export const revertirEstadoDevolucionMutation = gql`
+  mutation revertirEstadoDevolucion($devolucionId: ID!, $usuarioId: ID) {
+    data: revertirEstadoDevolucion(devolucionId: $devolucionId, usuarioId: $usuarioId) {
+      id
+      estado
+    }
+  }
+`;
+
+export const remitoRetiroProveedorQuery = gql`
+  query remitoRetiroProveedor($devolucionIds: [ID!]!) {
+    data: remitoRetiroProveedor(devolucionIds: $devolucionIds)
   }
 `;
 

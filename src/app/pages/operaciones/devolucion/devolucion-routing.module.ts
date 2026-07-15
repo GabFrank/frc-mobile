@@ -5,6 +5,7 @@ import { ListDevolucionComponent } from './list-devolucion/list-devolucion.compo
 import { DetalleDevolucionComponent } from './detalle-devolucion/detalle-devolucion.component';
 import { ColectaDevolucionComponent } from './colecta-devolucion/colecta-devolucion.component';
 import { DevolucionHomeComponent } from './devolucion-home/devolucion-home.component';
+import { HistorialOperacionesComponent } from './historial-operaciones/historial-operaciones.component';
 
 const routes: Routes = [
   {
@@ -14,6 +15,16 @@ const routes: Routes = [
   {
     path: 'historial',
     component: ListDevolucionComponent,
+  },
+  {
+    path: 'historial-colectas',
+    component: HistorialOperacionesComponent,
+    data: { modo: 'COLECTA' },
+  },
+  {
+    path: 'historial-retiros',
+    component: HistorialOperacionesComponent,
+    data: { modo: 'RETIRO' },
   },
   {
     path: 'nueva',

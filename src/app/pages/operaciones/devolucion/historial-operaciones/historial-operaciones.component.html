@@ -1,0 +1,73 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onVolver()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ titulo }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="vacio" *ngIf="!cargando && grupos.length === 0">
+    <ion-icon name="file-tray-outline"></ion-icon>
+    <p>No hay {{ esColecta ? 'colectas' : 'retiros' }} en el historial</p>
+  </div>
+
+  <div class="grupo" *ngFor="let g of grupos">
+    <div class="grupo-header">
+      <div class="grupo-tit">
+        <strong>{{ g.titulo }}</strong>
+        <small>{{ g.subtitulo }}</small>
+      </div>
+      <ion-button
+        *ngIf="!esColecta"
+        size="small"
+        fill="clear"
+        class="btn-success-flat"
+        (click)="onReimprimirGrupo(g)">
+        <ion-icon slot="start" name="print-outline"></ion-icon>
+        Remito
+      </ion-button>
+    </div>
+
+    <ion-list>
+      <ion-item *ngFor="let it of g.items" lines="full">
+        <ion-label class="ion-text-wrap">
+          <strong>{{ it.identificador }}</strong>
+          <p *ngIf="esColecta">{{ it.origen }} → {{ it.destino }}</p>
+          <p *ngIf="!esColecta">{{ it.origen }}</p>
+          <p class="fecha">
+            {{ (esColecta ? it.colectadoEn : it.fecha) | date: 'dd/MM/yyyy HH:mm' }}
+          </p>
+        </ion-label>
+        <ion-button
+          *ngIf="esColecta"
+          slot="end"
+          fill="clear"
+          class="btn-success-flat"
+          [disabled]="procesando"
+          (click)="onReimprimirEtiquetas(it)">
+          <ion-icon slot="icon-only" name="pricetags-outline"></ion-icon>
+        </ion-button>
+        <ion-button
+          slot="end"
+          fill="clear"
+          color="warning"
+          [disabled]="procesando"
+          (click)="onRevertir(it)">
+          <ion-icon slot="icon-only" name="arrow-undo-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <ion-infinite-scroll (ionInfinite)="onLoadMore($event)" [disabled]="!hayMas">
+    <ion-infinite-scroll-content loadingSpinner="bubbles"></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>

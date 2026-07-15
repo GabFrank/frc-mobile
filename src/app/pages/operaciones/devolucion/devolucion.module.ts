@@ -10,9 +10,10 @@ import { ListDevolucionComponent } from './list-devolucion/list-devolucion.compo
 import { DetalleDevolucionComponent } from './detalle-devolucion/detalle-devolucion.component';
 import { ColectaDevolucionComponent } from './colecta-devolucion/colecta-devolucion.component';
 import { DevolucionHomeComponent } from './devolucion-home/devolucion-home.component';
+import { HistorialOperacionesComponent } from './historial-operaciones/historial-operaciones.component';
 
 @NgModule({
-  declarations: [DevolucionHomeComponent, DevolucionComponent, DevolucionItemDialogComponent, ListDevolucionComponent, DetalleDevolucionComponent, ColectaDevolucionComponent],
+  declarations: [DevolucionHomeComponent, DevolucionComponent, DevolucionItemDialogComponent, ListDevolucionComponent, DetalleDevolucionComponent, ColectaDevolucionComponent, HistorialOperacionesComponent],
   imports: [
     CommonModule,
     DevolucionRoutingModule,

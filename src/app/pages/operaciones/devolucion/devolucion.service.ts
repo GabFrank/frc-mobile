@@ -12,6 +12,8 @@ import { DevolucionByIdGQL } from './graphql/devolucionById';
 import { DeleteDevolucionItemGQL } from './graphql/deleteDevolucionItem';
 import { EtiquetasSeparadoPdfGQL } from './graphql/etiquetasSeparadoPdf';
 import { ColectarDevolucionesEnBloqueGQL } from './graphql/colectarDevolucionesEnBloque';
+import { RevertirEstadoDevolucionGQL } from './graphql/revertirEstadoDevolucion';
+import { RemitoRetiroProveedorGQL } from './graphql/remitoRetiroProveedor';
 
 @Injectable({
   providedIn: 'root',
@@ -27,8 +29,24 @@ export class DevolucionService {
     private devolucionByIdGQL: DevolucionByIdGQL,
     private deleteDevolucionItemGQL: DeleteDevolucionItemGQL,
     private etiquetasSeparadoPdfGQL: EtiquetasSeparadoPdfGQL,
-    private colectarDevolucionesEnBloqueGQL: ColectarDevolucionesEnBloqueGQL
+    private colectarDevolucionesEnBloqueGQL: ColectarDevolucionesEnBloqueGQL,
+    private revertirEstadoDevolucionGQL: RevertirEstadoDevolucionGQL,
+    private remitoRetiroProveedorGQL: RemitoRetiroProveedorGQL
   ) {}
+
+  /** Revierte la devolucion un estado hacia atras (solo transiciones seguras). */
+  async onRevertirEstado(devolucionId: number, usuarioId?: number): Promise<Observable<any>> {
+    return await this.genericService.onCustomSave(
+      this.revertirEstadoDevolucionGQL,
+      { devolucionId, usuarioId: usuarioId ?? null },
+      false
+    );
+  }
+
+  /** PDF (base64) del comprobante de retiro consolidado. */
+  async onGetRemito(devolucionIds: number[]): Promise<Observable<string>> {
+    return await this.genericService.onGetCustom(this.remitoRetiroProveedorGQL, { devolucionIds });
+  }
 
   async onGetDevolucionById(id: number): Promise<Observable<Devolucion>> {
     return await this.genericService.onGetCustom(this.devolucionByIdGQL, { id });

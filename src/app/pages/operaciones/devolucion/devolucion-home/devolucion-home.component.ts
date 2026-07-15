@@ -36,5 +36,17 @@ export class DevolucionHomeComponent {
       icono: 'business-outline',
       link: ['/operaciones/retiro-proveedor'],
     },
+    {
+      titulo: 'Historial de colectas',
+      descripcion: 'Colectas internas: reimprimir o revertir',
+      icono: 'swap-horizontal-outline',
+      link: ['historial-colectas'],
+    },
+    {
+      titulo: 'Historial de retiros',
+      descripcion: 'Retiros a proveedor: reimprimir o revertir',
+      icono: 'receipt-outline',
+      link: ['historial-retiros'],
+    },
   ];
 }

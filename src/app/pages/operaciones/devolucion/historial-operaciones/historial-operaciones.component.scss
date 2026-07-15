@@ -1,0 +1,43 @@
+.grupo {
+  margin-bottom: 10px;
+
+  .grupo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px 4px;
+
+    .grupo-tit {
+      display: flex;
+      flex-direction: column;
+
+      strong {
+        font-size: 15px;
+      }
+
+      small {
+        opacity: 0.65;
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+.fecha {
+  opacity: 0.7;
+  font-size: 13px;
+}
+
+.vacio {
+  text-align: center;
+  opacity: 0.6;
+  margin-top: 40px;
+
+  ion-icon {
+    font-size: 48px;
+  }
+
+  p {
+    margin-top: 8px;
+  }
+}
