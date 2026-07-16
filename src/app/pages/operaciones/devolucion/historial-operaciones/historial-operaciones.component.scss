@@ -1,0 +1,67 @@
+.op {
+  margin: 0 8px 12px;
+
+  .op-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    .op-tit {
+      display: flex;
+      flex-direction: column;
+
+      strong {
+        font-size: 15px;
+      }
+
+      small {
+        opacity: 0.7;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+    }
+  }
+
+  .op-lineas {
+    margin: 6px 0;
+
+    .linea {
+      --min-height: 38px;
+      --padding-start: 0;
+    }
+  }
+
+  .op-acciones {
+    margin-top: 4px;
+  }
+
+  .op-nota {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    opacity: 0.7;
+    margin: 6px 2px 0;
+
+    ion-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+  }
+}
+
+.vacio {
+  text-align: center;
+  opacity: 0.6;
+  margin-top: 40px;
+
+  ion-icon {
+    font-size: 48px;
+  }
+
+  p {
+    margin-top: 8px;
+  }
+}

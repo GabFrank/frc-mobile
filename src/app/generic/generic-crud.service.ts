@@ -31,17 +31,34 @@ export class GenericCrudService {
       gql
         .fetch(data, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
         .pipe(untilDestroyed(this))
-        .subscribe((res) => {
-          if (res.errors == null) {
-            obs.next(res.data['data']);
-          } else {
-            console.log(res.errors);
+        .subscribe({
+          next: (res) => {
+            if (res.errors == null) {
+              obs.next(res.data['data']);
+              obs.complete();
+            } else {
+              console.log(res.errors);
+              this.notificacionService.open(
+                'Ups!! Algo salió mal',
+                TipoNotificacion.DANGER,
+                2
+              );
+              // Propagar el error para que el consumidor apague spinners y no
+              // quede la pantalla colgada.
+              obs.error(res.errors);
+              obs.complete();
+            }
+          },
+          error: (err) => {
+            console.log(err);
             this.notificacionService.open(
               'Ups!! Algo salió mal',
               TipoNotificacion.DANGER,
               2
             );
-          }
+            obs.error(err);
+            obs.complete();
+          },
         });
     });
   }

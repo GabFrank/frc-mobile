@@ -27,6 +27,16 @@
 
     </activity>
 
+    <!-- Android 16 ignora restricciones de orientacion en pantallas grandes.
+         GmsBarcodeScanningDelegateActivity (play-services-code-scanner, via
+         @capacitor-mlkit/barcode-scanning) trae android:screenOrientation="portrait"
+         en su manifest. Lo sobreescribimos para no dejar la restriccion en el merge. -->
+    <activity
+      android:name="com.google.mlkit.vision.codescanner.internal.GmsBarcodeScanningDelegateActivity"
+      android:screenOrientation="fullSensor"
+      tools:replace="android:screenOrientation"
+      tools:node="merge" />
+
     <provider
       android:name="androidx.core.content.FileProvider"
       android:authorities="${applicationId}.fileprovider"

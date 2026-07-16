@@ -87,6 +87,12 @@ export class HomeComponent implements OnInit, OnDestroy {
       toneAmber: true,
       roles: [ROLES.DIRECTIVO, ROLES.ADMIN],
     },
+    {
+      label: 'Devoluciones',
+      route: ['/operaciones/devolucion'],
+      icon: 'assignment_return',
+      toneRed: true,
+    },
   ];
 
   private intervalId: ReturnType<typeof setInterval> | null = null;

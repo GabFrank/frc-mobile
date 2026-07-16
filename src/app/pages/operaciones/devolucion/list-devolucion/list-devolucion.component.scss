@@ -1,0 +1,35 @@
+.filtros {
+  display: flex;
+  gap: 8px;
+  padding: 4px 12px;
+
+  ion-select {
+    flex: 1;
+    --padding-start: 8px;
+  }
+}
+
+.fila-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fecha {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 16px;
+  color: var(--ion-color-medium);
+
+  ion-icon {
+    font-size: 42px;
+  }
+}

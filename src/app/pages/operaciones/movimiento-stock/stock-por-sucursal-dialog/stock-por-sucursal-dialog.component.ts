@@ -9,6 +9,8 @@ import { ModalService } from 'src/app/services/modal.service';
 
 export interface StockPorSucursalDialogData {
   producto: Producto;
+  /** Si viene, se muestra solo esa sucursal (contexto devolucion/inventario). */
+  sucursalId?: number;
 }
 
 class StockPorSucursal {
@@ -48,15 +50,22 @@ export class StockPorSucursalDialogComponent implements OnInit {
 
     if (this.data?.producto != null) this.selectedProducto = this.data.producto;
 
+    const soloSucursalId = this.data?.sucursalId;
+
     (await this.sucursalService.onGetAllSucursales()).subscribe(res => {
       this.stockPorSucursalList = [];
-      this.sucursalList = res;
+      this.sucursalList = (res || []).filter(
+        (s) => soloSucursalId == null || s.id == soloSucursalId
+      );
       this.sucursalList.forEach(s => {
         if (s.id != 0) {
           this.stockPorSucursalList.push(new StockPorSucursal(s));
         }
+      });
+      // En contexto de una sola sucursal, cargar su stock automaticamente.
+      if (soloSucursalId != null && this.stockPorSucursalList.length > 0) {
+        this.onVerStock(this.stockPorSucursalList[0].sucursal);
       }
-      )
     })
   }
 
