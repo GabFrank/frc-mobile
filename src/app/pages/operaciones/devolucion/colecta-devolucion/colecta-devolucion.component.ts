@@ -155,8 +155,11 @@ export class ColectaDevolucionComponent implements OnInit {
               const fail = (r?.resultados || []).filter((x) => !x.ok);
               if (fail.length === 0) {
                 this.notificacionService.success(`${okCount} colectada(s)`);
-                // Al finalizar, ir al historial de colectas.
-                this.router.navigate(['/operaciones/devolucion/historial-colectas']);
+                // Al finalizar, ir al historial de colectas REEMPLAZANDO esta pantalla:
+                // asi el boton atras no vuelve a la colecta ya terminada.
+                this.router.navigate(['/operaciones/devolucion/historial-colectas'], {
+                  replaceUrl: true,
+                });
               } else {
                 this.notificacionService.warn(
                   `${okCount} ok, ${fail.length} con error`

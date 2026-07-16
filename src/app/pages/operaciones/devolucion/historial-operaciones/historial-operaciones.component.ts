@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { first } from 'rxjs/operators';
 import { DialogoService } from 'src/app/services/dialogo.service';
@@ -39,6 +39,7 @@ export class HistorialOperacionesComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private _location: Location,
+    private router: Router,
     private devolucionService: DevolucionService,
     private pdfViewerService: PdfViewerService,
     private dialogoService: DialogoService,
@@ -201,5 +202,13 @@ export class HistorialOperacionesComponent implements OnInit {
 
   onVolver() {
     this._location.back();
+  }
+
+  /** FAB: iniciar una nueva operacion del mismo tipo que el historial actual. */
+  onNuevo() {
+    const ruta = this.esColecta
+      ? '/operaciones/devolucion/colecta'
+      : '/operaciones/retiro-proveedor';
+    this.router.navigate([ruta]);
   }
 }

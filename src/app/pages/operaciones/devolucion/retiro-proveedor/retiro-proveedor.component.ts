@@ -236,9 +236,13 @@ export class RetiroProveedorComponent implements OnInit {
             this.verificadasCount = this.cajas.filter((c) => c.verificada).length;
             // Bajar el comprobante para compartir con el proveedor.
             this.descargarRemito(okIds);
-            // Si ya no quedan cajas pendientes, ir al historial de retiros.
+            // Si ya no quedan cajas pendientes, ir al historial de retiros
+            // REEMPLAZANDO esta pantalla: el boton atras no debe volver al retiro
+            // ya terminado.
             if (this.cajas.length === 0) {
-              this.router.navigate(['/operaciones/devolucion/historial-retiros']);
+              this.router.navigate(['/operaciones/devolucion/historial-retiros'], {
+                replaceUrl: true,
+              });
             }
           }
         },
