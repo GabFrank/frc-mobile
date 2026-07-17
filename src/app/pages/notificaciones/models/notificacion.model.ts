@@ -68,6 +68,7 @@ export const DESCRIPCION_POR_TIPO_NOTIFICACION: Record<string, string> = {
     VENTA_TRANSFERENCIA: 'Notificacion de venta con pago por transferencia',
     VENTA_STOCK_CRITICO: 'Notificacion de venta con producto en stock cero o negativo',
     VENTA_CREDITO_CLIENTE: 'Notificacion de compra a credito propia',
+    DIFERENCIA_MALETIN: 'Alerta de diferencia detectada en maletin',
 };
 
 export interface MisConfiguracionesNotificacionResponse {
