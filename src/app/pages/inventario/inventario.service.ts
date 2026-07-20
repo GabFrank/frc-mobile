@@ -4,7 +4,7 @@ import { MainService } from 'src/app/services/main.service';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { CargandoService } from './../../services/cargando.service';
-import { Inventario, InventarioProducto, InventarioProductoItem, ProductoSaldoDto } from './inventario.model';
+import { Inventario, InventarioProducto, InventarioProductoItem, ProductoSaldoDto, ProductoVencidoViewPage } from './inventario.model';
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { GenericCrudService } from 'src/app/generic/generic-crud.service';
@@ -28,6 +28,7 @@ import { GetInventarioItemsParaRevisarGQL } from './graphql/getInventarioItemsPa
 import { GetProductosConCantidadPositivaGQL } from './graphql/getProductosConCantidadPositivaGQL';
 import { GetProductosConCantidadNegativaGQL } from './graphql/getProductosConCantidadNegativaGQL';
 import { GetProductosFaltantesGQL } from './graphql/getProductosFaltantesGQL';
+import { ProductosVencidosGQL } from '../producto/graphql/productosVencidos';
 import { PageInfo } from 'src/app/app.component';
 
 @UntilDestroy()
@@ -62,7 +63,8 @@ export class InventarioService {
     private getProductosConCantidadNegativa: GetProductosConCantidadNegativaGQL,
     private getProductosFaltantes: GetProductosFaltantesGQL,
     private getInventarioItemsPorInvProYPresentacion: GetInventarioItemsPorInvProYPresentacionGQL,
-    private getInventarioItemsDeInventariosAnteriores: GetInventarioItemsDeInventariosAnterioresGQL
+    private getInventarioItemsDeInventariosAnteriores: GetInventarioItemsDeInventariosAnterioresGQL,
+    private productosVencidosGQL: ProductosVencidosGQL
 
   ) { }
 
@@ -385,5 +387,19 @@ export class InventarioService {
           }
         });
     });
+  }
+
+  async onGetProductosVencidos(filters: {
+    startDate?: string;
+    endDate?: string;
+    sucursalIdList?: number[] | null;
+    sectorIdList?: number[] | null;
+    zonaIdList?: number[] | null;
+    productoIdList?: number[] | null;
+    soloRealmenteVencidos?: boolean;
+    page: number;
+    size: number;
+  }): Promise<Observable<ProductoVencidoViewPage>> {
+    return this.genericCrudService.onGetCustom(this.productosVencidosGQL, filters);
   }
 }

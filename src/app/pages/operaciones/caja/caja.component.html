@@ -5,22 +5,32 @@
 </ion-content> -->
 <ion-content>
   <ion-card class="card" (click)="abrirCaja()">
-    <ion-card-header style="color: white">
+    <ion-card-header>
       <ion-card-title>Abrir Caja</ion-card-title>
     </ion-card-header>
 
-    <ion-card-content style="color: white">
+    <ion-card-content>
       Abrir caja de una sucursal. Es necesario estar en la sucursal en donde será abierta la caja.
     </ion-card-content>
   </ion-card>
 
   <ion-card class="card" (click)="buscarCaja()">
-    <ion-card-header style="color: white">
+    <ion-card-header>
       <ion-card-title>Buscar caja abierta</ion-card-title>
     </ion-card-header>
 
-    <ion-card-content style="color: white">
+    <ion-card-content>
       Seleccionar sucursal y buscar tu caja abierta
+    </ion-card-content>
+  </ion-card>
+  
+  <ion-card *ngIf="ventaTarjetaHabilitada" class="card" [routerLink]="['/operaciones/venta-tarjeta']">
+    <ion-card-header>
+      <ion-card-title>Ventas con tarjeta</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      Lista de ventas con tarjeta registradas en la caja actual.
     </ion-card-content>
   </ion-card>
 

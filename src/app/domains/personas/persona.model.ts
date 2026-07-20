@@ -15,6 +15,7 @@ export interface Persona  {
     telefono: string;
     socialMedia: string;
     imagenes: string;
+    embeddingFacial?: string;
     creadoEn: Date;
     usuario: Usuario;
     isFuncionario: boolean

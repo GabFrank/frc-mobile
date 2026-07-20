@@ -39,4 +39,6 @@ export class Equipo {
 
 export type ActivoBusqueda = Vehiculo | Mueble | Inmueble | Equipo;
 
-export type ModuloPadreGasto = 'VEHICULO' | 'MUEBLE' | 'INMUEBLE' | 'EQUIPOS' | 'PERSONAS' | 'OTRO';
+// Definición única de ModuloPadreGasto: vive en la util de reglas y se re-exporta
+// acá para mantener un solo punto de verdad y evitar divergencias.
+export { ModuloPadreGasto } from '../utils/tipo-gasto-modulo-reglas.util';

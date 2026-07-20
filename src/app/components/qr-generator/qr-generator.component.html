@@ -6,9 +6,12 @@
     <div>para capturar imagenes</div>
   </div>
 
-  <div style="text-align: center;">
-    <ion-button (click)="onSalir()" expand="block" fill="clear">
+  <div style="text-align: center; display: flex; justify-content: center;">
+    <ion-button (click)="onSalir()" fill="clear">
       Salir
+    </ion-button>
+    <ion-button (click)="onCompartir()" fill="clear" [disabled]="compartiendo">
+      Compartir
     </ion-button>
   </div>
 </ion-content>

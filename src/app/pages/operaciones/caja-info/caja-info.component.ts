@@ -19,6 +19,7 @@ import { AdicionarConteoCierreDialogComponent } from '../conteo/adicionar-conteo
 import { Conteo } from '../conteo/conteo.model';
 import { Maletin } from '../maletin/maletin.model';
 import { MaletinService } from '../maletin/maletin.service';
+import { VentaTarjetaService } from '../venta-tarjeta/venta-tarjeta.service';
 
 @UntilDestroy()
 @Component({
@@ -44,7 +45,8 @@ export class CajaInfoComponent implements OnInit {
     private dialogoService: DialogoService,
     private maletinService: MaletinService,
     private notificacionService: NotificacionService,
-    private popoverService: PopOverService
+    private popoverService: PopOverService,
+    private ventaTarjetaService: VentaTarjetaService
   ) { }
 
   ngOnInit() {
@@ -66,7 +68,23 @@ export class CajaInfoComponent implements OnInit {
     this._location.back()
   }
 
-  adicionarConteoCierre() {
+  async adicionarConteoCierre() {
+    const sucursalId = this.selectedCaja?.sucursal?.id || this.selectedCaja?.sucursalId;
+    const cajaId = this.selectedCaja?.id;
+
+    const pendientes = await this.ventaTarjetaService
+      .onCountSinRegistrar(cajaId, sucursalId)
+      .toPromise();
+
+    if (pendientes > 0) {
+      this.dialogoService.open(
+        'Ventas con tarjeta pendientes',
+        `Hay ${pendientes} venta(s) con tarjeta sin registrar. Registre todas desde la app antes de cerrar la caja.`,
+        false
+      );
+      return;
+    }
+
     this.modalService.openModal(AdicionarConteoCierreDialogComponent).then(async res => {
       const conteo: Conteo = res['data']?.conteo;
       if (conteo == null) {

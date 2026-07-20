@@ -1,0 +1,73 @@
+ion-badge {
+  vertical-align: middle;
+  font-size: 0.7em;
+}
+
+.vt-card {
+  margin: 8px 12px;
+  border-radius: 10px;
+  color: white !important;
+
+  ion-card-content {
+    padding: 12px 16px;
+  }
+
+  &.pendiente {
+    background-color: #f57c00 !important;
+    cursor: pointer;
+  }
+
+  &.completado {
+    background-color: #388e3c !important;
+  }
+
+  &.cancelado {
+    background-color: #f44336 !important;
+  }
+}
+
+.vt-venta {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: white;
+
+  ion-icon {
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+}
+
+.vt-estado {
+  font-size: 0.85rem;
+  margin: 2px 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-style: italic;
+
+  ion-icon {
+    vertical-align: middle;
+  }
+}
+
+.vt-detalle {
+  font-size: 0.85rem;
+  margin: 2px 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.vt-fecha {
+  font-size: 0.78rem;
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.vt-icon-estado {
+  font-size: 28px;
+  color: rgba(255, 255, 255, 0.85);
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+ion-fab ion-fab-button {
+  --background: #f44336 !important;
+}

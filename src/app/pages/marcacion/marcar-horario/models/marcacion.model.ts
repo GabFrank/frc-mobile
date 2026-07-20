@@ -52,6 +52,23 @@ export enum EstadoJornada {
     AUSENTE = 'AUSENTE'
 }
 
+export enum AccionMarcacionPendiente {
+    ENTRADA = 'ENTRADA',
+    SALIDA = 'SALIDA',
+    RETORNO_ALMUERZO = 'RETORNO_ALMUERZO',
+    SALIDA_DEFINITIVA = 'SALIDA_DEFINITIVA'
+}
+
+export class EstadoMarcacionUsuario {
+    jornadaRelevante: Jornada;
+    accionPendiente: AccionMarcacionPendiente;
+    puedeMarcarEntrada: boolean;
+    puedeMarcarSalida: boolean;
+    puedeMarcarSalidaAlmuerzo: boolean;
+    puedeMarcarEntradaAlmuerzo: boolean;
+    estaEnJornada: boolean;
+}
+
 export class Jornada {
     id: number;
     sucursalId: number;

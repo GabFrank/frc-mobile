@@ -4,7 +4,6 @@ const config: CapacitorConfig = {
   appId: 'com.sistemasinformaticos.frc',
   appName: 'Bodega Franco',
   webDir: 'www',
-  bundledWebRuntime: false,
   server: {
     cleartext: true,
     androidScheme: 'http'

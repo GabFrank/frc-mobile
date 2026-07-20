@@ -28,6 +28,10 @@ const routes: Routes = [
   {
     path: 'solicitud-gastos',
     loadChildren: () => import('./solicitud-gastos/solicitud-gastos.module').then(m => m.SolicitudGastosModule)
+  },
+  {
+    path: 'venta-tarjeta',
+    loadChildren: () => import('./venta-tarjeta/venta-tarjeta.module').then(m => m.VentaTarjetaModule)
   }
 ];
 

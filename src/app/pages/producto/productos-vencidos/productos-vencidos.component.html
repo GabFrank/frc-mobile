@@ -65,6 +65,21 @@
           <ion-icon name="close" slot="end" *ngIf="selectedProducto" (click)="onClearProducto()">
           </ion-icon>
         </ion-item>
+
+        <ion-item fill="outline" style="margin-top: 10px">
+          <ion-label position="floating">Fuente</ion-label>
+          <ion-select
+            [value]="selectedFuentes"
+            interface="popover"
+            [multiple]="true"
+            cancelText="CANCELAR"
+            (ionChange)="onFuenteChange($event.detail.value)"
+          >
+            <ion-select-option *ngFor="let opcion of fuenteVerdadOpciones" [value]="opcion.value">
+              {{ opcion.label }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
       </ion-list>
     </div>
 
@@ -110,16 +125,15 @@
   <ion-list *ngIf="!isLoading && itemsList.length > 0">
     <ion-item *ngFor="let item of itemsList; trackBy: trackById" lines="inset" style="margin-top: 0;">
       <ion-thumbnail slot="start">
-        <img
-          [src]="item?.presentacion?.imagenPrincipal || item?.presentacion?.producto?.imagenPrincipal || 'assets/no-image.png'" />
+        <img src="assets/no-image.png" />
       </ion-thumbnail>
       <ion-label style="width: 100%;">
         <div class="content">
           <h2 class="desc">
-            {{ item?.presentacion?.producto?.descripcion || 'Sin descripción' | uppercase }}
+            {{ item?.productoDescripcion || 'Sin descripción' | uppercase }}
           </h2>
           <p style="margin-bottom: 5px;">
-            <strong>Código:</strong> {{ item?.presentacion?.producto?.codigoPrincipal || '-' }}
+            <strong>Código:</strong> {{ item?.codigoBarras || '-' }}
           </p>
           <p style="margin-bottom: 5px;">
             <strong>Cantidad:</strong> {{ item?.cantidad | number:'1.0-2' }}
@@ -132,18 +146,30 @@
           </p>
           <p style="margin-bottom: 5px;">
             <strong>Estado:</strong>
-            <span [ngClass]="item?.diasVencimientoClase">
+            <span [class]="item?.diasVencimientoClase">
               {{ item?.diasVencimientoTexto }}
             </span>
           </p>
-          <p style="margin-bottom: 5px;" *ngIf="item?.inventarioProducto?.inventario?.sucursal">
-            <strong>Sucursal:</strong> {{ item?.inventarioProducto?.inventario?.sucursal?.nombre }}
+          <p style="margin-bottom: 5px;" *ngIf="item?.fuenteVerdad">
+            <strong>Fuente:</strong>
+            <span [class]="'fuente-badge fuente-' + item?.fuenteVerdad?.toLowerCase()">
+              {{ item?.fuenteVerdad }}
+            </span>
           </p>
-          <p style="margin-bottom: 5px;" *ngIf="item?.sector">
-            <strong>Sector:</strong> {{ item?.sector?.descripcion }}
+          <p style="margin-bottom: 5px;" *ngIf="item?.detalleFuente">
+            <strong>Detalle:</strong> {{ item?.detalleFuente }}
           </p>
-          <p style="margin-bottom: 0px;" *ngIf="item?.zona">
-            <strong>Zona:</strong> {{ item?.zona?.descripcion }}
+          <p style="margin-bottom: 5px;" *ngIf="item?.referenciaInventario">
+            <strong>Inventario:</strong> {{ item?.referenciaInventario }}
+          </p>
+          <p style="margin-bottom: 5px;" *ngIf="item?.sucursalNombre">
+            <strong>Sucursal:</strong> {{ item?.sucursalNombre }}
+          </p>
+          <p style="margin-bottom: 5px;" *ngIf="item?.sectorDescripcion">
+            <strong>Sector:</strong> {{ item?.sectorDescripcion }}
+          </p>
+          <p style="margin-bottom: 0px;" *ngIf="item?.zonaDescripcion">
+            <strong>Zona:</strong> {{ item?.zonaDescripcion }}
           </p>
         </div>
       </ion-label>
