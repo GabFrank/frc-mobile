@@ -1,13 +1,10 @@
 import { Injectable } from "@angular/core";
 import { Query } from "apollo-angular";
 import { productosVencidosQuery } from "./graphql-query";
-import { InventarioProductoItem } from "../../inventario/inventario.model";
-import { PageInfo } from "src/app/app.component";
-
-export interface ProductosVencidosPage extends PageInfo<InventarioProductoItem> {}
+import { ProductoVencidoViewPage } from "../../inventario/inventario.model";
 
 export interface ProductosVencidosResponse {
-  productosVencidos: ProductosVencidosPage;
+  data: ProductoVencidoViewPage;
 }
 
 @Injectable({
@@ -16,4 +13,3 @@ export interface ProductosVencidosResponse {
 export class ProductosVencidosGQL extends Query<ProductosVencidosResponse> {
   override document = productosVencidosQuery;
 }
-

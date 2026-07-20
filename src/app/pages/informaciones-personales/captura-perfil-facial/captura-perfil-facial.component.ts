@@ -11,6 +11,7 @@ import { ModalController } from '@ionic/angular';
 import { CapturaFacial, FaceRecognitionService } from 'src/app/services/face-recognition.service';
 import { NotificacionService } from 'src/app/services/notificacion.service';
 import { UsuarioService } from 'src/app/services/usuario.service';
+import { construirGaleriaDesdeCapturas, serializarGaleriaFacial } from 'src/app/services/embedding-galeria.util';
 import { timeout, take } from 'rxjs/operators';
 
 @Component({
@@ -115,8 +116,8 @@ export class CapturaPerfilFacialComponent implements OnInit {
   }
 
   private async guardarPerfil(): Promise<void> {
-    const embeddingMaestro = this.faceRecognitionService.fusionarEmbeddings(this.capturas);
-    if (!embeddingMaestro) {
+    const galeria = construirGaleriaDesdeCapturas(this.capturas);
+    if (!galeria) {
       this.notificacionService.warn('Las fotos no tienen calidad suficiente. Repita las 3 capturas.');
       this.reiniciarCapturas();
       return;
@@ -129,8 +130,9 @@ export class CapturaPerfilFacialComponent implements OnInit {
         this.usuarioId,
         'perfil',
         fotoFrontal,
-        embeddingMaestro,
-        false
+        galeria.master,
+        false,
+        serializarGaleriaFacial(galeria)
       );
 
       const ok = await observable.pipe(timeout(60000), take(1)).toPromise();

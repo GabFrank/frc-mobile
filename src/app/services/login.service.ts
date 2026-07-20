@@ -8,7 +8,7 @@ import {
   HttpErrorResponse,
   HttpHeaders
 } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Observable } from 'rxjs';
 import { Usuario } from '../domains/personas/usuario.model';
@@ -19,7 +19,10 @@ import { PopOverService, PopoverSize } from './pop-over.service';
 import { CargandoService } from './cargando.service';
 import { DeviceDetectorService } from 'ngx-device-detector';
 import { InicioSesion } from '../domains/configuracion/inicio-sesion.model';
+import { TipoDispositivo } from '../domains/configuracion/enums/tipo-dispositivo.model';
 import { generateUUID } from '../generic/utils/string-utils';
+import { MarcacionService } from '../pages/marcacion/marcar-horario/service/marcacion.service';
+import { PushNotificationsService } from './push-notifications.service';
 
 export interface LoginResponse {
   usuario?: Usuario;
@@ -31,6 +34,9 @@ export interface LoginResponse {
   providedIn: 'root'
 })
 export class LoginService {
+  private readonly marcacionService = inject(MarcacionService);
+  private readonly pushNotificationsService = inject(PushNotificationsService);
+
   usuarioActual: Usuario;
   pushToken = null;
   httpOptions = {
@@ -61,7 +67,7 @@ export class LoginService {
       let id = localStorage.getItem('usuarioId');
       if (id != null) {
         this.usuarioService
-          .onGetUsuario(+id)
+          .onGetUsuarioParaLogin(+id)
           .pipe(untilDestroyed(this))
           .subscribe(async (res) => {
             if (res) {
@@ -92,6 +98,61 @@ export class LoginService {
     return deviceId;
   }
 
+  private resolveTipoDispositivo(): TipoDispositivo {
+    return this.deviceDetector.os === 'iOS'
+      ? TipoDispositivo.IOS
+      : TipoDispositivo.ANDROID;
+  }
+
+  private async registrarSesionActiva(usuario: Usuario): Promise<void> {
+    const deviceId = this.getOrCreateDeviceId();
+    const inicioSesion = new InicioSesion();
+    inicioSesion.usuario = usuario;
+    inicioSesion.sucursal = this.mainService?.sucursalActual;
+    inicioSesion.idDispositivo = deviceId;
+    inicioSesion.token = localStorage.getItem('pushToken');
+    inicioSesion.tipoDespositivo = this.resolveTipoDispositivo();
+    inicioSesion.creadoEn = new Date();
+
+    const sesionExistente = usuario?.inicioSesion;
+    if (sesionExistente?.idDispositivo === deviceId && sesionExistente?.id) {
+      inicioSesion.id = sesionExistente.id;
+      inicioSesion.horaInicio = sesionExistente.horaInicio
+        ? new Date(sesionExistente.horaInicio)
+        : new Date();
+    } else {
+      inicioSesion.horaInicio = new Date();
+    }
+
+    (
+      await this.usuarioService.onSaveInicioSesion(inicioSesion.toInput())
+    ).subscribe(async (res) => {
+      this.mainService.usuarioActual.inicioSesion = res;
+      await this.pushNotificationsService.syncTokenToBackend();
+    });
+  }
+
+  async cerrarSesionActiva(): Promise<void> {
+    const sesionActual = this.mainService.usuarioActual?.inicioSesion;
+    if (!sesionActual?.id || !sesionActual?.sucursal) {
+      return;
+    }
+
+    const inicioSesion = new InicioSesion();
+    Object.assign(inicioSesion, sesionActual);
+    inicioSesion.horaFin = new Date();
+    inicioSesion.token = null;
+
+    return new Promise(async (resolve) => {
+      (
+        await this.usuarioService.onSaveInicioSesion(inicioSesion.toInput())
+      ).subscribe({
+        next: () => resolve(),
+        error: () => resolve()
+      });
+    });
+  }
+
   async login(nickname, password): Promise<Observable<LoginResponse>> {
     let loading = await this.cargandoService.open('Entrando al sistema....');
     return new Observable((obs) => {
@@ -117,7 +178,7 @@ export class LoginService {
               if (res['usuarioId'] != null) {
                 localStorage.setItem('usuarioId', res['usuarioId']);
                 this.usuarioService
-                  .onGetUsuario(res['usuarioId'])
+                  .onGetUsuarioParaLogin(res['usuarioId'])
                   .subscribe(async (res) => {
                     if (res?.id != null) {
                       let response: LoginResponse = {
@@ -127,33 +188,8 @@ export class LoginService {
                       this.usuarioActual = res;
                       this.mainService.usuarioActual = this.usuarioActual;
                       this.mainService.authenticationSub.next(true);
-                      let inicioSesion = new InicioSesion();
-                      inicioSesion.usuario = res;
-                      inicioSesion.sucursal =
-                        this.mainService?.sucursalActual;
-                      inicioSesion.horaInicio = new Date();
-                      inicioSesion.token = localStorage.getItem('pushToken')
-                      inicioSesion.creadoEn = new Date();
-                      const deviceId = this.getOrCreateDeviceId();
-                      inicioSesion.idDispositivo = deviceId;
+                      await this.registrarSesionActiva(res);
 
-                      if (
-                        res?.inicioSesion != null &&
-                        res?.inicioSesion?.idDispositivo == deviceId &&
-                        res?.inicioSesion?.sucursal != null
-                      ) {
-                        console.log('Dispositivo conocido encontrado');
-                      } else {
-                        console.log('Nuevo disposito encontrado');
-                        (
-                          await this.usuarioService.onSaveInicioSesion(
-                            inicioSesion.toInput()
-                          )
-                        ).subscribe((res) => {
-                          console.log(res);
-                          this.mainService.usuarioActual.inicioSesion = res;
-                        });
-                      }
                       if (password == '123') {
                         this.popverService
                           .open(
@@ -177,53 +213,38 @@ export class LoginService {
                     }
                   });
               }
+            } else {
+              const response: LoginResponse = {
+                usuario: null,
+                error: this.buildAuthErrorResponse(
+                  res?.['message'] || res?.['mensaje']
+                )
+              };
+              obs.next(response);
             }
           },
           (error) => {
             this.cargandoService.close(loading);
             let response: LoginResponse = {
               usuario: null,
-              error: error
+              error: this.normalizeLoginError(error)
             };
-            obs.next(error);
+            obs.next(response);
           }
         );
     });
   }
 
   async logOut(): Promise<void> {
-    let inicioSesion = new InicioSesion();
-    Object.assign(inicioSesion, this.mainService.usuarioActual.inicioSesion);
-    inicioSesion.horaFin = new Date();
-    return new Promise(async (resolve, reject) => {
-      if (inicioSesion != null && inicioSesion?.sucursal != null) {
-        (
-          await this.usuarioService.onSaveInicioSesion(inicioSesion.toInput())
-        ).subscribe(
-          (res) => {
-            localStorage.setItem('token', null);
-            localStorage.setItem('usuarioId', null);
-            localStorage.removeItem('sucursalPersistida');
-            sessionStorage.setItem('justLoggedOut', 'true');
-            this.usuarioActual = null;
-            this.router.navigate(['']);
-            resolve(); // Resolve the Promise
-          },
-          (error) => {
-            console.error('Error:', error);
-            reject(error); // Reject the Promise
-          }
-        );
-      } else {
-        localStorage.setItem('token', null);
-        localStorage.setItem('usuarioId', null);
-        localStorage.removeItem('sucursalPersistida');
-        sessionStorage.setItem('justLoggedOut', 'true');
-        this.usuarioActual = null;
-        this.router.navigate(['']);
-        resolve(); // Resolve the Promise
-      }
-    });
+    await this.cerrarSesionActiva();
+    localStorage.setItem('token', null);
+    localStorage.setItem('usuarioId', null);
+    this.marcacionService.limpiarSucursalPersistida();
+    sessionStorage.setItem('justLoggedOut', 'true');
+    this.usuarioActual = null;
+    this.mainService.usuarioActual = null;
+    this.mainService.authenticationSub.next(false);
+    this.router.navigate(['']);
   }
 
   async biometricLogin(
@@ -245,20 +266,21 @@ export class LoginService {
         )
         .pipe(untilDestroyed(this))
         .subscribe(
-          (res) => {
+          async (res) => {
             if (res['token'] != null && res['usuarioId'] != null) {
               localStorage.setItem('token', res['token']);
               localStorage.setItem('usuarioId', res['usuarioId']);
               this.mainService.sucursalActual = res['sucursal'];
 
               this.usuarioService
-                .onGetUsuario(res['usuarioId'])
+                .onGetUsuarioParaLogin(res['usuarioId'])
                 .pipe(untilDestroyed(this))
-                .subscribe((usuarioRes) => {
+                .subscribe(async (usuarioRes) => {
                   if (usuarioRes?.id != null) {
                     this.usuarioActual = usuarioRes;
                     this.mainService.usuarioActual = this.usuarioActual;
                     this.mainService.authenticationSub.next(true);
+                    await this.registrarSesionActiva(usuarioRes);
                     obs.next({ usuario: usuarioRes, error: null });
                   } else {
                     obs.next({ usuario: null, error: null });
@@ -289,6 +311,60 @@ export class LoginService {
           (res) => resolve(res),
           () => resolve(null)
         );
+    });
+  }
+
+  private normalizeLoginError(error: HttpErrorResponse): HttpErrorResponse {
+    if (!error) {
+      return this.buildServerErrorResponse(
+        'Error de conexión con el servidor. Verifique la configuración.'
+      );
+    }
+
+    const serverMessage =
+      error?.error?.message ||
+      error?.error?.mensaje ||
+      error?.message ||
+      '';
+    const normalized = String(serverMessage).toLowerCase();
+    const isInvalidCredentials =
+      error?.status === 401 ||
+      normalized.includes('contrase') ||
+      normalized.includes('credencial') ||
+      normalized.includes('bad credential') ||
+      normalized.includes('usuario no existe') ||
+      normalized.includes('unauthorized');
+
+    if (isInvalidCredentials) {
+      return this.buildAuthErrorResponse();
+    }
+
+    if (error?.status === 0) {
+      return this.buildServerErrorResponse(
+        'Error de conexión con el servidor. Verifique la configuración.'
+      );
+    }
+
+    return this.buildServerErrorResponse(
+      'No se pudo iniciar sesión por un error del servidor. Intente nuevamente.'
+    );
+  }
+
+  private buildAuthErrorResponse(
+    message: string = 'Usuario o contraseña incorrectos. Verifique e intente nuevamente.'
+  ): HttpErrorResponse {
+    return new HttpErrorResponse({
+      status: 401,
+      statusText: 'Unauthorized',
+      error: { message }
+    });
+  }
+
+  private buildServerErrorResponse(message: string): HttpErrorResponse {
+    return new HttpErrorResponse({
+      status: 500,
+      statusText: 'Server Error',
+      error: { message }
     });
   }
 }

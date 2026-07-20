@@ -1,4 +1,6 @@
 import { Component, OnDestroy, OnInit, isDevMode } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { PhotoViewer } from '@awesome-cordova-plugins/photo-viewer/ngx';
 import { ActionSheetController, MenuController, Platform, PopoverController, ToastController } from '@ionic/angular';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -193,7 +195,26 @@ export class AppComponent implements OnInit, OnDestroy {
     await toast.present();
   }
 
+  /**
+   * Fuerza que la status bar NO se superponga al WebView (evita que el header
+   * rojo quede detras de los iconos del sistema wifi/bateria) y le da un fondo
+   * solido con iconos claros. Solo aplica en plataforma nativa.
+   */
+  private async initStatusBar(): Promise<void> {
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+    try {
+      await StatusBar.setOverlaysWebView({ overlay: false });
+      await StatusBar.setBackgroundColor({ color: '#000000' });
+      await StatusBar.setStyle({ style: Style.Dark });
+    } catch (e) {
+      // no-op: plugin no disponible / plataforma web
+    }
+  }
+
   async ngOnInit(): Promise<void> {
+    this.initStatusBar();
     this.pushNotificacionService.initPush();
     this.updateFabPosition(this.router.url);
     this.actualizarMarcacionRoute();

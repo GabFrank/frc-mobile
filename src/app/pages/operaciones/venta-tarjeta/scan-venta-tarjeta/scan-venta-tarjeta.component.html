@@ -1,0 +1,56 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title style="text-align: center; padding-left: 0; padding-right: 48px;">Escanear QR de Venta</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <div *ngIf="!verificandoCaja && cajaActual" class="scan-content">
+    <ion-icon name="qr-code-outline" style="font-size:80px; color:var(--ion-color-primary)"></ion-icon>
+
+    <div style="text-align:center">
+      <h2 style="font-weight:600">Escanear código QR</h2>
+      <p style="color:gray">
+        Apunte la cámara al QR generado por el cajero en la pantalla de la computadora
+        al finalizar la venta con tarjeta.
+      </p>
+    </div>
+
+    <ion-card style="width:100%; text-align:center; background:var(--ion-color-light)">
+      <ion-card-content>
+        <p style="margin:0; font-size:0.9em">
+          <strong>Caja #{{ cajaActual?.id }}</strong> —
+          {{ cajaActual?.sucursal?.nombre | titlecase }}
+        </p>
+        <p style="margin:4px 0 0; color:gray; font-size:0.85em">
+          {{ cajaActual?.usuario?.persona?.nombre | titlecase }}
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-button
+      expand="block"
+      size="large"
+      (click)="escanear()"
+      [disabled]="escaneando"
+      style="width:100%"
+      class="scan-button"
+    >
+      <ion-icon *ngIf="!escaneando" name="scan-outline" slot="start"></ion-icon>
+      {{ escaneando ? 'Escaneando...' : 'Escanear QR' }}
+    </ion-button>
+  </div>
+
+  <div *ngIf="!verificandoCaja && !cajaActual" style="text-align:center; padding:48px 16px">
+    <ion-icon name="alert-circle-outline" style="font-size:64px; color:var(--ion-color-danger)"></ion-icon>
+    <h3>Sin caja abierta</h3>
+    <p style="color:gray">Debe abrir una caja antes de poder registrar ventas con tarjeta.</p>
+    <ion-button (click)="onBack()">Volver</ion-button>
+  </div>
+</ion-content>
