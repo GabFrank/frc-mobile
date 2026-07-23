@@ -187,7 +187,7 @@
         <div class="fab-overlay" *ngIf="fabMenuOpen" (click)="toggleFabMenu()"></div>
 
         <div class="fab-actions" [class.show]="fabMenuOpen">
-          <div class="fab-action-item action-pagar" (click)="openPagarScanner()">
+          <div class="fab-action-item action-pagar" *ngIf="ventaTarjetaHabilitada" (click)="openPagarScanner()">
             <div class="fab-action-button">
               <ion-icon name="qr-code-outline"></ion-icon>
             </div>

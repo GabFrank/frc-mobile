@@ -3,11 +3,11 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BarcodeScannerService } from 'src/app/services/barcode-scanner.service';
-import { descodificarQr } from 'src/app/generic/utils/qrUtils';
 import { CajaService } from '../../caja/caja.service';
 import { MainService } from 'src/app/services/main.service';
 import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
 import { PdvCaja } from '../../caja/caja.model';
+import { VentaTarjetaQrService } from '../services/venta-tarjeta-qr.service';
 
 @UntilDestroy({ checkProperties: true })
 @Component({
@@ -28,7 +28,8 @@ export class ScanVentaTarjetaComponent implements OnInit {
     private notificacionService: NotificacionService,
     private router: Router,
     private route: ActivatedRoute,
-    private location: Location
+    private location: Location,
+    private ventaTarjetaQrService: VentaTarjetaQrService
   ) {}
 
   async ngOnInit() {
@@ -91,45 +92,19 @@ export class ScanVentaTarjetaComponent implements OnInit {
   }
 
   private procesarQr(texto: string) {
-    if (!texto.startsWith('frc-')) {
-      this.notificacionService.open('QR no válido para este sistema', TipoNotificacion.DANGER, 3);
+    const resultado = this.ventaTarjetaQrService.procesarQrVenta(texto, this.cajaActual);
+
+    if (!resultado.ok) {
+      const duracion = resultado.motivo === 'caja-distinta' ? 4 : 3;
+      this.notificacionService.open(resultado.mensaje, TipoNotificacion.DANGER, duracion);
       return;
     }
 
-    const qrData = descodificarQr(texto);
-
-    if (qrData.tipoEntidad !== 'VT') {
-      this.notificacionService.open('QR no corresponde a una venta con tarjeta', TipoNotificacion.DANGER, 3);
-      return;
-    }
-
-    if (qrData.componentToOpen !== 'RegistroVentaTarjetaComponent') {
-      this.notificacionService.open('QR no reconocido', TipoNotificacion.DANGER, 3);
-      return;
-    }
-
-    const partes = (qrData.data || '').split('|');
-    const cajaIdQr = Number(partes[0]);
-    const monto = Number(partes[1]);
-    const ventaTarjetaId = partes[2] ? Number(partes[2]) : null;
-
-    if (cajaIdQr !== Number(this.cajaActual.id)) {
-      this.notificacionService.open(
-        'Este QR pertenece a otra caja. Solo el cajero de turno puede registrar esta venta.',
-        TipoNotificacion.DANGER,
-        4
-      );
-      return;
-    }
-
-    const ventaId = Number(qrData.idOrigen);
-    // sucursalId del QR (valor de la filial) es el correcto para enrutar el save al backend correcto.
-    // No comparamos con cajaActual.sucursalId porque el central puede asignar un id diferente al de la filial.
-    const sucursalId = Number(qrData.sucursalId);
+    const { ventaId, cajaId, monto, sucursalId, ventaTarjetaId } = resultado.navigation;
 
     this.router.navigate(['../registro'], {
       relativeTo: this.route,
-      state: { ventaId, cajaId: cajaIdQr, monto, sucursalId, ventaTarjetaId }
+      state: { ventaId, cajaId, monto, sucursalId, ventaTarjetaId }
     });
   }
 
