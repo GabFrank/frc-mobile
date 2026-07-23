@@ -6,6 +6,13 @@
     </ion-col>
   </ion-row>
 
+  <ion-row *ngIf="selectedUsuario === null && autoLoginEnCurso" style="text-align: center;">
+    <ion-col size="12">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Verificando sesión...</p>
+    </ion-col>
+  </ion-row>
+
   <ion-row *ngIf="selectedUsuario === null">
     <ion-col size="12">
       <ion-item>
