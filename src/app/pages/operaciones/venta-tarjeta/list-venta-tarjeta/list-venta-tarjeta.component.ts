@@ -22,6 +22,8 @@ export class ListVentaTarjetaComponent implements OnInit, ViewWillEnter {
   cajaActual: PdvCaja = null;
   pendientes: number = 0;
   cargando = false;
+  /** Refresco en segundo plano (stale-while-revalidate): ya hay datos en pantalla, solo se están actualizando. */
+  actualizando = false;
 
   constructor(
     private ventaTarjetaService: VentaTarjetaService,
@@ -77,13 +79,25 @@ export class ListVentaTarjetaComponent implements OnInit, ViewWillEnter {
   }
 
   cargarLista(cajaId: number, sucId: number) {
+    const cache = this.ventaTarjetaService.listaCacheadaActual;
+    if (cache && cache.cajaId === cajaId) {
+      // Stale-while-revalidate: mostrar lo cacheado de inmediato y refrescar atrás.
+      this.list = cache.items;
+      this.cargando = false;
+      this.actualizando = true;
+    } else {
+      this.cargando = true;
+    }
+
     this.ventaTarjetaService.onGetPorCaja(cajaId, sucId)
       .pipe(untilDestroyed(this))
       .subscribe(items => {
         this.list = items;
         this.cargando = false;
+        this.actualizando = false;
       }, () => {
         this.cargando = false;
+        this.actualizando = false;
       });
   }
 
