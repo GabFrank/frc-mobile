@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { VentaTarjeta, VentaTarjetaInput } from './venta-tarjeta.model';
 import { SaveVentaTarjetaGQL } from './graphql/saveVentaTarjeta';
 import { UpdateVentaTarjetaGQL } from './graphql/updateVentaTarjeta';
@@ -12,6 +12,18 @@ import { GetConfiguracionVentaTarjetaGQL } from './graphql/getConfiguracionVenta
 
 @Injectable({ providedIn: 'root' })
 export class VentaTarjetaService {
+
+  /**
+   * Cache en memoria de la última lista de ventas con tarjeta traída por caja.
+   * Permite renderizar de inmediato (stale-while-revalidate) al reingresar a la
+   * pantalla mientras se refresca en segundo plano, evitando el spinner de
+   * pantalla completa que generaba el proxy lento central→filial.
+   */
+  private listaCacheada: { cajaId: number; items: VentaTarjeta[] } | null = null;
+
+  get listaCacheadaActual(): { cajaId: number; items: VentaTarjeta[] } | null {
+    return this.listaCacheada;
+  }
 
   constructor(
     private saveVentaTarjetaGQL: SaveVentaTarjetaGQL,
@@ -60,7 +72,12 @@ export class VentaTarjetaService {
   onGetPorCaja(cajaId: number, sucId: number): Observable<VentaTarjeta[]> {
     return this.ventasTarjetaPorCajaGQL
       .fetch({ id: cajaId, sucId }, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
-      .pipe(map(res => res.data?.['data'] ?? []));
+      .pipe(
+        map(res => res.data?.['data'] ?? []),
+        tap(items => {
+          this.listaCacheada = { cajaId, items };
+        })
+      );
   }
 
   onCountSinRegistrar(cajaId: number, sucId: number): Observable<number> {
