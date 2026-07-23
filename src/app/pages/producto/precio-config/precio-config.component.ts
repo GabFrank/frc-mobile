@@ -3,6 +3,7 @@ import { UntypedFormControl} from '@angular/forms';
 import { ConfigService } from 'src/app/services/config.service';
 import { NotificacionService } from 'src/app/services/notificacion.service';
 import { Moneda } from '../../operaciones/moneda/moneda.model';
+import { Preferences } from '@capacitor/preferences';
 
 @Component({
   selector: 'app-precio-config',
@@ -30,19 +31,23 @@ export class PrecioConfigComponent implements OnInit {
     this.notificacionService.success('Modo '+ mode + ' activado');
   }
   
-  onServerCentral(){
+  async onServerCentral(){
     localStorage.setItem('serverIp', '159.203.86.103');
     localStorage.setItem('serverPort', '8081');
     localStorage.setItem('usuarioId', null);
     localStorage.setItem('token', null);
+    await Preferences.set({ key: 'serverIp', value: '159.203.86.103' });
+    await Preferences.set({ key: 'serverPort', value: '8081' });
     window.location.reload();
   }
 
-  onServerSucursal(){
+  async onServerSucursal(){
     localStorage.setItem('serverIp', this.serverIpConsulta.value);
     localStorage.setItem('serverPort', this.serverPortConsulta.value);
     localStorage.setItem('usuarioId', null);
     localStorage.setItem('token', null);
+    await Preferences.set({ key: 'serverIp', value: this.serverIpConsulta.value });
+    await Preferences.set({ key: 'serverPort', value: this.serverPortConsulta.value });
 
     window.location.reload();
   }
