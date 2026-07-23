@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
@@ -17,7 +17,9 @@ import { DialogoService } from 'src/app/services/dialogo.service';
   templateUrl: './add-venta-tarjeta.component.html',
   styleUrls: ['./add-venta-tarjeta.component.scss']
 })
-export class RegistroVentaTarjetaComponent implements OnInit {
+export class RegistroVentaTarjetaComponent implements OnInit, OnDestroy {
+
+  private static readonly MAX_REINTENTOS_SYNC = 12; // ~1 minuto a 5s
 
   form = new UntypedFormGroup({
     codigoAutorizacion: new UntypedFormControl(null, [Validators.required]),
@@ -33,9 +35,12 @@ export class RegistroVentaTarjetaComponent implements OnInit {
   procesandoOcr = false;
   guardando = false;
   cargandoRegistro = false;
+  sincronizando = false;
+  sincronizacionAgotada = false;
 
   registroPendiente: VentaTarjeta = null;
   private montoEscaneado: number = null;
+  private reintentoTimeout: any = null;
 
   get simboloMoneda(): string {
     return this.registroPendiente?.terminalPos?.moneda?.simbolo || 'Gs.';
@@ -88,8 +93,9 @@ export class RegistroVentaTarjetaComponent implements OnInit {
     this.cargarRegistroPendiente();
   }
 
-  private cargarRegistroPendiente() {
-    this.cargandoRegistro = true;
+  private cargarRegistroPendiente(reintento = 0) {
+    this.cargandoRegistro = reintento === 0;
+    this.sincronizando = reintento > 0;
     const consulta$ = this.ventaTarjetaId
       ? this.ventaTarjetaService.onGetPorId(this.ventaTarjetaId, this.sucursalId)
       : this.ventaTarjetaService.onGetPorVentaId(this.ventaId, this.sucursalId);
@@ -99,15 +105,46 @@ export class RegistroVentaTarjetaComponent implements OnInit {
       .subscribe(registro => {
         this.cargandoRegistro = false;
         if (registro) {
+          this.sincronizando = false;
+          this.sincronizacionAgotada = false;
           this.registroPendiente = registro;
           if (!this.form.get('monto').value && registro.monto) {
             this.form.get('monto').setValue(registro.monto);
           }
           this.ajustarValidadoresPorMoneda();
+        } else {
+          // El registro se crea en el servidor de la sucursal y llega al central
+          // por replicacion: puede tardar unos segundos (o mas si la sucursal
+          // esta sin internet). Reintentamos en vez de crear un registro nuevo,
+          // que colisionaria con la fila replicada.
+          this.programarReintento(reintento);
         }
       }, () => {
         this.cargandoRegistro = false;
+        this.programarReintento(reintento);
       });
+  }
+
+  private programarReintento(reintento: number) {
+    if (reintento >= RegistroVentaTarjetaComponent.MAX_REINTENTOS_SYNC) {
+      this.sincronizando = false;
+      this.sincronizacionAgotada = true;
+      return;
+    }
+    this.sincronizando = true;
+    this.reintentoTimeout = setTimeout(() => this.cargarRegistroPendiente(reintento + 1), 5000);
+  }
+
+  reintentarSincronizacion() {
+    this.sincronizacionAgotada = false;
+    this.cargarRegistroPendiente(1);
+  }
+
+  ngOnDestroy() {
+    if (this.reintentoTimeout) {
+      clearTimeout(this.reintentoTimeout);
+      this.reintentoTimeout = null;
+    }
   }
 
   async tomarFoto() {
@@ -307,33 +344,15 @@ export class RegistroVentaTarjetaComponent implements OnInit {
           this.notificacionService.open('Error de conexión', TipoNotificacion.DANGER, 3);
         });
     } else {
-      // No existe registro previo (el cajero omitió el QR): crear directo como COMPLETADO
-      const input: VentaTarjetaInput = {
-        sucursalId: this.sucursalId,
-        ventaId: this.ventaId,
-        cajaId: this.cajaId,
-        codigoAutorizacion: this.form.get('codigoAutorizacion').value,
-        numeroBoleta: this.form.get('numeroBoleta').value,
-        monto: history.state?.monto,
-        montoEscaneado: this.montoEscaneado ?? undefined,
-        estado: VentaTarjetaEstado.COMPLETADO,
-        usuarioId
-      };
-
-      this.ventaTarjetaService.onSave(input)
-        .pipe(untilDestroyed(this))
-        .subscribe(res => {
-          this.guardando = false;
-          if (res?.id) {
-            this.notificacionService.open('Venta con tarjeta registrada correctamente', TipoNotificacion.SUCCESS, 3);
-            this.router.navigate(['../'], { relativeTo: this.route });
-          } else {
-            this.notificacionService.open('Error al guardar. Intente nuevamente.', TipoNotificacion.DANGER, 3);
-          }
-        }, () => {
-          this.guardando = false;
-          this.notificacionService.open('Error de conexión', TipoNotificacion.DANGER, 3);
-        });
+      // El registro aún no llegó al central por replicación: no crear uno nuevo
+      // (colisionaría con la fila replicada de la sucursal). Reintentar sincronización.
+      this.guardando = false;
+      this.notificacionService.open(
+        'El registro aún no se sincronizó con el central. Espere unos segundos y reintente.',
+        TipoNotificacion.WARN, 4
+      );
+      this.reintentarSincronizacion();
+      return;
     }
   }
 
