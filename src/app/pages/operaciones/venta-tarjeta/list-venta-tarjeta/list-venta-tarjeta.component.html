@@ -21,6 +21,18 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
+  <ion-progress-bar *ngIf="actualizando" type="indeterminate"></ion-progress-bar>
+
+  <div *ngIf="cargando && !list.length" style="padding:12px">
+    <ion-card class="vt-card" *ngFor="let i of [1,2,3]">
+      <ion-card-content>
+        <ion-skeleton-text animated style="width: 60%; height: 18px"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 40%; height: 14px; margin-top: 6px"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 30%; height: 14px; margin-top: 6px"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
   <ion-item *ngIf="cajaActual" lines="full" color="light">
     <ion-label>
       <p>
