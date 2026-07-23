@@ -4,6 +4,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
+import { Block, CapacitorPluginMlKitTextRecognition } from '@pantrist/capacitor-plugin-ml-kit-text-recognition';
 import { VentaTarjetaService } from '../venta-tarjeta.service';
 import { VentaTarjeta, VentaTarjetaEstado, VentaTarjetaInput } from '../venta-tarjeta.model';
 import { MainService } from 'src/app/services/main.service';
@@ -173,37 +175,21 @@ export class RegistroVentaTarjetaComponent implements OnInit, OnDestroy {
     }
   }
 
-  private preprocessImageForOcr(dataUrl: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
-        const MIN_WIDTH = 1200;
-        const scale = img.width < MIN_WIDTH ? Math.ceil(MIN_WIDTH / img.width) : 1;
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-        const ctx = canvas.getContext('2d');
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/png'));
-      };
-      img.onerror = reject;
-      img.src = dataUrl;
-    });
-  }
-
   private async procesarOcr(dataUrl: string) {
+    if (!Capacitor.isNativePlatform()) {
+      this.notificacionService.open('OCR disponible solo en la app móvil', TipoNotificacion.WARN, 3);
+      return;
+    }
+
     this.procesandoOcr = true;
     const loading = await this.cargandoService.open('Procesando imagen...', false);
     try {
-      const processedDataUrl = await this.preprocessImageForOcr(dataUrl);
       console.log('[OCR] Iniciando reconocimiento...');
-      const { createWorker } = await import('tesseract.js');
-      const worker = await createWorker('spa');
-      const { data: { text } } = await worker.recognize(processedDataUrl);
-      await worker.terminate();
-      console.log('[OCR] Texto crudo:\n---\n' + text + '\n---');
-      this.extraerCampos(text);
+      const base64Image = dataUrl.replace(/^data:image\/\w+;base64,/, '');
+      const result = await CapacitorPluginMlKitTextRecognition.detectText({ base64Image });
+      const texto = this.reconstruirLineas(result.blocks, result.text);
+      console.log('[OCR] Texto crudo:\n---\n' + texto + '\n---');
+      this.extraerCampos(texto);
     } catch (err) {
       console.error('OCR error:', err);
       this.notificacionService.open(
@@ -215,6 +201,79 @@ export class RegistroVentaTarjetaComponent implements OnInit, OnDestroy {
       this.cargandoService.close(loading);
       this.procesandoOcr = false;
     }
+  }
+
+  /**
+   * ML Kit separa el texto en `blocks` por proximidad espacial: en tickets con columnas
+   * (ej. "BOLETA:      5492315926" con un hueco grande) la etiqueta y el valor pueden caer
+   * en bloques distintos y terminar en líneas separadas si simplemente se concatenan los
+   * `blocks[].lines[].text`. Este método reconstruye los renglones físicos del ticket
+   * usando `boundingBox`, agrupando por altura vertical (centerY) y ordenando dentro de
+   * cada renglón por posición horizontal (left), para que etiqueta y valor queden en la
+   * misma línea del texto final.
+   */
+  private reconstruirLineas(blocks: Block[], textoPlano: string): string {
+    if (!blocks || blocks.length === 0) {
+      return textoPlano;
+    }
+
+    interface LineaPlana {
+      text: string;
+      left: number;
+      centerY: number;
+      height: number;
+    }
+
+    const lineasPlanas: LineaPlana[] = [];
+    for (const block of blocks) {
+      for (const line of block.lines || []) {
+        const { left, top, bottom } = line.boundingBox;
+        lineasPlanas.push({
+          text: line.text,
+          left,
+          centerY: (top + bottom) / 2,
+          height: bottom - top
+        });
+      }
+    }
+
+    if (lineasPlanas.length === 0) {
+      return textoPlano;
+    }
+
+    const alturas = lineasPlanas.map(l => l.height).sort((a, b) => a - b);
+    const mitad = Math.floor(alturas.length / 2);
+    const medianaAltura = alturas.length % 2 === 0
+      ? (alturas[mitad - 1] + alturas[mitad]) / 2
+      : alturas[mitad];
+    const umbral = medianaAltura * 0.6;
+
+    const ordenadasPorY = [...lineasPlanas].sort((a, b) => a.centerY - b.centerY);
+
+    const renglones: LineaPlana[][] = [];
+    let renglonActual: LineaPlana[] = [];
+    let promedioCenterY = 0;
+
+    for (const linea of ordenadasPorY) {
+      if (renglonActual.length === 0) {
+        renglonActual = [linea];
+        promedioCenterY = linea.centerY;
+      } else if (Math.abs(linea.centerY - promedioCenterY) <= umbral) {
+        renglonActual.push(linea);
+        promedioCenterY = renglonActual.reduce((sum, l) => sum + l.centerY, 0) / renglonActual.length;
+      } else {
+        renglones.push(renglonActual);
+        renglonActual = [linea];
+        promedioCenterY = linea.centerY;
+      }
+    }
+    if (renglonActual.length > 0) {
+      renglones.push(renglonActual);
+    }
+
+    return renglones
+      .map(renglon => [...renglon].sort((a, b) => a.left - b.left).map(l => l.text).join(' '))
+      .join('\n');
   }
 
   private extraerCampos(texto: string) {

@@ -70,5 +70,9 @@
 	{
 		"pkg": "@capgo/capacitor-native-biometric",
 		"classpath": "ee.forgr.biometric.NativeBiometric"
+	},
+	{
+		"pkg": "@pantrist/capacitor-plugin-ml-kit-text-recognition",
+		"classpath": "com.pantrist.ml.CapacitorPluginMlKitTextRecognition"
 	}
 ]
