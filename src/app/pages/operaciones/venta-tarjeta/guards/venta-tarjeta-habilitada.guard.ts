@@ -16,19 +16,32 @@ export class VentaTarjetaHabilitadaGuard implements CanActivate {
   ) { }
 
   canActivate(): Observable<boolean | UrlTree> {
+    const cacheado = this.ventaTarjetaService.getHabilitadaCacheada();
+
+    if (cacheado !== null) {
+      // Refresco silencioso en segundo plano: actualiza el cache para la
+      // próxima navegación, sin bloquear esta.
+      this.ventaTarjetaService.onGetConfiguracionHabilitada()
+        .pipe(catchError(() => of(null)))
+        .subscribe();
+      return of(this.resolverDesdeHabilitado(cacheado));
+    }
+
     return this.ventaTarjetaService.onGetConfiguracionHabilitada().pipe(
-      map(habilitado => {
-        if (!habilitado) {
-          this.notificacionService.open(
-            'La venta con tarjeta no está habilitada actualmente.',
-            TipoNotificacion.DANGER,
-            3
-          );
-          return this.router.createUrlTree(['/operaciones']);
-        }
-        return true;
-      }),
+      map(habilitado => this.resolverDesdeHabilitado(habilitado)),
       catchError(() => of(this.router.createUrlTree(['/operaciones'])))
     );
+  }
+
+  private resolverDesdeHabilitado(habilitado: boolean): boolean | UrlTree {
+    if (!habilitado) {
+      this.notificacionService.open(
+        'La venta con tarjeta no está habilitada actualmente.',
+        TipoNotificacion.DANGER,
+        3
+      );
+      return this.router.createUrlTree(['/operaciones']);
+    }
+    return true;
   }
 }

@@ -25,6 +25,15 @@ export class VentaTarjetaService {
     return this.listaCacheada;
   }
 
+  /**
+   * Cache en memoria del último valor conocido de "venta con tarjeta habilitada".
+   * Se puebla cada vez que onGetConfiguracionHabilitada() resuelve (app.component
+   * al autenticar, caja.component al entrar, o el propio guard al revalidar).
+   * Permite que el guard resuelva de inmediato (stale-while-revalidate) en lugar
+   * de esperar un fetch no-cache al central en cada canActivate.
+   */
+  private habilitadaCache: { valor: boolean; ts: number } | null = null;
+
   constructor(
     private saveVentaTarjetaGQL: SaveVentaTarjetaGQL,
     private updateVentaTarjetaGQL: UpdateVentaTarjetaGQL,
@@ -42,7 +51,26 @@ export class VentaTarjetaService {
   onGetConfiguracionHabilitada(): Observable<boolean> {
     return this.getConfiguracionVentaTarjetaGQL
       .fetch({}, { fetchPolicy: 'no-cache', errorPolicy: 'all' })
-      .pipe(map(res => res.data?.['data']?.habilitado === true));
+      .pipe(
+        map(res => res.data?.['data']?.habilitado === true),
+        tap(valor => {
+          this.habilitadaCache = { valor, ts: Date.now() };
+        })
+      );
+  }
+
+  /**
+   * Devuelve el último valor cacheado de "habilitado" si todavía está vigente
+   * (menos de maxEdadMs), o null si no hay cache o venció. No dispara fetch.
+   */
+  getHabilitadaCacheada(maxEdadMs = 300000): boolean | null {
+    if (!this.habilitadaCache) {
+      return null;
+    }
+    if (Date.now() - this.habilitadaCache.ts > maxEdadMs) {
+      return null;
+    }
+    return this.habilitadaCache.valor;
   }
 
   onSave(input: VentaTarjetaInput): Observable<VentaTarjeta> {
