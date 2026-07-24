@@ -510,6 +510,23 @@ export const cajasAbiertasDesdeFilialesQuery = gql`
   }
 `;
 
+// Query local del central sobre pdv_caja replicada (rápida, sin loop HTTP a filiales).
+// Selección liviana: list-venta-tarjeta y scan-venta-tarjeta solo necesitan id/sucursal/estado.
+export const cajaAbiertoPorUsuarioIdLocalQuery = gql`
+  query ($id: ID!) {
+    data: cajaAbiertoPorUsuarioId(id: $id) {
+      id
+      sucursalId
+      activo
+      descripcion
+      sucursal {
+        id
+        nombre
+      }
+    }
+  }
+`;
+
 export const pdvCajaDesdeFilialQuery = gql`
   query ($id: ID!, $sucId: ID!) {
     data: pdvCajaDesdeFilial(id: $id, sucursalId: $sucId) {
