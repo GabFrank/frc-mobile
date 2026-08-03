@@ -395,3 +395,158 @@ El costo real está concentrado y es identificable: OCR, GPS de precisión y bio
 | `projects/mobile/README.md` | Arquitectura del cliente PWA |
 
 Dos diferencias de contexto a tener en cuenta: gourmet usa **Angular standalone + Material** (nosotros, módulos + Ionic) y su backend es **Fastify local en un mesh** (el nuestro, Spring Boot con IP pública). Los patrones de UI no se copian; los de capa nativa y los de infra, sí.
+
+---
+
+# Addendum — respuestas a las definiciones del 2026-08-03
+
+Actualiza el análisis con lo definido por el usuario: dominio en Cloudflare, escáner ya validado en gourmet, preferencia por web puro sobre Capacitor, y adopción del theming de gourmet.
+
+## A. Cloudflare resuelve el bloqueante de HTTPS
+
+**Sí, y es el camino correcto.** Con tres precisiones que conviene resolver antes de empezar.
+
+### A.1 Modo de SSL: Full (strict), no Flexible
+
+| Modo | Navegador → Cloudflare | Cloudflare → origen | Veredicto |
+|---|---|---|---|
+| Flexible | HTTPS ✅ | **HTTP plano** ❌ | La PWA funciona, pero **las credenciales siguen viajando en texto plano** por internet entre Cloudflare y el servidor. No arregla la vulnerabilidad |
+| **Full (strict)** | HTTPS ✅ | HTTPS ✅ | **El correcto** |
+
+Para Full (strict) el origen necesita un certificado válido. **Cloudflare Origin CA emite uno gratis con 15 años de vigencia**, que se instala en el reverse proxy delante de Spring Boot. No hace falta Let's Encrypt ni renovaciones.
+
+### A.2 Los puertos 8081/8082 no son proxyables directamente
+
+Cloudflare solo proxea HTTP/HTTPS por un conjunto acotado de puertos. **8081 y 8082 no están en esa lista.**
+
+Solución: un subdominio por instancia, y una **Origin Rule** que reescriba el puerto de destino.
+
+```
+bodega.<dominio>    → :443 → Origin Rule → 159.203.86.103:8081
+farmacia.<dominio>  → :443 → Origin Rule → 159.203.86.103:8082
+alpha.<dominio>     → :443 → Origin Rule → 159.203.86.103:8083
+```
+
+**Beneficio lateral:** desaparecen las IPs y puertos hardcodeados en `change-server-ip-dialog` y `precio-config` (ítem 44 del `TODO_TECNICO.md`). La selección de instancia pasa a ser un subdominio legible.
+
+### A.3 WebSockets: soportados, con un detalle
+
+Cloudflare proxea WebSockets en todos los planes, así que `wss://<dominio>/subscriptions` funciona.
+
+> ⚠️ **Cloudflare cierra conexiones WebSocket inactivas (~100 s).** `subscriptions-transport-ws` ya reconecta (`reconnect: true` en `app.module.ts:80`), así que probablemente no se note, pero conviene **configurar keepalive/ping** en el lado del servidor GraphQL para no depender de reconexiones constantes. Es el tipo de cosa que en producción se manifiesta como "las notificaciones a veces no llegan".
+
+### A.4 Latencia: no hay regresión
+
+La app **ya sale a internet hoy**: apunta a `159.203.86.103`, una IP pública, incluso desde dispositivos dentro de la sucursal. Cloudflare agrega un salto de edge que en general compensa con su red. **No es un cambio respecto de la situación actual.**
+
+## B. Escáner — riesgo despejado
+
+El usuario confirma que el escáner de gourmet está **probado y aprobado en producción**. Eso elimina el único riesgo que podía volver inviable el proyecto (§4). El componente `barcode-scanner-dialog.component.ts` se porta con su estrategia de tres niveles (`BarcodeDetector` → ZXing → entrada manual).
+
+Queda pendiente **validar los códigos pesables con prefijo `20`** de balanza, que gourmet probablemente no usa. La lógica de parseo (`barcodeUtils.ts`) no cambia; lo que hay que confirmar es que `BarcodeDetector` con formato `ean_13` los lea bien en las etiquetas térmicas reales.
+
+## C. Web puro vs. Capacitor
+
+**Recomendación: web puro.** Para este caso concreto la diferencia funcional es casi nula, y las diferencias que existen no afectan a esta app:
+
+| Capacidad | Capacitor | Web puro | ¿Importa acá? |
+|---|---|---|---|
+| Push en iOS sin instalar la app | ✅ | ❌ (requiere PWA instalada) | **No** — hoy no hay iOS |
+| Ejecución en segundo plano | ✅ | ❌ | **No** — no hay trabajo en background |
+| Escáner | ML Kit | `BarcodeDetector` (mismo motor por debajo) | **No** |
+| GPS fusionado | ✅ plugin propio | `watchPosition` | **Sí** — ver §5 |
+| OCR | ML Kit | Sin API estándar | **Sí** — se resuelve en backend |
+| Biometría | Nativa | WebAuthn | Cambia el modelo, no la capacidad |
+| Lectores Bluetooth HID | ✅ | ✅ (actúan como teclado) | No |
+
+**Lo único que Capacitor da y la web no, y que esta app usa, es el GPS de precisión.** Todo lo demás tiene equivalente o se mueve al servidor.
+
+**Una sola recomendación de diseño:** mantener las capacidades de dispositivo (cámara, GPS, escáner, biometría) **detrás de servicios con interfaz propia**, como ya está hoy. No es para dejar la puerta abierta a Capacitor — es buena práctica igual, y de paso hace que un eventual empaque nativo sea un detalle de implementación en 8 archivos y no un rediseño.
+
+## D. Servidor local
+
+Verificado: **el cliente habla exclusivamente con central**. Todo el GraphQL sale por `serverIp`/`serverPort`. Las queries `...DesdeFiliales` y `...DesdeFilial` no van al servidor de la filial: **es central el que consulta a las filiales** y devuelve el resultado.
+
+Los únicos destinos externos son HTTPS y no presentan mixed content: Cloudinary (subida de media), Azure Face, tiles de Google Maps y `ui-avatars.com`.
+
+> **Conclusión: no hay problema de servidor local que resolver.** Si en algún momento aparece una funcionalidad que requiera hablar con un host LAN por HTTP, ahí sí choca con mixed content y necesitaría Cloudflare Tunnel o un certificado local — pero hoy no existe ese caso.
+
+## E. Composición del código — dato para decidir la estrategia
+
+| Capa | Archivos | LOC | ¿Se porta? |
+|---|---|---|---|
+| Documentos GraphQL (`graphql/`) | 296 | 11.568 | ✅ **Verbatim** |
+| Servicios (`*.service.ts`) | 79 | 7.745 | ✅ Casi verbatim (salvo los 8 que tocan APIs nativas) |
+| Modelos, enums, utils | 72 | 3.454 | ✅ **Verbatim** |
+| **Subtotal capa de datos y lógica** | **447** | **22.767** | ✅ |
+| Componentes (`*.component.ts`) | 96 | 18.881 | 🔁 Lógica sí, UI no |
+| Templates `.html` | 98 | 8.354 | ❌ Se reescriben con Material |
+| Estilos `.scss` | — | 5.584 | ❌ Se reescriben |
+
+**Aproximadamente la mitad del código se porta tal cual. La otra mitad es presentación, que es justamente lo que el usuario quiere rehacer.**
+
+## F. Theming de gourmet — implica cambiar de librería de UI
+
+El look de gourmet mobile viene de **Angular Material 15**, no de Ionic:
+
+- Paleta FRC con rojo `#db392e` como primario y naranja `#f57c00` como acento
+- `density: 0` (targets táctiles cómodos; el desktop usa `-3`, denso)
+- Temas light/dark con variables CSS compartidas con el desktop (`theme-variables.scss`)
+- Layout responsivo: **nav-rail** en tablet, **bottom-nav** en teléfono
+- Componentes standalone de Angular
+
+Adoptarlo significa **reemplazar Ionic por Angular Material**. No es un cambio de CSS: cambian todos los templates.
+
+> **Es una decisión de peso y conviene tomarla explícitamente**, no que se cuele como consecuencia del cambio de theming. A favor: unifica el lenguaje visual con gourmet y el desktop, y elimina la mezcla de dos sistemas de color de botón que ya existe hoy (ítem 55). En contra: es la mayor parte del trabajo de la migración.
+>
+> La alternativa intermedia —quedarse en Ionic y solo aplicar la paleta y el layout de gourmet— conserva los 8.354 LOC de templates, pero no logra el "visual más moderno y fluido": ese efecto viene del sistema de componentes, no solo de los colores.
+
+## G. Estrategia de repositorio — propuesta
+
+### Las tres opciones evaluadas
+
+| Opción | A favor | En contra |
+|---|---|---|
+| **Modificar el repo actual** | Conserva historia y issues | Convive código Ionic y Material durante meses; imposible tener las dos apps en producción a la vez; cada merge a `develop` arriesga la app en uso |
+| **Clonar y limpiar** | Arranque rápido | Se arrastra la estructura y las 59 deudas; el "limpiar después" no ocurre |
+| **Repo nuevo desde cero** | Sin deuda heredada | Riesgo clásico del rewrite: perder reglas de negocio que solo vivían en el código |
+
+### Recomendación: repo nuevo, sembrado con un "kit de port"
+
+**El riesgo típico de un rewrite —perder conocimiento no escrito— acaba de desaparecer.** Los 33 documentos de `docs/` describen cada regla de negocio, cada máquina de estados y cada gotcha del sistema. Ese es el activo que hace que un repo limpio sea la opción segura y no la temeraria.
+
+Concretamente:
+
+**1. Repo nuevo** — `frc-mobile-pwa` (o el nombre que corresponda), Angular workspace + Angular Material, service worker desde el día uno.
+
+**2. Copiar verbatim la capa de datos** — los 447 archivos / 22.767 LOC de `graphql/`, `domains/`, `generic/` y los servicios que no tocan APIs nativas. **No reescribir lo que ya funciona y está probado en producción.**
+
+**3. Portar `docs/` completo al repo nuevo.** Es la especificación de lo que hay que reconstruir. Se va actualizando a medida que cambia.
+
+**4. Arreglar de entrada los ítems 🔴 del `TODO_TECNICO.md`.** Son cuatro y ya están diagnosticados con fix propuesto. Es el momento barato de hacerlo: `onGetByFecha`, los observables de `GenericCrudService` que no completan, el `logOut()` que guarda `"null"`, y el update forzado — este último desaparece solo con el service worker.
+
+**5. Reescribir la UI con el sistema de gourmet**, módulo por módulo, en el orden de riesgo de §10: primero los que no tienen dependencia nativa (caja, conteo, solicitud-pago, mis-rrhh, transferencias, inventario ≈ 60%), después los de cámara, y al final marcación y venta-tarjeta.
+
+**6. El repo actual queda congelado en modo mantenimiento.** Solo hotfixes. Nada de features nuevas: cada una habría que hacerla dos veces.
+
+**7. Condición de apagado fijada de antemano.** Por ejemplo: *"cuando la PWA cubra los módulos X, Y y Z y tenga N semanas sin incidentes, se deja de publicar el APK"*. Escrita antes de empezar, para que la convivencia no se vuelva permanente por inercia.
+
+### Por qué no modificar el repo actual
+
+El argumento decisivo es operativo, no estético: **necesitás las dos apps corriendo en producción a la vez durante la transición.** El APK instalado tiene que seguir funcionando mientras la PWA se completa. Con un solo repo eso significa mantener dos árboles de UI incompatibles en la misma base de código durante meses, y cada merge a `develop` toca la app de la que dependen las sucursales hoy.
+
+### Qué se descarta explícitamente
+
+- `android/`, `capacitor.config.ts`, keystore y `.pepk` — cierra de paso el TODO de reubicación de claves
+- `app-update/` (código muerto), `pages/venta/` (vacío), archivos `" copy"`
+- `ChannelService` y todo el opt-in de Play Store
+- La mezcla `@ionic-native` / `@awesome-cordova-plugins` que obliga a `--legacy-peer-deps`
+- Las dos generaciones de wrappers Cordova
+
+### Orden sugerido de arranque
+
+1. **Cloudflare + Full (strict) + subdominios + Origin Rules.** Desbloquea todo y arregla la vulnerabilidad abierta. Se puede hacer ya, sin esperar ninguna decisión de la PWA.
+2. Repo nuevo, esqueleto Angular + Material + service worker + shell con nav-rail/bottom-nav.
+3. Capa de datos copiada + login contra `https://`.
+4. Primer módulo real end-to-end (sugerencia: **caja**, porque no tiene dependencia nativa y es de uso diario, así que valida la infra con usuarios reales rápido).
+5. A partir de ahí, olas por riesgo creciente.
