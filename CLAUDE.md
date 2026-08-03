@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `frc-app` (`package.json` name), aplicación **móvil Android/iOS** del producto **Franco Systems 3.0.9**. Empaquetada con marca comercial **"Bodega Franco"** (`appName` en `capacitor.config.ts`, `appId: com.sistemasinformaticos.frc`). Es uno de los 4 componentes que forman `frc-comercial/`. Repo git independiente: `GabFrank/frc-mobile`.
 
-Stack: **Angular 15.2** + **Ionic 6** + **Capacitor 5** + **Apollo Client** (GraphQL) + Husky pre-commit. Apunta al backend **`frc-comercial/central`** vía GraphQL. Tiene capacidades de AI/visión (Azure Face, Google Cloud Vision, `@vladmandic/human`), biometría, push notifications via FCM, barcode scanning via ML Kit, geolocation, mapas (Google Maps + Leaflet).
+Stack: **Angular 15.2** + **Ionic 6** + **Capacitor 7** + **Apollo Client** (GraphQL) + Husky pre-commit. Apunta al backend **`frc-comercial/central`** vía GraphQL. Tiene capacidades de AI/visión (Azure Face, Google Cloud Vision, `@vladmandic/human`), biometría, push notifications via FCM, barcode scanning via ML Kit, geolocation, mapas (Google Maps + Leaflet).
 
 ## Build & Run
 
@@ -14,10 +14,12 @@ Stack: **Angular 15.2** + **Ionic 6** + **Capacitor 5** + **Apollo Client** (Gra
 npm start                  # ng serve --port 4300 (web preview)
 npm run build              # ng build (web bundle en www/)
 npm run refresh            # build + cap sync + cap copy → actualiza Android/iOS native projects
-npm run lint               # ng lint
-npm test                   # Karma
+npm run lint               # ⚠️ ROTO: @angular-eslint/builder:lint not found
+npm test                   # ⚠️ ROTO: TS2724 en edit-transferenci-producto.component.spec.ts
 npm run clean-install      # nuke node_modules + package-lock + cache → npm install --legacy-peer-deps
 ```
+
+**El gate real de CI es `npm run build`.** `npm run lint` y `npm test` están rotos de forma preexistente — no los uses como criterio de aceptación hasta que se arreglen en un PR dedicado.
 
 ### ⚠️ Peculiaridades de instalación
 
@@ -73,7 +75,7 @@ public Page<Pedido> getPedidosPaginated(...) { ... }
 ## Capacitor / nativo
 
 - **`capacitor.config.ts`**: `appId: com.sistemasinformaticos.frc`, `appName: "Bodega Franco"`, `webDir: www`, `androidScheme: http` con `cleartext: true` (necesario porque las APIs del central pueden estar en HTTP en LAN local, no HTTPS).
-- **CapacitorUpdater** (`@capgo/capacitor-updater`) con `autoUpdate: true` — actualizaciones OTA del bundle web. Esto es independiente del release del APK.
+- **⚠️ No hay OTA.** `capacitor.config.ts` conserva un bloque `CapacitorUpdater: { autoUpdate: true }` que es **configuración muerta**: `@capgo/capacitor-updater` no está instalado y el código de `src/main.ts` está comentado. El update real es in-app de Play Store vía `@capawesome/capacitor-app-update`. Ver [docs/arquitectura/actualizaciones-app.md](docs/arquitectura/actualizaciones-app.md).
 - **Splash screen**: rojo `#b40000` (color de marca), `CENTER_CROP`, fullscreen.
 - **Plugins notables**: `@capacitor-mlkit/barcode-scanning` (scanner moderno), `@capgo/capacitor-native-biometric` (face/fingerprint), `@capacitor-community/fcm` (push), `@capacitor/google-maps`, `@capacitor/geolocation`, `@capacitor/camera` con `androidSource: 'both'`.
 - **Cordova legacy**: plugins Cordova para versión/globalización (`cordova-plugin-app-version`, `cordova-plugin-globalization`). El escaneo de barcodes ya no usa phonegap.
@@ -104,19 +106,19 @@ Mismo modelo `semantic-release` que los demás componentes. Ver guía consolidad
 - **Promoción `release/beta → master`: merge commit, NO squash.**
 - Push a cualquiera de las 3 branches dispara release automático. **Nunca pushear sin confirmación explícita del usuario.**
 
-### ⚙️ Deploy: dos canales independientes
+### ⚙️ Deploy: solo Play Store
 
-El mobile tiene **dos mecanismos de actualización separados**:
+**No existe canal OTA.** Todo cambio — incluso una línea de Angular — requiere subir un AAB nuevo a Play Store. La decisión de descartar Capgo/CapacitorUpdater se tomó el 2026-04-22.
 
-1. **OTA del bundle web vía CapacitorUpdater** (ya descripto en sección Capacitor de arriba): `autoUpdate: true`. Cada release del canal correspondiente actualiza el bundle JS sin reinstalar el APK. Funciona para cambios de código Angular/TS pero **no** para cambios en plugins nativos, dependencias Capacitor o `capacitor.config.ts`.
+**APK release a Play Store**: workflow GitHub Actions **"Deploy to Play Store"** → elegir track (`internal` = alpha / `alpha` = closed / `beta` = open / `production` = stable). **Manual con aprobación del líder técnico**, no automático aunque haya release nuevo en GitHub.
 
-2. **APK release a Play Store**: workflow GitHub Actions **"Deploy Play Store"** → elegir track (internal / closed / open / production). **Manual con aprobación del líder técnico**, no automático aunque haya release nuevo en GitHub. Necesario para:
-   - Cambios en plugins nativos (`@capacitor-mlkit/barcode-scanning`, `@capacitor/camera`, etc.)
-   - Bumps de versión de Capacitor o Cordova plugins
-   - Cambios en `capacitor.config.ts` (permisos, appId, etc.)
-   - Cambios en `android/app/build.gradle` o `ios/App/Podfile`
+Además, estos cambios exigen `npm install` + `npx cap sync android` antes de compilar, porque tocan el proyecto nativo:
+- Alta/baja de plugins (`@capacitor-mlkit/barcode-scanning`, `@capacitor/camera`, etc.)
+- Bumps de versión de Capacitor o Cordova plugins
+- Cambios en `capacitor.config.ts` (permisos, appId, etc.)
+- Cambios en `android/app/build.gradle` o `ios/App/Podfile`
 
-**Implicancia importante:** un `feat:` que solo toca código Angular se propaga vía OTA en el próximo open de la app, pero un `feat:` que agrega un plugin nativo NO llega hasta que se haga release manual a Play Store. Documentar en el PR cuál de los dos casos es.
+**Implicancia importante:** ningún cambio se propaga solo. Al describir un PR, no prometas propagación automática. Detalle completo en [docs/arquitectura/actualizaciones-app.md](docs/arquitectura/actualizaciones-app.md).
 
 ### Hotfix flow
 
@@ -124,9 +126,8 @@ El mobile tiene **dos mecanismos de actualización separados**:
 2. `git checkout -b hotfix/descripcion`
 3. Fix + commit `fix(modulo): ...` + push
 4. PR `hotfix/* → master`, merge → semantic-release genera versión de producción
-5. Si el fix es solo código Angular: OTA lo propaga automáticamente a usuarios en canal `stable`
-6. Si el fix toca código nativo: ejecutar workflow "Deploy Play Store" manual, track production
-7. **Inmediatamente después: PR `master → develop`** para que `develop` tenga el fix.
+5. Ejecutar workflow "Deploy to Play Store" manual, track `production` — **siempre**, no hay propagación automática
+6. **Inmediatamente después: PR `master → develop`** para que `develop` tenga el fix.
 
 ## Cambios en la API GraphQL (lado cliente)
 
@@ -160,20 +161,25 @@ El mobile consume GraphQL del `frc-comercial/central`. Si el backend cambia el s
 
 ```
 src/app/
-├── app-update/         # CapacitorUpdater integration
+├── app-update/         # ⚠️ código muerto (ngOnInit lanza excepción, no declarado en ningún módulo)
 ├── components/         # Componentes reutilizables
-├── dialog/             # Diálogos
+├── dialog/             # Diálogos globales (login, cambio de contraseña)
 ├── domains/            # Modelos de dominio
-├── generic/            # Servicios genéricos (CRUD, etc.)
-├── graphql/            # Apollo / queries
+├── generic/            # GenericCrudService + utils
+├── graphql/            # Operaciones GQL compartidas
 ├── pages/              # Pantallas Ionic
 ├── services/           # Servicios cross-cutting
 └── splash/             # Splash screen
 docs/
+├── README.md                     # 📖 índice de toda la documentación
+├── arquitectura/                 # Stack, ruteo, Apollo, auth, nativo, updates
+├── infraestructura/              # Services, utils, modelos, componentes
+├── modulos/                      # Un doc por módulo funcional
 ├── REGLAS_DESARROLLO.md          # ⚠️ Reglas críticas para tocar el backend (leer arriba)
-├── manuales-refactor/
-└── utilitarios/
+└── manuales-refactor/            # Histórico, no documentación viva
 ```
+
+**La documentación detallada del repo vive en [docs/](docs/README.md).** Este archivo es la guía de convenciones y proceso; `docs/` explica cómo funciona el código.
 
 ## Convenciones generales
 
@@ -183,6 +189,7 @@ docs/
 
 ## Referencias relacionadas
 
+- **[docs/README.md](docs/README.md) — índice de la documentación técnica del repo. Empezá por acá.**
 - [docs/REGLAS_DESARROLLO.md](docs/REGLAS_DESARROLLO.md) — Reglas críticas de modificación de backend (resumidas arriba).
 - [../../REPORTE_VULNERABILIDADES.md](../../REPORTE_VULNERABILIDADES.md) — Auditoría 2026-04-02. Hallazgo en este repo: `src/app/services/face-ai.service.ts:8` (ver línea ~101).
 - [../../TODO_PENDIENTE.md](../../TODO_PENDIENTE.md) — Item urgente: reubicar claves Android.
