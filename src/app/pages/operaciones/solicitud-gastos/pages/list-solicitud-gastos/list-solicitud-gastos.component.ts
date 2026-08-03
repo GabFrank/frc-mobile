@@ -8,6 +8,7 @@ import { MainService } from '../../../../../services/main.service';
 
 interface SolicitudListaItem extends PreGasto {
   estadoBadgeColor: string;
+  descripcionMostrada: string;
 }
 
 @Component({
@@ -53,6 +54,7 @@ export class ListSolicitudGastosComponent implements OnInit {
       const nuevosItems = (respuesta?.getContent ?? []).map((item) => ({
         ...item,
         estadoBadgeColor: this.resolverBadgeColor(item.estado),
+        descripcionMostrada: this.limpiarUrgenciaEnDescripcion(item.descripcion),
       }));
       this.solicitudes = [...this.solicitudes, ...nuevosItems];
       this.hayMas = respuesta?.hasNext === true;
@@ -130,7 +132,8 @@ export class ListSolicitudGastosComponent implements OnInit {
     const nombreUsuario = this.mainService.usuarioActual?.persona?.nombre
       || this.mainService.usuarioActual?.nickname
       || 'Usuario';
-    const text = `Solicitud de Gasto N°${item.id}\nSolicitante: ${nombreUsuario}\nDescripción: ${item.descripcion || 'Sin descripción'}\nMonto: ${simbolo} ${monto}\nEstado: ${item.estadoEtiqueta || item.estado}`;
+    const desc = this.limpiarUrgenciaEnDescripcion(item.descripcion);
+    const text = `Solicitud de Gasto N°${item.id}\nSolicitante: ${nombreUsuario}\nDescripción: ${desc}\nMonto: ${simbolo} ${monto}\nEstado: ${item.estadoEtiqueta || item.estado}`;
     const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   }
@@ -153,5 +156,17 @@ export class ListSolicitudGastosComponent implements OnInit {
       case 'TRAMITE': return 'primary';
       default: return 'medium';
     }
+  }
+
+  private limpiarUrgenciaEnDescripcion(descripcion?: string | null): string {
+    const texto = (descripcion ?? '').trim();
+    if (!texto) {
+      return 'Sin descripción';
+    }
+
+    return texto
+      .replace(/\s*\|\s*\[URGENCIA:\s*[^\]]+\]/gi, '')
+      .replace(/\[URGENCIA:\s*[^\]]+\]/gi, '')
+      .trim() || 'Sin descripción';
   }
 }

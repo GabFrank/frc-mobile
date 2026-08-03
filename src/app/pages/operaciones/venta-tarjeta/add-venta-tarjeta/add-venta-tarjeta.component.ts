@@ -1,0 +1,421 @@
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
+import { Block, CapacitorPluginMlKitTextRecognition } from '@pantrist/capacitor-plugin-ml-kit-text-recognition';
+import { VentaTarjetaService } from '../venta-tarjeta.service';
+import { VentaTarjeta, VentaTarjetaEstado, VentaTarjetaInput } from '../venta-tarjeta.model';
+import { MainService } from 'src/app/services/main.service';
+import { NotificacionService, TipoNotificacion } from 'src/app/services/notificacion.service';
+import { CargandoService } from 'src/app/services/cargando.service';
+import { DialogoService } from 'src/app/services/dialogo.service';
+
+@UntilDestroy({ checkProperties: true })
+@Component({
+  selector: 'app-add-venta-tarjeta',
+  templateUrl: './add-venta-tarjeta.component.html',
+  styleUrls: ['./add-venta-tarjeta.component.scss']
+})
+export class RegistroVentaTarjetaComponent implements OnInit, OnDestroy {
+
+  private static readonly MAX_REINTENTOS_SYNC = 12; // ~1 minuto a 5s
+
+  form = new UntypedFormGroup({
+    codigoAutorizacion: new UntypedFormControl(null, [Validators.required]),
+    numeroBoleta: new UntypedFormControl(null, [Validators.required]),
+    monto: new UntypedFormControl({ value: null, disabled: true })
+  });
+
+  ventaId: number;
+  ventaTarjetaId: number;
+  cajaId: number;
+  sucursalId: number;
+  fotoPreview: string = null;
+  procesandoOcr = false;
+  guardando = false;
+  cargandoRegistro = false;
+  sincronizando = false;
+  sincronizacionAgotada = false;
+
+  registroPendiente: VentaTarjeta = null;
+  private montoEscaneado: number = null;
+  private reintentoTimeout: any = null;
+
+  get simboloMoneda(): string {
+    return this.registroPendiente?.terminalPos?.moneda?.simbolo || 'Gs.';
+  }
+
+  get esGuaranies(): boolean {
+    return !this.registroPendiente?.terminalPos?.moneda
+      || this.simboloMoneda === 'Gs.'
+      || this.simboloMoneda === '₲';
+  }
+
+  private ajustarValidadoresPorMoneda() {
+    const boletaControl = this.form.get('numeroBoleta');
+    if (this.esGuaranies) {
+      boletaControl.setValidators([Validators.required]);
+    } else {
+      boletaControl.clearValidators();
+    }
+    boletaControl.updateValueAndValidity();
+  }
+
+  constructor(
+    private ventaTarjetaService: VentaTarjetaService,
+    private mainService: MainService,
+    private notificacionService: NotificacionService,
+    private cargandoService: CargandoService,
+    private dialogoService: DialogoService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private location: Location
+  ) {}
+
+  ngOnInit() {
+    const state = history.state;
+    this.ventaId = state?.ventaId;
+    this.ventaTarjetaId = state?.ventaTarjetaId;
+    this.cajaId = state?.cajaId;
+    this.sucursalId = state?.sucursalId;
+
+    if (state?.monto) {
+      this.form.get('monto').setValue(state.monto);
+    }
+
+    if (!this.ventaId || !this.cajaId) {
+      this.notificacionService.open('Datos de venta no encontrados. Escanee el QR nuevamente.', TipoNotificacion.DANGER, 4);
+      this.location.back();
+      return;
+    }
+
+    this.cargarRegistroPendiente();
+  }
+
+  private cargarRegistroPendiente(reintento = 0) {
+    this.cargandoRegistro = reintento === 0;
+    this.sincronizando = reintento > 0;
+    const consulta$ = this.ventaTarjetaId
+      ? this.ventaTarjetaService.onGetPorId(this.ventaTarjetaId, this.sucursalId)
+      : this.ventaTarjetaService.onGetPorVentaId(this.ventaId, this.sucursalId);
+
+    consulta$
+      .pipe(untilDestroyed(this))
+      .subscribe(registro => {
+        this.cargandoRegistro = false;
+        if (registro) {
+          this.sincronizando = false;
+          this.sincronizacionAgotada = false;
+          this.registroPendiente = registro;
+          if (!this.form.get('monto').value && registro.monto) {
+            this.form.get('monto').setValue(registro.monto);
+          }
+          this.ajustarValidadoresPorMoneda();
+        } else {
+          // El registro se crea en el servidor de la sucursal y llega al central
+          // por replicacion: puede tardar unos segundos (o mas si la sucursal
+          // esta sin internet). Reintentamos en vez de crear un registro nuevo,
+          // que colisionaria con la fila replicada.
+          this.programarReintento(reintento);
+        }
+      }, () => {
+        this.cargandoRegistro = false;
+        this.programarReintento(reintento);
+      });
+  }
+
+  private programarReintento(reintento: number) {
+    if (reintento >= RegistroVentaTarjetaComponent.MAX_REINTENTOS_SYNC) {
+      this.sincronizando = false;
+      this.sincronizacionAgotada = true;
+      return;
+    }
+    this.sincronizando = true;
+    this.reintentoTimeout = setTimeout(() => this.cargarRegistroPendiente(reintento + 1), 5000);
+  }
+
+  reintentarSincronizacion() {
+    this.sincronizacionAgotada = false;
+    this.cargarRegistroPendiente(1);
+  }
+
+  ngOnDestroy() {
+    if (this.reintentoTimeout) {
+      clearTimeout(this.reintentoTimeout);
+      this.reintentoTimeout = null;
+    }
+  }
+
+  async tomarFoto() {
+    await this.capturarImagen(CameraSource.Camera);
+  }
+
+  async seleccionarDeGaleria() {
+    await this.capturarImagen(CameraSource.Photos);
+  }
+
+  private async capturarImagen(source: CameraSource) {
+    try {
+      const photo = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source
+      });
+
+      this.fotoPreview = photo.dataUrl;
+      await this.procesarOcr(photo.dataUrl);
+    } catch (err) {
+      if (err?.message !== 'User cancelled photos app') {
+        this.notificacionService.open('No se pudo acceder a la cámara', TipoNotificacion.DANGER, 3);
+      }
+    }
+  }
+
+  private async procesarOcr(dataUrl: string) {
+    if (!Capacitor.isNativePlatform()) {
+      this.notificacionService.open('OCR disponible solo en la app móvil', TipoNotificacion.WARN, 3);
+      return;
+    }
+
+    this.procesandoOcr = true;
+    const loading = await this.cargandoService.open('Procesando imagen...', false);
+    try {
+      console.log('[OCR] Iniciando reconocimiento...');
+      const base64Image = dataUrl.replace(/^data:image\/\w+;base64,/, '');
+      const result = await CapacitorPluginMlKitTextRecognition.detectText({ base64Image });
+      const texto = this.reconstruirLineas(result.blocks, result.text);
+      console.log('[OCR] Texto crudo:\n---\n' + texto + '\n---');
+      this.extraerCampos(texto);
+    } catch (err) {
+      console.error('OCR error:', err);
+      this.notificacionService.open(
+        'No se pudo procesar la imagen. Complete los campos manualmente.',
+        TipoNotificacion.WARN,
+        4
+      );
+    } finally {
+      this.cargandoService.close(loading);
+      this.procesandoOcr = false;
+    }
+  }
+
+  /**
+   * ML Kit separa el texto en `blocks` por proximidad espacial: en tickets con columnas
+   * (ej. "BOLETA:      5492315926" con un hueco grande) la etiqueta y el valor pueden caer
+   * en bloques distintos y terminar en líneas separadas si simplemente se concatenan los
+   * `blocks[].lines[].text`. Este método reconstruye los renglones físicos del ticket
+   * usando `boundingBox`, agrupando por altura vertical (centerY) y ordenando dentro de
+   * cada renglón por posición horizontal (left), para que etiqueta y valor queden en la
+   * misma línea del texto final.
+   */
+  private reconstruirLineas(blocks: Block[], textoPlano: string): string {
+    if (!blocks || blocks.length === 0) {
+      return textoPlano;
+    }
+
+    interface LineaPlana {
+      text: string;
+      left: number;
+      centerY: number;
+      height: number;
+    }
+
+    const lineasPlanas: LineaPlana[] = [];
+    for (const block of blocks) {
+      for (const line of block.lines || []) {
+        const { left, top, bottom } = line.boundingBox;
+        lineasPlanas.push({
+          text: line.text,
+          left,
+          centerY: (top + bottom) / 2,
+          height: bottom - top
+        });
+      }
+    }
+
+    if (lineasPlanas.length === 0) {
+      return textoPlano;
+    }
+
+    const alturas = lineasPlanas.map(l => l.height).sort((a, b) => a - b);
+    const mitad = Math.floor(alturas.length / 2);
+    const medianaAltura = alturas.length % 2 === 0
+      ? (alturas[mitad - 1] + alturas[mitad]) / 2
+      : alturas[mitad];
+    const umbral = medianaAltura * 0.6;
+
+    const ordenadasPorY = [...lineasPlanas].sort((a, b) => a.centerY - b.centerY);
+
+    const renglones: LineaPlana[][] = [];
+    let renglonActual: LineaPlana[] = [];
+    let promedioCenterY = 0;
+
+    for (const linea of ordenadasPorY) {
+      if (renglonActual.length === 0) {
+        renglonActual = [linea];
+        promedioCenterY = linea.centerY;
+      } else if (Math.abs(linea.centerY - promedioCenterY) <= umbral) {
+        renglonActual.push(linea);
+        promedioCenterY = renglonActual.reduce((sum, l) => sum + l.centerY, 0) / renglonActual.length;
+      } else {
+        renglones.push(renglonActual);
+        renglonActual = [linea];
+        promedioCenterY = linea.centerY;
+      }
+    }
+    if (renglonActual.length > 0) {
+      renglones.push(renglonActual);
+    }
+
+    return renglones
+      .map(renglon => [...renglon].sort((a, b) => a.left - b.left).map(l => l.text).join(' '))
+      .join('\n');
+  }
+
+  private extraerCampos(texto: string) {
+    let authMatch: RegExpMatchArray | null;
+
+    if (this.esGuaranies) {
+      // Guaraníes: patrones locales
+      authMatch = texto.match(/c\.?\s*aut(?:orizaci[oó]n)?\s*[,:\s#]+([\d.,]{4,15})/i)
+        || texto.match(/autorizaci[oó]n\s*[,:\s#]+([\d.,]{4,15})/i);
+    } else {
+      // Reales y otras monedas: sinónimos típicos de POS brasileño/extranjero
+      authMatch = texto.match(/cod\.?\s*trans\.?\s*[,.:\s]+([\d.,]{4,15})/i)
+        || texto.match(/aut\.?\s*pag\.?\s*[,.:\s]+([\d.,]{4,15})/i)
+        || texto.match(/autorizaci[oó]n\s*[,.:\s]+([\d.,]{4,15})/i)
+        || texto.match(/autoriza[cç][aã]o\s*[,.:\s]+([\d.,]{4,15})/i)
+        || texto.match(/c[oó]d\.?\s*aut(?:or)?\.?\s*[,.:\s]+([\d.,]{4,15})/i)
+        || texto.match(/(?:nsu|aut|auth)\s*[,:\s#]+([\d.,]{4,15})/i);
+    }
+
+    console.log('[OCR] authMatch:', authMatch?.[0], '→ valor:', authMatch?.[1]);
+    if (authMatch) {
+      // Eliminar comas/puntos que el OCR haya insertado erróneamente dentro del código
+      const authValor = authMatch[1].replace(/[.,]/g, '').trim();
+      this.form.get('codigoAutorizacion').setValue(authValor);
+    }
+
+    // Boleta: solo relevante para guaraníes
+    let boletaMatch: RegExpMatchArray | null = null;
+    if (this.esGuaranies) {
+      // Permite espacios internos (OCR frecuentemente los inserta en números largos)
+      boletaMatch = texto.match(/boleta\s*[:\s#]\s*(\d+(?:\s\d+){0,4})/i)
+        || texto.match(/(?:n[rú]o?|ticket|comprobante|recibo)\s*[:\s#]\s*(\d+(?:\s\d+){0,4})/i);
+      const boletaValor = boletaMatch ? boletaMatch[1].replace(/\s+/g, '') : null;
+      console.log('[OCR] boletaMatch:', boletaMatch?.[0], '→ valor:', boletaValor);
+      if (boletaValor && boletaValor.length >= 4) {
+        this.form.get('numeroBoleta').setValue(boletaValor);
+      }
+    }
+
+    // Monto escaneado — solo para auditoría, no modifica el campo del formulario
+    this.montoEscaneado = null;
+    if (this.esGuaranies) {
+      const guaraniMatch = texto.match(/g\s*s?\s*[.\s]\s*([\d.]+)/i)
+        || texto.match(/(?:total|monto|importe)\s*[:\s]\s*([\d.]+)/i);
+      if (guaraniMatch) {
+        const valor = parseInt(guaraniMatch[1].replace(/\./g, ''), 10);
+        if (!isNaN(valor) && valor > 0) this.montoEscaneado = valor;
+      }
+    } else {
+      const esBRL = this.simboloMoneda === 'R$' || this.simboloMoneda === 'BRL';
+      const montoMatch = texto.match(/(?:total|monto|importe|valor)\s*[:\s]?\s*([\d.,]+)/i);
+      if (montoMatch) {
+        let raw = montoMatch[1];
+        raw = esBRL ? raw.replace(/\./g, '').replace(',', '.') : raw.replace(/,/g, '');
+        const valor = parseFloat(raw);
+        if (!isNaN(valor) && valor > 0) this.montoEscaneado = valor;
+      }
+    }
+
+    const hayDatos = authMatch || boletaMatch;
+    if (hayDatos) {
+      this.notificacionService.open('Campos extraídos. Verifique antes de guardar.', TipoNotificacion.SUCCESS, 4);
+    } else {
+      this.notificacionService.open('No se pudieron extraer campos. Complete manualmente.', TipoNotificacion.WARN, 4);
+    }
+  }
+
+  async guardar() {
+    if (!this.fotoPreview) {
+      this.notificacionService.open('Debe tomar la foto del comprobante antes de guardar', TipoNotificacion.WARN, 4);
+      return;
+    }
+
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.notificacionService.open('Complete los campos requeridos', TipoNotificacion.WARN, 3);
+      return;
+    }
+
+    if (this.montoEscaneado != null) {
+      const montoOriginal = Number(this.registroPendiente?.monto ?? history.state?.monto);
+      const tolerancia = this.esGuaranies ? 1 : 0.01;
+      if (Math.abs(this.montoEscaneado - montoOriginal) > tolerancia) {
+        const simbolo = this.simboloMoneda;
+        const fmtOriginal = this.esGuaranies
+          ? `${Math.round(montoOriginal).toLocaleString()} ${simbolo}`
+          : `${simbolo} ${montoOriginal.toFixed(2)}`;
+        const fmtEscaneado = this.esGuaranies
+          ? `${Math.round(this.montoEscaneado).toLocaleString()} ${simbolo}`
+          : `${simbolo} ${this.montoEscaneado.toFixed(2)}`;
+        const resultado = await this.dialogoService.open(
+          'Monto diferente',
+          `El monto escaneado del ticket (${fmtEscaneado}) no coincide con el monto original de la venta (${fmtOriginal}). ¿Desea continuar de todas formas?`
+        );
+        if (resultado?.role !== 'aceptar') return;
+      }
+    }
+
+    this.guardando = true;
+    const usuarioId = this.mainService.usuarioActual?.id;
+
+    if (this.registroPendiente?.id) {
+      // Actualizar el registro pendiente creado por el desktop
+      const input: VentaTarjetaInput = {
+        id: this.registroPendiente.id,
+        sucursalId: this.sucursalId,
+        codigoAutorizacion: this.form.get('codigoAutorizacion').value,
+        numeroBoleta: this.form.get('numeroBoleta').value,
+        monto: this.registroPendiente.monto,
+        montoEscaneado: this.montoEscaneado ?? undefined,
+        estado: VentaTarjetaEstado.COMPLETADO,
+        usuarioId
+      };
+
+      this.ventaTarjetaService.onUpdate(input)
+        .pipe(untilDestroyed(this))
+        .subscribe(res => {
+          this.guardando = false;
+          if (res?.id) {
+            this.notificacionService.open('Venta con tarjeta registrada correctamente', TipoNotificacion.SUCCESS, 3);
+            this.router.navigate(['../'], { relativeTo: this.route });
+          } else {
+            this.notificacionService.open('Error al guardar. Intente nuevamente.', TipoNotificacion.DANGER, 3);
+          }
+        }, () => {
+          this.guardando = false;
+          this.notificacionService.open('Error de conexión', TipoNotificacion.DANGER, 3);
+        });
+    } else {
+      // El registro aún no llegó al central por replicación: no crear uno nuevo
+      // (colisionaría con la fila replicada de la sucursal). Reintentar sincronización.
+      this.guardando = false;
+      this.notificacionService.open(
+        'El registro aún no se sincronizó con el central. Espere unos segundos y reintente.',
+        TipoNotificacion.WARN, 4
+      );
+      this.reintentarSincronizacion();
+      return;
+    }
+  }
+
+  onBack() {
+    this.location.back();
+  }
+}

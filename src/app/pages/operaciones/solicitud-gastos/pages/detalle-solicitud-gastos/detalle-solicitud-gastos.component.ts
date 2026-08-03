@@ -66,7 +66,11 @@ export class DetalleSolicitudGastosComponent implements OnInit {
     this.cargando = true;
     this.cdr.markForCheck();
     try {
-      this.solicitud = await this.solicitudService.obtenerPreGastoPorId(this.preGastoId, this.sucursalId || undefined);
+      const res = await this.solicitudService.obtenerPreGastoPorId(this.preGastoId, this.sucursalId || undefined);
+      if (res) {
+        res.descripcion = this.limpiarUrgenciaEnDescripcion(res.descripcion);
+      }
+      this.solicitud = res;
       this.actualizarEstadoUi();
     } catch {
       this.notificacion.danger('No se pudo cargar la solicitud.');
@@ -292,5 +296,17 @@ export class DetalleSolicitudGastosComponent implements OnInit {
       case 'TRAMITE': return 'primary';
       default: return 'medium';
     }
+  }
+
+  private limpiarUrgenciaEnDescripcion(descripcion?: string | null): string {
+    const texto = (descripcion ?? '').trim();
+    if (!texto) {
+      return 'Sin descripción';
+    }
+
+    return texto
+      .replace(/\s*\|\s*\[URGENCIA:\s*[^\]]+\]/gi, '')
+      .replace(/\[URGENCIA:\s*[^\]]+\]/gi, '')
+      .trim() || 'Sin descripción';
   }
 }

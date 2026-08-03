@@ -67,7 +67,7 @@ export class LoginService {
       let id = localStorage.getItem('usuarioId');
       if (id != null) {
         this.usuarioService
-          .onGetUsuario(+id)
+          .onGetUsuarioParaLogin(+id)
           .pipe(untilDestroyed(this))
           .subscribe(async (res) => {
             if (res) {
@@ -178,7 +178,7 @@ export class LoginService {
               if (res['usuarioId'] != null) {
                 localStorage.setItem('usuarioId', res['usuarioId']);
                 this.usuarioService
-                  .onGetUsuario(res['usuarioId'])
+                  .onGetUsuarioParaLogin(res['usuarioId'])
                   .subscribe(async (res) => {
                     if (res?.id != null) {
                       let response: LoginResponse = {
@@ -273,7 +273,7 @@ export class LoginService {
               this.mainService.sucursalActual = res['sucursal'];
 
               this.usuarioService
-                .onGetUsuario(res['usuarioId'])
+                .onGetUsuarioParaLogin(res['usuarioId'])
                 .pipe(untilDestroyed(this))
                 .subscribe(async (usuarioRes) => {
                   if (usuarioRes?.id != null) {

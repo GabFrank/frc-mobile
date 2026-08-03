@@ -27,15 +27,13 @@
 
     </activity>
 
-    <!-- Android 16 ignora restricciones de orientacion en pantallas grandes.
-         GmsBarcodeScanningDelegateActivity (play-services-code-scanner, via
-         @capacitor-mlkit/barcode-scanning) trae android:screenOrientation="portrait"
-         en su manifest. Lo sobreescribimos para no dejar la restriccion en el merge. -->
+    <!-- Play policy (Android 16 / pantallas grandes): la libreria ML Kit code-scanner declara
+         esta activity con screenOrientation="portrait", que Android 16 marca como restriccion
+         de orientacion en dispositivos de pantalla grande (foldables/tablets). Se remueve el
+         atributo para que la activity siga la orientacion del dispositivo. -->
     <activity
       android:name="com.google.mlkit.vision.codescanner.internal.GmsBarcodeScanningDelegateActivity"
-      android:screenOrientation="fullSensor"
-      tools:replace="android:screenOrientation"
-      tools:node="merge" />
+      tools:remove="android:screenOrientation" />
 
     <provider
       android:name="androidx.core.content.FileProvider"
@@ -48,17 +46,18 @@
     </provider>
     <meta-data android:name="com.google.android.geo.API_KEY"
       android:value="AIzaSyCHwGrrR6zNzmIRRPOvziFXpyW7H3BmwU4" />
-    <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode" />
+    <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode,ocr" />
     <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="fcm_default_channel" />
   </application>
   <uses-permission android:name="android.permission.USE_BIOMETRIC" />
   <uses-permission android:name="android.permission.USE_FINGERPRINT" />
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.CAMERA" />
-  <!-- Play policy: el acceso a fotos es ocasional (foto de perfil/producto via @capacitor/camera),
-       que en Android 13+ usa el Photo Picker del sistema y NO requiere estos permisos.
-       Se remueven explicitamente para que no entren al manifest mergeado desde ningun plugin. -->
-  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
+  <!-- READ_MEDIA_IMAGES: requerido por CameraPlugin.java (Capacitor) en Android 13+ (API 33+).
+       El chequeo es nativo e incondicional; no se puede evitar con CameraSource.Prompt.
+       Uso legitimo: captura de fotos de comprobantes de tarjeta en registro-venta-tarjeta.
+       Declarar en Data Safety de Play Console: acceso a fotos, uso interno, sin compartir. -->
+  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
   <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
   <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />

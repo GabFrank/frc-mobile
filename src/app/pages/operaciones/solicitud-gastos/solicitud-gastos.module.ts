@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 import { SolicitudGastosRoutingModule } from './solicitud-gastos-routing.module';
@@ -23,6 +23,7 @@ import { AgregarRendicionGastoComponent } from './pages/agregar-rendicion-gasto/
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     IonicModule,
     SolicitudGastosRoutingModule,
     ComponentsModule

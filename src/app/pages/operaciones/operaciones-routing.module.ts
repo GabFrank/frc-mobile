@@ -36,6 +36,10 @@ const routes: Routes = [
   {
     path: 'retiro-proveedor',
     loadChildren: () => import('./devolucion/retiro-proveedor/retiro-proveedor.module').then(m => m.RetiroProveedorModule)
+  },
+  {
+    path: 'venta-tarjeta',
+    loadChildren: () => import('./venta-tarjeta/venta-tarjeta.module').then(m => m.VentaTarjetaModule)
   }
 ];
 

@@ -6,3 +6,4 @@ export { DetalleGastoFormulario } from './detalle-gasto-formulario.interface';
 export { MontoRendicionFormulario } from './monto-rendicion-formulario.interface';
 export { FotoRendicionFormulario } from './foto-rendicion-formulario.interface';
 export { DatosSolicitudGasto } from './datos-solicitud-gasto.interface';
+export { PaginaResultado } from './pagina-resultado.interface';

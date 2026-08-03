@@ -2,6 +2,7 @@ import { Observable } from 'rxjs';
 import { Usuario, UsuarioInput } from '../domains/personas/usuario.model';
 import { SaveUsuarioGQL } from '../graphql/personas/usuario/graphql/saveUsuario';
 import { UsuarioPorIdGQL } from '../graphql/personas/usuario/graphql/usuarioPorId';
+import { UsuarioLoginGQL } from '../graphql/personas/usuario/graphql/usuarioLogin';
 import { UsuarioPorPersonaIdGQL } from '../graphql/personas/usuario/graphql/usuarioPorPersonaId';
 import { UsuarioSearchGQL } from '../graphql/personas/usuario/graphql/usuarioSearch';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -29,6 +30,7 @@ import { UsuarioPorEmbeddingGQL, UsuarioSimilitud } from '../graphql/personas/us
 export class UsuarioService {
   constructor(
     private getUsuario: UsuarioPorIdGQL,
+    private getUsuarioLogin: UsuarioLoginGQL,
     private getUsuarioPorPersonaId: UsuarioPorPersonaIdGQL,
     private saveUsuario: SaveUsuarioGQL,
     private searchUsuario: UsuarioSearchGQL,
@@ -46,6 +48,31 @@ export class UsuarioService {
   onGetUsuario(id: number): Observable<any> {
     return new Observable((obs) => {
       this.getUsuario
+        .fetch(
+          {
+            id
+          },
+          {
+            fetchPolicy: 'no-cache',
+            errorPolicy: 'all'
+          }
+        )
+        .pipe(untilDestroyed(this))
+        .subscribe((res) => {
+          if (res?.errors == null) {
+            obs.next(res?.data.data);
+          } else {
+            obs.next(res.errors);
+          }
+        });
+    });
+  }
+
+  // Usa la query de login (sin `persona.embeddingFacial`) para ser compatible
+  // con servidores en `release/beta` que aun no tienen ese campo en el schema.
+  onGetUsuarioParaLogin(id: number): Observable<any> {
+    return new Observable((obs) => {
+      this.getUsuarioLogin
         .fetch(
           {
             id

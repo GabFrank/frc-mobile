@@ -1,0 +1,116 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title style="text-align:center"  >
+      Ventas con Tarjeta
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onFiltrar()">
+        <ion-icon name="funnel"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-progress-bar *ngIf="actualizando" type="indeterminate"></ion-progress-bar>
+
+  <div *ngIf="cargando && !list.length" style="padding:12px">
+    <ion-card class="vt-card" *ngFor="let i of [1,2,3]">
+      <ion-card-content>
+        <ion-skeleton-text animated style="width: 60%; height: 18px"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 40%; height: 14px; margin-top: 6px"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 30%; height: 14px; margin-top: 6px"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <ion-item *ngIf="cajaActual" lines="full" color="light">
+    <ion-label>
+      <p>
+        <strong>Caja #{{ cajaActual?.id }}</strong> — {{ cajaActual?.sucursal?.nombre | titlecase }}
+      </p>
+      <p>{{ cajaActual?.usuario?.persona?.nombre | titlecase }}</p>
+    </ion-label>
+  </ion-item> 
+
+  <div *ngIf="!cargando && !cajaActual" style="padding:24px; text-align:center">
+    <ion-icon name="alert-circle-outline" style="font-size:48px; color: #f44336"></ion-icon>
+    <p>No tiene una caja abierta.</p>
+  </div>
+
+  <div *ngIf="!cargando && cajaActual">
+    <p *ngIf="list.length === 0" style="text-align:center; color:gray; padding:32px">
+      <ion-icon name="card-outline" style="font-size:40px; display:block; margin: 0 auto 8px"></ion-icon>
+      No hay ventas con tarjeta en esta caja
+    </p>
+
+    <ion-card
+      *ngFor="let item of list"
+      class="vt-card"
+      [class.pendiente]="item.estado === 'PENDIENTE'"
+      [class.completado]="item.estado === 'COMPLETADO'"
+      [class.cancelado]="item.estado === 'CANCELADO'"
+      [button]="item.estado === 'PENDIENTE'"
+      (click)="item.estado === 'PENDIENTE' ? irARegistrar(item) : null"
+    >
+
+      <ion-card-content>
+        <div style="display:flex; align-items:center; justify-content:space-between">
+          <div>
+            <p class="vt-venta">
+              <ion-icon name="card-outline" style="transform: scale(1.5);"></ion-icon>
+              Venta #{{ item.venta?.id }} —
+              <ng-container *ngIf="esGuaranies(item)">
+                {{ item.monto | number:'1.0-0' }} Gs.
+              </ng-container>
+              <ng-container *ngIf="!esGuaranies(item)">
+                {{ item.terminalPos?.moneda?.simbolo }} {{ item.monto | number:'1.2-2' }}
+              </ng-container>
+            </p>
+            <p class="vt-detalle" *ngIf="item.terminalPos">
+              Terminal: <strong>{{ item.terminalPos.descripcion }} - {{ item.terminalPos.codigo }}</strong>
+            </p>
+            <p class="vt-estado" *ngIf="item.estado === 'PENDIENTE'">
+              Pendiente — toque para registrar
+            </p>
+            <p class="vt-estado" *ngIf="item.estado === 'CANCELADO'">
+              Venta cancelada
+            </p>
+            <ng-container *ngIf="item.estado === 'COMPLETADO'">
+              <p class="vt-detalle">Boleta: <strong>{{ item.numeroBoleta || '—' }}</strong></p>
+              <p class="vt-detalle">Autorización: <strong>{{ item.codigoAutorizacion || '—' }}</strong></p>
+            </ng-container>
+            <p class="vt-fecha">
+              {{ item.creadoEn | date:'dd/MM/yyyy HH:mm' }} -
+              {{ item.venta?.usuario?.nickname | uppercase }}
+            </p>
+          </div>
+          <ion-icon
+            [name]="item.estado === 'PENDIENTE' ? 'time-outline' : item.estado === 'CANCELADO' ? 'close-circle-outline' : 'checkmark-circle-outline'"
+            class="vt-icon-estado">
+          </ion-icon>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <ion-fab 
+    vertical="bottom" 
+    horizontal="end" 
+    slot="fixed" 
+    *ngIf="cajaActual"
+  >
+    <ion-fab-button (click)="irAEscanear()">
+      <ion-icon name="qr-code-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

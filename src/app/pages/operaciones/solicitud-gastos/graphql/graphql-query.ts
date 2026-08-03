@@ -19,6 +19,8 @@ export const tipoGastosQuery = gql`
       activo
       autorizacion
       moduloPadre
+      tipoNaturaleza
+      esPagoCuotaActivo
     }
   }
 `;
