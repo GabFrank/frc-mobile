@@ -190,6 +190,7 @@ docs/
 ## Referencias relacionadas
 
 - **[docs/README.md](docs/README.md) — índice de la documentación técnica del repo. Empezá por acá.**
+- **Skill `frc-mobile-expert`** (`~/.claude/skills/frc-mobile-expert/`) — índice de navegación, reglas críticas, workflows y guía de diagnóstico. Invocarla al trabajar en este repo.
 - [docs/REGLAS_DESARROLLO.md](docs/REGLAS_DESARROLLO.md) — Reglas críticas de modificación de backend (resumidas arriba).
 - [../../REPORTE_VULNERABILIDADES.md](../../REPORTE_VULNERABILIDADES.md) — Auditoría 2026-04-02. Hallazgo en este repo: `src/app/services/face-ai.service.ts:8` (ver línea ~101).
 - [../../TODO_PENDIENTE.md](../../TODO_PENDIENTE.md) — Item urgente: reubicar claves Android.
