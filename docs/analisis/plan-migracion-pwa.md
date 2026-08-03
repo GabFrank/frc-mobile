@@ -26,10 +26,12 @@
 
 ## 0.2 Configuración
 
+> **Runbook paso a paso: [`runbook-cloudflare.md`](runbook-cloudflare.md).**
+
 - [ ] Reverse proxy delante del central (Caddy o nginx). **No tocar Spring Boot.**
 - [ ] Instalar certificado **Cloudflare Origin CA** en el proxy (gratis, 15 años, sin renovación)
 - [ ] SSL/TLS mode en Cloudflare: **Full (strict)**. Nunca Flexible — dejaría el tramo Cloudflare→origen en texto plano
-- [ ] Subdominios + Origin Rules para el mapeo de puertos:
+- [ ] Subdominios apuntando al origen. **El reverse proxy rutea por nombre de host, así que no hacen falta Origin Rules:**
 
 ```
 bodega.<dominio>    → :443 → 159.203.86.103:8081
