@@ -308,6 +308,156 @@ Cuerpo vacío. No hay manejo global de errores de red ni GraphQL.
 
 ---
 
+---
+
+# Ola 2 — módulo `operaciones`
+
+## 🔴 Alta
+
+### 26. `Conteo` y `ConteoInput` declaran mal un campo de dinero
+
+**Dónde:** `src/app/pages/operaciones/conteo/conteo.model.ts`
+
+```ts
+totalGs: number;
+totalRs; number;    // ← punto y coma en vez de dos puntos
+totalDs: number;
+```
+
+`totalRs` queda **sin tipo** (`any` implícito) y se crea una propiedad espuria llamada `number`. Está en **ambas clases**. No rompe en runtime, pero elimina el chequeo de tipos justo en el total de reales de un arqueo de caja — un valor con consecuencias laborales para el cajero.
+
+**Fix propuesto:** `totalRs: number;` en las dos clases. Verificar que nada dependa de la propiedad `number` espuria.
+
+---
+
+### 27. N+1 de queries al buscar items por producto en una recepción
+
+**Dónde:** `src/app/pages/operaciones/pedidos/recepcion-mercaderia/recepcion-mercaderia.service.ts:182-232`
+
+`onBuscarNotaRecepcionItemsPorProductoYRecepcion` trae la recepción y después hace **una query por cada nota**, en serie dentro de un `for`. Una recepción con 15 notas dispara 16 requests secuenciales.
+
+**Efecto:** verificación de productos lenta en recepciones grandes, justo el caso en que más se usa.
+
+**Fix propuesto:** query de backend que traiga los items filtrados por producto y recepción en una sola llamada. Requiere método nuevo en el central con sufijo `Mobile`.
+
+---
+
+## 🟡 Media
+
+### 28. `NotaRecepcionAgrupada` está deprecada pero sigue viva
+
+**Dónde:** `src/app/pages/operaciones/pedidos/nota-recepcion/nota-recepcion-agrupada/` + 4 referencias externas
+
+El backend la reemplazó por `RecepcionMercaderia`, pero la entidad conserva modelo, servicio y 11 archivos GraphQL. La siguen usando `nota-recepcion.model.ts`, `nota-recepcion.service.ts`, `graphql/notaRecepcionPorNotaRecepcionAgrupadaId.ts` y —lo más relevante— **`solicitar-pago-nota-recepcion.component.ts`**, que quedó sin migrar.
+
+**Fix propuesto:** migrar la solicitud de pago a `RecepcionMercaderia` y después borrar la entidad. Coordinar con el backend: hay que confirmar que `solicitarPagoNotaRecepcionAgrupada` tiene equivalente.
+
+---
+
+### 29. `Moneda.toInput()` descarta la cotización
+
+**Dónde:** `src/app/pages/operaciones/moneda/moneda.model.ts`
+
+El input lleva `denominacion`, `simbolo`, `paisId` y `usuarioId`, pero **no `cambio`**. Guardar una moneda editada no persiste el cambio de cotización.
+
+**Fix propuesto:** confirmar si es deliberado (la cotización se actualiza por otra vía) y, si lo es, documentarlo en el modelo. Si no, agregar el campo.
+
+---
+
+### 30. `MovimientoStock.estado` es `boolean` en vez de enum
+
+**Dónde:** `src/app/pages/operaciones/movimiento-stock/movimiento-stock.model.ts`
+
+`true` = vigente, `false` = anulado. Rompe la convención del repo, donde los estados son enums string, y no deja lugar a estados intermedios.
+
+**Fix propuesto:** requiere cambio de backend. Bajo salvo que se necesite un tercer estado.
+
+---
+
+### 31. `MovimientoStock.referencia` es un id sin tipo ni FK
+
+**Dónde:** ídem
+
+Apunta al documento origen, pero a qué entidad depende de `tipoMovimiento`. No hay forma tipada de resolverlo.
+
+**Fix propuesto:** documentar el mapeo tipo→entidad (hecho en [`modulos/operaciones-pagos-y-varios.md`](modulos/operaciones-pagos-y-varios.md)) y evaluar un union type en el cliente.
+
+---
+
+### 32. `SolicitudPago.pago` tipado `any`
+
+**Dónde:** `src/app/pages/operaciones/solicitud-pago/solicitud-pago.model.ts`
+
+**Fix propuesto:** tipar como `Pago`. Cuidado con la referencia circular: `Pago` ya importa `SolicitudPago`.
+
+---
+
+### 33. Archivos GraphQL duplicados
+
+**Dónde:**
+- `remitoRetiroProveedor.ts` existe en `devolucion/graphql/` **y** en `devolucion/retiro-proveedor/graphql/`
+- `enteFinancialSummary.ts` y `getEnteFinancialSummary.ts` en `solicitud-gastos/graphql/` cubren el mismo concepto
+
+**Fix propuesto:** verificar cuál usa el código, borrar el otro.
+
+---
+
+## 🟢 Baja
+
+### 34. Typos en nombres de archivos, métodos y claves de enum
+
+Ninguno rompe nada; todos dificultan buscar y autocompletar.
+
+| Typo | Dónde | Correcto |
+|---|---|---|
+| `deleleCaja.ts` | `operaciones/caja/graphql/` | `deleteCaja` |
+| `deleleConteo.ts` | `operaciones/conteo/graphql/` | `deleteConteo` |
+| `deleleConteoMoneda.ts` | `operaciones/conteo/conteo-moneda/graphql/` | `deleteConteoMoneda` |
+| `getNotaRecepcionPorOriveedorAndNumero.ts` | `pedidos/nota-recepcion/graphql/` | `PorProveedor` |
+| `onSearchProveeodr()` | `recepcion-notas.component.ts` | `onSearchProveedor` |
+| `toInpuList()` | `conteo.model.ts` | `toInputList` |
+| `SIN_MODIFICACIONN` (clave) | `compra-enums.ts` | `SIN_MODIFICACION` — el **valor** ya es correcto |
+
+> ⚠️ **Antes de renombrar los archivos `delele*`: verificar si el nombre de la operación GraphQL en el backend también está mal escrito.** Si el central expone `deleleCaja`, corregir el cliente rompe la llamada. El renombre seguro es solo del archivo y la clase, dejando el `gql` intacto.
+
+---
+
+### 35. `PedidoEstado.VERFICADO_*` mal escrito — **NO corregir del lado del cliente**
+
+**Dónde:** `src/app/pages/operaciones/pedidos/pedido-item/pedido-enums.ts`
+
+`VERFICADO_SIN_MODIFICACION` y `VERFICADO_CON_MODIFICACION` (falta la `I`). **El valor viaja así al backend**, así que el string tiene que coincidir exactamente.
+
+**Fix propuesto:** solo se puede corregir coordinando backend + desktop + mobile en el mismo release. No vale la pena por sí solo; aprovechar si alguna vez se toca ese enum por otro motivo.
+
+---
+
+### 36. `PdvCajaEstado` usa claves con espacios
+
+**Dónde:** `src/app/pages/operaciones/caja/caja.model.ts`
+
+```ts
+'En proceso' = 'EN_PROCESO',
+```
+
+Se indexa `PdvCajaEstado['En proceso']`. Es deliberado (la clave es la etiqueta de UI) pero rompe la convención del repo y no autocompleta.
+
+**Fix propuesto:** separar en enum de constantes + mapa de etiquetas. Toca todos los consumidores; hacerlo solo si se refactoriza el módulo.
+
+---
+
+### 37. `VentaTarjeta` usa `interface` sin `toInput()`
+
+**Dónde:** `src/app/pages/operaciones/venta-tarjeta/venta-tarjeta.model.ts`
+
+Rompe el patrón modelo/input/`toInput()` del resto del repo: el input se arma a mano.
+
+**Fix propuesto:** decidir cuál es el estándar. El enfoque de `venta-tarjeta` es más simple y evita el problema de hidratación de instancias (ítem 6); podría ser el patrón a adoptar en vez de la excepción a corregir.
+
+---
+
 ## Cómo usar este archivo
 
 Al arrancar la fase de corrección: convertir cada ítem en un issue, empezando por los 🔴. Los ítems 16-19 son borrado puro y pueden agruparse en un solo PR de limpieza — pero el 17 toca `capacitor.config.ts` y por lo tanto exige release nativo.
+
+Los ítems 34-36 son cosméticos **con riesgo de contrato**: antes de renombrar cualquier cosa que viaje al backend, verificá el schema del central.

@@ -6,19 +6,20 @@ Un documento por módulo. Cada uno cubre: propósito y reglas de negocio, rutas,
 
 | Módulo | Ubicación | LOC aprox. | Doc |
 |---|---|---|---|
-| **operaciones** | `pages/operaciones/` | 17.663 | ⏳ Ola 2 |
-| ├ pedidos (Recepción de Mercaderías) | `operaciones/pedidos/` | 5.025 | ⏳ |
-| ├ solicitud-gastos | `operaciones/solicitud-gastos/` | 3.515 | ⏳ |
-| ├ devolucion | `operaciones/devolucion/` | 2.667 | ⏳ |
-| ├ caja | `operaciones/caja/` | 1.483 | ⏳ |
-| ├ venta-tarjeta | `operaciones/venta-tarjeta/` | 1.265 | ⏳ |
-| ├ conteo | `operaciones/conteo/` | 1.018 | ⏳ |
-| ├ solicitud-pago | `operaciones/solicitud-pago/` | 934 | ⏳ |
-| ├ moneda | `operaciones/moneda/` | 481 | ⏳ |
-| ├ pago | `operaciones/pago/` | 330 | ⏳ |
-| ├ maletin | `operaciones/maletin/` | 325 | ⏳ |
-| ├ movimiento-stock | `operaciones/movimiento-stock/` | 250 | ⏳ |
-| └ caja-info | `operaciones/caja-info/` | 221 | ⏳ |
+| **operaciones** | `pages/operaciones/` | 17.663 | ✅ 6 docs |
+| ├ pedidos (Recepción de Mercaderías) | `operaciones/pedidos/` | 5.025 | ✅ [operaciones-pedidos.md](operaciones-pedidos.md) |
+| ├ solicitud-gastos | `operaciones/solicitud-gastos/` | 3.515 | ✅ [operaciones-solicitud-gastos.md](operaciones-solicitud-gastos.md) |
+| ├ devolucion | `operaciones/devolucion/` | 2.667 | ✅ [operaciones-devolucion.md](operaciones-devolucion.md) |
+| ├ caja | `operaciones/caja/` | 1.483 | ✅ [operaciones-caja.md](operaciones-caja.md) |
+| ├ venta-tarjeta | `operaciones/venta-tarjeta/` | 1.265 | ✅ [operaciones-venta-tarjeta.md](operaciones-venta-tarjeta.md) |
+| ├ conteo | `operaciones/conteo/` | 1.018 | ✅ en [operaciones-caja.md](operaciones-caja.md) |
+| ├ solicitud-pago | `operaciones/solicitud-pago/` | 934 | ✅ [operaciones-pagos-y-varios.md](operaciones-pagos-y-varios.md) |
+| ├ moneda | `operaciones/moneda/` | 481 | ✅ en [operaciones-caja.md](operaciones-caja.md) |
+| ├ pago | `operaciones/pago/` | 330 | ✅ en [operaciones-pagos-y-varios.md](operaciones-pagos-y-varios.md) |
+| ├ maletin | `operaciones/maletin/` | 325 | ✅ en [operaciones-caja.md](operaciones-caja.md) |
+| ├ movimiento-stock | `operaciones/movimiento-stock/` | 250 | ✅ en [operaciones-pagos-y-varios.md](operaciones-pagos-y-varios.md) |
+| ├ caja-info | `operaciones/caja-info/` | 221 | ✅ en [operaciones-caja.md](operaciones-caja.md) |
+| └ list-operaciones | `operaciones/list-operaciones/` | 38 | ✅ en [operaciones-pagos-y-varios.md](operaciones-pagos-y-varios.md) |
 | **inventario** | `pages/inventario/` | 4.229 | ⏳ Ola 3 |
 | **transferencias** | `pages/transferencias/` | 4.166 | ⏳ Ola 3 |
 | **producto** | `pages/producto/` | 3.233 | ⏳ Ola 3 |
