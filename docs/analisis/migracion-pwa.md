@@ -1,6 +1,7 @@
 # Análisis: migrar frc-mobile a PWA
 
-> **Documento de investigación**, 2026-08-03. No es una decisión tomada ni un plan de ejecución.
+> **Documento de investigación**, 2026-08-03. No es una decisión tomada.
+> El plan de ejecución está en [`plan-migracion-pwa.md`](plan-migracion-pwa.md).
 > Todo lo afirmado sobre el código está verificado contra el repo en la rama de esta documentación.
 
 ## Veredicto en una línea
