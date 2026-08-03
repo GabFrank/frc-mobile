@@ -1,0 +1,68 @@
+.cargando {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.cabecera {
+  margin: 0 0 12px;
+
+  .fila-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  p {
+    margin: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    ion-icon {
+      font-size: 15px;
+      opacity: 0.7;
+    }
+  }
+
+  .fecha {
+    opacity: 0.7;
+    font-size: 13px;
+  }
+}
+
+.acciones {
+  margin-bottom: 8px;
+}
+
+.items-header h4 {
+  margin: 8px 0 4px;
+  font-weight: 600;
+}
+
+.empty,
+.vacio {
+  text-align: center;
+  opacity: 0.6;
+  margin-top: 40px;
+
+  ion-icon {
+    font-size: 48px;
+  }
+
+  p {
+    margin-top: 8px;
+  }
+}
+
+.footer-actions {
+  display: flex;
+  gap: 8px;
+  padding: 4px 8px;
+
+  ion-button {
+    flex: 1;
+    margin: 0;
+  }
+}

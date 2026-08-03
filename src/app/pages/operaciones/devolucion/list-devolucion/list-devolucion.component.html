@@ -1,0 +1,82 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onVolver()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Historial de devoluciones</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <div class="filtros">
+      <ion-select
+        label="Sucursal"
+        placeholder="Todas"
+        [(ngModel)]="sucursalId"
+        (ionChange)="onFiltrar()"
+        interface="alert"
+        [interfaceOptions]="{ header: 'Sucursal' }"
+      >
+        <ion-select-option [value]="null">Todas</ion-select-option>
+        <ion-select-option *ngFor="let s of sucursales" [value]="s.id">
+          {{ s.nombre }}
+        </ion-select-option>
+      </ion-select>
+      <ion-select
+        label="Estado"
+        placeholder="Todos"
+        [(ngModel)]="estado"
+        (ionChange)="onFiltrar()"
+        interface="popover"
+      >
+        <ion-select-option [value]="null">Todos</ion-select-option>
+        <ion-select-option [value]="EstadoDevolucion.PENDIENTE">Pendiente</ion-select-option>
+        <ion-select-option [value]="EstadoDevolucion.SEPARADO">Separado</ion-select-option>
+        <ion-select-option [value]="EstadoDevolucion.COLECTADO">Colectado</ion-select-option>
+        <ion-select-option [value]="EstadoDevolucion.RETIRADO">Retirado</ion-select-option>
+      </ion-select>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="vacio" *ngIf="!cargando && devoluciones.length === 0">
+    <ion-icon name="file-tray-outline"></ion-icon>
+    <p>No hay devoluciones para los filtros elegidos</p>
+  </div>
+
+  <ion-list>
+    <ion-item *ngFor="let d of devoluciones" lines="full" button detail="true" (click)="onAbrir(d)">
+      <ion-label class="ion-text-wrap">
+        <div class="fila-top">
+          <strong>{{ d.identificador || '#' + d.id }}</strong>
+          <ion-badge [color]="d._color">{{ d.estado | titlecase }}</ion-badge>
+        </div>
+        <p>{{ d.sucursalOrigen?.nombre }}
+          <span *ngIf="d.estado === EstadoDevolucion.COLECTADO && d.sucursalUbicacion">
+            → {{ d.sucursalUbicacion?.nombre }}
+          </span>
+        </p>
+        <p *ngIf="d._proveedor">{{ d._proveedor }}</p>
+        <p class="fecha">{{ d.fecha | date: 'dd/MM/yyyy HH:mm' }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ion-infinite-scroll (ionInfinite)="onLoadMore($event)" [disabled]="!hayMas">
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Cargando más..."
+    ></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button class="btn-success" (click)="onNueva()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

@@ -1,0 +1,18 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Devoluciones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card class="opcion" *ngFor="let o of opciones" [routerLink]="o.link" button>
+    <ion-card-content class="opcion-content">
+      <ion-icon [name]="o.icono" class="opcion-icono"></ion-icon>
+      <div class="opcion-texto">
+        <h2>{{ o.titulo }}</h2>
+        <p>{{ o.descripcion }}</p>
+      </div>
+      <ion-icon name="chevron-forward-outline" class="opcion-chevron"></ion-icon>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
