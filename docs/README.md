@@ -33,6 +33,7 @@ Esta carpeta es la **fuente de verdad** de cómo funciona el repo. Vive junto al
 | [configuracion-servidor.md](arquitectura/configuracion-servidor.md) | `serverIp`/`serverPort`, `conectionConfig.ts`, cambio de servidor |
 | [capacitor-nativo.md](arquitectura/capacitor-nativo.md) | Capacitor 7, plugins, permisos, `cap sync` |
 | [actualizaciones-app.md](arquitectura/actualizaciones-app.md) | Cómo se actualiza la app realmente (Play Store in-app update) y canales |
+| [ui-ionic.md](arquitectura/ui-ionic.md) | Convenciones de UI: servicios wrapper, colores, ciclo de vida Ionic, formularios |
 
 ## Índice de infraestructura
 

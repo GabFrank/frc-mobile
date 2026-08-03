@@ -609,10 +609,106 @@ path: 'gestion-productos', // ← AGREGAR ESTA RUTA
 
 ---
 
+---
+
+# Ola 4 — auditoría transversal
+
+## 🔴 Alta
+
+### 52. El reconocimiento facial descarga los modelos desde un CDN de internet
+
+**Dónde:** `src/app/services/face-recognition.service.ts:39`
+
+```ts
+modelBasePath: 'https://cdn.jsdelivr.net/npm/@vladmandic/human@3.3.6/models/',
+```
+
+**El motor facial no funciona sin internet.** La app está diseñada para hablar con un servidor **en LAN** (`androidScheme: 'http'`, IPs locales); una sucursal con la red interna operativa pero sin salida a internet —o con jsDelivr bloqueado o caído— **no puede marcar asistencia por rostro**.
+
+Además implica que cada dispositivo descarga los modelos de un tercero en cada arranque frío, con el costo de datos y latencia asociados.
+
+**Fix propuesto:** empaquetar los modelos en `assets/` y apuntar `modelBasePath` ahí. Aumenta el tamaño del APK pero elimina la dependencia externa. Verificar la licencia de los modelos antes de redistribuirlos.
+
+---
+
+### 53. Credenciales de terceros en el código fuente
+
+**Dónde:**
+- `src/app/services/face-ai.service.ts:8` — `apiKey = '21a3bffecdcd4ae091b63bbf8c1270d8'` (Azure Cognitive Face)
+- `android/app/src/main/AndroidManifest.xml:47` — `com.google.android.geo.API_KEY` (Google Maps)
+
+Ambas viajan dentro del APK y son extraíbles con herramientas estándar. La de Azure ya figura en [`REPORTE_VULNERABILIDADES.md`](../../../REPORTE_VULNERABILIDADES.md).
+
+**Fix propuesto:** rotar ambas claves (están comprometidas desde que se publicó el APK), moverlas a configuración del backend y proxyar las llamadas a Azure por el central. La de Maps se puede restringir por `appId` + huella de firma en Google Cloud Console, que es la mitigación estándar cuando la clave tiene que estar en el cliente.
+
+---
+
+## 🟡 Media
+
+### 54. Colores de Material hardcodeados en los `.scss`
+
+**Dónde:** `src/app/**/*.scss`
+
+`#f44336` aparece **50 veces**, `#43a047` 14 y `#4caf50` 7 — la paleta de Material Design escrita a mano, no las variables de Ionic. Cambiar el tema no las afecta.
+
+**Fix propuesto:** reemplazar por `var(--ion-color-danger)` / `var(--ion-color-success)`. Mecánico pero extenso; hacerlo módulo por módulo.
+
+---
+
+### 55. Dos sistemas de color de botón conviviendo
+
+**Dónde:** templates
+
+`color="success"` (atributo de Ionic) y `class="btn-success"` (clase propia, **98 usos**).
+
+**Fix propuesto:** elegir uno. Las clases propias permiten estilos que el atributo no, así que probablemente convenga conservarlas y documentar cuándo usar cada una.
+
+---
+
+### 56. Dos sets de iconos
+
+**Dónde:** templates y `home.component.ts`
+
+Ionicons (`<ion-icon name="...">`) y Material Symbols (`icon: 'barcode_scanner'` en las quick actions).
+
+**Fix propuesto:** unificar, o documentar que las quick actions usan Material a propósito.
+
+---
+
+## 🟢 Baja
+
+### 57. 84 `console.log` en el código de producción
+
+**Dónde:** `src/app/**/*.ts`
+
+Incluye volcados de respuestas completas del backend (`GenericCrudService` loguea `res` y `res.errors` en varios métodos), visibles en el log del dispositivo.
+
+**Fix propuesto:** reemplazar por un servicio de logging que se silencie según `isDevMode()`. Revisar primero cuáles vuelcan datos sensibles.
+
+---
+
+### 58. 11 `TODO` / `FIXME` sin seguimiento
+
+**Dónde:** `src/app/**/*.ts`
+
+**Fix propuesto:** revisarlos, convertir en issues los que sigan vigentes y borrar los obsoletos.
+
+---
+
+### 59. Documentación del workspace menciona un `postinstall` que ya no existe
+
+**Dónde:** `frc-sistemas-informaticos/CLAUDE.md` (raíz del workspace)
+
+Afirma que el `postinstall` de mobile parchea el Gradle de `phonegap-plugin-barcodescanner` (`compile(` → `implementation(`). **`package.json` no tiene script `postinstall`** y el escaneo migró a `@capacitor-mlkit/barcode-scanning`.
+
+**Fix propuesto:** corregir el CLAUDE.md raíz. Queda fuera de este repo — es un cambio en `frc-sistemas-informaticos/`.
+
+---
+
 ## Cómo usar este archivo
 
 Al arrancar la fase de corrección: convertir cada ítem en un issue, empezando por los 🔴. Los ítems 16-19, 46-48 y 50-51 son borrado o movimiento puro y pueden agruparse en un solo PR de limpieza — pero el 17 toca `capacitor.config.ts` y por lo tanto exige release nativo, y el 47 requiere actualizar un import.
 
 Los ítems 34-36 son cosméticos **con riesgo de contrato**: antes de renombrar cualquier cosa que viaje al backend, verificá el schema del central.
 
-**Resumen:** 51 hallazgos — 4 🔴, 22 🟡, 25 🟢.
+**Resumen:** 59 hallazgos — 6 🔴, 26 🟡, 27 🟢.
