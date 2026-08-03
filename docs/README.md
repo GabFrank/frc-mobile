@@ -14,6 +14,7 @@ Esta carpeta es la **fuente de verdad** de cómo funciona el repo. Vive junto al
 | [`manuales-refactor/`](manuales-refactor/) | Histórico de refactors puntuales. No es documentación viva |
 | [`REGLAS_DESARROLLO.md`](REGLAS_DESARROLLO.md) | Regla crítica para modificar el backend `central` sin romper el desktop |
 | [`TODO_TECNICO.md`](TODO_TECNICO.md) | Irregularidades detectadas al documentar, pendientes de corrección |
+| [`analisis/`](analisis/) | Documentos de investigación para decisiones técnicas |
 
 ## Por dónde empezar
 
