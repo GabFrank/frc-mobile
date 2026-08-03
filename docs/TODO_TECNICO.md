@@ -456,8 +456,163 @@ Rompe el patrón modelo/input/`toInput()` del resto del repo: el input se arma a
 
 ---
 
+---
+
+# Ola 3 — resto de `pages`
+
+## 🟡 Media
+
+### 38. `domains/general/pais.model.ts` está vacío (0 bytes)
+
+**Dónde:** `src/app/domains/general/pais.model.ts`
+
+El archivo existe pero no tiene contenido. El `Pais` real vive en `src/app/pages/general/pais/pais.model.ts` (164 bytes) y es el que importa `moneda.model.ts`.
+
+**Efecto:** un `import { Pais } from 'src/app/domains/general/pais.model'` falla sin razón aparente. Contrasta con `domains/general/ciudad.model.ts`, que sí tiene contenido — o sea, `Ciudad` está en `domains/` y `Pais` en `pages/`, sin criterio.
+
+**Fix propuesto:** mover el contenido a `domains/general/pais.model.ts`, actualizar el import de `moneda.model.ts` y borrar `pages/general/`.
+
+---
+
+### 39. Aprobación de vales no implementada en mobile
+
+**Dónde:** `src/app/graphql/rrhh/rrhh-mobile.service.ts`
+
+`AprobacionesRrhhComponent` tiene un segmento de vales que lista pendientes (`onGetValesPendientes`), pero **no existe `onAprobarVale`** ni la mutation correspondiente. Solo vacaciones se puede aprobar.
+
+**Fix propuesto:** agregar `AprobarValeMobile` en el central (con sufijo `Mobile`) y el método en el servicio. Confirmar antes con RRHH si la aprobación de vales debe ser posible desde mobile.
+
+---
+
+### 40. `RrhhMobileService` devuelve `any` en todos sus métodos
+
+**Dónde:** `src/app/graphql/rrhh/rrhh-mobile.service.ts` y `pages/mis-rrhh/`
+
+No hay modelos tipados para recibos, vales, vacaciones ni marcaciones: los componentes usan `any[]`. Es el módulo con menos tipado del repo, y toca datos de liquidación.
+
+**Fix propuesto:** crear los modelos en `domains/rrhh/` a partir del schema del central.
+
+---
+
+### 41. `/mis-rrhh/aprobaciones` sin guard
+
+**Dónde:** `src/app/pages/mis-rrhh/mis-rrhh-routing.module.ts`
+
+La bandeja de aprobaciones del directivo no declara `canActivate`. Cualquier usuario puede navegar a la URL. El home sí filtra el acceso por rol (`DIRECTIVO`, `ADMIN`), pero eso es solo ocultar el botón.
+
+**Fix propuesto:** guard de rol análogo a `VentaTarjetaHabilitadaGuard`. **La protección real depende del backend** — ver el issue de roles en GraphQL del central.
+
+---
+
+### 42. `NotificacionPushService` usa `onCustomGet` para una mutation
+
+**Dónde:** `src/app/pages/configuracion/notificacion-push/notificacion-push.service.ts`
+
+`sendNotificacionPush` llama `genericCrudService.onCustomGet(...)`, el método de **lectura**, para lo que parece una mutation.
+
+**Fix propuesto:** verificar en el schema del central si `requestPushNotification` es query o mutation, y usar `onCustomSave` si corresponde.
+
+---
+
+### 43. Modelos `Usuario` y `Persona` duplicados en notificaciones
+
+**Dónde:** `src/app/pages/notificaciones/models/usuario.model.ts` y `persona.model.ts`
+
+Versiones locales, distintas de las de `domains/personas/`. No son asignables entre sí.
+
+**Fix propuesto:** unificar contra `domains/`, o documentar por qué el módulo necesita una vista reducida.
+
+---
+
+### 44. IP del servidor hardcodeada en dos lugares
+
+**Dónde:** `src/app/components/change-server-ip-dialog/change-server-ip-dialog.component.ts` y `src/app/pages/producto/precio-config/precio-config.component.ts:35-36`
+
+`159.203.86.103` con puertos `8081`/`8082` aparece en ambos. Un cambio de infraestructura obliga a tocar los dos.
+
+**Fix propuesto:** constante compartida en `environments/conectionConfig.ts`, donde ya vive el default.
+
+---
+
+## 🟢 Baja
+
+### 45. `home` hace poll con `setInterval` en vez de suscribirse
+
+**Dónde:** `src/app/pages/home/home/home.component.ts:121-128`
+
+Poll cada segundo esperando que aparezca `mainService.usuarioActual`, **pese a que el mismo componente ya se suscribe a `authenticationSub` unas líneas arriba**. Se limpia correctamente, así que no fuga, pero si el login nunca ocurre queda latiendo.
+
+**Fix propuesto:** reemplazar por la suscripción existente.
+
+---
+
+### 46. `src/app/pages/venta/` es una carpeta vacía
+
+**Dónde:** `src/app/pages/venta/`
+
+Sin archivos desde mayo 2025. Las operaciones de venta viven en `src/app/graphql/operaciones/venta/`.
+
+**Fix propuesto:** borrar.
+
+---
+
+### 47. Archivos con `" copy"` en el nombre — uno está EN USO
+
+**Dónde:**
+- `src/app/pages/inventario/graphql/reabrir-inventario copy.ts` — **lo importa `inventario.service.ts`**: no es un duplicado muerto, es el archivo real con nombre de copia
+- `src/app/pages/inventario/graphql/getInventarioProductoItemPorInventarioProducto copy.ts` — verificar
+- `src/app/graphql/financiero/venta-credito/count-by-cliente-id copy.ts` — verificar (ítem 19)
+
+**Fix propuesto:** renombrar el que está en uso y actualizar el import; borrar los otros dos si nadie los referencia. Los espacios en nombres de archivo complican scripts y tooling.
+
+---
+
+### 48. `pages/financiero/` y `pages/general/` no son módulos de páginas
+
+**Dónde:** ambas carpetas
+
+Contienen un único modelo cada una, sin rutas, módulo ni servicio. Están bajo `pages/` por razones históricas.
+
+**Fix propuesto:** mover a `domains/` junto con el ítem 38.
+
+---
+
+### 49. `PreRegistroFuncionario.registroConducir` tipado `Boolean`
+
+**Dónde:** `src/app/pages/funcionario/funcionario.model.ts`
+
+Usa el objeto wrapper `Boolean` en vez del primitivo `boolean`.
+
+**Fix propuesto:** cambiar a `boolean`.
+
+---
+
+### 50. `Vendedor` tiene modelo pero ningún uso
+
+**Dónde:** `src/app/pages/personas/vendedor/vendedor.model.ts`
+
+Sin servicio ni queries. Entidad preparada y nunca terminada.
+
+**Fix propuesto:** borrar si no está en el roadmap.
+
+---
+
+### 51. Comentario de desarrollo commiteado en el routing
+
+**Dónde:** `src/app/pages/transferencias/transferencias-routing.module.ts`
+
+```ts
+path: 'gestion-productos', // ← AGREGAR ESTA RUTA
+```
+
+**Fix propuesto:** borrar el comentario.
+
+---
+
 ## Cómo usar este archivo
 
-Al arrancar la fase de corrección: convertir cada ítem en un issue, empezando por los 🔴. Los ítems 16-19 son borrado puro y pueden agruparse en un solo PR de limpieza — pero el 17 toca `capacitor.config.ts` y por lo tanto exige release nativo.
+Al arrancar la fase de corrección: convertir cada ítem en un issue, empezando por los 🔴. Los ítems 16-19, 46-48 y 50-51 son borrado o movimiento puro y pueden agruparse en un solo PR de limpieza — pero el 17 toca `capacitor.config.ts` y por lo tanto exige release nativo, y el 47 requiere actualizar un import.
 
 Los ítems 34-36 son cosméticos **con riesgo de contrato**: antes de renombrar cualquier cosa que viaje al backend, verificá el schema del central.
+
+**Resumen:** 51 hallazgos — 4 🔴, 22 🟡, 25 🟢.
