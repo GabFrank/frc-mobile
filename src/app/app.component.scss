@@ -133,6 +133,24 @@ ion-footer {
         }
       }
 
+      /* Cuando venta-tarjeta esta deshabilitada solo quedan 3 botones (sin "Pagar").
+         Se redistribuyen en abanico simetrico para no dejar el hueco de la 4ta posicion. */
+      &.show.three-items {
+        .fab-action-item {
+          &.action-solicitud {
+            transform: translate(-90px, -50px) scale(1); /* Izquierda */
+          }
+
+          &.action-transferencia {
+            transform: translate(0, -100px) scale(1); /* Centro, arriba */
+          }
+
+          &.action-marcar {
+            transform: translate(90px, -50px) scale(1); /* Derecha */
+          }
+        }
+      }
+
       .fab-action-item {
         position: absolute;
         display: flex;

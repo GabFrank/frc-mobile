@@ -20,6 +20,7 @@ import { AbrirCajaGQL } from "./graphql/abrirCaja";
 import { CerrarCajaGQL } from "./graphql/cerrarCaja";
 import { CajasAbiertasDesdeFilialesGQL } from "./graphql/cajasAbiertasDesdeFiliales";
 import { PdvCajaDesdeFilialGQL } from "./graphql/pdvCajaDesdeFilial";
+import { CajaAbiertoPorUsuarioIdLocalGQL } from "./graphql/cajaAbiertoPorUsuarioIdLocal";
 
 @UntilDestroy({ checkProperties: true })
 @Injectable({
@@ -47,7 +48,8 @@ export class CajaService {
     private abrirCaja: AbrirCajaGQL,
     private cerrarCaja: CerrarCajaGQL,
     private cajasAbiertasDesdeFiliales: CajasAbiertasDesdeFilialesGQL,
-    private pdvCajaDesdeFilial: PdvCajaDesdeFilialGQL
+    private pdvCajaDesdeFilial: PdvCajaDesdeFilialGQL,
+    private cajaAbiertoPorUsuarioIdLocal: CajaAbiertoPorUsuarioIdLocalGQL
   ) {
 
   }
@@ -105,12 +107,20 @@ export class CajaService {
     return await this.genericService.onGetById(this.pdvCajaDesdeFilial, id, null, null, sucursalId);
   }
 
+  // Sin llamadores actualmente: el proxy hace un loop HTTP secuencial a TODAS las filiales
+  // (timeouts 10s/30s por filial), demasiado lento para pantallas de venta-tarjeta.
+  // Se conserva por si alguna pantalla futura necesita el estado vivo directo de las filiales
+  // (en vez de la réplica local, que puede tener unos segundos de lag).
   async onGetByUsuarioIdAndAbiertoDesdeFiliales(id): Promise<Observable<PdvCaja[]>> {
     return await this.genericService.onGetById(this.cajasAbiertasDesdeFiliales, id);
   }
 
+  async onGetByUsuarioIdAndAbiertoLocal(id): Promise<Observable<PdvCaja[]>> {
+    return await this.genericService.onGetById(this.cajaAbiertoPorUsuarioIdLocal, id);
+  }
+
   async onGetByUsuarioIdAndAbierto(id): Promise<Observable<PdvCaja[]>> {
-    return this.onGetByUsuarioIdAndAbiertoDesdeFiliales(id);
+    return this.onGetByUsuarioIdAndAbiertoLocal(id);
   }
 
   async onGetByUsuarioIdAndAbiertoPorSucursal(id, sucId): Promise<Observable<PdvCaja>> {

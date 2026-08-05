@@ -6,6 +6,8 @@ import { AlertController, Platform, ToastController } from '@ionic/angular';
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { timeout, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { LoginService } from 'src/app/services/login.service';
 import { ChangeServerIpDialogComponent } from 'src/app/components/change-server-ip-dialog/change-server-ip-dialog.component';
 import { BiometricAuthError, NativeBiometric } from '@capgo/capacitor-native-biometric';
@@ -35,6 +37,8 @@ export class LoginComponent implements OnInit {
   isBiometricAvailable = false;
   loading = false;
   isDismissing = false;
+  autoLoginEnCurso = false;
+  private static readonly AUTO_LOGIN_TIMEOUT_MS = 8000;
 
   constructor(private loginService: LoginService,
     private notificacionService: NotificacionService,
@@ -72,7 +76,36 @@ export class LoginComponent implements OnInit {
           this.performBiometricLogin();
         }
       }, 500);
+    } else if (localStorage.getItem('biometricEnabled') !== 'true' && this.hasStoredSession()) {
+      this.performAutoLogin();
     }
+  }
+
+  private hasStoredSession(): boolean {
+    const token = localStorage.getItem('token');
+    const usuarioId = localStorage.getItem('usuarioId');
+    return !!token && token !== 'null' && !!usuarioId && usuarioId !== 'null';
+  }
+
+  performAutoLogin() {
+    this.autoLoginEnCurso = true;
+    this.loginService.isAuthenticated()
+      .pipe(
+        timeout(LoginComponent.AUTO_LOGIN_TIMEOUT_MS),
+        catchError((err) => {
+          console.log('Autologin: no se pudo revalidar la sesión, se muestra login manual:', err);
+          return of(null);
+        }),
+        untilDestroyed(this)
+      )
+      .subscribe((usuario: Usuario) => {
+        this.autoLoginEnCurso = false;
+        if (usuario?.id != null && !this.isDismissing && !this.loading) {
+          this.onSelectUsuarioAndDismiss(usuario);
+        } else if (usuario?.id == null) {
+          console.log('Autologin: sesión inválida o expirada, se muestra login manual.');
+        }
+      });
   }
 
   async performBiometricLogin() {

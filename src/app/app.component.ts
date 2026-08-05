@@ -34,6 +34,10 @@ import { timer } from 'rxjs';
 import { Channel, ChannelService } from './services/channel.service';
 import { NotificacionService as NotificacionesUsuarioService } from './pages/notificaciones/notificacion.service';
 import { RoleService } from './domains/personas/roles/role.service';
+import { CajaService } from './pages/operaciones/caja/caja.service';
+import { PdvCaja } from './pages/operaciones/caja/caja.model';
+import { VentaTarjetaService } from './pages/operaciones/venta-tarjeta/venta-tarjeta.service';
+import { VentaTarjetaQrService } from './pages/operaciones/venta-tarjeta/services/venta-tarjeta-qr.service';
 
 export class Pageable {
   getPageNumber: number;
@@ -78,6 +82,7 @@ export class AppComponent implements OnInit, OnDestroy {
   marcacionRoute: string[] = ['/marcacion'];
   conteoNoLeidas = 0;
   puedeAccederCaja = false;
+  ventaTarjetaHabilitada = false;
 
   loadingOpen = false; // track loading dialog state
   dialog: any;
@@ -105,7 +110,10 @@ export class AppComponent implements OnInit, OnDestroy {
     private toastCtrl: ToastController,
     private notificacionesUsuarioService: NotificacionesUsuarioService,
     private serverConnectionService: ServerConnectionService,
-    private roleService: RoleService
+    private roleService: RoleService,
+    private cajaService: CajaService,
+    private ventaTarjetaService: VentaTarjetaService,
+    private ventaTarjetaQrService: VentaTarjetaQrService
   ) {
     this.isDev = isDevMode();
 
@@ -219,12 +227,14 @@ export class AppComponent implements OnInit, OnDestroy {
     this.updateFabPosition(this.router.url);
     this.actualizarMarcacionRoute();
     this.actualizarPermisosUsuario();
+    this.actualizarVentaTarjetaHabilitada();
 
     this.mainService.authenticationSub
       .pipe(untilDestroyed(this))
       .subscribe(() => {
         this.actualizarMarcacionRoute();
         this.actualizarPermisosUsuario();
+        this.actualizarVentaTarjetaHabilitada();
       });
 
     this.router.events
@@ -396,37 +406,116 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
+  private actualizarVentaTarjetaHabilitada(): void {
+    if (!this.mainService.usuarioActual?.id) {
+      this.ventaTarjetaHabilitada = false;
+      return;
+    }
+    this.ventaTarjetaService.onGetConfiguracionHabilitada()
+      .pipe(untilDestroyed(this))
+      .subscribe({
+        next: (habilitado) => this.ventaTarjetaHabilitada = habilitado,
+        error: () => this.ventaTarjetaHabilitada = false
+      });
+  }
+
   openPagarScanner() {
     this.toggleFabMenu();
     this.barcodeScannerService
       .scan()
       .pipe(untilDestroyed(this))
       .subscribe(async (res) => {
-        if (!res.cancelled && res.text) {
-          let data = descodificarQr(res.text);
-          let idCliente = data.idOrigen;
-          let timestamp = stringToInteger(data.timestamp);
-          let sucursalId = data.sucursalId;
-          let secretKey = data.data;
-          (
-            await this.ventaCreditoService.onVentaCreditoQrAuth(
-              this.mainService.usuarioActual?.persona?.id,
-              timestamp,
-              sucursalId,
-              secretKey
-            )
-          )
-            .pipe(untilDestroyed(this))
-            .subscribe({
-              next: () => {
-                this.notificacionService.success('Convenio confirmado con éxito');
-              },
-              error: (err) => {
-                console.error(err);
-                this.notificacionService.warn('Error al confirmar');
-              }
-            });
+        if (res.cancelled || !res.text) {
+          return;
         }
+
+        if (!res.text.startsWith('frc-')) {
+          this.notificacionService.open('QR no válido para este sistema', TipoNotificacion.DANGER, 3);
+          return;
+        }
+
+        const qrData = descodificarQr(res.text);
+
+        if (qrData.tipoEntidad === 'VT') {
+          await this.procesarQrVentaTarjeta(res.text);
+          return;
+        }
+
+        let idCliente = qrData.idOrigen;
+        let timestamp = stringToInteger(qrData.timestamp);
+        let sucursalId = qrData.sucursalId;
+        let secretKey = qrData.data;
+        (
+          await this.ventaCreditoService.onVentaCreditoQrAuth(
+            this.mainService.usuarioActual?.persona?.id,
+            timestamp,
+            sucursalId,
+            secretKey
+          )
+        )
+          .pipe(untilDestroyed(this))
+          .subscribe({
+            next: () => {
+              this.notificacionService.success('Convenio confirmado con éxito');
+            },
+            error: (err) => {
+              console.error(err);
+              this.notificacionService.warn('Error al confirmar');
+            }
+          });
       });
+  }
+
+  private async procesarQrVentaTarjeta(texto: string): Promise<void> {
+    const usuarioId = this.mainService.usuarioActual?.id;
+    if (!usuarioId) {
+      this.notificacionService.open('No hay usuario autenticado', TipoNotificacion.DANGER, 3);
+      return;
+    }
+
+    const cajaActual = await this.resolverCajaActual(usuarioId);
+    if (!cajaActual) {
+      this.notificacionService.open(
+        'No tiene una caja abierta. Debe abrir una caja antes de registrar ventas con tarjeta.',
+        TipoNotificacion.DANGER,
+        4
+      );
+      return;
+    }
+
+    const resultado = this.ventaTarjetaQrService.procesarQrVenta(texto, cajaActual);
+
+    if (!resultado.ok) {
+      const duracion = resultado.motivo === 'caja-distinta' ? 4 : 3;
+      this.notificacionService.open(resultado.mensaje, TipoNotificacion.DANGER, duracion);
+      return;
+    }
+
+    const { ventaId, cajaId, monto, sucursalId, ventaTarjetaId } = resultado.navigation;
+    this.router.navigate(['/operaciones/venta-tarjeta/registro'], {
+      state: { ventaId, cajaId, monto, sucursalId, ventaTarjetaId }
+    });
+  }
+
+  private async resolverCajaActual(usuarioId: number): Promise<PdvCaja | null> {
+    if (this.cajaService.selectedCaja?.activo) {
+      return this.cajaService.selectedCaja;
+    }
+
+    return new Promise<PdvCaja | null>((resolve) => {
+      this.cajaService.onGetByUsuarioIdAndAbierto(usuarioId).then((obs) => {
+        obs.pipe(untilDestroyed(this)).subscribe({
+          next: (cajas: PdvCaja[]) => {
+            if (!cajas || cajas.length === 0) {
+              resolve(null);
+              return;
+            }
+            this.cajaService.selectedCaja = cajas[0];
+            resolve(cajas[0]);
+          },
+          error: () => resolve(null)
+        });
+      });
+    });
   }
 }
