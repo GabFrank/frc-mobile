@@ -48,6 +48,10 @@
 		"classpath": "com.capacitorjs.plugins.keyboard.KeyboardPlugin"
 	},
 	{
+		"pkg": "@capacitor/preferences",
+		"classpath": "com.capacitorjs.plugins.preferences.PreferencesPlugin"
+	},
+	{
 		"pkg": "@capacitor/push-notifications",
 		"classpath": "com.capacitorjs.plugins.pushnotifications.PushNotificationsPlugin"
 	},
@@ -70,5 +74,9 @@
 	{
 		"pkg": "@capgo/capacitor-native-biometric",
 		"classpath": "ee.forgr.biometric.NativeBiometric"
+	},
+	{
+		"pkg": "@pantrist/capacitor-plugin-ml-kit-text-recognition",
+		"classpath": "com.pantrist.ml.CapacitorPluginMlKitTextRecognition"
 	}
 ]
