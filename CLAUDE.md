@@ -2,6 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⛔ Este repo es LEGACY — no se desarrolla más acá
+
+**`frc-mobile` quedó reemplazado por [`frc-mobile-pwa`](../frc-mobile-pwa/CLAUDE.md)** (`GabFrank/frc-mobile-pwa`, Angular 21 + PWA, sin Ionic ni Capacitor). Desde ahora **todo el trabajo de mobile va en la PWA**: funcionalidad nueva, correcciones y pantallas portadas.
+
+| | |
+|---|---|
+| **Qué se hace acá** | Nada. Se lee. |
+| **Para qué sirve todavía** | Es la **fuente de verdad del comportamiento heredado**: antes de portar una pantalla a la PWA, se lee cómo la resuelve este repo (regla 5.1 de la PWA). Si algo parece un error, suele codificar una regla del negocio que no está escrita en ningún otro lado. |
+| **Cambios de código** | Solo un hotfix de producción, y solo mientras haya APKs instaladas en uso. No hay funcionalidad nueva. |
+| **Un bug reportado en el mobile** | Se arregla **en la PWA**, no acá. |
+
+Lo que sigue en este archivo describe el repo tal como quedó, y se conserva por eso: para leerlo, no para extenderlo.
+
+
 ## What this is
 
 `frc-app` (`package.json` name), aplicación **móvil Android/iOS** del producto **Franco Systems 3.0.9**. Empaquetada con marca comercial **"Bodega Franco"** (`appName` en `capacitor.config.ts`, `appId: com.sistemasinformaticos.frc`). Es uno de los 4 componentes que forman `frc-comercial/`. Repo git independiente: `GabFrank/frc-mobile`.
