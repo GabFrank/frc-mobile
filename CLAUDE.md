@@ -2,11 +2,27 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚠️ Este repo está en mantenimiento
+
+**Lo reemplaza `frc-mobile-pwa`** (`GabFrank/frc-mobile-pwa`, en `frc-comercial/mobile-pwa/`):
+Angular 21 standalone zoneless, web puro, sin Ionic ni Capacitor, desplegado en Cloudflare Pages.
+
+**Toda pantalla y toda feature nueva va a la PWA.** Los tres motivos de la migración: corre en
+**iOS** —lo que la APK nunca dio—, se actualiza sin pasar por Play Store, y solo el 3,5% del
+código de este repo tocaba APIs nativas. Acá se arreglan bugs de lo que ya está instalado en la
+flota.
+
+**«El mobile» nombra a los dos.** Ante un pedido o un bug «del mobile», confirmar de cuál de los
+dos se habla: son repos distintos, con stacks y mecanismos de despliegue distintos. Este llega al
+teléfono **solo por Play Store** —no hay OTA, el bloque `CapacitorUpdater` de
+`capacitor.config.ts` es código muerto—, así que hasta una línea de Angular necesita un release
+de la store.
+
 ## What this is
 
-`frc-app` (`package.json` name), aplicación **móvil Android/iOS** del producto **Franco Systems 3.0.9**. Empaquetada con marca comercial **"Bodega Franco"** (`appName` en `capacitor.config.ts`, `appId: com.sistemasinformaticos.frc`). Es uno de los 4 componentes que forman `frc-comercial/`. Repo git independiente: `GabFrank/frc-mobile`.
+`frc-app` (`package.json` name), aplicación **móvil Android/iOS** del producto **Franco Systems 3.0.9**. Empaquetada con marca comercial **"Bodega Franco"** (`appName` en `capacitor.config.ts`, `appId: com.sistemasinformaticos.frc`). Es uno de los **5** componentes que forman `frc-comercial/` (los 4 originales más `mobile-pwa`). Repo git independiente: `GabFrank/frc-mobile`.
 
-Stack: **Angular 15.2** + **Ionic 6** + **Capacitor 5** + **Apollo Client** (GraphQL) + Husky pre-commit. Apunta al backend **`frc-comercial/central`** vía GraphQL. Tiene capacidades de AI/visión (Azure Face, Google Cloud Vision, `@vladmandic/human`), biometría, push notifications via FCM, barcode scanning via ML Kit, geolocation, mapas (Google Maps + Leaflet).
+Stack: **Angular 15.2** + **Ionic 6** + **Capacitor 7** + **Apollo Client** (GraphQL) + Husky pre-commit. Apunta al backend **`frc-comercial/central`** vía GraphQL. Tiene capacidades de AI/visión (Azure Face, Google Cloud Vision, `@vladmandic/human`), biometría, push notifications via FCM, barcode scanning via ML Kit, geolocation, mapas (Google Maps + Leaflet).
 
 ## Build & Run
 
