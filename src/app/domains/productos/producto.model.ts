@@ -21,7 +21,8 @@ export class Producto {
   diasVencimiento?: number;
   cambiable?: boolean;
   usuario?: Usuario;
-  imagenPrincipal?: string;
+  /** Miniatura de 250x250. El original (`imagenPrincipal` en el central) no se pide en listas. */
+  imagenPrincipalMiniatura?: string;
   tipoConservacion?: string;
   // subfamilia?: Subfamilia;
   codigos?: [Codigo]

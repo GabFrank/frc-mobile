@@ -10,7 +10,7 @@ export const productosQuery = gql`
       diasVencimiento
       observacion
       cambiable
-      imagenPrincipal
+      imagenPrincipalMiniatura
       subfamilia {
         id
         descripcion
@@ -79,7 +79,7 @@ export const productoSearchPdv = gql`
       diasVencimiento
       observacion
       codigoPrincipal
-      imagenPrincipal
+      imagenPrincipalMiniatura
       envase {
         id
         descripcion
@@ -213,7 +213,7 @@ export const productoPorCodigoQuery = gql`
       diasVencimiento
       observacion
       cambiable
-      imagenPrincipal
+      imagenPrincipalMiniatura
       isEnvase
       envase {
         id
@@ -305,7 +305,7 @@ export const productoQuery = gql`
       diasVencimiento
       observacion
       cambiable
-      imagenPrincipal
+      imagenPrincipalMiniatura
       iva
       stock
       isEnvase
@@ -527,7 +527,7 @@ export const productoParaPedidoQuery = gql`
       diasVencimiento
       observacion
       cambiable
-      imagenPrincipal
+      imagenPrincipalMiniatura
       iva
       stock
       presentaciones {
@@ -597,7 +597,7 @@ export const findByPdvGrupoProductoQuery = gql`
       diasVencimiento
       observacion
       cambiable
-      imagenPrincipal
+      imagenPrincipalMiniatura
       iva
       stock
       isEnvase

@@ -115,7 +115,7 @@ export const inventarioProItemPorInventarioProQuery = gql`
           descripcion
           balanza
           vencimiento
-          imagenPrincipal
+          imagenPrincipalMiniatura
         }
       }
       cantidad
@@ -645,7 +645,7 @@ export const getInventarioItemsParaRevisarQuery = gql`
           producto {
             id
             descripcion
-            imagenPrincipal
+            imagenPrincipalMiniatura
             vencimiento
           }
           imagenPrincipal
@@ -675,7 +675,7 @@ export const productosConCantidadPositivaQuery = gql`
         productoDescripcion
         sucursalId  
         saldoTotal
-        imagenPrincipal
+        imagenPrincipalMiniatura
       }
     }
   }
@@ -696,7 +696,7 @@ export const productosConCantidadNegativaQuery = gql`
         productoDescripcion
         sucursalId
         saldoTotal
-        imagenPrincipal
+        imagenPrincipalMiniatura
       }
     }
   }
@@ -717,7 +717,7 @@ export const productosFaltantesQuery = gql`
         productoDescripcion
         sucursalId
         saldoTotal
-        imagenPrincipal
+        imagenPrincipalMiniatura
       }
     }
   }

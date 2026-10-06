@@ -23,7 +23,7 @@
   <ion-list *ngIf="itemsParaRevisar && itemsParaRevisar.length > 0">
     <ion-item *ngFor="let item of itemsParaRevisar; trackBy: trackById" lines="inset">
       <ion-thumbnail slot="start">
-        <img [src]="item?.presentacion?.producto?.imagenPrincipal 
+        <img [src]="item?.presentacion?.producto?.imagenPrincipalMiniatura 
              || item?.presentacion?.imagenPrincipal 
              || 'assets/no-image.png'"/>
       </ion-thumbnail>
