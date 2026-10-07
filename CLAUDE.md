@@ -30,7 +30,9 @@ Stack: **Angular 15.2** + **Ionic 6** + **Capacitor 7** + **Apollo Client** (Gra
 npm start                  # ng serve --port 4300 (web preview)
 npm run build              # ng build (web bundle en www/)
 npm run refresh            # build + cap sync + cap copy → actualiza Android/iOS native projects
-npm run lint               # ng lint
+npm run lint               # ⚠️ ROTO: angular.json declara el builder @angular-eslint/builder:lint
+                           # pero @angular-eslint no esta ni en devDependencies ni instalado.
+                           # No usarlo como gate hasta que se arregle en un PR dedicado.
 npm test                   # Karma
 npm run clean-install      # nuke node_modules + package-lock + cache → npm install --legacy-peer-deps
 ```
@@ -89,7 +91,11 @@ public Page<Pedido> getPedidosPaginated(...) { ... }
 ## Capacitor / nativo
 
 - **`capacitor.config.ts`**: `appId: com.sistemasinformaticos.frc`, `appName: "Bodega Franco"`, `webDir: www`, `androidScheme: http` con `cleartext: true` (necesario porque las APIs del central pueden estar en HTTP en LAN local, no HTTPS).
-- **CapacitorUpdater** (`@capgo/capacitor-updater`) con `autoUpdate: true` — actualizaciones OTA del bundle web. Esto es independiente del release del APK.
+- ⚠️ **NO hay OTA. El bloque `CapacitorUpdater` de `capacitor.config.ts` es código muerto.** El
+  plugin `@capgo/capacitor-updater` **no está instalado** (no figura en `dependencies`) y el código
+  que lo usaba está comentado en `src/main.ts`. Capgo se descartó a propósito: el CI ya sube AABs
+  por canal y la propagación de Play Store (~15 min) alcanza. La config quedó como residuo — no
+  borrarla sin verificar, pero **no creerle**.
 - **Splash screen**: rojo `#b40000` (color de marca), `CENTER_CROP`, fullscreen.
 - **Plugins notables**: `@capacitor-mlkit/barcode-scanning` (scanner moderno), `@capgo/capacitor-native-biometric` (face/fingerprint), `@capacitor-community/fcm` (push), `@capacitor/google-maps`, `@capacitor/geolocation`, `@capacitor/camera` con `androidSource: 'both'`.
 - **Cordova legacy**: plugins Cordova para versión/globalización (`cordova-plugin-app-version`, `cordova-plugin-globalization`). El escaneo de barcodes ya no usa phonegap.
@@ -105,7 +111,7 @@ Ambas están **fuera de `frc-comercial/`** intencionalmente. La carpeta vieja `f
 
 ## CI/CD
 
-Mismo modelo `semantic-release` que los demás componentes. Ver guía consolidada [../../cicd-implementation/guia-desarrollo-cicd.md](../../cicd-implementation/guia-desarrollo-cicd.md) para el detalle completo.
+Mismo modelo `semantic-release` que los demás componentes. Ver guía consolidada [../../frc-cicd/guia-desarrollo-cicd.md](../../frc-cicd/guia-desarrollo-cicd.md) para el detalle completo.
 
 ### Branches
 
@@ -120,13 +126,14 @@ Mismo modelo `semantic-release` que los demás componentes. Ver guía consolidad
 - **Promoción `release/beta → master`: merge commit, NO squash.**
 - Push a cualquiera de las 3 branches dispara release automático. **Nunca pushear sin confirmación explícita del usuario.**
 
-### ⚙️ Deploy: dos canales independientes
+### ⚙️ Deploy: solo Play Store
 
-El mobile tiene **dos mecanismos de actualización separados**:
+**Hay un solo mecanismo de actualización.** No existe OTA: **todo cambio, incluso uno de una sola
+línea de Angular, necesita un release de Play Store para llegar a un teléfono.** Mergear a
+`develop` genera el tag y el AAB, pero **no actualiza a nadie** hasta que alguien dispare el
+workflow.
 
-1. **OTA del bundle web vía CapacitorUpdater** (ya descripto en sección Capacitor de arriba): `autoUpdate: true`. Cada release del canal correspondiente actualiza el bundle JS sin reinstalar el APK. Funciona para cambios de código Angular/TS pero **no** para cambios en plugins nativos, dependencias Capacitor o `capacitor.config.ts`.
-
-2. **APK release a Play Store**: workflow GitHub Actions **"Deploy Play Store"** → elegir track (internal / closed / open / production). **Manual con aprobación del líder técnico**, no automático aunque haya release nuevo en GitHub. Necesario para:
+1. **APK release a Play Store**: workflow GitHub Actions **"Deploy Play Store"** → elegir track (internal / closed / open / production). **Manual con aprobación del líder técnico**, no automático aunque haya release nuevo en GitHub. Necesario para:
    - Cambios en plugins nativos (`@capacitor-mlkit/barcode-scanning`, `@capacitor/camera`, etc.)
    - Bumps de versión de Capacitor o Cordova plugins
    - Cambios en `capacitor.config.ts` (permisos, appId, etc.)
@@ -176,7 +183,7 @@ El mobile consume GraphQL del `frc-comercial/central`. Si el backend cambia el s
 
 ```
 src/app/
-├── app-update/         # CapacitorUpdater integration
+├── app-update/         # pantalla de aviso de actualizacion (NO usa CapacitorUpdater)
 ├── components/         # Componentes reutilizables
 ├── dialog/             # Diálogos
 ├── domains/            # Modelos de dominio
