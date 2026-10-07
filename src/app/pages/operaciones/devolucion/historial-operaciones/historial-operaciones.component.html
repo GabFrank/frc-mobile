@@ -1,0 +1,101 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onVolver()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ titulo }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="vacio" *ngIf="!cargando && operaciones.length === 0">
+    <ion-icon name="file-tray-outline"></ion-icon>
+    <p>No hay {{ esColecta ? 'colectas' : 'retiros' }} en el historial</p>
+  </div>
+
+  <ion-card class="op" *ngFor="let op of operaciones">
+    <ion-card-content>
+      <div class="op-header">
+        <div class="op-tit">
+          <strong>{{ op._titulo }}</strong>
+          <small>
+            {{ op.fecha | date: 'dd/MM/yyyy HH:mm' }}
+            <ion-badge *ngIf="op._revertida" color="danger">Revertida</ion-badge>
+          </small>
+        </div>
+        <ion-button
+          *ngIf="!esColecta && !op._revertida"
+          size="small"
+          fill="clear"
+          class="btn-success-flat"
+          [disabled]="procesando"
+          (click)="onReimprimir(op)">
+          <ion-icon slot="start" name="print-outline"></ion-icon>
+          Remito
+        </ion-button>
+      </div>
+
+      <ion-list lines="none" class="op-lineas">
+        <ion-item *ngFor="let d of op.devoluciones" class="linea">
+          <ion-label class="ion-text-wrap">
+            <strong>{{ d.identificador || '#' + d.id }}</strong>
+            <p *ngIf="esColecta && d.sucursalOrigen">{{ d.sucursalOrigen?.nombre }}</p>
+          </ion-label>
+          <ion-button
+            *ngIf="esColecta"
+            slot="end"
+            fill="clear"
+            class="btn-success-flat"
+            [disabled]="procesando"
+            (click)="onReimprimirEtiquetas(d.id)">
+            <ion-icon slot="icon-only" name="pricetags-outline"></ion-icon>
+          </ion-button>
+          <ion-button
+            *ngIf="d._rev"
+            slot="end"
+            fill="clear"
+            color="warning"
+            [disabled]="procesando"
+            (click)="onRevertirLinea(d)">
+            <ion-icon slot="icon-only" name="arrow-undo-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </ion-list>
+
+      <div class="op-acciones" *ngIf="op._revertible">
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="warning"
+          [disabled]="procesando"
+          (click)="onRevertirOperacion(op)">
+          <ion-icon slot="start" name="arrow-undo-outline"></ion-icon>
+          Revertir {{ esColecta ? 'colecta' : 'retiro' }} completo
+        </ion-button>
+      </div>
+
+      <p class="op-nota" *ngIf="!op._revertida && !op._revertible">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        {{ esColecta
+          ? 'No se puede revertir la operación completa: alguna devolución ya fue retirada por el proveedor.'
+          : 'No se puede revertir la operación completa: alguna devolución ya fue canjeada o acreditada.' }}
+      </p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-infinite-scroll (ionInfinite)="onLoadMore($event)" [disabled]="!hayMas">
+    <ion-infinite-scroll-content loadingSpinner="bubbles"></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button class="btn-success" (click)="onNuevo()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

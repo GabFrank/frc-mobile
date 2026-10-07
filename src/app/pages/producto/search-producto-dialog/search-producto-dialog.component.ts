@@ -397,7 +397,9 @@ export class SearchProductoDialogComponent implements OnInit, AfterViewInit, OnD
 
   onVerStock(producto) {
     let data: StockPorSucursalDialogData = {
-      producto: producto
+      producto: producto,
+      // En contexto con sucursal (devolucion/inventario) mostrar solo esa.
+      sucursalId: this.data?.data?.sucursalId
     }
     this.modalService.openModal(StockPorSucursalDialogComponent, data).then(res => {
 

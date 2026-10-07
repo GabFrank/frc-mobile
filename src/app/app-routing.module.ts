@@ -59,6 +59,10 @@ const routes: Routes = [
   {
     path: 'mis-finanzas',
     loadChildren: () => import('./pages/mis-finanzas/mis-finanzas.module').then(m => m.MisFinanzasModule)
+  },
+  {
+    path: 'mis-rrhh',
+    loadChildren: () => import('./pages/mis-rrhh/mis-rrhh.module').then(m => m.MisRrhhModule)
   }
 ];
 @NgModule({

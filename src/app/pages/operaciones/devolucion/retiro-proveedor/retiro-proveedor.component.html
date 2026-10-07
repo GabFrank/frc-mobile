@@ -1,0 +1,155 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onBack()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Retiro de devoluciones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Seleccion de proveedor -->
+  <div class="proveedor-box">
+    <div *ngIf="selectedProveedor == null">
+      <ion-item lines="none">
+        <ion-input
+          [(ngModel)]="proveedorTexto"
+          placeholder="Nombre o documento del proveedor"
+          (keyup.enter)="onBuscarProveedor()"></ion-input>
+        <ion-button slot="end" class="btn-success" (click)="onBuscarProveedor()" [disabled]="buscandoProveedor">
+          <ion-icon slot="icon-only" name="search-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <ion-list *ngIf="proveedoresList.length > 0">
+        <ion-item
+          button
+          *ngFor="let p of proveedoresList"
+          (click)="onSelectProveedor(p)">
+          <ion-label>
+            {{ p.persona?.nombre }}
+            <p *ngIf="p.persona?.documento">{{ p.persona?.documento }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <ion-item *ngIf="selectedProveedor != null" lines="none" class="proveedor-selected">
+      <ion-label>
+        <strong>{{ selectedProveedor.persona?.nombre }}</strong>
+        <p *ngIf="selectedProveedor.persona?.documento">{{ selectedProveedor.persona?.documento }}</p>
+      </ion-label>
+      <ion-button slot="end" fill="clear" color="medium" (click)="onQuitarProveedor()">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+
+    <ion-item *ngIf="selectedProveedor != null">
+      <ion-label position="stacked">Sucursal</ion-label>
+      <ion-select
+        placeholder="Todas"
+        [(ngModel)]="selectedSucursalId"
+        (ngModelChange)="onSucursalChange($event)"
+        interface="alert"
+        [interfaceOptions]="{ header: 'Sucursal' }"
+      >
+        <ion-select-option [value]="null">Todas</ion-select-option>
+        <ion-select-option *ngFor="let s of sucursales" [value]="s.id">
+          {{ s.nombre }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+  </div>
+
+  <div class="cargando" *ngIf="cargando">
+    <ion-spinner></ion-spinner>
+    <p>Cargando cajas del proveedor...</p>
+  </div>
+
+  <!-- Progreso de verificacion -->
+  <div class="progreso" *ngIf="selectedProveedor != null && cajas.length > 0">
+    <div class="progreso-header">
+      <h4>Cajas a retirar</h4>
+      <ion-badge [color]="verificadasCount === cajas.length ? 'success' : 'medium'">
+        {{ verificadasCount }} de {{ cajas.length }} verificadas
+      </ion-badge>
+    </div>
+    <ion-progress-bar
+      [value]="cajas.length > 0 ? verificadasCount / cajas.length : 0"
+      color="success"></ion-progress-bar>
+    <p class="hint-manual" *ngIf="permitirManual">
+      Escaneá las cajas o tocá una para verificarla manualmente.
+    </p>
+  </div>
+
+  <div class="acciones-scan" *ngIf="selectedProveedor != null && cajas.length > 0">
+    <ion-button expand="block" class="btn-success" (click)="onEscanearCaja()">
+      <ion-icon slot="start" name="barcode-outline"></ion-icon>
+      Escanear caja
+    </ion-button>
+  </div>
+
+  <!-- Listado de cajas separadas -->
+  <ion-list *ngIf="cajas.length > 0">
+    <ion-item
+      *ngFor="let caja of cajas"
+      [class.verificada]="caja.verificada"
+      [button]="permitirManual"
+      [detail]="false"
+      (click)="onToggleManual(caja)">
+      <ion-icon
+        slot="start"
+        [name]="caja.verificada ? 'checkmark-circle' : 'ellipse-outline'"
+        [color]="caja.verificada ? 'success' : 'medium'"></ion-icon>
+      <ion-label class="ion-text-wrap">
+        <strong>{{ caja.identificador }}</strong>
+        <p>{{ caja.descripcion }} · Cant: {{ caja.cantidad }}</p>
+        <p>Sucursal: {{ caja.sucursalNombre }}</p>
+        <p *ngIf="caja.lote">Lote: {{ caja.lote }}</p>
+        <p *ngIf="caja.vencimiento">Vence: {{ caja.vencimiento }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div class="empty" *ngIf="selectedProveedor != null && !cargando && cajas.length === 0">
+    <ion-icon name="cube-outline"></ion-icon>
+    <p>No hay cajas pendientes de retiro para este proveedor</p>
+  </div>
+
+  <div class="empty" *ngIf="selectedProveedor == null">
+    <ion-icon name="business-outline"></ion-icon>
+    <p>Seleccioná un proveedor para ver las cajas a retirar</p>
+  </div>
+
+  <!-- Resultado del retiro en bloque -->
+  <div class="resultados" *ngIf="resultados.length > 0">
+    <h4>Resultado del retiro</h4>
+    <ion-list>
+      <ion-item *ngFor="let r of resultados">
+        <ion-icon
+          slot="start"
+          [name]="r.ok ? 'checkmark-circle' : 'close-circle'"
+          [color]="r.ok ? 'success' : 'danger'"></ion-icon>
+        <ion-label class="ion-text-wrap">
+          <strong>Devolución #{{ r.id }}</strong>
+          <p>{{ r.mensaje }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content>
+
+<ion-footer *ngIf="selectedProveedor != null && cajas.length > 0">
+  <ion-toolbar>
+    <div class="footer-actions">
+      <ion-button
+        expand="block"
+        class="btn-success"
+        [disabled]="guardando || verificadasCount === 0"
+        (click)="onConfirmarRetiro()">
+        Confirmar retiro
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

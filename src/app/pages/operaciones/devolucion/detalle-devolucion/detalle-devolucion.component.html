@@ -1,0 +1,111 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="onVolver()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      {{ devolucion?.identificador || (devolucion?.id ? '#' + devolucion.id : 'Devolución') }}
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="cargando" *ngIf="cargando">
+    <ion-spinner></ion-spinner>
+  </div>
+
+  <div class="vacio" *ngIf="!cargando && devolucion == null">
+    <ion-icon name="alert-circle-outline"></ion-icon>
+    <p>No se pudo cargar la devolución</p>
+  </div>
+
+  <ng-container *ngIf="!cargando && devolucion != null">
+    <ion-card class="cabecera">
+      <ion-card-content>
+        <div class="fila-top">
+          <strong>{{ devolucion.identificador || '#' + devolucion.id }}</strong>
+          <ion-badge [color]="colorEstado">{{ devolucion.estado | titlecase }}</ion-badge>
+        </div>
+        <p>
+          <ion-icon name="storefront-outline"></ion-icon>
+          {{ devolucion.sucursalOrigen?.nombre }}
+          <span *ngIf="devolucion.estado === EstadoDevolucion.COLECTADO && devolucion.sucursalUbicacion">
+            → {{ devolucion.sucursalUbicacion?.nombre }}
+          </span>
+        </p>
+        <p *ngIf="devolucion.proveedor">
+          <ion-icon name="business-outline"></ion-icon>
+          {{ devolucion.proveedor?.persona?.nombre }}
+        </p>
+        <p class="fecha">
+          <ion-icon name="calendar-outline"></ion-icon>
+          {{ devolucion.fecha | date: 'dd/MM/yyyy HH:mm' }}
+        </p>
+        <p *ngIf="devolucion.motivo">{{ devolucion.motivo }}</p>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="acciones" *ngIf="esPendiente">
+      <ion-button expand="block" class="btn-success" [disabled]="procesando" (click)="onAgregarProducto()">
+        <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+        Agregar producto
+      </ion-button>
+    </div>
+
+    <div class="items-header">
+      <h4>Productos ({{ devolucion.items?.length || 0 }})</h4>
+    </div>
+
+    <ion-list *ngIf="devolucion.items?.length > 0">
+      <ion-item *ngFor="let item of devolucion.items" lines="full">
+        <ion-label class="ion-text-wrap">
+          <strong>{{ item.producto?.descripcion }}</strong>
+          <p>Presentación x{{ item.presentacion?.cantidad | number: '1.0-0' }} · Cant: {{ item.cantidad }}</p>
+          <p>Avería: {{ item.motivoAveria?.descripcion }}</p>
+          <p *ngIf="item.vencimiento">Vence: {{ item.vencimiento | date: 'dd/MM/yyyy' }}</p>
+          <p *ngIf="item.lote">Lote: {{ item.lote }}</p>
+        </ion-label>
+        <ion-button
+          *ngIf="esPendiente"
+          slot="end"
+          fill="clear"
+          color="danger"
+          [disabled]="procesando"
+          (click)="onEliminarItem(item)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+
+    <div class="empty" *ngIf="!(devolucion.items?.length > 0)">
+      <ion-icon name="cube-outline"></ion-icon>
+      <p>Sin productos</p>
+    </div>
+  </ng-container>
+</ion-content>
+
+<ion-footer *ngIf="!cargando && (esPendiente || canDescartar)">
+  <ion-toolbar>
+    <div class="footer-actions">
+      <ion-button
+        *ngIf="esPendiente"
+        expand="block"
+        class="btn-success"
+        [disabled]="procesando || !(devolucion?.items?.length > 0)"
+        (click)="onMarcarSeparado()">
+        Marcar como separado
+      </ion-button>
+      <ion-button
+        *ngIf="canDescartar"
+        expand="block"
+        class="btn-danger"
+        [disabled]="procesando"
+        (click)="onDescartar()">
+        <ion-icon slot="start" name="trash-outline"></ion-icon>
+        Descartar (merma)
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

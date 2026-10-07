@@ -1,0 +1,43 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Aprobaciones RRHH</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-segment [(ngModel)]="segmento" (ionChange)="onSegmentChange()">
+    <ion-segment-button value="vacaciones"><ion-label>Vacaciones</ion-label></ion-segment-button>
+    <ion-segment-button value="vales"><ion-label>Vales</ion-label></ion-segment-button>
+  </ion-segment>
+
+  <!-- Vacaciones pendientes -->
+  <ion-list *ngIf="segmento === 'vacaciones'">
+    <ion-item *ngFor="let p of vacacionesPendientes">
+      <ion-label>
+        <h2>{{ p.vacacion?.funcionario?.persona?.nombre }}</h2>
+        <p>{{ p.fechaDesde }} → {{ p.fechaHasta }} ({{ p.diasUsados }} días)</p>
+      </ion-label>
+      <ion-button slot="end" color="success" (click)="aprobar(p)">Aprobar</ion-button>
+    </ion-item>
+    <ion-item *ngIf="vacacionesPendientes.length === 0"><ion-label class="vacio">Sin solicitudes pendientes</ion-label></ion-item>
+  </ion-list>
+
+  <!-- Vales pendientes (solo lectura; la confirmacion/pago es en desktop) -->
+  <ion-list *ngIf="segmento === 'vales'">
+    <ion-item *ngFor="let v of valesPendientes">
+      <ion-label>
+        <h2>{{ v.funcionario?.persona?.nombre }}</h2>
+        <p>{{ v.monto | number:'1.0-0' }} — {{ v.fecha }} {{ v.esAdelanto ? '(Adelanto)' : '' }}</p>
+      </ion-label>
+      <ion-badge slot="end" color="warning">SOLICITADO</ion-badge>
+    </ion-item>
+    <ion-item *ngIf="valesPendientes.length === 0"><ion-label class="vacio">Sin vales pendientes</ion-label></ion-item>
+  </ion-list>
+
+  <ion-note class="nota" *ngIf="segmento === 'vales'">
+    La confirmación y el pago de vales se realizan en el desktop (requiere Caja Mayor).
+  </ion-note>
+</ion-content>
