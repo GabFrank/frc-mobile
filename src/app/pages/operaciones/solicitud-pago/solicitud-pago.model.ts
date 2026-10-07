@@ -7,6 +7,7 @@ import { NotaRecepcion } from 'src/app/pages/operaciones/pedidos/nota-recepcion/
 
 export enum SolicitudPagoEstado {
   PENDIENTE = 'PENDIENTE',
+  SOLICITADO = 'SOLICITADO', // validada, lista para pagar
   PARCIAL = 'PARCIAL',
   CONCLUIDO = 'CONCLUIDO',
   CANCELADO = 'CANCELADO'
